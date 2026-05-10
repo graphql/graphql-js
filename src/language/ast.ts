@@ -1,6 +1,6 @@
-import type { KindTypeMap } from './KindTypeMap.js';
-import type { Source } from './source.js';
-import type { TokenKind } from './tokenKind.js';
+import type { KindTypeMap } from './KindTypeMap.ts';
+import type { Source } from './source.ts';
+import type { TokenKind } from './tokenKind.ts';
 
 /**
  * Contains a range of UTF-8 character offsets and token references that

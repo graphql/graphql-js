@@ -1,10 +1,10 @@
-import { syntaxError } from '../error/syntaxError.js';
+import { syntaxError } from '../error/syntaxError.ts';
 
-import { Token } from './ast.js';
-import { dedentBlockStringLines } from './blockString.js';
-import { isDigit, isNameContinue, isNameStart } from './characterClasses.js';
-import type { Source } from './source.js';
-import { TokenKind } from './tokenKind.js';
+import { Token } from './ast.ts';
+import { dedentBlockStringLines } from './blockString.ts';
+import { isDigit, isNameContinue, isNameStart } from './characterClasses.ts';
+import type { Source } from './source.ts';
+import { TokenKind } from './tokenKind.ts';
 
 /**
  * A Lexer interface which provides common properties and methods required for

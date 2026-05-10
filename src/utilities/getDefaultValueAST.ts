@@ -1,11 +1,12 @@
-import { invariant } from '../jsutils/invariant.js';
+import { invariant } from '../jsutils/invariant.ts';
 
-import type { ConstValueNode } from '../language/ast.js';
+import type { ConstValueNode } from '../language/ast.ts';
 
-import type { GraphQLArgument, GraphQLInputField } from '../type/definition.js';
+import type { GraphQLArgument, GraphQLInputField } from '../type/definition.ts';
 
-import { astFromValue } from './astFromValue.js';
-import { valueToLiteral } from './valueToLiteral.js';
+// eslint-disable-next-line import/no-deprecated
+import { astFromValue } from './astFromValue.ts';
+import { valueToLiteral } from './valueToLiteral.ts';
 
 export function getDefaultValueAST(
   argOrInputField: GraphQLArgument | GraphQLInputField,
@@ -21,6 +22,7 @@ export function getDefaultValueAST(
 
   const defaultValue = argOrInputField.defaultValue;
   if (defaultValue !== undefined) {
+    // eslint-disable-next-line import/no-deprecated
     const valueAST = astFromValue(defaultValue, type);
     invariant(valueAST != null, 'Invalid default value');
     return valueAST;

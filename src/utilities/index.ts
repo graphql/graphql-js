@@ -1,5 +1,5 @@
 // Produce the GraphQL query recommended for a full schema introspection.
-export { getIntrospectionQuery } from './getIntrospectionQuery.js';
+export { getIntrospectionQuery } from './getIntrospectionQuery.ts';
 
 export type {
   IntrospectionOptions,
@@ -24,26 +24,26 @@ export type {
   IntrospectionInputValue,
   IntrospectionEnumValue,
   IntrospectionDirective,
-} from './getIntrospectionQuery.js';
+} from './getIntrospectionQuery.ts';
 
 // Gets the target Operation from a Document.
-export { getOperationAST } from './getOperationAST.js';
+export { getOperationAST } from './getOperationAST.ts';
 
 // Convert a GraphQLSchema to an IntrospectionQuery.
-export { introspectionFromSchema } from './introspectionFromSchema.js';
+export { introspectionFromSchema } from './introspectionFromSchema.ts';
 
 // Build a GraphQLSchema from an introspection result.
-export { buildClientSchema } from './buildClientSchema.js';
+export { buildClientSchema } from './buildClientSchema.ts';
 
 // Build a GraphQLSchema from GraphQL Schema language.
-export { buildASTSchema, buildSchema } from './buildASTSchema.js';
-export type { BuildSchemaOptions } from './buildASTSchema.js';
+export { buildASTSchema, buildSchema } from './buildASTSchema.ts';
+export type { BuildSchemaOptions } from './buildASTSchema.ts';
 
 // Extends an existing GraphQLSchema from a parsed GraphQL Schema language AST.
-export { extendSchema } from './extendSchema.js';
+export { extendSchema } from './extendSchema.ts';
 
 // Sort a GraphQLSchema.
-export { lexicographicSortSchema } from './lexicographicSortSchema.js';
+export { lexicographicSortSchema } from './lexicographicSortSchema.ts';
 
 // Print a GraphQLSchema to GraphQL Schema language.
 export {
@@ -51,64 +51,64 @@ export {
   printType,
   printDirective,
   printIntrospectionSchema,
-} from './printSchema.js';
+} from './printSchema.ts';
 
 // Create a GraphQLType from a GraphQL language AST.
-export { typeFromAST } from './typeFromAST.js';
+export { typeFromAST } from './typeFromAST.ts';
 
 // Create a JavaScript value from a GraphQL language AST with a type.
 export {
   /** @deprecated use `coerceInputLiteral()` instead - will be removed in v18 */
   valueFromAST,
-} from './valueFromAST.js';
+} from './valueFromAST.ts';
 
 // Create a JavaScript value from a GraphQL language AST without a type.
-export { valueFromASTUntyped } from './valueFromASTUntyped.js';
+export { valueFromASTUntyped } from './valueFromASTUntyped.ts';
 
 // Create a GraphQL language AST from a JavaScript value.
 export {
   /** @deprecated use `valueToLiteral()` instead with care to operate on external values - `astFromValue()` will be removed in v18 */
   astFromValue,
-} from './astFromValue.js';
+} from './astFromValue.ts';
 
 // A helper to use within recursive-descent visitors which need to be aware of the GraphQL type system.
-export { TypeInfo, visitWithTypeInfo } from './TypeInfo.js';
+export { TypeInfo, visitWithTypeInfo } from './TypeInfo.ts';
 
 // Converts a value to a const value by replacing variables.
-export { replaceVariables } from './replaceVariables.js';
+export { replaceVariables } from './replaceVariables.ts';
 
 // Create a GraphQL literal (AST) from a JavaScript input value.
-export { valueToLiteral } from './valueToLiteral.js';
+export { valueToLiteral } from './valueToLiteral.ts';
 
 export {
   // Coerces a JavaScript value to a GraphQL type, or returns undefined.
   coerceInputValue,
   // Coerces a GraphQL literal (AST) to a GraphQL type, or returns undefined.
   coerceInputLiteral,
-} from './coerceInputValue.js';
+} from './coerceInputValue.ts';
 
 export {
   // Validate a JavaScript value with a GraphQL type, collecting all errors.
   validateInputValue,
   // Validate a GraphQL literal (AST) with a GraphQL type, collecting all errors.
   validateInputLiteral,
-} from './validateInputValue.js';
+} from './validateInputValue.ts';
 
 // Concatenates multiple AST together.
-export { concatAST } from './concatAST.js';
+export { concatAST } from './concatAST.ts';
 
 // Separates an AST into an AST per Operation.
-export { separateOperations } from './separateOperations.js';
+export { separateOperations } from './separateOperations.ts';
 
 // Strips characters that are not significant to the validity or execution of a GraphQL document.
-export { stripIgnoredCharacters } from './stripIgnoredCharacters.js';
+export { stripIgnoredCharacters } from './stripIgnoredCharacters.ts';
 
 // Comparators for types
 export {
   isEqualType,
   isTypeSubTypeOf,
   doTypesOverlap,
-} from './typeComparators.js';
+} from './typeComparators.ts';
 
 // Compares two GraphQLSchemas and detects breaking changes.
 export {
@@ -118,19 +118,19 @@ export {
   findBreakingChanges,
   findDangerousChanges,
   findSchemaChanges,
-} from './findSchemaChanges.js';
+} from './findSchemaChanges.ts';
 export type {
   BreakingChange,
   DangerousChange,
   SafeChange,
-} from './findSchemaChanges.js';
+} from './findSchemaChanges.ts';
 
 // Wrapper type that contains DocumentNode and types that can be deduced from it.
-export type { TypedQueryDocumentNode } from './typedQueryDocumentNode.js';
+export type { TypedQueryDocumentNode } from './typedQueryDocumentNode.ts';
 
 // Schema coordinates
 export {
   resolveSchemaCoordinate,
   resolveASTSchemaCoordinate,
-} from './resolveSchemaCoordinate.js';
-export type { ResolvedSchemaElement } from './resolveSchemaCoordinate.js';
+} from './resolveSchemaCoordinate.ts';
+export type { ResolvedSchemaElement } from './resolveSchemaCoordinate.ts';

@@ -1,17 +1,17 @@
-import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
-import { capitalize } from '../jsutils/capitalize.js';
-import { andList } from '../jsutils/formatList.js';
-import { inspect } from '../jsutils/inspect.js';
-import { invariant } from '../jsutils/invariant.js';
-import { isIterableObject } from '../jsutils/isIterableObject.js';
-import { isObjectLike } from '../jsutils/isObjectLike.js';
-import { keyMap } from '../jsutils/keyMap.js';
-import { mapValue } from '../jsutils/mapValue.js';
-import type { Maybe } from '../jsutils/Maybe.js';
-import type { ObjMap } from '../jsutils/ObjMap.js';
-import { printPathArray } from '../jsutils/printPathArray.js';
+import { AccumulatorMap } from '../jsutils/AccumulatorMap.ts';
+import { capitalize } from '../jsutils/capitalize.ts';
+import { andList } from '../jsutils/formatList.ts';
+import { inspect } from '../jsutils/inspect.ts';
+import { invariant } from '../jsutils/invariant.ts';
+import { isIterableObject } from '../jsutils/isIterableObject.ts';
+import { isObjectLike } from '../jsutils/isObjectLike.ts';
+import { keyMap } from '../jsutils/keyMap.ts';
+import { mapValue } from '../jsutils/mapValue.ts';
+import type { Maybe } from '../jsutils/Maybe.ts';
+import type { ObjMap } from '../jsutils/ObjMap.ts';
+import { printPathArray } from '../jsutils/printPathArray.ts';
 
-import { GraphQLError } from '../error/GraphQLError.js';
+import { GraphQLError } from '../error/GraphQLError.ts';
 
 import type {
   ASTNode,
@@ -24,15 +24,15 @@ import type {
   ObjectTypeExtensionNode,
   UnionTypeDefinitionNode,
   UnionTypeExtensionNode,
-} from '../language/ast.js';
-import { OperationTypeNode } from '../language/ast.js';
-import { Kind } from '../language/kinds.js';
+} from '../language/ast.ts';
+import { OperationTypeNode } from '../language/ast.ts';
+import { Kind } from '../language/kinds.ts';
 
-import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators.js';
+import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators.ts';
 import {
   validateInputLiteral,
   validateInputValue,
-} from '../utilities/validateInputValue.js';
+} from '../utilities/validateInputValue.ts';
 
 import type {
   GraphQLArgument,
@@ -44,7 +44,7 @@ import type {
   GraphQLInterfaceType,
   GraphQLObjectType,
   GraphQLUnionType,
-} from './definition.js';
+} from './definition.ts';
 import {
   assertLeafType,
   getNamedType,
@@ -60,11 +60,11 @@ import {
   isRequiredArgument,
   isRequiredInputField,
   isUnionType,
-} from './definition.js';
-import { GraphQLDeprecatedDirective, isDirective } from './directives.js';
-import { isIntrospectionType } from './introspection.js';
-import type { GraphQLSchema } from './schema.js';
-import { assertSchema } from './schema.js';
+} from './definition.ts';
+import { GraphQLDeprecatedDirective, isDirective } from './directives.ts';
+import { isIntrospectionType } from './introspection.ts';
+import type { GraphQLSchema } from './schema.ts';
+import { assertSchema } from './schema.ts';
 
 /**
  * Implements the "Type Validation" sub-sections of the specification's

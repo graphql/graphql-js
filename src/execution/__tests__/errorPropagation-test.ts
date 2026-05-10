@@ -1,15 +1,15 @@
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 
-import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 
-import { parse } from '../../language/parser.js';
+import { parse } from '../../language/parser.ts';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { execute } from '../execute.js';
-import type { ExecutionResult } from '../Executor.js';
+import { execute } from '../execute.ts';
+import type { ExecutionResult } from '../Executor.ts';
 
 const syncError = new Error('bar');
 

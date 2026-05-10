@@ -1,36 +1,36 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualPromisesOrValues.js';
-import { expectJSON } from '../../__testUtils__/expectJSON.js';
-import { expectPromise } from '../../__testUtils__/expectPromise.js';
-import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
-import { spyOnMethod } from '../../__testUtils__/spyOn.js';
+import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualPromisesOrValues.ts';
+import { expectJSON } from '../../__testUtils__/expectJSON.ts';
+import { expectPromise } from '../../__testUtils__/expectPromise.ts';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';
+import { spyOnMethod } from '../../__testUtils__/spyOn.ts';
 
-import { isAsyncIterable } from '../../jsutils/isAsyncIterable.js';
-import { isPromise } from '../../jsutils/isPromise.js';
-import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
+import { isAsyncIterable } from '../../jsutils/isAsyncIterable.ts';
+import { isPromise } from '../../jsutils/isPromise.ts';
+import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.ts';
 
-import { parse } from '../../language/parser.js';
+import { parse } from '../../language/parser.ts';
 
-import type { GraphQLResolveInfo } from '../../type/definition.js';
+import type { GraphQLResolveInfo } from '../../type/definition.ts';
 import {
   GraphQLInterfaceType,
   GraphQLNonNull,
   GraphQLObjectType,
-} from '../../type/definition.js';
-import { GraphQLString } from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+} from '../../type/definition.ts';
+import { GraphQLString } from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { AbortedGraphQLExecutionError } from '../AbortedGraphQLExecutionError.js';
+import { AbortedGraphQLExecutionError } from '../AbortedGraphQLExecutionError.ts';
 import {
   execute,
   experimentalExecuteIncrementally,
   subscribe,
-} from '../execute.js';
-import { legacyExecuteIncrementally } from '../legacyIncremental/legacyExecuteIncrementally.js';
+} from '../execute.ts';
+import { legacyExecuteIncrementally } from '../legacyIncremental/legacyExecuteIncrementally.ts';
 
 const schema = buildSchema(`
   type Todo {

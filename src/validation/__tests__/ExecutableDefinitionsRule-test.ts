@@ -1,8 +1,8 @@
 import { describe, it } from 'mocha';
 
-import { ExecutableDefinitionsRule } from '../rules/ExecutableDefinitionsRule.js';
+import { ExecutableDefinitionsRule } from '../rules/ExecutableDefinitionsRule.ts';
 
-import { expectValidationErrors } from './harness.js';
+import { expectValidationErrors } from './harness.ts';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(ExecutableDefinitionsRule, queryStr);

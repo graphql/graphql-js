@@ -1,16 +1,16 @@
-import type { Maybe } from '../jsutils/Maybe.js';
+import type { Maybe } from '../jsutils/Maybe.ts';
 
 import type {
   ConstValueNode,
   ObjectFieldNode,
   ValueNode,
-} from '../language/ast.js';
-import { Kind } from '../language/kinds.js';
+} from '../language/ast.ts';
+import { Kind } from '../language/kinds.ts';
 
-import type { FragmentVariableValues } from '../execution/collectFields.js';
-import type { VariableValues } from '../execution/values.js';
+import type { FragmentVariableValues } from '../execution/collectFields.ts';
+import type { VariableValues } from '../execution/values.ts';
 
-import { valueToLiteral } from './valueToLiteral.js';
+import { valueToLiteral } from './valueToLiteral.ts';
 
 /**
  * Replaces any Variables found within an AST Value literal with literals

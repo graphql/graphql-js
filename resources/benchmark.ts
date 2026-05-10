@@ -1,3 +1,3 @@
-import { runBenchmarks } from './benchmark/run.js';
+import { runBenchmarks } from './benchmark/run.ts';
 
 runBenchmarks();

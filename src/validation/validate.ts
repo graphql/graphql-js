@@ -1,23 +1,23 @@
-import { mapValue } from '../jsutils/mapValue.js';
-import type { Maybe } from '../jsutils/Maybe.js';
+import { mapValue } from '../jsutils/mapValue.ts';
+import type { Maybe } from '../jsutils/Maybe.ts';
 
-import { GraphQLError } from '../error/GraphQLError.js';
+import { GraphQLError } from '../error/GraphQLError.ts';
 
-import type { DocumentNode } from '../language/ast.js';
-import { QueryDocumentKeys } from '../language/ast.js';
-import { visit, visitInParallel } from '../language/visitor.js';
+import type { DocumentNode } from '../language/ast.ts';
+import { QueryDocumentKeys } from '../language/ast.ts';
+import { visit, visitInParallel } from '../language/visitor.ts';
 
-import type { GraphQLSchema } from '../type/schema.js';
-import { assertValidSchema } from '../type/validate.js';
+import type { GraphQLSchema } from '../type/schema.ts';
+import { assertValidSchema } from '../type/validate.ts';
 
-import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo.js';
+import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo.ts';
 
-import { specifiedRules, specifiedSDLRules } from './specifiedRules.js';
-import type { SDLValidationRule, ValidationRule } from './ValidationContext.js';
+import { specifiedRules, specifiedSDLRules } from './specifiedRules.ts';
+import type { SDLValidationRule, ValidationRule } from './ValidationContext.ts';
 import {
   SDLValidationContext,
   ValidationContext,
-} from './ValidationContext.js';
+} from './ValidationContext.ts';
 
 export interface ValidationOptions {
   maxErrors?: number;

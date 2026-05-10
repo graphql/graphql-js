@@ -4,8 +4,8 @@ import path from 'node:path';
 
 import ts from 'typescript';
 
-import { changeExtensionInImportPaths } from './change-extension-in-import-paths.js';
-import { inlineInvariant } from './inline-invariant.js';
+import { changeExtensionInImportPaths } from './change-extension-in-import-paths.ts';
+import { inlineInvariant } from './inline-invariant.ts';
 import {
   buildESMDevModeStub,
   prettify,
@@ -13,7 +13,7 @@ import {
   readTSConfig,
   showDirStats,
   writeGeneratedFile,
-} from './utils.js';
+} from './utils.ts';
 
 console.log('\n./denoDist');
 await buildPackage('./denoDist');

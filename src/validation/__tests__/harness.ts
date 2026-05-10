@@ -1,18 +1,18 @@
-import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 
-import type { Maybe } from '../../jsutils/Maybe.js';
+import type { Maybe } from '../../jsutils/Maybe.ts';
 
-import { parse } from '../../language/parser.js';
+import { parse } from '../../language/parser.ts';
 
-import type { GraphQLSchema } from '../../type/schema.js';
+import type { GraphQLSchema } from '../../type/schema.ts';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { validate, validateSDL } from '../validate.js';
+import { validate, validateSDL } from '../validate.ts';
 import type {
   SDLValidationRule,
   ValidationRule,
-} from '../ValidationContext.js';
+} from '../ValidationContext.ts';
 
 export const testSchema: GraphQLSchema = buildSchema(`
   interface Mammal {

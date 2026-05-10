@@ -1,8 +1,8 @@
 import { describe, it } from 'mocha';
 
-import { FragmentsOnCompositeTypesRule } from '../rules/FragmentsOnCompositeTypesRule.js';
+import { FragmentsOnCompositeTypesRule } from '../rules/FragmentsOnCompositeTypesRule.ts';
 
-import { expectValidationErrors } from './harness.js';
+import { expectValidationErrors } from './harness.ts';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(FragmentsOnCompositeTypesRule, queryStr);

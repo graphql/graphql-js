@@ -1,19 +1,19 @@
-import { devAssert } from '../jsutils/devAssert.js';
-import { didYouMean } from '../jsutils/didYouMean.js';
-import { identityFunc } from '../jsutils/identityFunc.js';
-import { inspect } from '../jsutils/inspect.js';
-import { instanceOf } from '../jsutils/instanceOf.js';
-import { keyMap } from '../jsutils/keyMap.js';
-import { keyValMap } from '../jsutils/keyValMap.js';
-import { mapValue } from '../jsutils/mapValue.js';
-import type { Maybe } from '../jsutils/Maybe.js';
-import type { ObjMap } from '../jsutils/ObjMap.js';
-import type { Path } from '../jsutils/Path.js';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
-import { suggestionList } from '../jsutils/suggestionList.js';
-import { toObjMapWithSymbols } from '../jsutils/toObjMap.js';
+import { devAssert } from '../jsutils/devAssert.ts';
+import { didYouMean } from '../jsutils/didYouMean.ts';
+import { identityFunc } from '../jsutils/identityFunc.ts';
+import { inspect } from '../jsutils/inspect.ts';
+import { instanceOf } from '../jsutils/instanceOf.ts';
+import { keyMap } from '../jsutils/keyMap.ts';
+import { keyValMap } from '../jsutils/keyValMap.ts';
+import { mapValue } from '../jsutils/mapValue.ts';
+import type { Maybe } from '../jsutils/Maybe.ts';
+import type { ObjMap } from '../jsutils/ObjMap.ts';
+import type { Path } from '../jsutils/Path.ts';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
+import { suggestionList } from '../jsutils/suggestionList.ts';
+import { toObjMapWithSymbols } from '../jsutils/toObjMap.ts';
 
-import { GraphQLError } from '../error/GraphQLError.js';
+import { GraphQLError } from '../error/GraphQLError.ts';
 
 import type {
   ConstValueNode,
@@ -36,18 +36,18 @@ import type {
   UnionTypeDefinitionNode,
   UnionTypeExtensionNode,
   ValueNode,
-} from '../language/ast.js';
-import { Kind } from '../language/kinds.js';
-import { print } from '../language/printer.js';
+} from '../language/ast.ts';
+import { Kind } from '../language/kinds.ts';
+import { print } from '../language/printer.ts';
 
-import type { GraphQLVariableSignature } from '../execution/getVariableSignature.js';
-import type { VariableValues } from '../execution/values.js';
+import type { GraphQLVariableSignature } from '../execution/getVariableSignature.ts';
+import type { VariableValues } from '../execution/values.ts';
 
-import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped.js';
+import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped.ts';
 
-import { assertEnumValueName, assertName } from './assertName.js';
-import type { GraphQLDirective } from './directives.js';
-import type { GraphQLSchema } from './schema.js';
+import { assertEnumValueName, assertName } from './assertName.ts';
+import type { GraphQLDirective } from './directives.ts';
+import type { GraphQLSchema } from './schema.ts';
 
 // Predicates & Assertions
 

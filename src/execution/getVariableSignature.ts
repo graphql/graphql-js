@@ -1,15 +1,15 @@
-import { GraphQLError } from '../error/GraphQLError.js';
+import { GraphQLError } from '../error/GraphQLError.ts';
 
 import type {
   ConstValueNode,
   VariableDefinitionNode,
-} from '../language/ast.js';
-import { print } from '../language/printer.js';
+} from '../language/ast.ts';
+import { print } from '../language/printer.ts';
 
-import { isInputType } from '../type/definition.js';
-import type { GraphQLInputType, GraphQLSchema } from '../type/index.js';
+import { isInputType } from '../type/definition.ts';
+import type { GraphQLInputType, GraphQLSchema } from '../type/index.ts';
 
-import { typeFromAST } from '../utilities/typeFromAST.js';
+import { typeFromAST } from '../utilities/typeFromAST.ts';
 
 /**
  * A GraphQLVariableSignature is required to coerce a variable value.

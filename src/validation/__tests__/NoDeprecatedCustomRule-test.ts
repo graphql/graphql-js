@@ -1,10 +1,10 @@
 import { describe, it } from 'mocha';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { NoDeprecatedCustomRule } from '../rules/custom/NoDeprecatedCustomRule.js';
+import { NoDeprecatedCustomRule } from '../rules/custom/NoDeprecatedCustomRule.ts';
 
-import { expectValidationErrorsWithSchema } from './harness.js';
+import { expectValidationErrorsWithSchema } from './harness.ts';
 
 function buildAssertion(sdlStr: string) {
   const schema = buildSchema(sdlStr);

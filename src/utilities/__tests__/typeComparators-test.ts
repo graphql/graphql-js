@@ -1,18 +1,18 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import type { GraphQLFieldConfigMap } from '../../type/definition.js';
+import type { GraphQLFieldConfigMap } from '../../type/definition.ts';
 import {
   GraphQLInterfaceType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLUnionType,
-} from '../../type/definition.js';
-import { GraphQLFloat, GraphQLInt, GraphQLString } from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+} from '../../type/definition.ts';
+import { GraphQLFloat, GraphQLInt, GraphQLString } from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import { isEqualType, isTypeSubTypeOf } from '../typeComparators.js';
+import { isEqualType, isTypeSubTypeOf } from '../typeComparators.ts';
 
 describe('typeComparators', () => {
   describe('isEqualType', () => {

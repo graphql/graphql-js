@@ -1,20 +1,20 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON.js';
-import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
+import { expectJSON } from '../../__testUtils__/expectJSON.ts';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';
 
-import { parse } from '../../language/parser.js';
+import { parse } from '../../language/parser.ts';
 
-import { GraphQLObjectType } from '../../type/definition.js';
-import { GraphQLInt } from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+import { GraphQLObjectType } from '../../type/definition.ts';
+import { GraphQLInt } from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
 import {
   execute,
   executeSync,
   experimentalExecuteIncrementally,
-} from '../execute.js';
+} from '../execute.ts';
 
 class NumberHolder {
   theNumber: number;

@@ -1,16 +1,16 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 
-import { parse } from '../../language/parser.js';
+import { parse } from '../../language/parser.ts';
 
-import { buildASTSchema, buildSchema } from '../../utilities/buildASTSchema.js';
-import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery.js';
+import { buildASTSchema, buildSchema } from '../../utilities/buildASTSchema.ts';
+import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery.ts';
 
-import { graphqlSync } from '../../graphql.js';
+import { graphqlSync } from '../../graphql.ts';
 
-import type { GraphQLResolveInfo } from '../definition.js';
+import type { GraphQLResolveInfo } from '../definition.ts';
 
 describe('Introspection', () => {
   it('executes an introspection query', () => {

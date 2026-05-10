@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { localRepoPath } from '../utils.js';
+import { localRepoPath } from '../utils.ts';
 
-import { LOCAL } from './config.js';
-import { bold } from './output.js';
+import { LOCAL } from './config.ts';
+import { bold } from './output.ts';
 
 export type Runtime = 'node' | 'deno' | 'bun';
 

@@ -1,8 +1,8 @@
 import { describe, it } from 'mocha';
 
-import { LoneAnonymousOperationRule } from '../rules/LoneAnonymousOperationRule.js';
+import { LoneAnonymousOperationRule } from '../rules/LoneAnonymousOperationRule.ts';
 
-import { expectValidationErrors } from './harness.js';
+import { expectValidationErrors } from './harness.ts';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(LoneAnonymousOperationRule, queryStr);

@@ -1,15 +1,15 @@
-import type { DocumentNode } from '../language/ast.js';
-import type { ParseOptions } from '../language/parser.js';
-import { parse } from '../language/parser.js';
-import type { Source } from '../language/source.js';
+import type { DocumentNode } from '../language/ast.ts';
+import type { ParseOptions } from '../language/parser.ts';
+import { parse } from '../language/parser.ts';
+import type { Source } from '../language/source.ts';
 
-import { specifiedDirectives } from '../type/directives.js';
-import type { GraphQLSchemaValidationOptions } from '../type/schema.js';
-import { GraphQLSchema } from '../type/schema.js';
+import { specifiedDirectives } from '../type/directives.ts';
+import type { GraphQLSchemaValidationOptions } from '../type/schema.ts';
+import { GraphQLSchema } from '../type/schema.ts';
 
-import { assertValidSDL } from '../validation/validate.js';
+import { assertValidSDL } from '../validation/validate.ts';
 
-import { extendSchemaImpl } from './extendSchema.js';
+import { extendSchemaImpl } from './extendSchema.ts';
 
 export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
   /**

@@ -1,10 +1,10 @@
-import type { Maybe } from '../jsutils/Maybe.js';
+import type { Maybe } from '../jsutils/Maybe.ts';
 
-import type { ASTNode } from './ast.js';
-import { printBlockString } from './blockString.js';
-import { printString } from './printString.js';
-import type { ASTReducer } from './visitor.js';
-import { visit } from './visitor.js';
+import type { ASTNode } from './ast.ts';
+import { printBlockString } from './blockString.ts';
+import { printString } from './printString.ts';
+import type { ASTReducer } from './visitor.ts';
+import { visit } from './visitor.ts';
 
 /**
  * Converts an AST into a string, using one set of reasonable

@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent.js';
+import { dedent } from '../../__testUtils__/dedent.ts';
 
-import { buildSchema } from '../buildASTSchema.js';
-import { lexicographicSortSchema } from '../lexicographicSortSchema.js';
-import { printSchema } from '../printSchema.js';
+import { buildSchema } from '../buildASTSchema.ts';
+import { lexicographicSortSchema } from '../lexicographicSortSchema.ts';
+import { printSchema } from '../printSchema.ts';
 
 function sortSDL(sdl: string): string {
   const schema = buildSchema(sdl);

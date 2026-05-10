@@ -1,9 +1,9 @@
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError.ts';
 
-import type { NameNode } from '../../language/ast.js';
-import type { ASTVisitor } from '../../language/visitor.js';
+import type { NameNode } from '../../language/ast.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 
-import type { ASTValidationContext } from '../ValidationContext.js';
+import type { ASTValidationContext } from '../ValidationContext.ts';
 
 /**
  * Unique fragment names

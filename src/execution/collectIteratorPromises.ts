@@ -1,4 +1,4 @@
-import { isPromiseLike } from '../jsutils/isPromise.js';
+import { isPromiseLike } from '../jsutils/isPromise.ts';
 
 /**
  * Drain a sync iterator after abrupt completion so later promise rejections

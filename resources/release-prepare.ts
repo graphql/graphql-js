@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 
-import { getPublishConfigTag, git, npm, readPackageJSON } from './utils.js';
+import { getPublishConfigTag, git, npm, readPackageJSON } from './utils.ts';
 
 let args: ParsedArgs;
 try {
@@ -24,8 +24,7 @@ console.log('Updating src/version.ts...');
 npm().exec(
   '--',
   'node',
-  '--import',
-  './resources/register-ts-node.js',
+  '--experimental-strip-types',
   'resources/gen-version.ts',
 );
 

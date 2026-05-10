@@ -1,16 +1,16 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language/parser.js';
+import { parse } from '../../language/parser.ts';
 
-import type { GraphQLSchema } from '../../type/schema.js';
+import type { GraphQLSchema } from '../../type/schema.ts';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { FieldsOnCorrectTypeRule } from '../rules/FieldsOnCorrectTypeRule.js';
-import { validate } from '../validate.js';
+import { FieldsOnCorrectTypeRule } from '../rules/FieldsOnCorrectTypeRule.ts';
+import { validate } from '../validate.ts';
 
-import { expectValidationErrorsWithSchema } from './harness.js';
+import { expectValidationErrorsWithSchema } from './harness.ts';
 
 function expectErrors(queryStr: string, hideSuggestions = false) {
   return expectValidationErrorsWithSchema(

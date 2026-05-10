@@ -1,10 +1,10 @@
-import type { PromiseOrValue } from './jsutils/PromiseOrValue.js';
+import type { PromiseOrValue } from './jsutils/PromiseOrValue.ts';
 
-import { parse } from './language/parser.js';
+import { parse } from './language/parser.ts';
 
-import { validate } from './validation/validate.js';
+import { validate } from './validation/validate.ts';
 
-import { execute, subscribe } from './execution/execute.js';
+import { execute, subscribe } from './execution/execute.ts';
 
 export type GraphQLParseFn = (
   ...args: Parameters<typeof parse>

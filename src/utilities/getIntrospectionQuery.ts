@@ -1,8 +1,8 @@
-import type { Maybe } from '../jsutils/Maybe.js';
+import type { Maybe } from '../jsutils/Maybe.ts';
 
-import type { DirectiveLocation } from '../language/directiveLocation.js';
+import type { DirectiveLocation } from '../language/directiveLocation.ts';
 
-import type { TypeKind } from '../type/introspection.js';
+import type { TypeKind } from '../type/introspection.ts';
 
 export interface IntrospectionOptions {
   /**

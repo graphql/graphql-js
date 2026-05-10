@@ -1,14 +1,14 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent.js';
+import { dedent } from '../../__testUtils__/dedent.ts';
 
-import { mapValue } from '../../jsutils/mapValue.js';
+import { mapValue } from '../../jsutils/mapValue.ts';
 
-import { parse } from '../../language/parser.js';
-import { print } from '../../language/printer.js';
+import { parse } from '../../language/parser.ts';
+import { print } from '../../language/printer.ts';
 
-import { separateOperations } from '../separateOperations.js';
+import { separateOperations } from '../separateOperations.ts';
 
 describe('separateOperations', () => {
   it('separates one AST into multiple, maintaining document order', () => {

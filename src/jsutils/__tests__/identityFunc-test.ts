@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { identityFunc } from '../identityFunc.js';
+import { identityFunc } from '../identityFunc.ts';
 
 describe('identityFunc', () => {
   it('returns the first argument it receives', () => {

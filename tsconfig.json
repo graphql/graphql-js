@@ -19,6 +19,7 @@
     "isolatedDeclarations": true,
     "verbatimModuleSyntax": true,
     "forceConsistentCasingInFileNames": true,
+    "allowImportingTsExtensions": true,
     // Type Checking
     // https://www.typescriptlang.org/tsconfig#Type_Checking_6248
     "strict": true,

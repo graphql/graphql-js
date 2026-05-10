@@ -1,20 +1,20 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 
-import { inspect } from '../../jsutils/inspect.js';
+import { inspect } from '../../jsutils/inspect.ts';
 
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError.ts';
 
-import { DirectiveLocation } from '../../language/directiveLocation.js';
-import { Kind } from '../../language/kinds.js';
-import { parse } from '../../language/parser.js';
+import { DirectiveLocation } from '../../language/directiveLocation.ts';
+import { Kind } from '../../language/kinds.ts';
+import { parse } from '../../language/parser.ts';
 
 import type {
   GraphQLArgumentConfig,
   GraphQLFieldConfig,
-} from '../../type/definition.js';
+} from '../../type/definition.ts';
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
@@ -22,18 +22,18 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLScalarType,
-} from '../../type/definition.js';
+} from '../../type/definition.ts';
 import {
   GraphQLDirective,
   GraphQLIncludeDirective,
-} from '../../type/directives.js';
-import { GraphQLBoolean, GraphQLString } from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+} from '../../type/directives.ts';
+import { GraphQLBoolean, GraphQLString } from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import { valueFromASTUntyped } from '../../utilities/valueFromASTUntyped.js';
+import { valueFromASTUntyped } from '../../utilities/valueFromASTUntyped.ts';
 
-import { executeSync, experimentalExecuteIncrementally } from '../execute.js';
-import { getVariableValues } from '../values.js';
+import { executeSync, experimentalExecuteIncrementally } from '../execute.ts';
+import { getVariableValues } from '../values.ts';
 
 const TestFaultyScalarGraphQLError = new GraphQLError(
   'FaultyScalarErrorMessage',

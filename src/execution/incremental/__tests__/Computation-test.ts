@@ -1,13 +1,13 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectPromise } from '../../../__testUtils__/expectPromise.js';
-import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.js';
-import { spyOn } from '../../../__testUtils__/spyOn.js';
+import { expectPromise } from '../../../__testUtils__/expectPromise.ts';
+import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.ts';
+import { spyOn } from '../../../__testUtils__/spyOn.ts';
 
-import { isPromise } from '../../../jsutils/isPromise.js';
+import { isPromise } from '../../../jsutils/isPromise.ts';
 
-import { Computation } from '../Computation.js';
+import { Computation } from '../Computation.ts';
 
 function abortIgnoringCleanup(
   computation: Computation<unknown>,

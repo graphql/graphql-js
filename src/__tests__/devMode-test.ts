@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { enableDevMode, isDevModeEnabled } from '../devMode.js';
+import { enableDevMode, isDevModeEnabled } from '../devMode.ts';
 
 describe('dev mode', () => {
   it('should be disabled by default', () => {

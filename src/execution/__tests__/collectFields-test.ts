@@ -1,14 +1,14 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { invariant } from '../../jsutils/invariant.js';
+import { invariant } from '../../jsutils/invariant.ts';
 
-import { parse } from '../../language/parser.js';
+import { parse } from '../../language/parser.ts';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { collectFields } from '../collectFields.js';
-import { validateExecutionArgs } from '../execute.js';
+import { collectFields } from '../collectFields.ts';
+import { validateExecutionArgs } from '../execute.ts';
 
 const schema = buildSchema(`
   type Query {

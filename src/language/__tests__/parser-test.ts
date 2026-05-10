@@ -1,26 +1,26 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent.js';
+import { dedent } from '../../__testUtils__/dedent.ts';
 import {
   expectJSON,
   expectToThrowJSON,
-} from '../../__testUtils__/expectJSON.js';
-import { expectToThrow } from '../../__testUtils__/expectToThrow.js';
-import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.js';
+} from '../../__testUtils__/expectJSON.ts';
+import { expectToThrow } from '../../__testUtils__/expectToThrow.ts';
+import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.ts';
 
-import { inspect } from '../../jsutils/inspect.js';
+import { inspect } from '../../jsutils/inspect.ts';
 
-import { Kind } from '../kinds.js';
+import { Kind } from '../kinds.ts';
 import {
   parse,
   parseConstValue,
   parseSchemaCoordinate,
   parseType,
   parseValue,
-} from '../parser.js';
-import { Source } from '../source.js';
-import { TokenKind } from '../tokenKind.js';
+} from '../parser.ts';
+import { Source } from '../source.ts';
+import { TokenKind } from '../tokenKind.ts';
 
 function expectSyntaxError(text: string) {
   return expectToThrowJSON(() => parse(text));

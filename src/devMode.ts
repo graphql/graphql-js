@@ -1,4 +1,4 @@
-import { enableDevInstanceOf } from './jsutils/instanceOf.js';
+import { enableDevInstanceOf } from './jsutils/instanceOf.ts';
 
 let devMode = false;
 

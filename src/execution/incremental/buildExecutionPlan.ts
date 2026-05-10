@@ -1,11 +1,11 @@
-import { getBySet } from '../../jsutils/getBySet.js';
-import { isSameSet } from '../../jsutils/isSameSet.js';
+import { getBySet } from '../../jsutils/getBySet.ts';
+import { isSameSet } from '../../jsutils/isSameSet.ts';
 
 import type {
   DeferUsage,
   FieldDetailsList,
   GroupedFieldSet,
-} from '../collectFields.js';
+} from '../collectFields.ts';
 
 export type DeferUsageSet = ReadonlySet<DeferUsage>;
 

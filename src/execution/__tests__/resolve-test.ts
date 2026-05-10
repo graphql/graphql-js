@@ -1,14 +1,14 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language/parser.js';
+import { parse } from '../../language/parser.ts';
 
-import type { GraphQLFieldConfig } from '../../type/definition.js';
-import { GraphQLObjectType } from '../../type/definition.js';
-import { GraphQLInt, GraphQLString } from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+import type { GraphQLFieldConfig } from '../../type/definition.ts';
+import { GraphQLObjectType } from '../../type/definition.ts';
+import { GraphQLInt, GraphQLString } from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import { executeSync } from '../execute.js';
+import { executeSync } from '../execute.ts';
 
 describe('Execute: resolve function', () => {
   function testSchema(testField: GraphQLFieldConfig<any, any>) {

@@ -1,22 +1,22 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language/parser.js';
+import { parse } from '../../language/parser.ts';
 
 import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-} from '../../type/definition.js';
+} from '../../type/definition.ts';
 import {
   GraphQLBoolean,
   GraphQLID,
   GraphQLInt,
   GraphQLString,
-} from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+} from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import { executeSync } from '../execute.js';
+import { executeSync } from '../execute.ts';
 
 describe('Execute: Handles execution with a complex schema', () => {
   it('executes using a schema', () => {

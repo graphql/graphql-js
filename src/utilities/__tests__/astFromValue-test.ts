@@ -7,16 +7,16 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLScalarType,
-} from '../../type/definition.js';
+} from '../../type/definition.ts';
 import {
   GraphQLBoolean,
   GraphQLFloat,
   GraphQLID,
   GraphQLInt,
   GraphQLString,
-} from '../../type/scalars.js';
+} from '../../type/scalars.ts';
 
-import { astFromValue } from '../astFromValue.js';
+import { astFromValue } from '../astFromValue.ts';
 
 /** @deprecated use `valueToLiteral()` instead with care to operate on external values - `astFromValue()` will be removed in v18 */
 describe('astFromValue', () => {

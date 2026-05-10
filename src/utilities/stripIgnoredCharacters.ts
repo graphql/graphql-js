@@ -1,7 +1,7 @@
-import { printBlockString } from '../language/blockString.js';
-import { isPunctuatorTokenKind, Lexer } from '../language/lexer.js';
-import { isSource, Source } from '../language/source.js';
-import { TokenKind } from '../language/tokenKind.js';
+import { printBlockString } from '../language/blockString.ts';
+import { isPunctuatorTokenKind, Lexer } from '../language/lexer.ts';
+import { isSource, Source } from '../language/source.ts';
+import { TokenKind } from '../language/tokenKind.ts';
 
 /**
  * Strips characters that are not significant to the validity or execution

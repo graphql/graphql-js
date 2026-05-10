@@ -1,29 +1,29 @@
-import { inspect } from '../jsutils/inspect.js';
-import { invariant } from '../jsutils/invariant.js';
-import { isAsyncIterable } from '../jsutils/isAsyncIterable.js';
-import { isIterableObject } from '../jsutils/isIterableObject.js';
-import { isPromise, isPromiseLike } from '../jsutils/isPromise.js';
-import { memoize2 } from '../jsutils/memoize2.js';
-import { memoize3 } from '../jsutils/memoize3.js';
-import type { ObjMap } from '../jsutils/ObjMap.js';
-import type { Path } from '../jsutils/Path.js';
-import { addPath, pathToArray } from '../jsutils/Path.js';
-import { promiseForObject } from '../jsutils/promiseForObject.js';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
-import { promiseReduce } from '../jsutils/promiseReduce.js';
+import { inspect } from '../jsutils/inspect.ts';
+import { invariant } from '../jsutils/invariant.ts';
+import { isAsyncIterable } from '../jsutils/isAsyncIterable.ts';
+import { isIterableObject } from '../jsutils/isIterableObject.ts';
+import { isPromise, isPromiseLike } from '../jsutils/isPromise.ts';
+import { memoize2 } from '../jsutils/memoize2.ts';
+import { memoize3 } from '../jsutils/memoize3.ts';
+import type { ObjMap } from '../jsutils/ObjMap.ts';
+import type { Path } from '../jsutils/Path.ts';
+import { addPath, pathToArray } from '../jsutils/Path.ts';
+import { promiseForObject } from '../jsutils/promiseForObject.ts';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
+import { promiseReduce } from '../jsutils/promiseReduce.ts';
 
-import { ensureGraphQLError } from '../error/ensureGraphQLError.js';
-import type { GraphQLFormattedError } from '../error/GraphQLError.js';
-import { GraphQLError } from '../error/GraphQLError.js';
-import { locatedError } from '../error/locatedError.js';
+import { ensureGraphQLError } from '../error/ensureGraphQLError.ts';
+import type { GraphQLFormattedError } from '../error/GraphQLError.ts';
+import { GraphQLError } from '../error/GraphQLError.ts';
+import { locatedError } from '../error/locatedError.ts';
 
 import type {
   FieldNode,
   FragmentDefinitionNode,
   OperationDefinitionNode,
   SubscriptionOperationDefinitionNode,
-} from '../language/ast.js';
-import { OperationTypeNode } from '../language/ast.js';
+} from '../language/ast.ts';
+import { OperationTypeNode } from '../language/ast.ts';
 
 import type {
   GraphQLAbstractType,
@@ -35,39 +35,39 @@ import type {
   GraphQLResolveInfo,
   GraphQLResolveInfoHelpers,
   GraphQLTypeResolver,
-} from '../type/definition.js';
+} from '../type/definition.ts';
 import {
   isAbstractType,
   isLeafType,
   isListType,
   isNonNullType,
   isObjectType,
-} from '../type/definition.js';
-import type { GraphQLSchema } from '../type/schema.js';
+} from '../type/definition.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
 
-import { AbortedGraphQLExecutionError } from './AbortedGraphQLExecutionError.js';
-import { buildResolveInfo } from './buildResolveInfo.js';
-import { withCancellation } from './cancellablePromise.js';
+import { AbortedGraphQLExecutionError } from './AbortedGraphQLExecutionError.ts';
+import { buildResolveInfo } from './buildResolveInfo.ts';
+import { withCancellation } from './cancellablePromise.ts';
 import type {
   DeferUsage,
   FieldDetailsList,
   FragmentDetails,
   GroupedFieldSet,
-} from './collectFields.js';
+} from './collectFields.ts';
 import {
   collectFields,
   collectSubfields as _collectSubfields,
-} from './collectFields.js';
-import { collectIteratorPromises } from './collectIteratorPromises.js';
-import type { SharedExecutionContext } from './createSharedExecutionContext.js';
-import { createSharedExecutionContext } from './createSharedExecutionContext.js';
-import type { StreamUsage } from './getStreamUsage.js';
-import { getStreamUsage as _getStreamUsage } from './getStreamUsage.js';
-import type { ExecutionHooks } from './hooks.js';
-import { runAsyncWorkFinishedHook } from './hooks.js';
-import { returnIteratorCatchingErrors } from './returnIteratorCatchingErrors.js';
-import type { VariableValues } from './values.js';
-import { getArgumentValues } from './values.js';
+} from './collectFields.ts';
+import { collectIteratorPromises } from './collectIteratorPromises.ts';
+import type { SharedExecutionContext } from './createSharedExecutionContext.ts';
+import { createSharedExecutionContext } from './createSharedExecutionContext.ts';
+import type { StreamUsage } from './getStreamUsage.ts';
+import { getStreamUsage as _getStreamUsage } from './getStreamUsage.ts';
+import type { ExecutionHooks } from './hooks.ts';
+import { runAsyncWorkFinishedHook } from './hooks.ts';
+import { returnIteratorCatchingErrors } from './returnIteratorCatchingErrors.ts';
+import type { VariableValues } from './values.ts';
+import { getArgumentValues } from './values.ts';
 
 /* eslint-disable max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway

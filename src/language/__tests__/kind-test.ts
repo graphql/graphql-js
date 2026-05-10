@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-expressions */
 import { describe, it } from 'mocha';
 
-import { Kind } from '../index.js';
+import { Kind } from '../index.ts';
 
 describe('Kind', () => {
   it('is a term level namespace with term level enum members', () => {

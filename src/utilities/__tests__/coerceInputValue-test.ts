@@ -1,40 +1,40 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { identityFunc } from '../../jsutils/identityFunc.js';
-import { invariant } from '../../jsutils/invariant.js';
-import type { ReadOnlyObjMap } from '../../jsutils/ObjMap.js';
+import { identityFunc } from '../../jsutils/identityFunc.ts';
+import { invariant } from '../../jsutils/invariant.ts';
+import type { ReadOnlyObjMap } from '../../jsutils/ObjMap.ts';
 
-import { Kind } from '../../language/kinds.js';
-import { Parser, parseValue } from '../../language/parser.js';
-import { print } from '../../language/printer.js';
-import { TokenKind } from '../../language/tokenKind.js';
+import { Kind } from '../../language/kinds.ts';
+import { Parser, parseValue } from '../../language/parser.ts';
+import { print } from '../../language/printer.ts';
+import { TokenKind } from '../../language/tokenKind.ts';
 
-import type { GraphQLInputType } from '../../type/definition.js';
+import type { GraphQLInputType } from '../../type/definition.ts';
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLScalarType,
-} from '../../type/definition.js';
+} from '../../type/definition.ts';
 import {
   GraphQLBoolean,
   GraphQLFloat,
   GraphQLID,
   GraphQLInt,
   GraphQLString,
-} from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+} from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import type { VariableValues } from '../../execution/values.js';
-import { getVariableValues } from '../../execution/values.js';
+import type { VariableValues } from '../../execution/values.ts';
+import { getVariableValues } from '../../execution/values.ts';
 
 import {
   coerceDefaultValue,
   coerceInputLiteral,
   coerceInputValue,
-} from '../coerceInputValue.js';
+} from '../coerceInputValue.ts';
 
 describe('coerceInputValue', () => {
   function test(

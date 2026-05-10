@@ -1,15 +1,15 @@
-import { inspect } from '../jsutils/inspect.js';
-import { isObjectLike } from '../jsutils/isObjectLike.js';
+import { inspect } from '../jsutils/inspect.ts';
+import { isObjectLike } from '../jsutils/isObjectLike.ts';
 
-import { GraphQLError } from '../error/GraphQLError.js';
+import { GraphQLError } from '../error/GraphQLError.ts';
 
-import { Kind } from '../language/kinds.js';
-import { print } from '../language/printer.js';
+import { Kind } from '../language/kinds.ts';
+import { print } from '../language/printer.ts';
 
-import { defaultScalarValueToLiteral } from '../utilities/valueToLiteral.js';
+import { defaultScalarValueToLiteral } from '../utilities/valueToLiteral.ts';
 
-import type { GraphQLNamedType } from './definition.js';
-import { GraphQLScalarType } from './definition.js';
+import type { GraphQLNamedType } from './definition.ts';
+import { GraphQLScalarType } from './definition.ts';
 
 /**
  * Maximum possible Int value as per GraphQL Spec (32-bit signed integer).

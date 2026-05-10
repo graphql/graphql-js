@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parseConstValue } from '../../language/parser.js';
+import { parseConstValue } from '../../language/parser.ts';
 
 import {
   GraphQLBoolean,
@@ -9,7 +9,7 @@ import {
   GraphQLID,
   GraphQLInt,
   GraphQLString,
-} from '../scalars.js';
+} from '../scalars.ts';
 
 describe('Type System: Specified scalar types', () => {
   describe('GraphQLInt', () => {

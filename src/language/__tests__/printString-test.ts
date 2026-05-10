@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { printString } from '../printString.js';
+import { printString } from '../printString.ts';
 
 describe('printString', () => {
   it('prints a simple string', () => {

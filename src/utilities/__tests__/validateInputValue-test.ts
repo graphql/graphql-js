@@ -1,30 +1,30 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { invariant } from '../../jsutils/invariant.js';
-import type { ReadOnlyObjMap } from '../../jsutils/ObjMap.js';
+import { invariant } from '../../jsutils/invariant.ts';
+import type { ReadOnlyObjMap } from '../../jsutils/ObjMap.ts';
 
-import { Parser, parseValue } from '../../language/parser.js';
-import { TokenKind } from '../../language/tokenKind.js';
+import { Parser, parseValue } from '../../language/parser.ts';
+import { TokenKind } from '../../language/tokenKind.ts';
 
-import type { GraphQLInputType } from '../../type/definition.js';
+import type { GraphQLInputType } from '../../type/definition.ts';
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLScalarType,
-} from '../../type/definition.js';
-import { GraphQLInt } from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+} from '../../type/definition.ts';
+import { GraphQLInt } from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import type { VariableValues } from '../../execution/values.js';
-import { getVariableValues } from '../../execution/values.js';
+import type { VariableValues } from '../../execution/values.ts';
+import { getVariableValues } from '../../execution/values.ts';
 
 import {
   validateInputLiteral,
   validateInputValue,
-} from '../validateInputValue.js';
+} from '../validateInputValue.ts';
 
 describe('validateInputValue', () => {
   function test(

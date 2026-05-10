@@ -1,8 +1,8 @@
 import { describe, it } from 'mocha';
 
-import { DeferStreamDirectiveLabelRule } from '../rules/DeferStreamDirectiveLabelRule.js';
+import { DeferStreamDirectiveLabelRule } from '../rules/DeferStreamDirectiveLabelRule.ts';
 
-import { expectValidationErrors } from './harness.js';
+import { expectValidationErrors } from './harness.ts';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(DeferStreamDirectiveLabelRule, queryStr);

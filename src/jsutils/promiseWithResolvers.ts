@@ -1,4 +1,4 @@
-import type { PromiseOrValue } from './PromiseOrValue.js';
+import type { PromiseOrValue } from './PromiseOrValue.ts';
 
 /**
  * Based on Promise.withResolvers proposal

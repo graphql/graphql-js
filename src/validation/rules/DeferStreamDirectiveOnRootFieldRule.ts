@@ -1,13 +1,13 @@
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError.ts';
 
-import type { ASTVisitor } from '../../language/visitor.js';
+import type { ASTVisitor } from '../../language/visitor.ts';
 
 import {
   GraphQLDeferDirective,
   GraphQLStreamDirective,
-} from '../../type/directives.js';
+} from '../../type/directives.ts';
 
-import type { ValidationContext } from '../ValidationContext.js';
+import type { ValidationContext } from '../ValidationContext.ts';
 
 /**
  * Defer and stream directives are used on valid root field

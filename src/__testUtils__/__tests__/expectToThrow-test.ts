@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectToThrow } from '../expectToThrow.js';
+import { expectToThrow } from '../expectToThrow.ts';
 
 describe('expectToThrow', () => {
   it('returns the thrown error', () => {

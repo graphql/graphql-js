@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { ensureGraphQLError } from '../ensureGraphQLError.js';
-import { GraphQLError } from '../GraphQLError.js';
+import { ensureGraphQLError } from '../ensureGraphQLError.ts';
+import { GraphQLError } from '../GraphQLError.ts';
 
 describe('ensureGraphQLError', () => {
   it('passes GraphQLError through', () => {

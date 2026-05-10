@@ -1,5 +1,5 @@
-import type { SharedExecutionContext } from './createSharedExecutionContext.js';
-import type { ValidatedExecutionArgs } from './Executor.js';
+import type { SharedExecutionContext } from './createSharedExecutionContext.ts';
+import type { ValidatedExecutionArgs } from './Executor.ts';
 
 export interface AsyncWorkFinishedInfo {
   validatedExecutionArgs: ValidatedExecutionArgs;

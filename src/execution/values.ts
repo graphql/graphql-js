@@ -1,10 +1,10 @@
-import { invariant } from '../jsutils/invariant.js';
-import type { Maybe } from '../jsutils/Maybe.js';
-import type { ObjMap, ReadOnlyObjMap } from '../jsutils/ObjMap.js';
-import { printPathArray } from '../jsutils/printPathArray.js';
+import { invariant } from '../jsutils/invariant.ts';
+import type { Maybe } from '../jsutils/Maybe.ts';
+import type { ObjMap, ReadOnlyObjMap } from '../jsutils/ObjMap.ts';
+import { printPathArray } from '../jsutils/printPathArray.ts';
 
-import { ensureGraphQLError } from '../error/ensureGraphQLError.js';
-import { GraphQLError } from '../error/GraphQLError.js';
+import { ensureGraphQLError } from '../error/ensureGraphQLError.ts';
+import { GraphQLError } from '../error/GraphQLError.ts';
 
 import type {
   ArgumentNode,
@@ -13,32 +13,32 @@ import type {
   FragmentArgumentNode,
   FragmentSpreadNode,
   VariableDefinitionNode,
-} from '../language/ast.js';
-import { Kind } from '../language/kinds.js';
+} from '../language/ast.ts';
+import { Kind } from '../language/kinds.ts';
 
-import type { GraphQLArgument, GraphQLField } from '../type/definition.js';
+import type { GraphQLArgument, GraphQLField } from '../type/definition.ts';
 import {
   isArgument,
   isNonNullType,
   isRequiredArgument,
-} from '../type/definition.js';
-import type { GraphQLDirective } from '../type/directives.js';
-import type { GraphQLSchema } from '../type/schema.js';
-import { validateDefaultInput } from '../type/validate.js';
+} from '../type/definition.ts';
+import type { GraphQLDirective } from '../type/directives.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
+import { validateDefaultInput } from '../type/validate.ts';
 
 import {
   coerceDefaultValue,
   coerceInputLiteral,
   coerceInputValue,
-} from '../utilities/coerceInputValue.js';
+} from '../utilities/coerceInputValue.ts';
 import {
   validateInputLiteral,
   validateInputValue,
-} from '../utilities/validateInputValue.js';
+} from '../utilities/validateInputValue.ts';
 
-import type { FragmentVariableValues } from './collectFields.js';
-import type { GraphQLVariableSignature } from './getVariableSignature.js';
-import { getVariableSignature } from './getVariableSignature.js';
+import type { FragmentVariableValues } from './collectFields.ts';
+import type { GraphQLVariableSignature } from './getVariableSignature.ts';
+import { getVariableSignature } from './getVariableSignature.ts';
 
 export interface VariableValues {
   readonly sources: ReadOnlyObjMap<VariableValueSource>;

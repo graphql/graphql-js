@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 
-import { parse } from '../../language/parser.js';
+import { parse } from '../../language/parser.ts';
 
 import {
   assertInterfaceType,
@@ -11,13 +11,13 @@ import {
   GraphQLList,
   GraphQLObjectType,
   GraphQLUnionType,
-} from '../../type/definition.js';
-import { GraphQLBoolean, GraphQLString } from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+} from '../../type/definition.ts';
+import { GraphQLBoolean, GraphQLString } from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { execute, executeSync } from '../execute.js';
+import { execute, executeSync } from '../execute.ts';
 
 interface Context {
   async: boolean;

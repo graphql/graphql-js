@@ -1,27 +1,27 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON.js';
-import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
-import { spyOnMethod } from '../../__testUtils__/spyOn.js';
+import { expectJSON } from '../../__testUtils__/expectJSON.ts';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';
+import { spyOnMethod } from '../../__testUtils__/spyOn.ts';
 
-import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 
-import { parse } from '../../language/parser.js';
+import { parse } from '../../language/parser.ts';
 
-import type { GraphQLFieldResolver } from '../../type/definition.js';
+import type { GraphQLFieldResolver } from '../../type/definition.ts';
 import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-} from '../../type/definition.js';
-import { GraphQLString } from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+} from '../../type/definition.ts';
+import { GraphQLString } from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { execute, executeSync } from '../execute.js';
-import type { ExecutionResult } from '../Executor.js';
+import { execute, executeSync } from '../execute.ts';
+import type { ExecutionResult } from '../Executor.ts';
 
 function delayedReject(message: string): Promise<never> {
   return (async () => {

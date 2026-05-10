@@ -1,26 +1,26 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectPromise } from '../../__testUtils__/expectPromise.js';
-import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
-import { spyOn } from '../../__testUtils__/spyOn.js';
+import { expectPromise } from '../../__testUtils__/expectPromise.ts';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';
+import { spyOn } from '../../__testUtils__/spyOn.ts';
 
-import { isPromise } from '../../jsutils/isPromise.js';
-import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
-import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
+import { isPromise } from '../../jsutils/isPromise.ts';
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
+import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.ts';
 
-import { parse } from '../../language/parser.js';
+import { parse } from '../../language/parser.ts';
 
-import type { GraphQLResolveInfo } from '../../type/definition.js';
-import { GraphQLObjectType } from '../../type/definition.js';
-import { GraphQLString } from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+import type { GraphQLResolveInfo } from '../../type/definition.ts';
+import { GraphQLObjectType } from '../../type/definition.ts';
+import { GraphQLString } from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import type { ExecutionArgs } from '../execute.js';
-import { execute, experimentalExecuteIncrementally } from '../execute.js';
-import type { ExecutionResult } from '../Executor.js';
+import type { ExecutionArgs } from '../execute.ts';
+import { execute, experimentalExecuteIncrementally } from '../execute.ts';
+import type { ExecutionResult } from '../Executor.ts';
 
 const executeHookSchema = new GraphQLSchema({
   query: new GraphQLObjectType({

@@ -1,4 +1,4 @@
-export type { Path as ResponsePath } from '../jsutils/Path.js';
+export type { Path as ResponsePath } from '../jsutils/Path.ts';
 
 export {
   // Predicate
@@ -7,15 +7,15 @@ export {
   assertSchema,
   // GraphQL Schema definition
   GraphQLSchema,
-} from './schema.js';
-export type { GraphQLSchemaConfig, GraphQLSchemaExtensions } from './schema.js';
+} from './schema.ts';
+export type { GraphQLSchemaConfig, GraphQLSchemaExtensions } from './schema.ts';
 
 export type {
   GraphQLField,
   GraphQLArgument,
   GraphQLEnumValue,
   GraphQLInputField,
-} from './definition.js';
+} from './definition.ts';
 export {
   resolveObjMapThunk,
   resolveReadonlyArrayThunk,
@@ -78,7 +78,7 @@ export {
   // Type Wrappers
   GraphQLList,
   GraphQLNonNull,
-} from './definition.js';
+} from './definition.ts';
 
 export type {
   GraphQLType,
@@ -134,7 +134,7 @@ export type {
   GraphQLScalarInputValueCoercer,
   GraphQLScalarInputLiteralCoercer,
   GraphQLDefaultInput,
-} from './definition.js';
+} from './definition.ts';
 
 export {
   // Predicate
@@ -155,12 +155,12 @@ export {
   GraphQLOneOfDirective,
   // Constant Deprecation Reason
   DEFAULT_DEPRECATION_REASON,
-} from './directives.js';
+} from './directives.ts';
 
 export type {
   GraphQLDirectiveConfig,
   GraphQLDirectiveExtensions,
-} from './directives.js';
+} from './directives.ts';
 
 // Common built-in scalar instances.
 export {
@@ -176,7 +176,7 @@ export {
   // Int boundaries constants
   GRAPHQL_MAX_INT,
   GRAPHQL_MIN_INT,
-} from './scalars.js';
+} from './scalars.ts';
 
 export {
   // Predicate
@@ -197,10 +197,10 @@ export {
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
-} from './introspection.js';
+} from './introspection.ts';
 
 // Validate GraphQL schema.
-export { validateSchema, assertValidSchema } from './validate.js';
+export { validateSchema, assertValidSchema } from './validate.ts';
 
 // Upholds the spec rules about naming.
-export { assertName, assertEnumValueName } from './assertName.js';
+export { assertName, assertEnumValueName } from './assertName.ts';

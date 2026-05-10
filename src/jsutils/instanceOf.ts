@@ -1,4 +1,4 @@
-import { inspect } from './inspect.js';
+import { inspect } from './inspect.ts';
 
 /**
  * A replacement for instanceof relying on a symbol-driven type brand which in

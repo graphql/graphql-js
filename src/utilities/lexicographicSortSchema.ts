@@ -1,9 +1,9 @@
-import { naturalCompare } from '../jsutils/naturalCompare.js';
-import type { ObjMap } from '../jsutils/ObjMap.js';
+import { naturalCompare } from '../jsutils/naturalCompare.ts';
+import type { ObjMap } from '../jsutils/ObjMap.ts';
 
-import { GraphQLSchema } from '../type/schema.js';
+import { GraphQLSchema } from '../type/schema.ts';
 
-import { mapSchemaConfig, SchemaElementKind } from './mapSchemaConfig.js';
+import { mapSchemaConfig, SchemaElementKind } from './mapSchemaConfig.ts';
 
 /**
  * Sort GraphQLSchema.

@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { version, versionInfo } from '../version.js';
+import { version, versionInfo } from '../version.ts';
 
 describe('Version', () => {
   it('versionInfo', () => {

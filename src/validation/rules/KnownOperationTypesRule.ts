@@ -1,8 +1,8 @@
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError.ts';
 
-import type { ASTVisitor } from '../../language/visitor.js';
+import type { ASTVisitor } from '../../language/visitor.ts';
 
-import type { ValidationContext } from '../ValidationContext.js';
+import type { ValidationContext } from '../ValidationContext.ts';
 
 /**
  * Known Operation Types

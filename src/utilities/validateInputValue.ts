@@ -1,33 +1,33 @@
-import { didYouMean } from '../jsutils/didYouMean.js';
-import { inspect } from '../jsutils/inspect.js';
-import { isIterableObject } from '../jsutils/isIterableObject.js';
-import { isObjectLike } from '../jsutils/isObjectLike.js';
-import { keyMap } from '../jsutils/keyMap.js';
-import type { Maybe } from '../jsutils/Maybe.js';
-import type { Path } from '../jsutils/Path.js';
-import { addPath, pathToArray } from '../jsutils/Path.js';
-import { suggestionList } from '../jsutils/suggestionList.js';
+import { didYouMean } from '../jsutils/didYouMean.ts';
+import { inspect } from '../jsutils/inspect.ts';
+import { isIterableObject } from '../jsutils/isIterableObject.ts';
+import { isObjectLike } from '../jsutils/isObjectLike.ts';
+import { keyMap } from '../jsutils/keyMap.ts';
+import type { Maybe } from '../jsutils/Maybe.ts';
+import type { Path } from '../jsutils/Path.ts';
+import { addPath, pathToArray } from '../jsutils/Path.ts';
+import { suggestionList } from '../jsutils/suggestionList.ts';
 
-import { ensureGraphQLError } from '../error/ensureGraphQLError.js';
-import { GraphQLError } from '../error/GraphQLError.js';
+import { ensureGraphQLError } from '../error/ensureGraphQLError.ts';
+import { GraphQLError } from '../error/GraphQLError.ts';
 
-import type { ASTNode, ValueNode, VariableNode } from '../language/ast.js';
-import { Kind } from '../language/kinds.js';
-import { print } from '../language/printer.js';
+import type { ASTNode, ValueNode, VariableNode } from '../language/ast.ts';
+import { Kind } from '../language/kinds.ts';
+import { print } from '../language/printer.ts';
 
-import type { GraphQLInputType } from '../type/definition.js';
+import type { GraphQLInputType } from '../type/definition.ts';
 import {
   assertLeafType,
   isInputObjectType,
   isListType,
   isNonNullType,
   isRequiredInputField,
-} from '../type/definition.js';
+} from '../type/definition.ts';
 
-import type { FragmentVariableValues } from '../execution/collectFields.js';
-import type { VariableValues } from '../execution/values.js';
+import type { FragmentVariableValues } from '../execution/collectFields.ts';
+import type { VariableValues } from '../execution/values.ts';
 
-import { replaceVariables } from './replaceVariables.js';
+import { replaceVariables } from './replaceVariables.ts';
 
 /**
  * Validate that the provided input value is allowed for this type, collecting

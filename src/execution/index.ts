@@ -1,4 +1,4 @@
-export { pathToArray as responsePathAsArray } from '../jsutils/Path.js';
+export { pathToArray as responsePathAsArray } from '../jsutils/Path.ts';
 
 export {
   createSourceEventStream,
@@ -14,17 +14,17 @@ export {
   subscribe,
   validateExecutionArgs,
   validateSubscriptionArgs,
-} from './execute.js';
-export type { ExecutionArgs, RootSelectionSetExecutor } from './execute.js';
+} from './execute.ts';
+export type { ExecutionArgs, RootSelectionSetExecutor } from './execute.ts';
 
-export type { AsyncWorkFinishedInfo, ExecutionHooks } from './hooks.js';
+export type { AsyncWorkFinishedInfo, ExecutionHooks } from './hooks.ts';
 
 export type {
   ValidatedExecutionArgs,
   ValidatedSubscriptionArgs,
   ExecutionResult,
   FormattedExecutionResult,
-} from './Executor.js';
+} from './Executor.ts';
 
 export type {
   ExperimentalIncrementalExecutionResults,
@@ -39,12 +39,12 @@ export type {
   FormattedIncrementalDeferResult,
   FormattedIncrementalStreamResult,
   FormattedIncrementalResult,
-} from './incremental/IncrementalExecutor.js';
+} from './incremental/IncrementalExecutor.ts';
 
-export { AbortedGraphQLExecutionError } from './AbortedGraphQLExecutionError.js';
+export { AbortedGraphQLExecutionError } from './AbortedGraphQLExecutionError.ts';
 
 export {
   getArgumentValues,
   getVariableValues,
   getDirectiveValues,
-} from './values.js';
+} from './values.ts';

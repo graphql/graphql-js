@@ -1,16 +1,16 @@
-import { inspect } from '../jsutils/inspect.js';
-import { instanceOf } from '../jsutils/instanceOf.js';
-import type { Maybe } from '../jsutils/Maybe.js';
-import type { ObjMap } from '../jsutils/ObjMap.js';
-import { toObjMapWithSymbols } from '../jsutils/toObjMap.js';
+import { inspect } from '../jsutils/inspect.ts';
+import { instanceOf } from '../jsutils/instanceOf.ts';
+import type { Maybe } from '../jsutils/Maybe.ts';
+import type { ObjMap } from '../jsutils/ObjMap.ts';
+import { toObjMapWithSymbols } from '../jsutils/toObjMap.ts';
 
-import type { GraphQLError } from '../error/GraphQLError.js';
+import type { GraphQLError } from '../error/GraphQLError.ts';
 
 import type {
   SchemaDefinitionNode,
   SchemaExtensionNode,
-} from '../language/ast.js';
-import { OperationTypeNode } from '../language/ast.js';
+} from '../language/ast.ts';
+import { OperationTypeNode } from '../language/ast.ts';
 
 import type {
   GraphQLAbstractType,
@@ -20,22 +20,22 @@ import type {
   GraphQLNamedType,
   GraphQLObjectType,
   GraphQLType,
-} from './definition.js';
+} from './definition.ts';
 import {
   getNamedType,
   isInputObjectType,
   isInterfaceType,
   isObjectType,
   isUnionType,
-} from './definition.js';
-import type { GraphQLDirective } from './directives.js';
-import { isDirective, specifiedDirectives } from './directives.js';
+} from './definition.ts';
+import type { GraphQLDirective } from './directives.ts';
+import { isDirective, specifiedDirectives } from './directives.ts';
 import {
   __Schema,
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
-} from './introspection.js';
+} from './introspection.ts';
 
 /**
  * Test if the given value is a GraphQL schema.

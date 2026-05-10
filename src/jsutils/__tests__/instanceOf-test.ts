@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { before, describe, it } from 'mocha';
 
-import { enableDevInstanceOf, instanceOf } from '../instanceOf.js';
+import { enableDevInstanceOf, instanceOf } from '../instanceOf.ts';
 
 describe('instanceOf', () => {
   before(() => {

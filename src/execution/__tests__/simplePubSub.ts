@@ -1,6 +1,6 @@
-import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
+import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.ts';
 
-import { withConcurrentAbruptClose } from '../withConcurrentAbruptClose.js';
+import { withConcurrentAbruptClose } from '../withConcurrentAbruptClose.ts';
 
 /**
  * Create an AsyncIterator from an EventEmitter. Useful for mocking a

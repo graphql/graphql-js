@@ -1,18 +1,18 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent.js';
-import { expectToThrow } from '../../__testUtils__/expectToThrow.js';
-import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.js';
-import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL.js';
+import { dedent } from '../../__testUtils__/dedent.ts';
+import { expectToThrow } from '../../__testUtils__/expectToThrow.ts';
+import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.ts';
+import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL.ts';
 
-import type { Maybe } from '../../jsutils/Maybe.js';
+import type { Maybe } from '../../jsutils/Maybe.ts';
 
-import { Lexer } from '../../language/lexer.js';
-import { parse } from '../../language/parser.js';
-import { Source } from '../../language/source.js';
+import { Lexer } from '../../language/lexer.ts';
+import { parse } from '../../language/parser.ts';
+import { Source } from '../../language/source.ts';
 
-import { stripIgnoredCharacters } from '../stripIgnoredCharacters.js';
+import { stripIgnoredCharacters } from '../stripIgnoredCharacters.ts';
 
 function lexValue(str: string): Maybe<string> {
   const lexer = new Lexer(new Source(str));

@@ -1,23 +1,23 @@
-import type { Maybe } from '../../jsutils/Maybe.js';
+import type { Maybe } from '../../jsutils/Maybe.ts';
 
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError.ts';
 
-import type { ValueNode, VariableDefinitionNode } from '../../language/ast.js';
-import { Kind } from '../../language/kinds.js';
-import type { ASTVisitor } from '../../language/visitor.js';
+import type { ValueNode, VariableDefinitionNode } from '../../language/ast.ts';
+import { Kind } from '../../language/kinds.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 
-import type { GraphQLType } from '../../type/definition.js';
+import type { GraphQLType } from '../../type/definition.ts';
 import {
   isInputObjectType,
   isNonNullType,
   isNullableType,
-} from '../../type/definition.js';
-import type { GraphQLSchema } from '../../type/schema.js';
+} from '../../type/definition.ts';
+import type { GraphQLSchema } from '../../type/schema.ts';
 
-import { isTypeSubTypeOf } from '../../utilities/typeComparators.js';
-import { typeFromAST } from '../../utilities/typeFromAST.js';
+import { isTypeSubTypeOf } from '../../utilities/typeComparators.ts';
+import { typeFromAST } from '../../utilities/typeFromAST.ts';
 
-import type { ValidationContext } from '../ValidationContext.js';
+import type { ValidationContext } from '../ValidationContext.ts';
 
 /**
  * Variables in allowed position

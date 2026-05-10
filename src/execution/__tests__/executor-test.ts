@@ -1,19 +1,19 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualPromisesOrValues.js';
-import { expectJSON } from '../../__testUtils__/expectJSON.js';
-import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
+import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualPromisesOrValues.ts';
+import { expectJSON } from '../../__testUtils__/expectJSON.ts';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';
 
-import { inspect } from '../../jsutils/inspect.js';
-import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
-import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
+import { inspect } from '../../jsutils/inspect.ts';
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
+import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.ts';
 
-import type { FieldNode } from '../../language/ast.js';
-import { Kind } from '../../language/kinds.js';
-import { parse } from '../../language/parser.js';
+import type { FieldNode } from '../../language/ast.ts';
+import { Kind } from '../../language/kinds.ts';
+import { parse } from '../../language/parser.ts';
 
-import type { GraphQLResolveInfo } from '../../type/definition.js';
+import type { GraphQLResolveInfo } from '../../type/definition.ts';
 import {
   GraphQLInputObjectType,
   GraphQLInterfaceType,
@@ -22,27 +22,27 @@ import {
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLUnionType,
-} from '../../type/definition.js';
-import { GraphQLStreamDirective } from '../../type/directives.js';
+} from '../../type/definition.ts';
+import { GraphQLStreamDirective } from '../../type/directives.ts';
 import {
   GraphQLBoolean,
   GraphQLInt,
   GraphQLString,
-} from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+} from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import type { FieldDetailsList } from '../collectFields.js';
-import type { ExecutionArgs } from '../execute.js';
+import type { FieldDetailsList } from '../collectFields.ts';
+import type { ExecutionArgs } from '../execute.ts';
 import {
   execute as executeThrowingOnIncremental,
   executeIgnoringIncremental,
   executeSync as executeSyncWrappingThrowingOnIncremental,
   experimentalExecuteIncrementally,
   validateExecutionArgs,
-} from '../execute.js';
-import type { ExecutionResult } from '../Executor.js';
-import { collectSubfields, getStreamUsage } from '../Executor.js';
-import { legacyExecuteIncrementally } from '../legacyIncremental/legacyExecuteIncrementally.js';
+} from '../execute.ts';
+import type { ExecutionResult } from '../Executor.ts';
+import { collectSubfields, getStreamUsage } from '../Executor.ts';
+import { legacyExecuteIncrementally } from '../legacyIncremental/legacyExecuteIncrementally.ts';
 
 function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   return expectEqualPromisesOrValues([

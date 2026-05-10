@@ -1,8 +1,8 @@
 import { describe, it } from 'mocha';
 
-import { UniqueVariableNamesRule } from '../rules/UniqueVariableNamesRule.js';
+import { UniqueVariableNamesRule } from '../rules/UniqueVariableNamesRule.ts';
 
-import { expectValidationErrors } from './harness.js';
+import { expectValidationErrors } from './harness.ts';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(UniqueVariableNamesRule, queryStr);

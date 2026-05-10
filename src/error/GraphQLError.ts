@@ -1,14 +1,14 @@
-import { isObjectLike } from '../jsutils/isObjectLike.js';
-import type { Maybe } from '../jsutils/Maybe.js';
+import { isObjectLike } from '../jsutils/isObjectLike.ts';
+import type { Maybe } from '../jsutils/Maybe.ts';
 
-import type { ASTNode, Location } from '../language/ast.js';
-import type { SourceLocation } from '../language/location.js';
-import { getLocation } from '../language/location.js';
+import type { ASTNode, Location } from '../language/ast.ts';
+import type { SourceLocation } from '../language/location.ts';
+import { getLocation } from '../language/location.ts';
 import {
   printLocation,
   printSourceLocation,
-} from '../language/printLocation.js';
-import type { Source } from '../language/source.js';
+} from '../language/printLocation.ts';
+import type { Source } from '../language/source.ts';
 
 /**
  * Custom extensions

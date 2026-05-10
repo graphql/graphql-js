@@ -1,7 +1,7 @@
-import type { Maybe } from '../jsutils/Maybe.js';
-import type { ObjMap } from '../jsutils/ObjMap.js';
+import type { Maybe } from '../jsutils/Maybe.ts';
+import type { ObjMap } from '../jsutils/ObjMap.ts';
 
-import type { GraphQLError } from '../error/GraphQLError.js';
+import type { GraphQLError } from '../error/GraphQLError.ts';
 
 import type {
   DocumentNode,
@@ -11,10 +11,10 @@ import type {
   SelectionSetNode,
   VariableDefinitionNode,
   VariableNode,
-} from '../language/ast.js';
-import { Kind } from '../language/kinds.js';
-import type { ASTVisitor } from '../language/visitor.js';
-import { visit } from '../language/visitor.js';
+} from '../language/ast.ts';
+import { Kind } from '../language/kinds.ts';
+import type { ASTVisitor } from '../language/visitor.ts';
+import { visit } from '../language/visitor.ts';
 
 import type {
   GraphQLArgument,
@@ -23,12 +23,12 @@ import type {
   GraphQLField,
   GraphQLInputType,
   GraphQLOutputType,
-} from '../type/definition.js';
-import type { GraphQLDirective } from '../type/directives.js';
-import type { GraphQLSchema } from '../type/schema.js';
+} from '../type/definition.ts';
+import type { GraphQLDirective } from '../type/directives.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
 
-import type { FragmentSignature } from '../utilities/TypeInfo.js';
-import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo.js';
+import type { FragmentSignature } from '../utilities/TypeInfo.ts';
+import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo.ts';
 
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 interface VariableUsage {

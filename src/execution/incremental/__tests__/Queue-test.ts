@@ -3,16 +3,16 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectPromise } from '../../../__testUtils__/expectPromise.js';
-import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.js';
-import { spyOnMethod } from '../../../__testUtils__/spyOn.js';
+import { expectPromise } from '../../../__testUtils__/expectPromise.ts';
+import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.ts';
+import { spyOnMethod } from '../../../__testUtils__/spyOn.ts';
 
-import { invariant } from '../../../jsutils/invariant.js';
-import { isPromise } from '../../../jsutils/isPromise.js';
-import type { PromiseOrValue } from '../../../jsutils/PromiseOrValue.js';
-import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.js';
+import { invariant } from '../../../jsutils/invariant.ts';
+import { isPromise } from '../../../jsutils/isPromise.ts';
+import type { PromiseOrValue } from '../../../jsutils/PromiseOrValue.ts';
+import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.ts';
 
-import { Queue } from '../Queue.js';
+import { Queue } from '../Queue.ts';
 
 interface StopCleanupFixture {
   stop: (reason?: unknown) => PromiseOrValue<void>;

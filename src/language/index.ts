@@ -1,19 +1,20 @@
-export { Source } from './source.js';
+export { Source } from './source.ts';
 
-export { getLocation } from './location.js';
-export type { SourceLocation } from './location.js';
+export { getLocation } from './location.ts';
+export type { SourceLocation } from './location.ts';
 
-export { printLocation, printSourceLocation } from './printLocation.js';
+export { printLocation, printSourceLocation } from './printLocation.ts';
 
 // @see https://github.com/typescript-eslint/typescript-eslint/issues/10313
 // Deno  misclassifies this merged value+type re-export and requires `export type`.
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore TS1205
-export { Kind } from './kinds.js';
 
-export { TokenKind } from './tokenKind.js';
+export { Kind } from './kinds.ts';
 
-export { Lexer } from './lexer.js';
+export { TokenKind } from './tokenKind.ts';
+
+export { Lexer } from './lexer.ts';
 
 export {
   parse,
@@ -21,20 +22,20 @@ export {
   parseConstValue,
   parseType,
   parseSchemaCoordinate,
-} from './parser.js';
-export type { ParseOptions } from './parser.js';
+} from './parser.ts';
+export type { ParseOptions } from './parser.ts';
 
-export { print } from './printer.js';
+export { print } from './printer.ts';
 
 export {
   visit,
   visitInParallel,
   getEnterLeaveForKind,
   BREAK,
-} from './visitor.js';
-export type { ASTVisitor, ASTVisitFn, ASTVisitorKeyMap } from './visitor.js';
+} from './visitor.ts';
+export type { ASTVisitor, ASTVisitFn, ASTVisitorKeyMap } from './visitor.ts';
 
-export { Location, Token, OperationTypeNode } from './ast.js';
+export { Location, Token, OperationTypeNode } from './ast.ts';
 export type {
   ASTNode,
   ASTKindToNode,
@@ -106,7 +107,7 @@ export type {
   ArgumentCoordinateNode,
   DirectiveCoordinateNode,
   DirectiveArgumentCoordinateNode,
-} from './ast.js';
+} from './ast.ts';
 
 export {
   isDefinitionNode,
@@ -121,6 +122,6 @@ export {
   isTypeExtensionNode,
   isSchemaCoordinateNode,
   isSubscriptionOperationDefinitionNode,
-} from './predicates.js';
+} from './predicates.ts';
 
-export { DirectiveLocation } from './directiveLocation.js';
+export { DirectiveLocation } from './directiveLocation.ts';

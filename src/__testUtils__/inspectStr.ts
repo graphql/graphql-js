@@ -1,4 +1,4 @@
-import type { Maybe } from '../jsutils/Maybe.js';
+import type { Maybe } from '../jsutils/Maybe.ts';
 
 /**
  * Special inspect function to produce readable string literal for error messages in tests

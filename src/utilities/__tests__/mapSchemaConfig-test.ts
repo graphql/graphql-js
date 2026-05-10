@@ -1,19 +1,19 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedentString } from '../../__testUtils__/dedent.js';
+import { dedentString } from '../../__testUtils__/dedent.ts';
 
-import { GraphQLObjectType } from '../../type/definition.js';
-import type { GraphQLSchemaNormalizedConfig } from '../../type/schema.js';
-import { GraphQLSchema } from '../../type/schema.js';
+import { GraphQLObjectType } from '../../type/definition.ts';
+import type { GraphQLSchemaNormalizedConfig } from '../../type/schema.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import { buildSchema } from '../buildASTSchema.js';
+import { buildSchema } from '../buildASTSchema.ts';
 import type {
   ConfigMapperMap,
   MappedSchemaContext,
-} from '../mapSchemaConfig.js';
-import { mapSchemaConfig, SchemaElementKind } from '../mapSchemaConfig.js';
-import { printSchema } from '../printSchema.js';
+} from '../mapSchemaConfig.ts';
+import { mapSchemaConfig, SchemaElementKind } from '../mapSchemaConfig.ts';
+import { printSchema } from '../printSchema.ts';
 
 function expectSchemaMapping(
   schemaConfig: GraphQLSchemaNormalizedConfig,

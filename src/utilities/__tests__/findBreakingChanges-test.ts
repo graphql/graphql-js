@@ -7,16 +7,16 @@ import {
   GraphQLOneOfDirective,
   GraphQLSkipDirective,
   GraphQLSpecifiedByDirective,
-} from '../../type/directives.js';
-import { GraphQLSchema } from '../../type/schema.js';
+} from '../../type/directives.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import { buildSchema } from '../buildASTSchema.js';
+import { buildSchema } from '../buildASTSchema.ts';
 import {
   BreakingChangeType,
   DangerousChangeType,
   findBreakingChanges,
   findDangerousChanges,
-} from '../findSchemaChanges.js';
+} from '../findSchemaChanges.ts';
 
 describe('findBreakingChanges', () => {
   it('should detect if a type was removed or not', () => {

@@ -1,18 +1,18 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent.js';
-import { expectToThrowJSON } from '../../__testUtils__/expectJSON.js';
-import { expectToThrow } from '../../__testUtils__/expectToThrow.js';
+import { dedent } from '../../__testUtils__/dedent.ts';
+import { expectToThrowJSON } from '../../__testUtils__/expectJSON.ts';
+import { expectToThrow } from '../../__testUtils__/expectToThrow.ts';
 
-import { inspect } from '../../jsutils/inspect.js';
+import { inspect } from '../../jsutils/inspect.ts';
 
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError.ts';
 
-import type { Token } from '../ast.js';
-import { isPunctuatorTokenKind, Lexer } from '../lexer.js';
-import { Source } from '../source.js';
-import { TokenKind } from '../tokenKind.js';
+import type { Token } from '../ast.ts';
+import { isPunctuatorTokenKind, Lexer } from '../lexer.ts';
+import { Source } from '../source.ts';
+import { TokenKind } from '../tokenKind.ts';
 
 function lexOne(str: string) {
   const lexer = new Lexer(new Source(str));

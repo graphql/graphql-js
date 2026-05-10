@@ -1,7 +1,7 @@
 import type {
   DocumentNode,
   ExecutableDefinitionNode,
-} from '../language/ast.js';
+} from '../language/ast.ts';
 /**
  * Wrapper type that contains DocumentNode and types that can be deduced from it.
  */

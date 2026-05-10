@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { AccumulatorMap } from '../AccumulatorMap.js';
+import { AccumulatorMap } from '../AccumulatorMap.ts';
 
 function expectMap<K, V>(map: Map<K, V>) {
   return expect(Object.fromEntries(map));

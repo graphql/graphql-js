@@ -1,8 +1,8 @@
 import { describe, it } from 'mocha';
 
-import { UniqueArgumentDefinitionNamesRule } from '../rules/UniqueArgumentDefinitionNamesRule.js';
+import { UniqueArgumentDefinitionNamesRule } from '../rules/UniqueArgumentDefinitionNamesRule.ts';
 
-import { expectSDLValidationErrors } from './harness.js';
+import { expectSDLValidationErrors } from './harness.ts';
 
 function expectSDLErrors(sdlStr: string) {
   return expectSDLValidationErrors(

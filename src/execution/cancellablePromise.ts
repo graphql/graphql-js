@@ -1,4 +1,4 @@
-import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.js';
+import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.ts';
 
 export interface CancellablePromise<T> {
   promise: Promise<T>;

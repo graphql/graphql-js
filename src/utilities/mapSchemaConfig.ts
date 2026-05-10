@@ -1,6 +1,6 @@
-import { inspect } from '../jsutils/inspect.js';
-import { invariant } from '../jsutils/invariant.js';
-import type { Maybe } from '../jsutils/Maybe.js';
+import { inspect } from '../jsutils/inspect.ts';
+import { invariant } from '../jsutils/invariant.ts';
+import type { Maybe } from '../jsutils/Maybe.ts';
 
 import type {
   GraphQLArgumentNormalizedConfig,
@@ -17,7 +17,7 @@ import type {
   GraphQLScalarTypeNormalizedConfig,
   GraphQLType,
   GraphQLUnionTypeNormalizedConfig,
-} from '../type/definition.js';
+} from '../type/definition.ts';
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
@@ -35,18 +35,18 @@ import {
   isObjectType,
   isScalarType,
   isUnionType,
-} from '../type/definition.js';
-import type { GraphQLDirectiveNormalizedConfig } from '../type/directives.js';
-import { GraphQLDirective, isSpecifiedDirective } from '../type/directives.js';
+} from '../type/definition.ts';
+import type { GraphQLDirectiveNormalizedConfig } from '../type/directives.ts';
+import { GraphQLDirective, isSpecifiedDirective } from '../type/directives.ts';
 import {
   introspectionTypes,
   isIntrospectionType,
-} from '../type/introspection.js';
+} from '../type/introspection.ts';
 import {
   isSpecifiedScalarType,
   specifiedScalarTypes,
-} from '../type/scalars.js';
-import type { GraphQLSchemaNormalizedConfig } from '../type/schema.js';
+} from '../type/scalars.ts';
+import type { GraphQLSchemaNormalizedConfig } from '../type/schema.ts';
 
 /**
  * The set of GraphQL Schema Elements.

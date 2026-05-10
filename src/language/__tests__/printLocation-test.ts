@@ -1,10 +1,10 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent.js';
+import { dedent } from '../../__testUtils__/dedent.ts';
 
-import { printSourceLocation } from '../printLocation.js';
-import { Source } from '../source.js';
+import { printSourceLocation } from '../printLocation.ts';
+import { Source } from '../source.ts';
 
 describe('printSourceLocation', () => {
   it('prints minified documents', () => {

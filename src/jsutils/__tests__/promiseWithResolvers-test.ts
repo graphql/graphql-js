@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectPromise } from '../../__testUtils__/expectPromise.js';
+import { expectPromise } from '../../__testUtils__/expectPromise.ts';
 
-import { promiseWithResolvers } from '../promiseWithResolvers.js';
+import { promiseWithResolvers } from '../promiseWithResolvers.ts';
 
 describe('promiseWithResolvers', () => {
   it('resolves values', async () => {

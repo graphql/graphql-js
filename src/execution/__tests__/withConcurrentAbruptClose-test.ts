@@ -1,10 +1,11 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectPromise } from '../../__testUtils__/expectPromise.js';
-import { spyOnMethod } from '../../__testUtils__/spyOn.js';
+import { expectPromise } from '../../__testUtils__/expectPromise.ts';
+import { spyOnMethod } from '../../__testUtils__/spyOn.ts';
+import { withAsyncUsing } from '../../__testUtils__/withAsyncUsing.ts';
 
-import { withConcurrentAbruptClose } from '../withConcurrentAbruptClose.js';
+import { withConcurrentAbruptClose } from '../withConcurrentAbruptClose.ts';
 
 const asyncDispose: typeof Symbol.asyncDispose =
   Symbol.asyncDispose ?? Symbol.for('Symbol.asyncDispose');
@@ -155,15 +156,13 @@ describe('withConcurrentAbruptClose', () => {
       cleanup: () => undefined,
     };
     const cleanupSpy = spyOnMethod(cleanupHooks, 'cleanup');
-    {
-      await using generator = withConcurrentAbruptClose(
-        source,
-        cleanupHooks.cleanup,
-      );
-
-      expect(await generator.next()).to.deep.equal({ value: 1, done: false });
-      expect(await generator.next()).to.deep.equal({ value: 2, done: false });
-    }
+    await withAsyncUsing(
+      withConcurrentAbruptClose(source, cleanupHooks.cleanup),
+      async (generator) => {
+        expect(await generator.next()).to.deep.equal({ value: 1, done: false });
+        expect(await generator.next()).to.deep.equal({ value: 2, done: false });
+      },
+    );
 
     expect(cleanupSpy.callCount).to.equal(1);
     expect(returnSpy.callCount).to.equal(1);
@@ -318,17 +317,15 @@ describe('withConcurrentAbruptClose', () => {
       cleanup: () => undefined,
     };
     const cleanupSpy = spyOnMethod(cleanupHooks, 'cleanup');
-    {
-      await using generator = withConcurrentAbruptClose(
-        source,
-        cleanupHooks.cleanup,
-      );
-
-      expect(await generator.next()).to.deep.equal({
-        value: undefined,
-        done: true,
-      });
-    }
+    await withAsyncUsing(
+      withConcurrentAbruptClose(source, cleanupHooks.cleanup),
+      async (generator) => {
+        expect(await generator.next()).to.deep.equal({
+          value: undefined,
+          done: true,
+        });
+      },
+    );
 
     expect(cleanupSpy.callCount).to.equal(0);
     expect(returnSpy.callCount).to.equal(1);

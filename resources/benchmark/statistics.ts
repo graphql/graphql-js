@@ -3,8 +3,8 @@ import assert from 'node:assert';
 import {
   NS_PER_SEC,
   targetPairwiseComparisonIntervalHalfWidth,
-} from './config.js';
-import type { BenchmarkResult, PairedComparison } from './types.js';
+} from './config.ts';
+import type { BenchmarkResult, PairedComparison } from './types.ts';
 
 // T-Distribution two-tailed critical values for 95% confidence.
 // See http://www.itl.nist.gov/div898/handbook/eda/section3/eda3672.htm.

@@ -1,10 +1,10 @@
 import { describe, it } from 'mocha';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { SingleFieldSubscriptionsRule } from '../rules/SingleFieldSubscriptionsRule.js';
+import { SingleFieldSubscriptionsRule } from '../rules/SingleFieldSubscriptionsRule.ts';
 
-import { expectValidationErrorsWithSchema } from './harness.js';
+import { expectValidationErrorsWithSchema } from './harness.ts';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrorsWithSchema(

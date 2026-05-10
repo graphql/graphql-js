@@ -1,23 +1,23 @@
-import { invariant } from '../jsutils/invariant.js';
-import type { ObjMap } from '../jsutils/ObjMap.js';
-import type { Path } from '../jsutils/Path.js';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
+import { invariant } from '../jsutils/invariant.ts';
+import type { ObjMap } from '../jsutils/ObjMap.ts';
+import type { Path } from '../jsutils/Path.ts';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
 
-import { OperationTypeNode } from '../language/ast.js';
+import { OperationTypeNode } from '../language/ast.ts';
 
 import type {
   GraphQLList,
   GraphQLObjectType,
   GraphQLOutputType,
   GraphQLResolveInfo,
-} from '../type/index.js';
+} from '../type/index.ts';
 
 import type {
   DeferUsage,
   FieldDetailsList,
   GroupedFieldSet,
-} from './collectFields.js';
-import { Executor, getStreamUsage } from './Executor.js';
+} from './collectFields.ts';
+import { Executor, getStreamUsage } from './Executor.ts';
 
 const UNEXPECTED_MULTIPLE_PAYLOADS =
   'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)';

@@ -1,5 +1,5 @@
-import { pairedGreenThreshold, pairedYellowThreshold } from './config.js';
-import type { BenchmarkResult, PairedComparison } from './types.js';
+import { pairedGreenThreshold, pairedYellowThreshold } from './config.ts';
+import type { BenchmarkResult, PairedComparison } from './types.ts';
 
 type ColorFn = (value: number | string) => string;
 

@@ -1,16 +1,16 @@
 import { describe, it } from 'mocha';
 
-import type { GraphQLSchema } from '../../type/schema.js';
+import type { GraphQLSchema } from '../../type/schema.ts';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { KnownTypeNamesRule } from '../rules/KnownTypeNamesRule.js';
+import { KnownTypeNamesRule } from '../rules/KnownTypeNamesRule.ts';
 
 import {
   expectSDLValidationErrors,
   expectValidationErrors,
   expectValidationErrorsWithSchema,
-} from './harness.js';
+} from './harness.ts';
 
 function expectErrors(queryStr: string, hideSuggestions = false) {
   return expectValidationErrors(KnownTypeNamesRule, queryStr, hideSuggestions);

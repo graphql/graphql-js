@@ -2,32 +2,32 @@ import assert from 'node:assert';
 import path from 'node:path';
 import readline from 'node:readline';
 
-import type { Runtime } from './args.js';
-import { getArguments } from './args.js';
+import type { Runtime } from './args.ts';
+import { getArguments } from './args.ts';
 import {
   maxTime,
   memorySamplesPerBenchmark,
   minTimingSamplesPerBenchmark,
-} from './config.js';
+} from './config.ts';
 import {
   cyan,
   grey,
   printBenchmarkResults,
   printPairedComparisons,
   red,
-} from './output.js';
-import { prepareBenchmarkProjects } from './projects.js';
+} from './output.ts';
+import { prepareBenchmarkProjects } from './projects.ts';
 import {
   computeStats,
   getPairedComparisons,
   havePairwiseComparisonsStabilized,
-} from './statistics.js';
-import type { BenchmarkProject, BenchmarkResult } from './types.js';
+} from './statistics.ts';
+import type { BenchmarkProject, BenchmarkResult } from './types.ts';
 import {
   getBenchmarkName,
   sampleMemoryModule,
   sampleTimingModule,
-} from './workers.js';
+} from './workers.ts';
 
 export function runBenchmarks(): void {
   // Get the revisions and make things happen!

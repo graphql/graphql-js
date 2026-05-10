@@ -1,13 +1,13 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent.js';
+import { dedent } from '../../__testUtils__/dedent.ts';
 
-import { Kind } from '../../language/kinds.js';
-import { parse } from '../../language/parser.js';
-import { Source } from '../../language/source.js';
+import { Kind } from '../../language/kinds.ts';
+import { parse } from '../../language/parser.ts';
+import { Source } from '../../language/source.ts';
 
-import { GraphQLError } from '../GraphQLError.js';
+import { GraphQLError } from '../GraphQLError.ts';
 
 const source = new Source(dedent`
   {
@@ -49,8 +49,8 @@ describe('GraphQLError', () => {
 
     expect(Object.keys(e)).to.deep.equal([
       'message',
-      'path',
       'locations',
+      'path',
       'extensions',
     ]);
   });

@@ -2,7 +2,7 @@ import fs from 'node:fs';
 
 import { describe, it } from 'mocha';
 
-import { localRepoPath, makeTmpDir, npm, readPackageJSON } from './utils.js';
+import { localRepoPath, makeTmpDir, npm, readPackageJSON } from './utils.ts';
 
 // Keep these pinned to minimum supported runtime versions so integration
 // checks continue to verify backward compatibility behavior.

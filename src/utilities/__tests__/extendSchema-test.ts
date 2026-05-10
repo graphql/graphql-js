@@ -1,13 +1,13 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent.js';
+import { dedent } from '../../__testUtils__/dedent.ts';
 
-import type { Maybe } from '../../jsutils/Maybe.js';
+import type { Maybe } from '../../jsutils/Maybe.ts';
 
-import type { ASTNode } from '../../language/ast.js';
-import { parse } from '../../language/parser.js';
-import { print } from '../../language/printer.js';
+import type { ASTNode } from '../../language/ast.ts';
+import { parse } from '../../language/parser.ts';
+import { print } from '../../language/printer.ts';
 
 import {
   assertEnumType,
@@ -16,24 +16,24 @@ import {
   assertObjectType,
   assertScalarType,
   assertUnionType,
-} from '../../type/definition.js';
-import { assertDirective, specifiedDirectives } from '../../type/directives.js';
+} from '../../type/definition.ts';
+import { assertDirective, specifiedDirectives } from '../../type/directives.ts';
 import {
   GraphQLBoolean,
   GraphQLFloat,
   GraphQLID,
   GraphQLInt,
   GraphQLString,
-} from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
-import { validateSchema } from '../../type/validate.js';
+} from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
+import { validateSchema } from '../../type/validate.ts';
 
-import { graphqlSync } from '../../graphql.js';
+import { graphqlSync } from '../../graphql.ts';
 
-import { buildASTSchema, buildSchema } from '../buildASTSchema.js';
-import { concatAST } from '../concatAST.js';
-import { extendSchema } from '../extendSchema.js';
-import { printSchema } from '../printSchema.js';
+import { buildASTSchema, buildSchema } from '../buildASTSchema.ts';
+import { concatAST } from '../concatAST.ts';
+import { extendSchema } from '../extendSchema.ts';
+import { printSchema } from '../printSchema.ts';
 
 function expectExtensionASTNodes(obj: {
   readonly extensionASTNodes: ReadonlyArray<ASTNode>;

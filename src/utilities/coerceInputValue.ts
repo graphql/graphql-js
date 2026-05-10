@@ -1,29 +1,29 @@
-import { inspect } from '../jsutils/inspect.js';
-import { invariant } from '../jsutils/invariant.js';
-import { isIterableObject } from '../jsutils/isIterableObject.js';
-import { isObjectLike } from '../jsutils/isObjectLike.js';
-import type { Maybe } from '../jsutils/Maybe.js';
-import type { ObjMap } from '../jsutils/ObjMap.js';
+import { inspect } from '../jsutils/inspect.ts';
+import { invariant } from '../jsutils/invariant.ts';
+import { isIterableObject } from '../jsutils/isIterableObject.ts';
+import { isObjectLike } from '../jsutils/isObjectLike.ts';
+import type { Maybe } from '../jsutils/Maybe.ts';
+import type { ObjMap } from '../jsutils/ObjMap.ts';
 
-import type { ValueNode, VariableNode } from '../language/ast.js';
-import { Kind } from '../language/kinds.js';
+import type { ValueNode, VariableNode } from '../language/ast.ts';
+import { Kind } from '../language/kinds.ts';
 
 import type {
   GraphQLDefaultInput,
   GraphQLInputType,
-} from '../type/definition.js';
+} from '../type/definition.ts';
 import {
   assertLeafType,
   isInputObjectType,
   isListType,
   isNonNullType,
   isRequiredInputField,
-} from '../type/definition.js';
+} from '../type/definition.ts';
 
-import type { FragmentVariableValues } from '../execution/collectFields.js';
-import type { VariableValues } from '../execution/values.js';
+import type { FragmentVariableValues } from '../execution/collectFields.ts';
+import type { VariableValues } from '../execution/values.ts';
 
-import { replaceVariables } from './replaceVariables.js';
+import { replaceVariables } from './replaceVariables.ts';
 
 /**
  * Coerces a JavaScript value given a GraphQL Input Type.

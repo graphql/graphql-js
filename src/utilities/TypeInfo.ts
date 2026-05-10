@@ -1,15 +1,15 @@
-import type { Maybe } from '../jsutils/Maybe.js';
+import type { Maybe } from '../jsutils/Maybe.ts';
 
 import type {
   ASTNode,
   DocumentNode,
   FragmentDefinitionNode,
   VariableDefinitionNode,
-} from '../language/ast.js';
-import { isNode } from '../language/ast.js';
-import { Kind } from '../language/kinds.js';
-import type { ASTVisitor } from '../language/visitor.js';
-import { getEnterLeaveForKind } from '../language/visitor.js';
+} from '../language/ast.ts';
+import { isNode } from '../language/ast.ts';
+import { Kind } from '../language/kinds.ts';
+import type { ASTVisitor } from '../language/visitor.ts';
+import { getEnterLeaveForKind } from '../language/visitor.ts';
 
 import type {
   GraphQLArgument,
@@ -20,7 +20,7 @@ import type {
   GraphQLInputType,
   GraphQLOutputType,
   GraphQLType,
-} from '../type/definition.js';
+} from '../type/definition.ts';
 import {
   getNamedType,
   getNullableType,
@@ -31,11 +31,11 @@ import {
   isListType,
   isObjectType,
   isOutputType,
-} from '../type/definition.js';
-import type { GraphQLDirective } from '../type/directives.js';
-import type { GraphQLSchema } from '../type/schema.js';
+} from '../type/definition.ts';
+import type { GraphQLDirective } from '../type/directives.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
 
-import { typeFromAST } from './typeFromAST.js';
+import { typeFromAST } from './typeFromAST.ts';
 
 export interface FragmentSignature {
   readonly definition: FragmentDefinitionNode;

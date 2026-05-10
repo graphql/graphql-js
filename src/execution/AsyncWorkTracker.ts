@@ -1,4 +1,4 @@
-import { isPromiseLike } from '../jsutils/isPromise.js';
+import { isPromiseLike } from '../jsutils/isPromise.ts';
 
 /** @internal */
 export class AsyncWorkTracker {

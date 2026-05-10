@@ -1,12 +1,12 @@
 import { describe, it } from 'mocha';
 
-import type { GraphQLSchema } from '../../type/schema.js';
+import type { GraphQLSchema } from '../../type/schema.ts';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { UniqueEnumValueNamesRule } from '../rules/UniqueEnumValueNamesRule.js';
+import { UniqueEnumValueNamesRule } from '../rules/UniqueEnumValueNamesRule.ts';
 
-import { expectSDLValidationErrors } from './harness.js';
+import { expectSDLValidationErrors } from './harness.ts';
 
 function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
   return expectSDLValidationErrors(schema, UniqueEnumValueNamesRule, sdlStr);

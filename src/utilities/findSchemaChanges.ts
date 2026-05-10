@@ -1,8 +1,8 @@
-import { inspect } from '../jsutils/inspect.js';
-import { invariant } from '../jsutils/invariant.js';
-import { keyMap } from '../jsutils/keyMap.js';
+import { inspect } from '../jsutils/inspect.ts';
+import { invariant } from '../jsutils/invariant.ts';
+import { keyMap } from '../jsutils/keyMap.ts';
 
-import { print } from '../language/printer.js';
+import { print } from '../language/printer.ts';
 
 import type {
   GraphQLArgument,
@@ -15,7 +15,7 @@ import type {
   GraphQLObjectType,
   GraphQLType,
   GraphQLUnionType,
-} from '../type/definition.js';
+} from '../type/definition.ts';
 import {
   isEnumType,
   isInputObjectType,
@@ -28,12 +28,12 @@ import {
   isRequiredInputField,
   isScalarType,
   isUnionType,
-} from '../type/definition.js';
-import { isSpecifiedScalarType } from '../type/scalars.js';
-import type { GraphQLSchema } from '../type/schema.js';
+} from '../type/definition.ts';
+import { isSpecifiedScalarType } from '../type/scalars.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
 
-import { getDefaultValueAST } from './getDefaultValueAST.js';
-import { sortValueNode } from './sortValueNode.js';
+import { getDefaultValueAST } from './getDefaultValueAST.ts';
+import { sortValueNode } from './sortValueNode.ts';
 
 export const BreakingChangeType = {
   TYPE_REMOVED: 'TYPE_REMOVED' as const,
@@ -715,10 +715,8 @@ function typeKindName(type: GraphQLNamedType): string {
   }
   if (isInputObjectType(type)) {
     return 'an Input type';
-    // c8 control statement technically placed a line early secondary to
-    // slight swc source mapping error (at least as compared to ts-node without swc)
-    /* c8 ignore next 4 */
   }
+  /* c8 ignore next 3 */
   // Not reachable, all possible types have been considered.
   invariant(false, 'Unexpected type: ' + inspect(type));
 }

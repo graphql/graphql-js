@@ -1,10 +1,10 @@
-import { groupBy } from '../../jsutils/groupBy.js';
+import { groupBy } from '../../jsutils/groupBy.ts';
 
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError.ts';
 
-import type { ASTVisitor } from '../../language/visitor.js';
+import type { ASTVisitor } from '../../language/visitor.ts';
 
-import type { ASTValidationContext } from '../ValidationContext.js';
+import type { ASTValidationContext } from '../ValidationContext.ts';
 
 /**
  * Unique variable names

@@ -7,7 +7,7 @@ import {
   npm,
   readPackageJSON,
   readPackageJSONAtRef,
-} from './utils.js';
+} from './utils.ts';
 
 interface ReleaseMetadata {
   version: string;

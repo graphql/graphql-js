@@ -1,26 +1,26 @@
-import { devAssert } from '../jsutils/devAssert.js';
-import { inspect } from '../jsutils/inspect.js';
-import { instanceOf } from '../jsutils/instanceOf.js';
-import { isObjectLike } from '../jsutils/isObjectLike.js';
-import { keyValMap } from '../jsutils/keyValMap.js';
-import type { Maybe } from '../jsutils/Maybe.js';
-import type { ObjMap } from '../jsutils/ObjMap.js';
-import { toObjMapWithSymbols } from '../jsutils/toObjMap.js';
+import { devAssert } from '../jsutils/devAssert.ts';
+import { inspect } from '../jsutils/inspect.ts';
+import { instanceOf } from '../jsutils/instanceOf.ts';
+import { isObjectLike } from '../jsutils/isObjectLike.ts';
+import { keyValMap } from '../jsutils/keyValMap.ts';
+import type { Maybe } from '../jsutils/Maybe.ts';
+import type { ObjMap } from '../jsutils/ObjMap.ts';
+import { toObjMapWithSymbols } from '../jsutils/toObjMap.ts';
 
 import type {
   DirectiveDefinitionNode,
   DirectiveExtensionNode,
-} from '../language/ast.js';
-import { DirectiveLocation } from '../language/directiveLocation.js';
+} from '../language/ast.ts';
+import { DirectiveLocation } from '../language/directiveLocation.ts';
 
-import { assertName } from './assertName.js';
+import { assertName } from './assertName.ts';
 import type {
   GraphQLArgumentConfig,
   GraphQLFieldNormalizedConfigArgumentMap,
   GraphQLSchemaElement,
-} from './definition.js';
-import { GraphQLArgument, GraphQLNonNull } from './definition.js';
-import { GraphQLBoolean, GraphQLInt, GraphQLString } from './scalars.js';
+} from './definition.ts';
+import { GraphQLArgument, GraphQLNonNull } from './definition.ts';
+import { GraphQLBoolean, GraphQLInt, GraphQLString } from './scalars.ts';
 
 const directiveSymbol: unique symbol = Symbol('Directive');
 

@@ -1,12 +1,12 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualPromisesOrValues.js';
-import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
+import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualPromisesOrValues.ts';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';
 
-import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
+import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.ts';
 
-import { AsyncWorkTracker } from '../AsyncWorkTracker.js';
+import { AsyncWorkTracker } from '../AsyncWorkTracker.ts';
 
 describe('AsyncWorkTracker', () => {
   it('works to track promises', async () => {

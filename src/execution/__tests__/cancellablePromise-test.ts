@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectPromise } from '../../__testUtils__/expectPromise.js';
+import { expectPromise } from '../../__testUtils__/expectPromise.ts';
 
-import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
+import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.ts';
 
-import { cancellablePromise, withCancellation } from '../cancellablePromise.js';
+import { cancellablePromise, withCancellation } from '../cancellablePromise.ts';
 
 describe('withCancellation', () => {
   it('works to wrap a resolved promise', async () => {

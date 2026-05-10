@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { suggestionList } from '../suggestionList.js';
+import { suggestionList } from '../suggestionList.ts';
 
 function expectSuggestions(input: string, options: ReadonlyArray<string>) {
   return expect(suggestionList(input, options));

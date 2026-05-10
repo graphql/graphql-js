@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { invariant } from '../invariant.js';
+import { invariant } from '../invariant.ts';
 
 describe('invariant', () => {
   it('throws on false conditions', () => {

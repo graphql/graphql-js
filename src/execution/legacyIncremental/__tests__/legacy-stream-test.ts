@@ -1,32 +1,33 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../../__testUtils__/expectJSON.js';
-import { expectPromise } from '../../../__testUtils__/expectPromise.js';
-import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.js';
-import { spyOnMethod } from '../../../__testUtils__/spyOn.js';
+import { expectJSON } from '../../../__testUtils__/expectJSON.ts';
+import { expectPromise } from '../../../__testUtils__/expectPromise.ts';
+import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.ts';
+import { spyOnMethod } from '../../../__testUtils__/spyOn.ts';
+import { withAsyncUsing } from '../../../__testUtils__/withAsyncUsing.ts';
 
-import type { PromiseOrValue } from '../../../jsutils/PromiseOrValue.js';
-import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.js';
+import type { PromiseOrValue } from '../../../jsutils/PromiseOrValue.ts';
+import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.ts';
 
-import type { DocumentNode } from '../../../language/ast.js';
-import { parse } from '../../../language/parser.js';
+import type { DocumentNode } from '../../../language/ast.ts';
+import { parse } from '../../../language/parser.ts';
 
 import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-} from '../../../type/definition.js';
-import { GraphQLID, GraphQLString } from '../../../type/scalars.js';
-import { GraphQLSchema } from '../../../type/schema.js';
+} from '../../../type/definition.ts';
+import { GraphQLID, GraphQLString } from '../../../type/scalars.ts';
+import { GraphQLSchema } from '../../../type/schema.ts';
 
-import { buildSchema } from '../../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../../utilities/buildASTSchema.ts';
 
 import type {
   LegacyInitialIncrementalExecutionResult,
   LegacySubsequentIncrementalExecutionResult,
-} from '../BranchingIncrementalExecutor.js';
-import { legacyExecuteIncrementally } from '../legacyExecuteIncrementally.js';
+} from '../BranchingIncrementalExecutor.ts';
+import { legacyExecuteIncrementally } from '../legacyExecuteIncrementally.ts';
 
 const friendType = new GraphQLObjectType({
   fields: {
@@ -2869,19 +2870,20 @@ describe('Execute: stream directive (legacy)', () => {
     });
     assert('initialResult' in executeResult);
 
-    {
-      await using iterator =
-        executeResult.subsequentResults[Symbol.asyncIterator]();
-      assert(iterator != null);
+    await withAsyncUsing(
+      executeResult.subsequentResults[Symbol.asyncIterator](),
+      (iterator) => {
+        assert(iterator != null);
 
-      const result1 = executeResult.initialResult;
-      expectJSON(result1).toDeepEqual({
-        data: {
-          friendList: [],
-        },
-        hasNext: true,
-      });
-    }
+        const result1 = executeResult.initialResult;
+        expectJSON(result1).toDeepEqual({
+          data: {
+            friendList: [],
+          },
+          hasNext: true,
+        });
+      },
+    );
 
     assert(returnSpy.callCount === 1);
   });
@@ -2923,31 +2925,31 @@ describe('Execute: stream directive (legacy)', () => {
     });
     assert('initialResult' in executeResult);
 
-    {
-      await using iterator =
-        executeResult.subsequentResults[Symbol.asyncIterator]();
+    await withAsyncUsing(
+      executeResult.subsequentResults[Symbol.asyncIterator](),
+      async (iterator) => {
+        const result1 = executeResult.initialResult;
+        expectJSON(result1).toDeepEqual({
+          data: {
+            friendList: [],
+          },
+          hasNext: true,
+        });
 
-      const result1 = executeResult.initialResult;
-      expectJSON(result1).toDeepEqual({
-        data: {
-          friendList: [],
-        },
-        hasNext: true,
-      });
-
-      expectJSON(await iterator.next()).toDeepEqual({
-        done: false,
-        value: {
-          incremental: [
-            {
-              items: [{ id: '1' }],
-              path: ['friendList', 0],
-            },
-          ],
-          hasNext: false,
-        },
-      });
-    }
+        expectJSON(await iterator.next()).toDeepEqual({
+          done: false,
+          value: {
+            incremental: [
+              {
+                items: [{ id: '1' }],
+                path: ['friendList', 0],
+              },
+            ],
+            hasNext: false,
+          },
+        });
+      },
+    );
 
     assert(!returnSpy.callCount);
   });

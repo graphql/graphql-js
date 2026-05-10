@@ -1,11 +1,11 @@
-import type { ObjMap } from '../../jsutils/ObjMap.js';
-import { pathToArray } from '../../jsutils/Path.js';
+import type { ObjMap } from '../../jsutils/ObjMap.ts';
+import { pathToArray } from '../../jsutils/Path.ts';
 
-import { ensureGraphQLError } from '../../error/ensureGraphQLError.js';
-import type { GraphQLError } from '../../error/GraphQLError.js';
+import { ensureGraphQLError } from '../../error/ensureGraphQLError.ts';
+import type { GraphQLError } from '../../error/GraphQLError.ts';
 
-import { mapAsyncIterable } from '../mapAsyncIterable.js';
-import { withConcurrentAbruptClose } from '../withConcurrentAbruptClose.js';
+import { mapAsyncIterable } from '../mapAsyncIterable.ts';
+import { withConcurrentAbruptClose } from '../withConcurrentAbruptClose.ts';
 
 import type {
   CompletedResult,
@@ -20,9 +20,9 @@ import type {
   PendingResult,
   StreamItemValue,
   SubsequentIncrementalExecutionResult,
-} from './IncrementalExecutor.js';
-import type { WorkQueueEvent } from './WorkQueue.js';
-import { createWorkQueue } from './WorkQueue.js';
+} from './IncrementalExecutor.ts';
+import type { WorkQueueEvent } from './WorkQueue.ts';
+import { createWorkQueue } from './WorkQueue.ts';
 
 interface SubsequentIncrementalExecutionResultContext {
   pending: Array<PendingResult>;

@@ -1,19 +1,19 @@
-import type { ObjMap } from '../../jsutils/ObjMap.js';
+import type { ObjMap } from '../../jsutils/ObjMap.ts';
 
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError.ts';
 
-import type { FieldNode, OperationDefinitionNode } from '../../language/ast.js';
-import { Kind } from '../../language/kinds.js';
-import type { ASTVisitor } from '../../language/visitor.js';
+import type { FieldNode, OperationDefinitionNode } from '../../language/ast.ts';
+import { Kind } from '../../language/kinds.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 
 import type {
   FieldDetailsList,
   FragmentDetails,
-} from '../../execution/collectFields.js';
-import { collectFields } from '../../execution/collectFields.js';
-import type { VariableValues } from '../../execution/values.js';
+} from '../../execution/collectFields.ts';
+import { collectFields } from '../../execution/collectFields.ts';
+import type { VariableValues } from '../../execution/values.ts';
 
-import type { ValidationContext } from '../ValidationContext.js';
+import type { ValidationContext } from '../ValidationContext.ts';
 
 function toNodes(fieldDetailsList: FieldDetailsList): ReadonlyArray<FieldNode> {
   return fieldDetailsList.map((fieldDetails) => fieldDetails.node);

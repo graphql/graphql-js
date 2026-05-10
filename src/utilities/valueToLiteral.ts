@@ -1,18 +1,18 @@
-import { inspect } from '../jsutils/inspect.js';
-import { isIterableObject } from '../jsutils/isIterableObject.js';
-import { isObjectLike } from '../jsutils/isObjectLike.js';
+import { inspect } from '../jsutils/inspect.ts';
+import { isIterableObject } from '../jsutils/isIterableObject.ts';
+import { isObjectLike } from '../jsutils/isObjectLike.ts';
 
-import type { ConstObjectFieldNode, ConstValueNode } from '../language/ast.js';
-import { Kind } from '../language/kinds.js';
+import type { ConstObjectFieldNode, ConstValueNode } from '../language/ast.ts';
+import { Kind } from '../language/kinds.ts';
 
-import type { GraphQLInputType } from '../type/definition.js';
+import type { GraphQLInputType } from '../type/definition.ts';
 import {
   assertLeafType,
   isInputObjectType,
   isListType,
   isNonNullType,
   isRequiredInputField,
-} from '../type/definition.js';
+} from '../type/definition.ts';
 
 /**
  * Produces a GraphQL Value AST given a JavaScript value and a GraphQL type.

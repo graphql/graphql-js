@@ -1,12 +1,12 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent.js';
-import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL.js';
+import { dedent } from '../../__testUtils__/dedent.ts';
+import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL.ts';
 
-import { Kind } from '../kinds.js';
-import { parse } from '../parser.js';
-import { print } from '../printer.js';
+import { Kind } from '../kinds.ts';
+import { parse } from '../parser.ts';
+import { print } from '../printer.ts';
 
 describe('Printer: SDL document', () => {
   it('prints minimal ast', () => {

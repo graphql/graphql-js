@@ -1,15 +1,15 @@
-import { groupBy } from '../../jsutils/groupBy.js';
+import { groupBy } from '../../jsutils/groupBy.ts';
 
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError.ts';
 
 import type {
   FieldDefinitionNode,
   InputValueDefinitionNode,
   NameNode,
-} from '../../language/ast.js';
-import type { ASTVisitor } from '../../language/visitor.js';
+} from '../../language/ast.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 
-import type { SDLValidationContext } from '../ValidationContext.js';
+import type { SDLValidationContext } from '../ValidationContext.ts';
 
 /**
  * Unique argument definition names

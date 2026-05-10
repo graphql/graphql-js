@@ -1,7 +1,7 @@
-import { isPromise } from '../jsutils/isPromise.js';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
+import { isPromise } from '../jsutils/isPromise.ts';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
 
-import { withConcurrentAbruptClose } from './withConcurrentAbruptClose.js';
+import { withConcurrentAbruptClose } from './withConcurrentAbruptClose.ts';
 
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator

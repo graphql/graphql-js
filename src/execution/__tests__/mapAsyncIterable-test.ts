@@ -1,10 +1,11 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectPromise } from '../../__testUtils__/expectPromise.js';
-import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
+import { expectPromise } from '../../__testUtils__/expectPromise.ts';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';
+import { withAsyncUsing } from '../../__testUtils__/withAsyncUsing.ts';
 
-import { mapAsyncIterable } from '../mapAsyncIterable.js';
+import { mapAsyncIterable } from '../mapAsyncIterable.ts';
 
 /* eslint-disable @typescript-eslint/require-await */
 describe('mapAsyncIterable', () => {
@@ -428,12 +429,13 @@ describe('mapAsyncIterable', () => {
       },
     };
 
-    {
-      await using doubles = mapAsyncIterable(generator, (x) => x + x);
-
-      expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
-      expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
-    }
+    await withAsyncUsing(
+      mapAsyncIterable(generator, (x) => x + x),
+      async (doubles) => {
+        expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
+        expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
+      },
+    );
 
     expect(returned).to.equal(true);
   });

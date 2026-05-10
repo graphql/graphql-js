@@ -1,4 +1,4 @@
-import { isSameSet } from './isSameSet.js';
+import { isSameSet } from './isSameSet.ts';
 
 export function getBySet<T, U>(
   map: ReadonlyMap<ReadonlySet<T>, U>,

@@ -10,7 +10,7 @@ import {
   npm,
   prettify,
   writeGeneratedFile,
-} from './utils.js';
+} from './utils.ts';
 
 const LOCAL = 'local';
 const { tmpDirPath } = makeTmpDir('graphql-js-npm-diff');

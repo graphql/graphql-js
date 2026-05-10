@@ -4,9 +4,12 @@ import path from 'node:path';
 
 import ts from 'typescript';
 
-import { changeExtensionInImportPaths } from './change-extension-in-import-paths.js';
-import { inlineInvariant } from './inline-invariant.js';
-import type { PlatformConditionalExports } from './utils.js';
+import {
+  changeExtensionInImportPaths,
+  changeExtensionInImportPathsInBundle,
+} from './change-extension-in-import-paths.ts';
+import { inlineInvariant } from './inline-invariant.ts';
+import type { PlatformConditionalExports } from './utils.ts';
 import {
   buildCJSDevModeStub,
   buildESMDevModeStub,
@@ -16,7 +19,7 @@ import {
   readTSConfig,
   showDirStats,
   writeGeneratedFile,
-} from './utils.js';
+} from './utils.ts';
 
 console.log('\n./npmDist');
 await buildPackage('./npmDist', false);
@@ -240,7 +243,9 @@ function emitTSFiles(options: {
     tsHost,
   );
   const tsResult = tsProgram.emit(undefined, undefined, undefined, undefined, {
-    after: [changeExtensionInImportPaths({ extension }), inlineInvariant],
+    before: [changeExtensionInImportPaths({ extension })],
+    after: [inlineInvariant],
+    afterDeclarations: [changeExtensionInImportPathsInBundle({ extension })],
   });
   assert(
     !tsResult.emitSkipped,

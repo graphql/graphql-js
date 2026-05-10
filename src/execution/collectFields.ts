@@ -1,5 +1,5 @@
-import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
-import type { ObjMap, ReadOnlyObjMap } from '../jsutils/ObjMap.js';
+import { AccumulatorMap } from '../jsutils/AccumulatorMap.ts';
+import type { ObjMap, ReadOnlyObjMap } from '../jsutils/ObjMap.ts';
 
 import type {
   ConstValueNode,
@@ -9,27 +9,27 @@ import type {
   FragmentSpreadNode,
   InlineFragmentNode,
   SelectionSetNode,
-} from '../language/ast.js';
-import { Kind } from '../language/kinds.js';
+} from '../language/ast.ts';
+import { Kind } from '../language/kinds.ts';
 
-import type { GraphQLObjectType } from '../type/definition.js';
-import { isAbstractType } from '../type/definition.js';
+import type { GraphQLObjectType } from '../type/definition.ts';
+import { isAbstractType } from '../type/definition.ts';
 import {
   GraphQLDeferDirective,
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
-} from '../type/directives.js';
-import type { GraphQLSchema } from '../type/schema.js';
+} from '../type/directives.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
 
-import { typeFromAST } from '../utilities/typeFromAST.js';
+import { typeFromAST } from '../utilities/typeFromAST.ts';
 
-import type { GraphQLVariableSignature } from './getVariableSignature.js';
-import type { VariableValues } from './values.js';
+import type { GraphQLVariableSignature } from './getVariableSignature.ts';
+import type { VariableValues } from './values.ts';
 import {
   getArgumentValues,
   getDirectiveValues,
   getFragmentVariableValues,
-} from './values.js';
+} from './values.ts';
 
 export interface DeferUsage {
   label: string | undefined;

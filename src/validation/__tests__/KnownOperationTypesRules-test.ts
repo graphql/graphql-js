@@ -1,8 +1,8 @@
 import { describe, it } from 'mocha';
 
-import { KnownOperationTypesRule } from '../rules/KnownOperationTypesRule.js';
+import { KnownOperationTypesRule } from '../rules/KnownOperationTypesRule.ts';
 
-import { expectValidationErrors } from './harness.js';
+import { expectValidationErrors } from './harness.ts';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(KnownOperationTypesRule, queryStr);

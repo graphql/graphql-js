@@ -1,4 +1,4 @@
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
 
 export class AbortedGraphQLExecutionError<TResult> extends Error {
   readonly abortedResult: PromiseOrValue<TResult>;

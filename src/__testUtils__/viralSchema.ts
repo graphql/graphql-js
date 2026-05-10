@@ -2,9 +2,9 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-} from '../type/definition.js';
-import { GraphQLString } from '../type/scalars.js';
-import { GraphQLSchema } from '../type/schema.js';
+} from '../type/definition.ts';
+import { GraphQLString } from '../type/scalars.ts';
+import { GraphQLSchema } from '../type/schema.ts';
 
 const Mutation = new GraphQLObjectType({
   name: 'Mutation',

@@ -1,15 +1,15 @@
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError.ts';
 
 import type {
   EnumTypeDefinitionNode,
   EnumTypeExtensionNode,
   NameNode,
-} from '../../language/ast.js';
-import type { ASTVisitor } from '../../language/visitor.js';
+} from '../../language/ast.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 
-import { isEnumType } from '../../type/definition.js';
+import { isEnumType } from '../../type/definition.ts';
 
-import type { SDLValidationContext } from '../ValidationContext.js';
+import type { SDLValidationContext } from '../ValidationContext.ts';
 
 /**
  * Unique enum value names

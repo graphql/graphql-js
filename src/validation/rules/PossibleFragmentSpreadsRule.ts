@@ -1,17 +1,17 @@
-import { inspect } from '../../jsutils/inspect.js';
-import type { Maybe } from '../../jsutils/Maybe.js';
+import { inspect } from '../../jsutils/inspect.ts';
+import type { Maybe } from '../../jsutils/Maybe.ts';
 
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError.ts';
 
-import type { ASTVisitor } from '../../language/visitor.js';
+import type { ASTVisitor } from '../../language/visitor.ts';
 
-import type { GraphQLCompositeType } from '../../type/definition.js';
-import { isCompositeType } from '../../type/definition.js';
+import type { GraphQLCompositeType } from '../../type/definition.ts';
+import { isCompositeType } from '../../type/definition.ts';
 
-import { doTypesOverlap } from '../../utilities/typeComparators.js';
-import { typeFromAST } from '../../utilities/typeFromAST.js';
+import { doTypesOverlap } from '../../utilities/typeComparators.ts';
+import { typeFromAST } from '../../utilities/typeFromAST.ts';
 
-import type { ValidationContext } from '../ValidationContext.js';
+import type { ValidationContext } from '../ValidationContext.ts';
 
 /**
  * Possible fragment spread

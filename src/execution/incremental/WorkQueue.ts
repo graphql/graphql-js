@@ -1,8 +1,8 @@
-import { isPromise } from '../../jsutils/isPromise.js';
-import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
+import { isPromise } from '../../jsutils/isPromise.ts';
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 
-import type { Computation } from './Computation.js';
-import { Queue } from './Queue.js';
+import type { Computation } from './Computation.ts';
+import { Queue } from './Queue.ts';
 
 export interface Group<TSelf extends Group<TSelf>> {
   parent?: TSelf | undefined;

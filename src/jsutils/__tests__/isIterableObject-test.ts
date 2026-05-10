@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { identityFunc } from '../identityFunc.js';
-import { isIterableObject } from '../isIterableObject.js';
+import { identityFunc } from '../identityFunc.ts';
+import { isIterableObject } from '../isIterableObject.ts';
 
 describe('isIterableObject', () => {
   it('should return `true` for collections', () => {

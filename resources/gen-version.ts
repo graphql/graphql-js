@@ -1,4 +1,4 @@
-import { prettify, readPackageJSON, writeGeneratedFile } from './utils.js';
+import { prettify, readPackageJSON, writeGeneratedFile } from './utils.ts';
 
 const { version } = readPackageJSON();
 const versionMatch = /^(\d+)\.(\d+)\.(\d+)-?(.*)?$/.exec(version);

@@ -1,4 +1,4 @@
-import { git, readPackageJSON, readPackageJSONAtRef } from './utils.js';
+import { git, readPackageJSON, readPackageJSONAtRef } from './utils.ts';
 
 const packageJSON = readPackageJSON();
 const labelsConfig: { [label: string]: { section: string; fold?: boolean } } = {

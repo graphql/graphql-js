@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { collectIteratorPromises } from '../collectIteratorPromises.js';
+import { collectIteratorPromises } from '../collectIteratorPromises.ts';
 
 describe('collectIteratorPromises', () => {
   it('collects promise values until completion', () => {

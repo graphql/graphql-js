@@ -1,15 +1,15 @@
 import { describe, it } from 'mocha';
 
-import type { GraphQLSchema } from '../../type/schema.js';
+import type { GraphQLSchema } from '../../type/schema.ts';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { OverlappingFieldsCanBeMergedRule } from '../rules/OverlappingFieldsCanBeMergedRule.js';
+import { OverlappingFieldsCanBeMergedRule } from '../rules/OverlappingFieldsCanBeMergedRule.ts';
 
 import {
   expectValidationErrors,
   expectValidationErrorsWithSchema,
-} from './harness.js';
+} from './harness.ts';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(OverlappingFieldsCanBeMergedRule, queryStr);

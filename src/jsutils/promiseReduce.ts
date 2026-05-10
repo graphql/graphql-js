@@ -1,5 +1,5 @@
-import { isPromise } from './isPromise.js';
-import type { PromiseOrValue } from './PromiseOrValue.js';
+import { isPromise } from './isPromise.ts';
+import type { PromiseOrValue } from './PromiseOrValue.ts';
 
 /**
  * Similar to Array.prototype.reduce(), however the reducing callback may return

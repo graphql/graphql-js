@@ -1,10 +1,10 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { DirectiveLocation } from '../../language/directiveLocation.js';
+import { DirectiveLocation } from '../../language/directiveLocation.ts';
 
-import { GraphQLDirective } from '../directives.js';
-import { GraphQLInt, GraphQLString } from '../scalars.js';
+import { GraphQLDirective } from '../directives.ts';
+import { GraphQLInt, GraphQLString } from '../scalars.ts';
 
 describe('Type System: Directive', () => {
   it('defines a directive with no args', () => {

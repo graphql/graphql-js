@@ -1,8 +1,8 @@
 import { describe, it } from 'mocha';
 
-import { NoUndefinedVariablesRule } from '../rules/NoUndefinedVariablesRule.js';
+import { NoUndefinedVariablesRule } from '../rules/NoUndefinedVariablesRule.ts';
 
-import { expectValidationErrors } from './harness.js';
+import { expectValidationErrors } from './harness.ts';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(NoUndefinedVariablesRule, queryStr);

@@ -1,15 +1,15 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 
-import { introspectionFromSchema } from '../../utilities/introspectionFromSchema.js';
+import { introspectionFromSchema } from '../../utilities/introspectionFromSchema.ts';
 
-import { graphqlSync } from '../../graphql.js';
+import { graphqlSync } from '../../graphql.ts';
 
-import { GraphQLEnumType, GraphQLObjectType } from '../definition.js';
-import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../scalars.js';
-import { GraphQLSchema } from '../schema.js';
+import { GraphQLEnumType, GraphQLObjectType } from '../definition.ts';
+import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../scalars.ts';
+import { GraphQLSchema } from '../schema.ts';
 
 const ColorType = new GraphQLEnumType({
   name: 'Color',

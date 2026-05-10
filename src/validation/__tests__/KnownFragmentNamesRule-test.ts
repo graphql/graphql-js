@@ -1,8 +1,8 @@
 import { describe, it } from 'mocha';
 
-import { KnownFragmentNamesRule } from '../rules/KnownFragmentNamesRule.js';
+import { KnownFragmentNamesRule } from '../rules/KnownFragmentNamesRule.ts';
 
-import { expectValidationErrors } from './harness.js';
+import { expectValidationErrors } from './harness.ts';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(KnownFragmentNamesRule, queryStr);

@@ -1,29 +1,29 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { Kind } from '../../language/kinds.js';
-import { parseConstValue } from '../../language/parser.js';
+import { Kind } from '../../language/kinds.ts';
+import { parseConstValue } from '../../language/parser.ts';
 
-import type { GraphQLInputType } from '../../type/definition.js';
+import type { GraphQLInputType } from '../../type/definition.ts';
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLScalarType,
-} from '../../type/definition.js';
+} from '../../type/definition.ts';
 import {
   GraphQLBoolean,
   GraphQLFloat,
   GraphQLID,
   GraphQLInt,
   GraphQLString,
-} from '../../type/scalars.js';
+} from '../../type/scalars.ts';
 
 import {
   defaultScalarValueToLiteral,
   valueToLiteral,
-} from '../valueToLiteral.js';
+} from '../valueToLiteral.ts';
 
 describe('valueToLiteral', () => {
   function test(

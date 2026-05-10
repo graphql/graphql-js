@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent, dedentString } from '../dedent.js';
+import { dedent, dedentString } from '../dedent.ts';
 
 describe('dedentString', () => {
   it('removes indentation in typical usage', () => {

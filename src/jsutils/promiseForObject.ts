@@ -1,5 +1,5 @@
-import type { ObjMap } from './ObjMap.js';
-import type { PromiseOrValue } from './PromiseOrValue.js';
+import type { ObjMap } from './ObjMap.ts';
+import type { PromiseOrValue } from './PromiseOrValue.ts';
 
 /**
  * This function transforms a JS object `ObjMap<Promise<T>>` into

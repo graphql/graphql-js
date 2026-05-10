@@ -4,4 +4,4 @@ check-leaks: true
 extension:
   - ts
 node-option:
-  - 'import=./resources/register-ts-node.js'
+  - 'experimental-strip-types=true'

@@ -1,14 +1,14 @@
 import { assert } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent.js';
-import { genFuzzStrings } from '../../__testUtils__/genFuzzStrings.js';
-import { inspectStr } from '../../__testUtils__/inspectStr.js';
+import { dedent } from '../../__testUtils__/dedent.ts';
+import { genFuzzStrings } from '../../__testUtils__/genFuzzStrings.ts';
+import { inspectStr } from '../../__testUtils__/inspectStr.ts';
 
-import { Lexer } from '../../language/lexer.js';
-import { Source } from '../../language/source.js';
+import { Lexer } from '../../language/lexer.ts';
+import { Source } from '../../language/source.ts';
 
-import { stripIgnoredCharacters } from '../stripIgnoredCharacters.js';
+import { stripIgnoredCharacters } from '../stripIgnoredCharacters.ts';
 
 const ignoredTokens = [
   // UnicodeBOM ::

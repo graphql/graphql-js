@@ -1,8 +1,8 @@
 import { describe, it } from 'mocha';
 
-import { StreamDirectiveOnListFieldRule } from '../rules/StreamDirectiveOnListFieldRule.js';
+import { StreamDirectiveOnListFieldRule } from '../rules/StreamDirectiveOnListFieldRule.ts';
 
-import { expectValidationErrors } from './harness.js';
+import { expectValidationErrors } from './harness.ts';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(StreamDirectiveOnListFieldRule, queryStr);

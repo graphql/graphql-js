@@ -1,19 +1,19 @@
-import { didYouMean } from '../../jsutils/didYouMean.js';
-import { inspect } from '../../jsutils/inspect.js';
-import { invariant } from '../../jsutils/invariant.js';
-import { suggestionList } from '../../jsutils/suggestionList.js';
+import { didYouMean } from '../../jsutils/didYouMean.ts';
+import { inspect } from '../../jsutils/inspect.ts';
+import { invariant } from '../../jsutils/invariant.ts';
+import { suggestionList } from '../../jsutils/suggestionList.ts';
 
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError.ts';
 
 import type {
   TypeDefinitionNode,
   TypeExtensionNode,
-} from '../../language/ast.js';
-import { Kind } from '../../language/kinds.js';
-import { isTypeDefinitionNode } from '../../language/predicates.js';
-import type { ASTVisitor } from '../../language/visitor.js';
+} from '../../language/ast.ts';
+import { Kind } from '../../language/kinds.ts';
+import { isTypeDefinitionNode } from '../../language/predicates.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 
-import type { GraphQLNamedType } from '../../type/definition.js';
+import type { GraphQLNamedType } from '../../type/definition.ts';
 import {
   isEnumType,
   isInputObjectType,
@@ -21,9 +21,9 @@ import {
   isObjectType,
   isScalarType,
   isUnionType,
-} from '../../type/definition.js';
+} from '../../type/definition.ts';
 
-import type { SDLValidationContext } from '../ValidationContext.js';
+import type { SDLValidationContext } from '../ValidationContext.ts';
 
 /**
  * Possible type extension

@@ -1,10 +1,10 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectPromise } from '../../__testUtils__/expectPromise.js';
-import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
+import { expectPromise } from '../../__testUtils__/expectPromise.ts';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';
 
-import { parse } from '../../language/parser.js';
+import { parse } from '../../language/parser.ts';
 
 import {
   GraphQLDeferDirective,
@@ -12,10 +12,10 @@ import {
   GraphQLObjectType,
   GraphQLStreamDirective,
   GraphQLString,
-} from '../../type/index.js';
-import { GraphQLSchema } from '../../type/schema.js';
+} from '../../type/index.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import { execute } from '../execute.js';
+import { execute } from '../execute.ts';
 
 describe('Original execute errors on experimental @defer and @stream directives', () => {
   it('errors when using original execute with schemas including experimental @defer directive', () => {

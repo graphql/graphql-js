@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { spyOn, spyOnMethod } from '../spyOn.js';
+import { spyOn, spyOnMethod } from '../spyOn.ts';
 
 describe('spyOn', () => {
   it('tracks invocations while preserving original behavior', () => {

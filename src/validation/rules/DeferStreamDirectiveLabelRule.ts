@@ -1,15 +1,15 @@
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError.ts';
 
-import type { DirectiveNode } from '../../language/ast.js';
-import { Kind } from '../../language/kinds.js';
-import type { ASTVisitor } from '../../language/visitor.js';
+import type { DirectiveNode } from '../../language/ast.ts';
+import { Kind } from '../../language/kinds.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 
 import {
   GraphQLDeferDirective,
   GraphQLStreamDirective,
-} from '../../type/directives.js';
+} from '../../type/directives.ts';
 
-import type { ValidationContext } from '../ValidationContext.js';
+import type { ValidationContext } from '../ValidationContext.ts';
 
 /**
  * Defer and stream directive labels are unique

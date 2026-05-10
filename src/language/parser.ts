@@ -1,7 +1,7 @@
-import type { Maybe } from '../jsutils/Maybe.js';
+import type { Maybe } from '../jsutils/Maybe.ts';
 
-import type { GraphQLError } from '../error/GraphQLError.js';
-import { syntaxError } from '../error/syntaxError.js';
+import type { GraphQLError } from '../error/GraphQLError.ts';
+import { syntaxError } from '../error/syntaxError.ts';
 
 import type {
   ArgumentCoordinateNode,
@@ -67,15 +67,15 @@ import type {
   ValueNode,
   VariableDefinitionNode,
   VariableNode,
-} from './ast.js';
-import { Location, OperationTypeNode } from './ast.js';
-import { DirectiveLocation } from './directiveLocation.js';
-import { Kind } from './kinds.js';
-import type { LexerInterface } from './lexer.js';
-import { isPunctuatorTokenKind, Lexer } from './lexer.js';
-import { SchemaCoordinateLexer } from './schemaCoordinateLexer.js';
-import { isSource, Source } from './source.js';
-import { TokenKind } from './tokenKind.js';
+} from './ast.ts';
+import { Location, OperationTypeNode } from './ast.ts';
+import { DirectiveLocation } from './directiveLocation.ts';
+import { Kind } from './kinds.ts';
+import type { LexerInterface } from './lexer.ts';
+import { isPunctuatorTokenKind, Lexer } from './lexer.ts';
+import { SchemaCoordinateLexer } from './schemaCoordinateLexer.ts';
+import { isSource, Source } from './source.ts';
+import { TokenKind } from './tokenKind.ts';
 
 /**
  * Configuration options to control parser behavior

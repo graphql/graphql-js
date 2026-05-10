@@ -1,6 +1,6 @@
-import type { Source } from '../language/source.js';
+import type { Source } from '../language/source.ts';
 
-import { GraphQLError } from './GraphQLError.js';
+import { GraphQLError } from './GraphQLError.ts';
 
 /**
  * Produces a GraphQLError representing a syntax error, containing useful

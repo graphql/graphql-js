@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { identityFunc } from '../identityFunc.js';
-import { isObjectLike } from '../isObjectLike.js';
+import { identityFunc } from '../identityFunc.ts';
+import { isObjectLike } from '../isObjectLike.ts';
 
 describe('isObjectLike', () => {
   it('should return `true` for objects', () => {

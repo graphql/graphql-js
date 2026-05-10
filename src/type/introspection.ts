@@ -1,10 +1,10 @@
-import { inspect } from '../jsutils/inspect.js';
-import { invariant } from '../jsutils/invariant.js';
+import { inspect } from '../jsutils/inspect.ts';
+import { invariant } from '../jsutils/invariant.ts';
 
-import { DirectiveLocation } from '../language/directiveLocation.js';
-import { print } from '../language/printer.js';
+import { DirectiveLocation } from '../language/directiveLocation.ts';
+import { print } from '../language/printer.ts';
 
-import { getDefaultValueAST } from '../utilities/getDefaultValueAST.js';
+import { getDefaultValueAST } from '../utilities/getDefaultValueAST.ts';
 
 import type {
   GraphQLEnumValue,
@@ -12,7 +12,7 @@ import type {
   GraphQLInputField,
   GraphQLNamedType,
   GraphQLType,
-} from './definition.js';
+} from './definition.ts';
 import {
   GraphQLEnumType,
   GraphQLField,
@@ -28,10 +28,10 @@ import {
   isObjectType,
   isScalarType,
   isUnionType,
-} from './definition.js';
-import type { GraphQLDirective } from './directives.js';
-import { GraphQLBoolean, GraphQLString } from './scalars.js';
-import type { GraphQLSchema } from './schema.js';
+} from './definition.ts';
+import type { GraphQLDirective } from './directives.ts';
+import { GraphQLBoolean, GraphQLString } from './scalars.ts';
+import type { GraphQLSchema } from './schema.ts';
 
 export const __Schema: GraphQLObjectType = new GraphQLObjectType({
   name: '__Schema',

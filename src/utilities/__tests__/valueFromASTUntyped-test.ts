@@ -1,12 +1,12 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import type { Maybe } from '../../jsutils/Maybe.js';
-import type { ObjMap } from '../../jsutils/ObjMap.js';
+import type { Maybe } from '../../jsutils/Maybe.ts';
+import type { ObjMap } from '../../jsutils/ObjMap.ts';
 
-import { parseValue } from '../../language/parser.js';
+import { parseValue } from '../../language/parser.ts';
 
-import { valueFromASTUntyped } from '../valueFromASTUntyped.js';
+import { valueFromASTUntyped } from '../valueFromASTUntyped.ts';
 
 describe('valueFromASTUntyped', () => {
   function expectValueFrom(

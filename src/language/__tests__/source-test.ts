@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { Source } from '../source.js';
+import { Source } from '../source.ts';
 
 describe('Source', () => {
   it('can be Object.toStringified', () => {

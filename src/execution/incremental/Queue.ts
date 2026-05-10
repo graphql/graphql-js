@@ -1,9 +1,9 @@
-import { invariant } from '../../jsutils/invariant.js';
-import { isPromise } from '../../jsutils/isPromise.js';
-import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
-import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
+import { invariant } from '../../jsutils/invariant.ts';
+import { isPromise } from '../../jsutils/isPromise.ts';
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
+import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.ts';
 
-import { withConcurrentAbruptClose } from '../withConcurrentAbruptClose.js';
+import { withConcurrentAbruptClose } from '../withConcurrentAbruptClose.ts';
 
 type Settled<T> =
   | { status: 'fulfilled'; value: T }

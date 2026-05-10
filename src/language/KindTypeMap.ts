@@ -1,5 +1,5 @@
 /* eslint-disable import/no-namespace */
-import type * as Kind_ from './kinds_.js';
+import type * as Kind_ from './kinds_.ts';
 
 // Keep the kind literal map available as a type-only import for `ast.ts`.
 // This avoids depending on the `Kind` runtime namespace in type positions,

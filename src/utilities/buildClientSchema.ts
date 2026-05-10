@@ -1,16 +1,16 @@
-import { devAssert } from '../jsutils/devAssert.js';
-import { inspect } from '../jsutils/inspect.js';
-import { isObjectLike } from '../jsutils/isObjectLike.js';
-import { keyValMap } from '../jsutils/keyValMap.js';
+import { devAssert } from '../jsutils/devAssert.ts';
+import { inspect } from '../jsutils/inspect.ts';
+import { isObjectLike } from '../jsutils/isObjectLike.ts';
+import { keyValMap } from '../jsutils/keyValMap.ts';
 
-import { parseConstValue } from '../language/parser.js';
+import { parseConstValue } from '../language/parser.ts';
 
 import type {
   GraphQLFieldConfig,
   GraphQLFieldConfigMap,
   GraphQLNamedType,
   GraphQLType,
-} from '../type/definition.js';
+} from '../type/definition.ts';
 import {
   assertInterfaceType,
   assertNullableType,
@@ -25,12 +25,12 @@ import {
   GraphQLUnionType,
   isInputType,
   isOutputType,
-} from '../type/definition.js';
-import { GraphQLDirective } from '../type/directives.js';
-import { introspectionTypes, TypeKind } from '../type/introspection.js';
-import { specifiedScalarTypes } from '../type/scalars.js';
-import type { GraphQLSchemaValidationOptions } from '../type/schema.js';
-import { GraphQLSchema } from '../type/schema.js';
+} from '../type/definition.ts';
+import { GraphQLDirective } from '../type/directives.ts';
+import { introspectionTypes, TypeKind } from '../type/introspection.ts';
+import { specifiedScalarTypes } from '../type/scalars.ts';
+import type { GraphQLSchemaValidationOptions } from '../type/schema.ts';
+import { GraphQLSchema } from '../type/schema.ts';
 
 import type {
   IntrospectionDirective,
@@ -46,7 +46,7 @@ import type {
   IntrospectionType,
   IntrospectionTypeRef,
   IntrospectionUnionType,
-} from './getIntrospectionQuery.js';
+} from './getIntrospectionQuery.ts';
 
 /**
  * Build a GraphQLSchema for use by client tools.

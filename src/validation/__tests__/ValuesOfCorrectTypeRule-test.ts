@@ -1,21 +1,21 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 
-import { parse } from '../../language/parser.js';
+import { parse } from '../../language/parser.ts';
 
-import { GraphQLObjectType, GraphQLScalarType } from '../../type/definition.js';
-import { GraphQLString } from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+import { GraphQLObjectType, GraphQLScalarType } from '../../type/definition.ts';
+import { GraphQLString } from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import { ValuesOfCorrectTypeRule } from '../rules/ValuesOfCorrectTypeRule.js';
-import { validate } from '../validate.js';
+import { ValuesOfCorrectTypeRule } from '../rules/ValuesOfCorrectTypeRule.ts';
+import { validate } from '../validate.ts';
 
 import {
   expectValidationErrors,
   expectValidationErrorsWithSchema,
-} from './harness.js';
+} from './harness.ts';
 
 function expectErrors(queryStr: string, hideSuggestions = false) {
   return expectValidationErrors(

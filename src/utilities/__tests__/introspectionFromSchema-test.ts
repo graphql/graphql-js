@@ -1,19 +1,19 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent.js';
+import { dedent } from '../../__testUtils__/dedent.ts';
 
-import { DirectiveLocation } from '../../language/directiveLocation.js';
+import { DirectiveLocation } from '../../language/directiveLocation.ts';
 
-import { GraphQLObjectType } from '../../type/definition.js';
-import { GraphQLDirective } from '../../type/directives.js';
-import { GraphQLString } from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+import { GraphQLObjectType } from '../../type/definition.ts';
+import { GraphQLDirective } from '../../type/directives.ts';
+import { GraphQLString } from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import { buildClientSchema } from '../buildClientSchema.js';
-import type { IntrospectionQuery } from '../getIntrospectionQuery.js';
-import { introspectionFromSchema } from '../introspectionFromSchema.js';
-import { printSchema } from '../printSchema.js';
+import { buildClientSchema } from '../buildClientSchema.ts';
+import type { IntrospectionQuery } from '../getIntrospectionQuery.ts';
+import { introspectionFromSchema } from '../introspectionFromSchema.ts';
+import { printSchema } from '../printSchema.ts';
 
 function introspectionToSDL(introspection: IntrospectionQuery): string {
   return printSchema(buildClientSchema(introspection));

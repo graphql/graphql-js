@@ -1,13 +1,13 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent.js';
+import { dedent } from '../../__testUtils__/dedent.ts';
 
-import { parse } from '../../language/parser.js';
-import { print } from '../../language/printer.js';
-import { Source } from '../../language/source.js';
+import { parse } from '../../language/parser.ts';
+import { print } from '../../language/printer.ts';
+import { Source } from '../../language/source.ts';
 
-import { concatAST } from '../concatAST.js';
+import { concatAST } from '../concatAST.ts';
 
 describe('concatAST', () => {
   it('concatenates two ASTs together', () => {

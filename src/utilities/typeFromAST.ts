@@ -3,12 +3,12 @@ import type {
   NamedTypeNode,
   NonNullTypeNode,
   TypeNode,
-} from '../language/ast.js';
-import { Kind } from '../language/kinds.js';
+} from '../language/ast.ts';
+import { Kind } from '../language/kinds.ts';
 
-import type { GraphQLNamedType, GraphQLType } from '../type/definition.js';
-import { GraphQLList, GraphQLNonNull } from '../type/definition.js';
-import type { GraphQLSchema } from '../type/schema.js';
+import type { GraphQLNamedType, GraphQLType } from '../type/definition.ts';
+import { GraphQLList, GraphQLNonNull } from '../type/definition.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
 
 /**
  * Given a Schema and an AST node describing a type, return a GraphQLType

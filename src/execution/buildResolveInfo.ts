@@ -1,21 +1,21 @@
-import type { ObjMap } from '../jsutils/ObjMap.js';
-import type { Path } from '../jsutils/Path.js';
+import type { ObjMap } from '../jsutils/ObjMap.ts';
+import type { Path } from '../jsutils/Path.ts';
 
 import type {
   FieldNode,
   FragmentDefinitionNode,
   OperationDefinitionNode,
-} from '../language/ast.js';
+} from '../language/ast.ts';
 
 import type {
   GraphQLField,
   GraphQLObjectType,
   GraphQLResolveInfo,
   GraphQLResolveInfoHelpers,
-} from '../type/index.js';
-import type { GraphQLSchema } from '../type/schema.js';
+} from '../type/index.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
 
-import type { VariableValues } from './values.js';
+import type { VariableValues } from './values.ts';
 
 export interface BuildResolveInfoExecutionArgs {
   schema: GraphQLSchema;

@@ -1,9 +1,9 @@
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError.ts';
 
-import { Kind } from '../../language/kinds.js';
-import type { ASTVisitor } from '../../language/visitor.js';
+import { Kind } from '../../language/kinds.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 
-import type { ASTValidationContext } from '../ValidationContext.js';
+import type { ASTValidationContext } from '../ValidationContext.ts';
 
 /**
  * Lone anonymous operation

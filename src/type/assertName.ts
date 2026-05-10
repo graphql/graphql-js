@@ -1,6 +1,6 @@
-import { GraphQLError } from '../error/GraphQLError.js';
+import { GraphQLError } from '../error/GraphQLError.ts';
 
-import { isNameContinue, isNameStart } from '../language/characterClasses.js';
+import { isNameContinue, isNameStart } from '../language/characterClasses.ts';
 
 /**
  * Upholds the spec rules about naming.

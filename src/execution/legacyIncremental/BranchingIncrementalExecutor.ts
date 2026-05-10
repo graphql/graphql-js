@@ -1,29 +1,29 @@
-import { AccumulatorMap } from '../../jsutils/AccumulatorMap.js';
-import { getBySet } from '../../jsutils/getBySet.js';
-import { invariant } from '../../jsutils/invariant.js';
-import { isSameSet } from '../../jsutils/isSameSet.js';
-import { memoize1 } from '../../jsutils/memoize1.js';
-import { memoize2 } from '../../jsutils/memoize2.js';
-import type { ObjMap } from '../../jsutils/ObjMap.js';
+import { AccumulatorMap } from '../../jsutils/AccumulatorMap.ts';
+import { getBySet } from '../../jsutils/getBySet.ts';
+import { invariant } from '../../jsutils/invariant.ts';
+import { isSameSet } from '../../jsutils/isSameSet.ts';
+import { memoize1 } from '../../jsutils/memoize1.ts';
+import { memoize2 } from '../../jsutils/memoize2.ts';
+import type { ObjMap } from '../../jsutils/ObjMap.ts';
 
 import type {
   GraphQLError,
   GraphQLFormattedError,
-} from '../../error/GraphQLError.js';
+} from '../../error/GraphQLError.ts';
 
 import type {
   DeferUsage,
   FieldDetails,
   GroupedFieldSet,
-} from '../collectFields.js';
-import type { ExecutionResult, FormattedExecutionResult } from '../Executor.js';
+} from '../collectFields.ts';
+import type { ExecutionResult, FormattedExecutionResult } from '../Executor.ts';
 import type {
   DeferUsageSet,
   ExecutionPlan,
-} from '../incremental/buildExecutionPlan.js';
-import { IncrementalExecutor } from '../incremental/IncrementalExecutor.js';
+} from '../incremental/buildExecutionPlan.ts';
+import { IncrementalExecutor } from '../incremental/IncrementalExecutor.ts';
 
-import { BranchingIncrementalPublisher } from './BranchingIncrementalPublisher.js';
+import { BranchingIncrementalPublisher } from './BranchingIncrementalPublisher.ts';
 
 export interface LegacyExperimentalIncrementalExecutionResults<
   TInitialData = ObjMap<unknown>,

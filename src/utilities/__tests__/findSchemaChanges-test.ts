@@ -1,13 +1,13 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { buildSchema } from '../buildASTSchema.js';
+import { buildSchema } from '../buildASTSchema.ts';
 import {
   BreakingChangeType,
   DangerousChangeType,
   findSchemaChanges,
   SafeChangeType,
-} from '../findSchemaChanges.js';
+} from '../findSchemaChanges.ts';
 
 describe('findSchemaChanges', () => {
   it('should detect if a type was added', () => {

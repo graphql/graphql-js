@@ -1,25 +1,25 @@
-import { inspect } from '../../jsutils/inspect.js';
+import { inspect } from '../../jsutils/inspect.ts';
 
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError.ts';
 
 import type {
   InputValueDefinitionNode,
   VariableDefinitionNode,
-} from '../../language/ast.js';
-import { Kind } from '../../language/kinds.js';
-import { print } from '../../language/printer.js';
-import type { ASTVisitor } from '../../language/visitor.js';
+} from '../../language/ast.ts';
+import { Kind } from '../../language/kinds.ts';
+import { print } from '../../language/printer.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 
-import type { GraphQLArgument } from '../../type/definition.js';
-import { isRequiredArgument, isType } from '../../type/definition.js';
-import { specifiedDirectives } from '../../type/directives.js';
+import type { GraphQLArgument } from '../../type/definition.ts';
+import { isRequiredArgument, isType } from '../../type/definition.ts';
+import { specifiedDirectives } from '../../type/directives.ts';
 
-import { typeFromAST } from '../../utilities/typeFromAST.js';
+import { typeFromAST } from '../../utilities/typeFromAST.ts';
 
 import type {
   SDLValidationContext,
   ValidationContext,
-} from '../ValidationContext.js';
+} from '../ValidationContext.ts';
 
 /**
  * Provided required arguments

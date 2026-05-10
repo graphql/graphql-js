@@ -1,5 +1,5 @@
-import { isPromise } from '../../jsutils/isPromise.js';
-import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
+import { isPromise } from '../../jsutils/isPromise.ts';
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 
 type MaybePromise<T> =
   | { status: 'fulfilled'; value: T }

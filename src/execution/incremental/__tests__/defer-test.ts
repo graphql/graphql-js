@@ -1,32 +1,32 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../../__testUtils__/expectJSON.js';
-import { expectPromise } from '../../../__testUtils__/expectPromise.js';
-import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.js';
-import { spyOnMethod } from '../../../__testUtils__/spyOn.js';
+import { expectJSON } from '../../../__testUtils__/expectJSON.ts';
+import { expectPromise } from '../../../__testUtils__/expectPromise.ts';
+import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.ts';
+import { spyOnMethod } from '../../../__testUtils__/spyOn.ts';
 
-import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.js';
+import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.ts';
 
-import type { DocumentNode } from '../../../language/ast.js';
-import { parse } from '../../../language/parser.js';
+import type { DocumentNode } from '../../../language/ast.ts';
+import { parse } from '../../../language/parser.ts';
 
 import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-} from '../../../type/definition.js';
-import { GraphQLID, GraphQLString } from '../../../type/scalars.js';
-import { GraphQLSchema } from '../../../type/schema.js';
+} from '../../../type/definition.ts';
+import { GraphQLID, GraphQLString } from '../../../type/scalars.ts';
+import { GraphQLSchema } from '../../../type/schema.ts';
 
-import { buildSchema } from '../../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../../utilities/buildASTSchema.ts';
 
-import { experimentalExecuteIncrementally } from '../../execute.js';
+import { experimentalExecuteIncrementally } from '../../execute.ts';
 
 import type {
   InitialIncrementalExecutionResult,
   SubsequentIncrementalExecutionResult,
-} from '../IncrementalExecutor.js';
+} from '../IncrementalExecutor.ts';
 
 const friendType = new GraphQLObjectType({
   fields: {

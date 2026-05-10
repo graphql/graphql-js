@@ -1,21 +1,21 @@
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 
-import { parse } from '../../language/parser.js';
+import { parse } from '../../language/parser.ts';
 
-import type { GraphQLSchema } from '../../type/schema.js';
+import type { GraphQLSchema } from '../../type/schema.ts';
 
-import { extendSchema } from '../../utilities/extendSchema.js';
+import { extendSchema } from '../../utilities/extendSchema.ts';
 
-import { UniqueDirectivesPerLocationRule } from '../rules/UniqueDirectivesPerLocationRule.js';
-import { validateSDL } from '../validate.js';
+import { UniqueDirectivesPerLocationRule } from '../rules/UniqueDirectivesPerLocationRule.ts';
+import { validateSDL } from '../validate.ts';
 
 import {
   expectSDLValidationErrors,
   expectValidationErrorsWithSchema,
   testSchema,
-} from './harness.js';
+} from './harness.ts';
 
 const extensionSDL = `
   directive @directive on FIELD | FRAGMENT_DEFINITION

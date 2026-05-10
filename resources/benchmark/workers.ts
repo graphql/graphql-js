@@ -4,13 +4,13 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import { localRepoPath } from '../utils.js';
+import { localRepoPath } from '../utils.ts';
 
-import type { Runtime } from './args.js';
+import type { Runtime } from './args.ts';
 import {
   memoryCommandArgsByRuntime,
   timingCommandArgsByRuntime,
-} from './config.js';
+} from './config.ts';
 
 export function getBenchmarkName(modulePath: string, runtime: Runtime): string {
   return runWorkerFile(

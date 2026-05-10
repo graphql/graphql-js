@@ -1,11 +1,11 @@
-import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 
-import type { ExecutionArgs } from '../execute.js';
-import { validateExecutionArgs } from '../execute.js';
-import type { ExecutionResult, ValidatedExecutionArgs } from '../Executor.js';
+import type { ExecutionArgs } from '../execute.ts';
+import { validateExecutionArgs } from '../execute.ts';
+import type { ExecutionResult, ValidatedExecutionArgs } from '../Executor.ts';
 
-import type { LegacyExperimentalIncrementalExecutionResults } from './BranchingIncrementalExecutor.js';
-import { BranchingIncrementalExecutor } from './BranchingIncrementalExecutor.js';
+import type { LegacyExperimentalIncrementalExecutionResults } from './BranchingIncrementalExecutor.ts';
+import { BranchingIncrementalExecutor } from './BranchingIncrementalExecutor.ts';
 
 export function legacyExecuteIncrementally(
   args: ExecutionArgs,

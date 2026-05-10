@@ -6,11 +6,11 @@ import type {
   GraphQLField,
   GraphQLInputObjectType,
   GraphQLObjectType,
-} from '../../type/definition.js';
-import type { GraphQLDirective } from '../../type/directives.js';
+} from '../../type/definition.ts';
+import type { GraphQLDirective } from '../../type/directives.ts';
 
-import { buildSchema } from '../buildASTSchema.js';
-import { resolveSchemaCoordinate } from '../resolveSchemaCoordinate.js';
+import { buildSchema } from '../buildASTSchema.ts';
+import { resolveSchemaCoordinate } from '../resolveSchemaCoordinate.ts';
 
 const schema = buildSchema(`
   type Query {

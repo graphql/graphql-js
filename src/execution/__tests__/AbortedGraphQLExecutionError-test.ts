@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { AbortedGraphQLExecutionError } from '../AbortedGraphQLExecutionError.js';
+import { AbortedGraphQLExecutionError } from '../AbortedGraphQLExecutionError.ts';
 
 describe('AbortedGraphQLExecutionError', () => {
   it('uses the original Error reason message and cause', () => {

@@ -1,37 +1,37 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualPromisesOrValues.js';
-import { expectJSON } from '../../__testUtils__/expectJSON.js';
-import { expectPromise } from '../../__testUtils__/expectPromise.js';
-import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
-import { spyOnMethod } from '../../__testUtils__/spyOn.js';
+import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualPromisesOrValues.ts';
+import { expectJSON } from '../../__testUtils__/expectJSON.ts';
+import { expectPromise } from '../../__testUtils__/expectPromise.ts';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';
+import { spyOnMethod } from '../../__testUtils__/spyOn.ts';
 
-import { isAsyncIterable } from '../../jsutils/isAsyncIterable.js';
-import { isPromise } from '../../jsutils/isPromise.js';
-import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
+import { isAsyncIterable } from '../../jsutils/isAsyncIterable.ts';
+import { isPromise } from '../../jsutils/isPromise.ts';
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 
-import { parse } from '../../language/parser.js';
+import { parse } from '../../language/parser.ts';
 
-import { GraphQLList, GraphQLObjectType } from '../../type/definition.js';
+import { GraphQLList, GraphQLObjectType } from '../../type/definition.ts';
 import {
   GraphQLBoolean,
   GraphQLInt,
   GraphQLString,
-} from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+} from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import type { ExecutionArgs } from '../execute.js';
+import type { ExecutionArgs } from '../execute.ts';
 import {
   createSourceEventStream,
   executeSubscriptionEvent,
   mapSourceToResponseEvent,
   subscribe,
   validateSubscriptionArgs,
-} from '../execute.js';
-import type { ExecutionResult } from '../Executor.js';
+} from '../execute.ts';
+import type { ExecutionResult } from '../Executor.ts';
 
-import { SimplePubSub } from './simplePubSub.js';
+import { SimplePubSub } from './simplePubSub.ts';
 
 interface Email {
   from: string;

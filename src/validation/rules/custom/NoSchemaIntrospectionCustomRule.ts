@@ -1,12 +1,12 @@
-import { GraphQLError } from '../../../error/GraphQLError.js';
+import { GraphQLError } from '../../../error/GraphQLError.ts';
 
-import type { FieldNode } from '../../../language/ast.js';
-import type { ASTVisitor } from '../../../language/visitor.js';
+import type { FieldNode } from '../../../language/ast.ts';
+import type { ASTVisitor } from '../../../language/visitor.ts';
 
-import { getNamedType } from '../../../type/definition.js';
-import { isIntrospectionType } from '../../../type/introspection.js';
+import { getNamedType } from '../../../type/definition.ts';
+import { isIntrospectionType } from '../../../type/introspection.ts';
 
-import type { ValidationContext } from '../../ValidationContext.js';
+import type { ValidationContext } from '../../ValidationContext.ts';
 
 /**
  * Prohibit introspection queries

@@ -1,16 +1,16 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectPromise } from '../../../__testUtils__/expectPromise.js';
-import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.js';
-import { spyOn } from '../../../__testUtils__/spyOn.js';
+import { expectPromise } from '../../../__testUtils__/expectPromise.ts';
+import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.ts';
+import { spyOn } from '../../../__testUtils__/spyOn.ts';
 
-import { isPromise } from '../../../jsutils/isPromise.js';
-import type { PromiseOrValue } from '../../../jsutils/PromiseOrValue.js';
-import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.js';
+import { isPromise } from '../../../jsutils/isPromise.ts';
+import type { PromiseOrValue } from '../../../jsutils/PromiseOrValue.ts';
+import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.ts';
 
-import { Computation } from '../Computation.js';
-import { Queue } from '../Queue.js';
+import { Computation } from '../Computation.ts';
+import { Queue } from '../Queue.ts';
 import type {
   Group,
   Stream,
@@ -19,8 +19,8 @@ import type {
   TaskResult,
   Work,
   WorkQueueEvent,
-} from '../WorkQueue.js';
-import { createWorkQueue } from '../WorkQueue.js';
+} from '../WorkQueue.ts';
+import { createWorkQueue } from '../WorkQueue.ts';
 
 type TestTaskValue = string | number;
 type TestStreamItemValue = number;

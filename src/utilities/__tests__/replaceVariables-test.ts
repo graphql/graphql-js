@@ -1,29 +1,29 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { invariant } from '../../jsutils/invariant.js';
-import type { ReadOnlyObjMap } from '../../jsutils/ObjMap.js';
+import { invariant } from '../../jsutils/invariant.ts';
+import type { ReadOnlyObjMap } from '../../jsutils/ObjMap.ts';
 
 import type {
   FragmentArgumentNode,
   FragmentSpreadNode,
   ValueNode,
   VariableDefinitionNode,
-} from '../../language/ast.js';
-import { Kind } from '../../language/kinds.js';
-import { Parser, parseValue as _parseValue } from '../../language/parser.js';
-import { TokenKind } from '../../language/tokenKind.js';
+} from '../../language/ast.ts';
+import { Kind } from '../../language/kinds.ts';
+import { Parser, parseValue as _parseValue } from '../../language/parser.ts';
+import { TokenKind } from '../../language/tokenKind.ts';
 
-import { GraphQLInt } from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+import { GraphQLInt } from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import { getVariableSignature } from '../../execution/getVariableSignature.js';
+import { getVariableSignature } from '../../execution/getVariableSignature.ts';
 import {
   getFragmentVariableValues,
   getVariableValues,
-} from '../../execution/values.js';
+} from '../../execution/values.ts';
 
-import { replaceVariables } from '../replaceVariables.js';
+import { replaceVariables } from '../replaceVariables.ts';
 
 function parseValue(ast: string): ValueNode {
   return _parseValue(ast, { noLocation: true });

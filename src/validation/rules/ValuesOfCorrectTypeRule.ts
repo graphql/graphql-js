@@ -1,13 +1,13 @@
-import type { Maybe } from '../../jsutils/Maybe.js';
+import type { Maybe } from '../../jsutils/Maybe.ts';
 
-import type { ValueNode } from '../../language/ast.js';
-import type { ASTVisitor } from '../../language/visitor.js';
+import type { ValueNode } from '../../language/ast.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 
-import type { GraphQLInputType } from '../../type/index.js';
+import type { GraphQLInputType } from '../../type/index.ts';
 
-import { validateInputLiteral } from '../../utilities/validateInputValue.js';
+import { validateInputLiteral } from '../../utilities/validateInputValue.ts';
 
-import type { ValidationContext } from '../ValidationContext.js';
+import type { ValidationContext } from '../ValidationContext.ts';
 
 /**
  * Value literals of correct type

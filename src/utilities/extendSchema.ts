@@ -1,6 +1,6 @@
-import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
-import { invariant } from '../jsutils/invariant.js';
-import type { Maybe } from '../jsutils/Maybe.js';
+import { AccumulatorMap } from '../jsutils/AccumulatorMap.ts';
+import { invariant } from '../jsutils/invariant.ts';
+import type { Maybe } from '../jsutils/Maybe.ts';
 
 import type {
   DirectiveDefinitionNode,
@@ -26,8 +26,8 @@ import type {
   TypeNode,
   UnionTypeDefinitionNode,
   UnionTypeExtensionNode,
-} from '../language/ast.js';
-import { Kind } from '../language/kinds.js';
+} from '../language/ast.ts';
+import { Kind } from '../language/kinds.ts';
 
 import type {
   GraphQLEnumValueNormalizedConfigMap,
@@ -36,7 +36,7 @@ import type {
   GraphQLInputFieldNormalizedConfigMap,
   GraphQLNamedType,
   GraphQLType,
-} from '../type/definition.js';
+} from '../type/definition.ts';
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
@@ -46,26 +46,26 @@ import {
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLUnionType,
-} from '../type/definition.js';
+} from '../type/definition.ts';
 import {
   GraphQLDeprecatedDirective,
   GraphQLDirective,
   GraphQLOneOfDirective,
   GraphQLSpecifiedByDirective,
-} from '../type/directives.js';
-import { introspectionTypes } from '../type/introspection.js';
-import { specifiedScalarTypes } from '../type/scalars.js';
+} from '../type/directives.ts';
+import { introspectionTypes } from '../type/introspection.ts';
+import { specifiedScalarTypes } from '../type/scalars.ts';
 import type {
   GraphQLSchemaNormalizedConfig,
   GraphQLSchemaValidationOptions,
-} from '../type/schema.js';
-import { assertSchema, GraphQLSchema } from '../type/schema.js';
+} from '../type/schema.ts';
+import { assertSchema, GraphQLSchema } from '../type/schema.ts';
 
-import { assertValidSDLExtension } from '../validation/validate.js';
+import { assertValidSDLExtension } from '../validation/validate.ts';
 
-import { getDirectiveValues } from '../execution/values.js';
+import { getDirectiveValues } from '../execution/values.ts';
 
-import { mapSchemaConfig, SchemaElementKind } from './mapSchemaConfig.js';
+import { mapSchemaConfig, SchemaElementKind } from './mapSchemaConfig.ts';
 
 interface Options extends GraphQLSchemaValidationOptions {
   /**

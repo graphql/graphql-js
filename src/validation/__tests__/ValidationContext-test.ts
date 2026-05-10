@@ -1,19 +1,19 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { identityFunc } from '../../jsutils/identityFunc.js';
+import { identityFunc } from '../../jsutils/identityFunc.ts';
 
-import { parse } from '../../language/parser.js';
+import { parse } from '../../language/parser.ts';
 
-import { GraphQLSchema } from '../../type/schema.js';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import { TypeInfo } from '../../utilities/TypeInfo.js';
+import { TypeInfo } from '../../utilities/TypeInfo.ts';
 
 import {
   ASTValidationContext,
   SDLValidationContext,
   ValidationContext,
-} from '../ValidationContext.js';
+} from '../ValidationContext.ts';
 
 describe('ValidationContext', () => {
   it('can be Object.toStringified', () => {

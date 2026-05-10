@@ -1,4 +1,4 @@
-import { orList } from './formatList.js';
+import { orList } from './formatList.ts';
 
 const MAX_SUGGESTIONS = 5;
 

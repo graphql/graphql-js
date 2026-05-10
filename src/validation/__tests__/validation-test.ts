@@ -1,19 +1,19 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError.ts';
 
-import type { DirectiveNode } from '../../language/ast.js';
-import { parse } from '../../language/parser.js';
+import type { DirectiveNode } from '../../language/ast.ts';
+import { parse } from '../../language/parser.ts';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { validate } from '../validate.js';
-import type { ValidationContext } from '../ValidationContext.js';
+import { validate } from '../validate.ts';
+import type { ValidationContext } from '../ValidationContext.ts';
 
-import { testSchema } from './harness.js';
+import { testSchema } from './harness.ts';
 
 describe('Validate: Supports full validation', () => {
   it('validates queries', () => {

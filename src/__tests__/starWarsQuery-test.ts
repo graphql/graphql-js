@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../__testUtils__/expectJSON.js';
+import { expectJSON } from '../__testUtils__/expectJSON.ts';
 
-import { graphql } from '../graphql.js';
+import { graphql } from '../graphql.ts';
 
-import { StarWarsSchema as schema } from './starWarsSchema.js';
+import { StarWarsSchema as schema } from './starWarsSchema.ts';
 
 describe('Star Wars Query Tests', () => {
   describe('Basic Queries', () => {

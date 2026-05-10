@@ -1,7 +1,7 @@
-import { inspect } from '../../jsutils/inspect.js';
-import type { Maybe } from '../../jsutils/Maybe.js';
+import { inspect } from '../../jsutils/inspect.ts';
+import type { Maybe } from '../../jsutils/Maybe.ts';
 
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError.ts';
 
 import type {
   ArgumentNode,
@@ -12,16 +12,16 @@ import type {
   FragmentSpreadNode,
   SelectionSetNode,
   ValueNode,
-} from '../../language/ast.js';
-import { Kind } from '../../language/kinds.js';
-import { print } from '../../language/printer.js';
-import type { ASTVisitor } from '../../language/visitor.js';
+} from '../../language/ast.ts';
+import { Kind } from '../../language/kinds.ts';
+import { print } from '../../language/printer.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 
 import type {
   GraphQLField,
   GraphQLNamedType,
   GraphQLOutputType,
-} from '../../type/definition.js';
+} from '../../type/definition.ts';
 import {
   getNamedType,
   isInterfaceType,
@@ -29,12 +29,12 @@ import {
   isListType,
   isNonNullType,
   isObjectType,
-} from '../../type/definition.js';
+} from '../../type/definition.ts';
 
-import { sortValueNode } from '../../utilities/sortValueNode.js';
-import { typeFromAST } from '../../utilities/typeFromAST.js';
+import { sortValueNode } from '../../utilities/sortValueNode.ts';
+import { typeFromAST } from '../../utilities/typeFromAST.ts';
 
-import type { ValidationContext } from '../ValidationContext.js';
+import type { ValidationContext } from '../ValidationContext.ts';
 
 /* eslint-disable max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway

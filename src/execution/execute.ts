@@ -1,51 +1,51 @@
-import { inspect } from '../jsutils/inspect.js';
-import { isAsyncIterable } from '../jsutils/isAsyncIterable.js';
-import { isObjectLike } from '../jsutils/isObjectLike.js';
-import { isPromise, isPromiseLike } from '../jsutils/isPromise.js';
-import type { Maybe } from '../jsutils/Maybe.js';
-import type { ObjMap } from '../jsutils/ObjMap.js';
-import { addPath, pathToArray } from '../jsutils/Path.js';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
+import { inspect } from '../jsutils/inspect.ts';
+import { isAsyncIterable } from '../jsutils/isAsyncIterable.ts';
+import { isObjectLike } from '../jsutils/isObjectLike.ts';
+import { isPromise, isPromiseLike } from '../jsutils/isPromise.ts';
+import type { Maybe } from '../jsutils/Maybe.ts';
+import type { ObjMap } from '../jsutils/ObjMap.ts';
+import { addPath, pathToArray } from '../jsutils/Path.ts';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
 
-import { ensureGraphQLError } from '../error/ensureGraphQLError.js';
-import { GraphQLError } from '../error/GraphQLError.js';
-import { locatedError } from '../error/locatedError.js';
+import { ensureGraphQLError } from '../error/ensureGraphQLError.ts';
+import { GraphQLError } from '../error/GraphQLError.ts';
+import { locatedError } from '../error/locatedError.ts';
 
 import type {
   DocumentNode,
   FieldNode,
   FragmentDefinitionNode,
   OperationDefinitionNode,
-} from '../language/ast.js';
-import { Kind } from '../language/kinds.js';
-import { isSubscriptionOperationDefinitionNode } from '../language/predicates.js';
+} from '../language/ast.ts';
+import { Kind } from '../language/kinds.ts';
+import { isSubscriptionOperationDefinitionNode } from '../language/predicates.ts';
 
-import { GraphQLDisableErrorPropagationDirective } from '../type/directives.js';
+import { GraphQLDisableErrorPropagationDirective } from '../type/directives.ts';
 import type {
   GraphQLFieldResolver,
   GraphQLTypeResolver,
-} from '../type/index.js';
-import { assertValidSchema } from '../type/index.js';
-import type { GraphQLSchema } from '../type/schema.js';
+} from '../type/index.ts';
+import { assertValidSchema } from '../type/index.ts';
+import type { GraphQLSchema } from '../type/schema.ts';
 
-import { buildResolveInfo } from './buildResolveInfo.js';
-import { cancellablePromise } from './cancellablePromise.js';
-import type { FieldDetailsList, FragmentDetails } from './collectFields.js';
-import { collectFields } from './collectFields.js';
-import { createSharedExecutionContext } from './createSharedExecutionContext.js';
+import { buildResolveInfo } from './buildResolveInfo.ts';
+import { cancellablePromise } from './cancellablePromise.ts';
+import type { FieldDetailsList, FragmentDetails } from './collectFields.ts';
+import { collectFields } from './collectFields.ts';
+import { createSharedExecutionContext } from './createSharedExecutionContext.ts';
 import type {
   ExecutionResult,
   ValidatedExecutionArgs,
   ValidatedSubscriptionArgs,
-} from './Executor.js';
-import { Executor } from './Executor.js';
-import { ExecutorThrowingOnIncremental } from './ExecutorThrowingOnIncremental.js';
-import { getVariableSignature } from './getVariableSignature.js';
-import type { ExecutionHooks } from './hooks.js';
-import type { ExperimentalIncrementalExecutionResults } from './incremental/IncrementalExecutor.js';
-import { IncrementalExecutor } from './incremental/IncrementalExecutor.js';
-import { mapAsyncIterable } from './mapAsyncIterable.js';
-import { getArgumentValues, getVariableValues } from './values.js';
+} from './Executor.ts';
+import { Executor } from './Executor.ts';
+import { ExecutorThrowingOnIncremental } from './ExecutorThrowingOnIncremental.ts';
+import { getVariableSignature } from './getVariableSignature.ts';
+import type { ExecutionHooks } from './hooks.ts';
+import type { ExperimentalIncrementalExecutionResults } from './incremental/IncrementalExecutor.ts';
+import { IncrementalExecutor } from './incremental/IncrementalExecutor.ts';
+import { mapAsyncIterable } from './mapAsyncIterable.ts';
+import { getArgumentValues, getVariableValues } from './values.ts';
 
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
   'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.';

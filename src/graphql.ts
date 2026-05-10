@@ -1,24 +1,24 @@
-import { isPromise } from './jsutils/isPromise.js';
-import type { PromiseOrValue } from './jsutils/PromiseOrValue.js';
+import { isPromise } from './jsutils/isPromise.ts';
+import type { PromiseOrValue } from './jsutils/PromiseOrValue.ts';
 
-import { ensureGraphQLError } from './error/ensureGraphQLError.js';
-import type { GraphQLError } from './error/GraphQLError.js';
+import { ensureGraphQLError } from './error/ensureGraphQLError.ts';
+import type { GraphQLError } from './error/GraphQLError.ts';
 
-import type { DocumentNode } from './language/ast.js';
-import type { ParseOptions } from './language/parser.js';
-import type { Source } from './language/source.js';
+import type { DocumentNode } from './language/ast.ts';
+import type { ParseOptions } from './language/parser.ts';
+import type { Source } from './language/source.ts';
 
-import type { GraphQLSchema } from './type/schema.js';
-import { validateSchema } from './type/validate.js';
+import type { GraphQLSchema } from './type/schema.ts';
+import { validateSchema } from './type/validate.ts';
 
-import type { ValidationOptions } from './validation/validate.js';
-import type { ValidationRule } from './validation/ValidationContext.js';
+import type { ValidationOptions } from './validation/validate.ts';
+import type { ValidationRule } from './validation/ValidationContext.ts';
 
-import type { ExecutionArgs } from './execution/execute.js';
-import type { ExecutionResult } from './execution/Executor.js';
+import type { ExecutionArgs } from './execution/execute.ts';
+import type { ExecutionResult } from './execution/Executor.ts';
 
-import type { GraphQLHarness } from './harness.js';
-import { defaultHarness } from './harness.js';
+import type { GraphQLHarness } from './harness.ts';
+import { defaultHarness } from './harness.ts';
 
 /**
  * This is the primary entry point function for fulfilling GraphQL operations

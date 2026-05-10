@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { git, localRepoPath, makeTmpDir, npm } from '../utils.js';
+import { git, localRepoPath, makeTmpDir, npm } from '../utils.ts';
 
-import { LOCAL } from './config.js';
-import type { BenchmarkProject } from './types.js';
+import { LOCAL } from './config.ts';
+import type { BenchmarkProject } from './types.ts';
 
 // Build a benchmark-friendly install for each revision.
 export function prepareBenchmarkProjects(

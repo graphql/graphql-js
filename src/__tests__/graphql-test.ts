@@ -1,20 +1,20 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { GraphQLError } from '../error/GraphQLError.js';
+import { GraphQLError } from '../error/GraphQLError.ts';
 
-import { Source } from '../language/source.js';
+import { Source } from '../language/source.ts';
 
-import { GraphQLObjectType } from '../type/definition.js';
-import { GraphQLString } from '../type/scalars.js';
-import { GraphQLSchema } from '../type/schema.js';
+import { GraphQLObjectType } from '../type/definition.ts';
+import { GraphQLString } from '../type/scalars.ts';
+import { GraphQLSchema } from '../type/schema.ts';
 
-import type { ValidationRule } from '../validation/ValidationContext.js';
+import type { ValidationRule } from '../validation/ValidationContext.ts';
 
-import { execute } from '../execution/execute.js';
+import { execute } from '../execution/execute.ts';
 
-import { graphql, graphqlSync } from '../graphql.js';
-import { defaultHarness } from '../harness.js';
+import { graphql, graphqlSync } from '../graphql.ts';
+import { defaultHarness } from '../harness.ts';
 
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({

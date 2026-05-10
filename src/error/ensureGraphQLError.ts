@@ -1,6 +1,6 @@
-import { toError } from '../jsutils/toError.js';
+import { toError } from '../jsutils/toError.ts';
 
-import { GraphQLError } from './GraphQLError.js';
+import { GraphQLError } from './GraphQLError.ts';
 
 /**
  * Ensure an unknown thrown value is represented as a GraphQLError.

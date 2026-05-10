@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { genFuzzStrings } from '../genFuzzStrings.js';
+import { genFuzzStrings } from '../genFuzzStrings.ts';
 
 function expectFuzzStrings(options: {
   allowedChars: ReadonlyArray<string>;

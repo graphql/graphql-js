@@ -1,54 +1,51 @@
 /* eslint-disable max-params */
-import { invariant } from '../../jsutils/invariant.js';
-import { isPromise, isPromiseLike } from '../../jsutils/isPromise.js';
-import { memoize1 } from '../../jsutils/memoize1.js';
-import { memoize2 } from '../../jsutils/memoize2.js';
-import type { ObjMap } from '../../jsutils/ObjMap.js';
-import type { Path } from '../../jsutils/Path.js';
-import { addPath, pathToArray } from '../../jsutils/Path.js';
-import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
+import { invariant } from '../../jsutils/invariant.ts';
+import { isPromise, isPromiseLike } from '../../jsutils/isPromise.ts';
+import { memoize1 } from '../../jsutils/memoize1.ts';
+import { memoize2 } from '../../jsutils/memoize2.ts';
+import type { ObjMap } from '../../jsutils/ObjMap.ts';
+import type { Path } from '../../jsutils/Path.ts';
+import { addPath, pathToArray } from '../../jsutils/Path.ts';
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 
 import type {
   GraphQLError,
   GraphQLFormattedError,
-} from '../../error/GraphQLError.js';
-import { locatedError } from '../../error/locatedError.js';
+} from '../../error/GraphQLError.ts';
+import { locatedError } from '../../error/locatedError.ts';
 
-import type { FieldNode } from '../../language/ast.js';
-import { OperationTypeNode } from '../../language/ast.js';
+import type { FieldNode } from '../../language/ast.ts';
+import { OperationTypeNode } from '../../language/ast.ts';
 
 import type {
   GraphQLObjectType,
   GraphQLOutputType,
   GraphQLResolveInfo,
-} from '../../type/definition.js';
+} from '../../type/definition.ts';
 
 import type {
   DeferUsage,
   FieldDetailsList,
   GroupedFieldSet,
-} from '../collectFields.js';
-import { collectSubfields as _collectSubfields } from '../collectFields.js';
-import { collectIteratorPromises } from '../collectIteratorPromises.js';
-import type { SharedExecutionContext } from '../createSharedExecutionContext.js';
+} from '../collectFields.ts';
+import { collectSubfields as _collectSubfields } from '../collectFields.ts';
+import { collectIteratorPromises } from '../collectIteratorPromises.ts';
+import type { SharedExecutionContext } from '../createSharedExecutionContext.ts';
 import type {
   ExecutionResult,
   FormattedExecutionResult,
   ValidatedExecutionArgs,
-} from '../Executor.js';
-import { Executor } from '../Executor.js';
-import type { StreamUsage } from '../getStreamUsage.js';
-import type {
-  DeferUsageSet,
-  ExecutionPlan,
-} from '../incremental/buildExecutionPlan.js';
-import { buildExecutionPlan } from '../incremental/buildExecutionPlan.js';
-import { returnIteratorCatchingErrors } from '../returnIteratorCatchingErrors.js';
+} from '../Executor.ts';
+import { Executor } from '../Executor.ts';
+import type { StreamUsage } from '../getStreamUsage.ts';
+import { returnIteratorCatchingErrors } from '../returnIteratorCatchingErrors.ts';
 
-import { Computation } from './Computation.js';
-import { IncrementalPublisher } from './IncrementalPublisher.js';
-import { Queue } from './Queue.js';
-import type { Group, Stream, Task, Work } from './WorkQueue.js';
+import type { DeferUsageSet, ExecutionPlan } from './buildExecutionPlan.ts';
+import { buildExecutionPlan } from './buildExecutionPlan.ts';
+import { Computation } from './Computation.ts';
+import { IncrementalPublisher } from './IncrementalPublisher.ts';
+import { Queue } from './Queue.ts';
+import type { Group, Stream, Task, Work } from './WorkQueue.ts';
 
 const buildExecutionPlanFromInitial = memoize1(
   (groupedFieldSet: GroupedFieldSet) => buildExecutionPlan(groupedFieldSet),

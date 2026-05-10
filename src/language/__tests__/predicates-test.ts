@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import type { ASTNode } from '../ast.js';
-import { Kind } from '../kinds.js';
-import { parseValue } from '../parser.js';
+import type { ASTNode } from '../ast.ts';
+import { Kind } from '../kinds.ts';
+import { parseValue } from '../parser.ts';
 import {
   isConstValueNode,
   isDefinitionNode,
@@ -16,7 +16,7 @@ import {
   isTypeSystemDefinitionNode,
   isTypeSystemExtensionNode,
   isValueNode,
-} from '../predicates.js';
+} from '../predicates.ts';
 
 function filterNodes(predicate: (node: ASTNode) => boolean): Array<string> {
   return Object.values(Kind).filter(

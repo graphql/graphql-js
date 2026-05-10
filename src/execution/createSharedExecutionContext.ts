@@ -1,6 +1,6 @@
-import type { GraphQLResolveInfoHelpers } from '../type/index.js';
+import type { GraphQLResolveInfoHelpers } from '../type/index.ts';
 
-import { AsyncWorkTracker } from './AsyncWorkTracker.js';
+import { AsyncWorkTracker } from './AsyncWorkTracker.ts';
 
 /** @internal */
 export interface SharedExecutionContext {

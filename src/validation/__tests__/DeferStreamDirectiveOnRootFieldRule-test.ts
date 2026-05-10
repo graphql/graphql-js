@@ -1,10 +1,10 @@
 import { describe, it } from 'mocha';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { DeferStreamDirectiveOnRootFieldRule } from '../rules/DeferStreamDirectiveOnRootFieldRule.js';
+import { DeferStreamDirectiveOnRootFieldRule } from '../rules/DeferStreamDirectiveOnRootFieldRule.ts';
 
-import { expectValidationErrorsWithSchema } from './harness.js';
+import { expectValidationErrorsWithSchema } from './harness.ts';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrorsWithSchema(

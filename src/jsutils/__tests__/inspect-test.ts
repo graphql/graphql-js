@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { inspect } from '../inspect.js';
+import { inspect } from '../inspect.ts';
 
 describe('inspect', () => {
   it('undefined', () => {

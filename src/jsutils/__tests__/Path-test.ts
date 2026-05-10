@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { addPath, pathToArray } from '../Path.js';
+import { addPath, pathToArray } from '../Path.ts';
 
 describe('Path', () => {
   it('can create a Path', () => {

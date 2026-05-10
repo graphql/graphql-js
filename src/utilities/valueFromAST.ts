@@ -1,18 +1,18 @@
-import { inspect } from '../jsutils/inspect.js';
-import { invariant } from '../jsutils/invariant.js';
-import type { Maybe } from '../jsutils/Maybe.js';
-import type { ObjMap } from '../jsutils/ObjMap.js';
+import { inspect } from '../jsutils/inspect.ts';
+import { invariant } from '../jsutils/invariant.ts';
+import type { Maybe } from '../jsutils/Maybe.ts';
+import type { ObjMap } from '../jsutils/ObjMap.ts';
 
-import type { ValueNode } from '../language/ast.js';
-import { Kind } from '../language/kinds.js';
+import type { ValueNode } from '../language/ast.ts';
+import { Kind } from '../language/kinds.ts';
 
-import type { GraphQLInputType } from '../type/definition.js';
+import type { GraphQLInputType } from '../type/definition.ts';
 import {
   isInputObjectType,
   isLeafType,
   isListType,
   isNonNullType,
-} from '../type/definition.js';
+} from '../type/definition.ts';
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.

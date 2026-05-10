@@ -1,13 +1,13 @@
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError.ts';
 
-import { print } from '../../language/printer.js';
-import type { ASTVisitor } from '../../language/visitor.js';
+import { print } from '../../language/printer.ts';
+import type { ASTVisitor } from '../../language/visitor.ts';
 
-import { isCompositeType } from '../../type/definition.js';
+import { isCompositeType } from '../../type/definition.ts';
 
-import { typeFromAST } from '../../utilities/typeFromAST.js';
+import { typeFromAST } from '../../utilities/typeFromAST.ts';
 
-import type { ValidationContext } from '../ValidationContext.js';
+import type { ValidationContext } from '../ValidationContext.ts';
 
 /**
  * Fragments on composite type

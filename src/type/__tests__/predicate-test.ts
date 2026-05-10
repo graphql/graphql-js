@@ -1,14 +1,14 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { DirectiveLocation } from '../../language/directiveLocation.js';
+import { DirectiveLocation } from '../../language/directiveLocation.ts';
 
 import type {
   GraphQLArgument,
   GraphQLDefaultInput,
   GraphQLInputField,
   GraphQLInputType,
-} from '../definition.js';
+} from '../definition.ts';
 import {
   assertAbstractType,
   assertArgument,
@@ -64,7 +64,7 @@ import {
   isType,
   isUnionType,
   isWrappingType,
-} from '../definition.js';
+} from '../definition.ts';
 import {
   assertDirective,
   GraphQLDeprecatedDirective,
@@ -73,7 +73,7 @@ import {
   GraphQLSkipDirective,
   isDirective,
   isSpecifiedDirective,
-} from '../directives.js';
+} from '../directives.ts';
 import {
   GraphQLBoolean,
   GraphQLFloat,
@@ -81,8 +81,8 @@ import {
   GraphQLInt,
   GraphQLString,
   isSpecifiedScalarType,
-} from '../scalars.js';
-import { assertSchema, GraphQLSchema, isSchema } from '../schema.js';
+} from '../scalars.ts';
+import { assertSchema, GraphQLSchema, isSchema } from '../schema.ts';
 
 const ObjectType = new GraphQLObjectType({
   name: 'Object',

@@ -1,12 +1,12 @@
-import { invariant } from '../jsutils/invariant.js';
+import { invariant } from '../jsutils/invariant.ts';
 
-import { OperationTypeNode } from '../language/ast.js';
+import { OperationTypeNode } from '../language/ast.ts';
 
-import { GraphQLStreamDirective } from '../type/directives.js';
+import { GraphQLStreamDirective } from '../type/directives.ts';
 
-import type { FieldDetailsList } from './collectFields.js';
-import type { ValidatedExecutionArgs } from './Executor.js';
-import { getDirectiveValues } from './values.js';
+import type { FieldDetailsList } from './collectFields.ts';
+import type { ValidatedExecutionArgs } from './Executor.ts';
+import { getDirectiveValues } from './values.ts';
 
 export interface StreamUsage {
   label: string | undefined;

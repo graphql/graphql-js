@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { identityFunc } from '../../jsutils/identityFunc.js';
-import { inspect } from '../../jsutils/inspect.js';
+import { identityFunc } from '../../jsutils/identityFunc.ts';
+import { inspect } from '../../jsutils/inspect.ts';
 
-import { Kind } from '../../language/kinds.js';
-import { parseConstValue } from '../../language/parser.js';
+import { Kind } from '../../language/kinds.ts';
+import { parseConstValue } from '../../language/parser.ts';
 
 import type {
   GraphQLEnumTypeConfig,
@@ -16,7 +16,7 @@ import type {
   GraphQLScalarTypeConfig,
   GraphQLType,
   GraphQLUnionTypeConfig,
-} from '../definition.js';
+} from '../definition.ts';
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
@@ -26,8 +26,8 @@ import {
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLUnionType,
-} from '../definition.js';
-import { GraphQLString } from '../scalars.js';
+} from '../definition.ts';
+import { GraphQLString } from '../scalars.ts';
 
 const ScalarType = new GraphQLScalarType({ name: 'Scalar' });
 const ObjectType = new GraphQLObjectType({

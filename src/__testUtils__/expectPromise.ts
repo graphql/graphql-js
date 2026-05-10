@@ -1,7 +1,7 @@
 import { assert, expect } from 'chai';
 
-import { inspect } from '../jsutils/inspect.js';
-import { isPromise } from '../jsutils/isPromise.js';
+import { inspect } from '../jsutils/inspect.ts';
+import { isPromise } from '../jsutils/isPromise.ts';
 
 interface PromiseExpectation {
   toResolve: () => Promise<unknown>;

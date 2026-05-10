@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { resolveOnNextTick } from '../resolveOnNextTick.js';
+import { resolveOnNextTick } from '../resolveOnNextTick.ts';
 
 describe('resolveOnNextTick', () => {
   it('resolves promise on the next tick', async () => {

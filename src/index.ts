@@ -27,24 +27,24 @@
  */
 
 // The GraphQL.js version info.
-export { version, versionInfo } from './version.js';
+export { version, versionInfo } from './version.ts';
 
 // Enable development mode for additional checks.
-export { enableDevMode, isDevModeEnabled } from './devMode.js';
+export { enableDevMode, isDevModeEnabled } from './devMode.ts';
 
 // The primary entry point into fulfilling a GraphQL request.
-export type { GraphQLArgs } from './graphql.js';
-export { graphql, graphqlSync } from './graphql.js';
+export type { GraphQLArgs } from './graphql.ts';
+export { graphql, graphqlSync } from './graphql.ts';
 
 // The default versions of the parse/validate/execute/subscribe harness used by `graphql` and `graphqlSync`.
-export { defaultHarness } from './harness.js';
+export { defaultHarness } from './harness.ts';
 export type {
   GraphQLHarness,
   GraphQLParseFn,
   GraphQLValidateFn,
   GraphQLExecuteFn,
   GraphQLSubscribeFn,
-} from './harness.js';
+} from './harness.ts';
 
 // Create and operate on GraphQL type definitions and schema.
 export type {
@@ -52,7 +52,7 @@ export type {
   GraphQLArgument,
   GraphQLEnumValue,
   GraphQLInputField,
-} from './type/index.js';
+} from './type/index.ts';
 export {
   resolveObjMapThunk,
   resolveReadonlyArrayThunk,
@@ -166,7 +166,7 @@ export {
   // Upholds the spec rules about naming.
   assertName,
   assertEnumValueName,
-} from './type/index.js';
+} from './type/index.ts';
 
 export type {
   GraphQLType,
@@ -227,14 +227,15 @@ export type {
   GraphQLScalarInputValueCoercer,
   GraphQLScalarInputLiteralCoercer,
   GraphQLDefaultInput,
-} from './type/index.js';
+} from './type/index.ts';
 
 // Parse and operate on GraphQL language source files.
 // @see https://github.com/typescript-eslint/typescript-eslint/issues/10313
 // Deno  misclassifies this merged value+type re-export and requires `export type`.
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore TS1205
-export { Kind } from './language/kinds.js';
+
+export { Kind } from './language/kinds.ts';
 
 export {
   Token,
@@ -275,7 +276,7 @@ export {
   isTypeExtensionNode,
   isSchemaCoordinateNode,
   isSubscriptionOperationDefinitionNode,
-} from './language/index.js';
+} from './language/index.ts';
 
 export type {
   ParseOptions,
@@ -355,7 +356,7 @@ export type {
   ArgumentCoordinateNode,
   DirectiveCoordinateNode,
   DirectiveArgumentCoordinateNode,
-} from './language/index.js';
+} from './language/index.ts';
 
 // Execute GraphQL queries.
 export {
@@ -377,7 +378,7 @@ export {
   mapSourceToResponseEvent,
   validateExecutionArgs,
   validateSubscriptionArgs,
-} from './execution/index.js';
+} from './execution/index.ts';
 
 export type {
   ExecutionArgs,
@@ -400,7 +401,7 @@ export type {
   FormattedIncrementalDeferResult,
   FormattedIncrementalStreamResult,
   FormattedIncrementalResult,
-} from './execution/index.js';
+} from './execution/index.ts';
 
 // Validate GraphQL documents.
 export {
@@ -450,19 +451,19 @@ export {
   // Custom validation rules
   NoDeprecatedCustomRule,
   NoSchemaIntrospectionCustomRule,
-} from './validation/index.js';
+} from './validation/index.ts';
 
-export type { ValidationRule } from './validation/index.js';
+export type { ValidationRule } from './validation/index.ts';
 
 // Create, format, and print GraphQL errors.
-export { GraphQLError, syntaxError, locatedError } from './error/index.js';
+export { GraphQLError, syntaxError, locatedError } from './error/index.ts';
 
 export type {
   GraphQLErrorOptions,
   GraphQLFormattedError,
   GraphQLErrorExtensions,
   GraphQLFormattedErrorExtensions,
-} from './error/index.js';
+} from './error/index.ts';
 
 // Utilities for operating on GraphQL type schema and parsed sources.
 export {
@@ -535,7 +536,7 @@ export {
   findSchemaChanges,
   resolveSchemaCoordinate,
   resolveASTSchemaCoordinate,
-} from './utilities/index.js';
+} from './utilities/index.ts';
 
 export type {
   IntrospectionOptions,
@@ -566,4 +567,4 @@ export type {
   DangerousChange,
   TypedQueryDocumentNode,
   ResolvedSchemaElement,
-} from './utilities/index.js';
+} from './utilities/index.ts';

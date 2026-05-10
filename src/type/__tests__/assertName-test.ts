@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { assertEnumValueName, assertName } from '../assertName.js';
+import { assertEnumValueName, assertName } from '../assertName.ts';
 
 describe('assertName', () => {
   it('passthrough valid name', () => {

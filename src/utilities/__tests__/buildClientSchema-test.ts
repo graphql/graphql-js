@@ -1,31 +1,31 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent.js';
+import { dedent } from '../../__testUtils__/dedent.ts';
 
-import { DirectiveLocation } from '../../language/directiveLocation.js';
+import { DirectiveLocation } from '../../language/directiveLocation.ts';
 
 import {
   assertEnumType,
   GraphQLEnumType,
   GraphQLObjectType,
-} from '../../type/definition.js';
-import { GraphQLDirective } from '../../type/directives.js';
+} from '../../type/definition.ts';
+import { GraphQLDirective } from '../../type/directives.ts';
 import {
   GraphQLBoolean,
   GraphQLFloat,
   GraphQLID,
   GraphQLInt,
   GraphQLString,
-} from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+} from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import { graphqlSync } from '../../graphql.js';
+import { graphqlSync } from '../../graphql.ts';
 
-import { buildSchema } from '../buildASTSchema.js';
-import { buildClientSchema } from '../buildClientSchema.js';
-import { introspectionFromSchema } from '../introspectionFromSchema.js';
-import { printSchema } from '../printSchema.js';
+import { buildSchema } from '../buildASTSchema.ts';
+import { buildClientSchema } from '../buildClientSchema.ts';
+import { introspectionFromSchema } from '../introspectionFromSchema.ts';
+import { printSchema } from '../printSchema.ts';
 
 /**
  * This function does a full cycle of going from a string with the contents of

@@ -1,8 +1,8 @@
 import { describe, it } from 'mocha';
 
-import { NoFragmentCyclesRule } from '../rules/NoFragmentCyclesRule.js';
+import { NoFragmentCyclesRule } from '../rules/NoFragmentCyclesRule.ts';
 
-import { expectValidationErrors } from './harness.js';
+import { expectValidationErrors } from './harness.ts';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(NoFragmentCyclesRule, queryStr);

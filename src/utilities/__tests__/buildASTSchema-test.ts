@@ -1,15 +1,15 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent.js';
-import { viralSDL } from '../../__testUtils__/viralSDL.js';
+import { dedent } from '../../__testUtils__/dedent.ts';
+import { viralSDL } from '../../__testUtils__/viralSDL.ts';
 
-import type { Maybe } from '../../jsutils/Maybe.js';
+import type { Maybe } from '../../jsutils/Maybe.ts';
 
-import type { ASTNode } from '../../language/ast.js';
-import { Kind } from '../../language/kinds.js';
-import { parse } from '../../language/parser.js';
-import { print } from '../../language/printer.js';
+import type { ASTNode } from '../../language/ast.ts';
+import { Kind } from '../../language/kinds.ts';
+import { parse } from '../../language/parser.ts';
+import { print } from '../../language/printer.ts';
 
 import {
   assertEnumType,
@@ -18,7 +18,7 @@ import {
   assertObjectType,
   assertScalarType,
   assertUnionType,
-} from '../../type/definition.js';
+} from '../../type/definition.ts';
 import {
   assertDirective,
   GraphQLDeprecatedDirective,
@@ -26,22 +26,22 @@ import {
   GraphQLOneOfDirective,
   GraphQLSkipDirective,
   GraphQLSpecifiedByDirective,
-} from '../../type/directives.js';
-import { __EnumValue, __Schema } from '../../type/introspection.js';
+} from '../../type/directives.ts';
+import { __EnumValue, __Schema } from '../../type/introspection.ts';
 import {
   GraphQLBoolean,
   GraphQLFloat,
   GraphQLID,
   GraphQLInt,
   GraphQLString,
-} from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
-import { validateSchema } from '../../type/validate.js';
+} from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
+import { validateSchema } from '../../type/validate.ts';
 
-import { graphqlSync } from '../../graphql.js';
+import { graphqlSync } from '../../graphql.ts';
 
-import { buildASTSchema, buildSchema } from '../buildASTSchema.js';
-import { printSchema, printType } from '../printSchema.js';
+import { buildASTSchema, buildSchema } from '../buildASTSchema.ts';
+import { printSchema, printType } from '../printSchema.ts';
 
 /**
  * This function does a full cycle of going from a string with the contents of

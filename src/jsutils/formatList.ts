@@ -1,4 +1,4 @@
-import { invariant } from './invariant.js';
+import { invariant } from './invariant.ts';
 
 /**
  * Given [ A, B, C ] return 'A, B, or C'.

@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { didYouMean } from '../didYouMean.js';
+import { didYouMean } from '../didYouMean.ts';
 
 describe('didYouMean', () => {
   it('Does accept an empty list', () => {
