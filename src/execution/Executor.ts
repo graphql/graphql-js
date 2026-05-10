@@ -46,6 +46,7 @@ import {
 import type { GraphQLSchema } from '../type/schema.js';
 
 import { AbortedGraphQLExecutionError } from './AbortedGraphQLExecutionError.js';
+import { buildResolveInfo } from './buildResolveInfo.js';
 import { withCancellation } from './cancellablePromise.js';
 import type {
   DeferUsage,
@@ -60,7 +61,6 @@ import {
 import { collectIteratorPromises } from './collectIteratorPromises.js';
 import type { SharedExecutionContext } from './createSharedExecutionContext.js';
 import { createSharedExecutionContext } from './createSharedExecutionContext.js';
-import { buildResolveInfo } from './execute.js';
 import type { StreamUsage } from './getStreamUsage.js';
 import { getStreamUsage as _getStreamUsage } from './getStreamUsage.js';
 import type { ExecutionHooks } from './hooks.js';

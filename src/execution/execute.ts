@@ -4,7 +4,6 @@ import { isObjectLike } from '../jsutils/isObjectLike.js';
 import { isPromise, isPromiseLike } from '../jsutils/isPromise.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
-import type { Path } from '../jsutils/Path.js';
 import { addPath, pathToArray } from '../jsutils/Path.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 
@@ -23,16 +22,13 @@ import { isSubscriptionOperationDefinitionNode } from '../language/predicates.js
 
 import { GraphQLDisableErrorPropagationDirective } from '../type/directives.js';
 import type {
-  GraphQLField,
   GraphQLFieldResolver,
-  GraphQLObjectType,
-  GraphQLResolveInfo,
-  GraphQLResolveInfoHelpers,
   GraphQLTypeResolver,
 } from '../type/index.js';
 import { assertValidSchema } from '../type/index.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
+import { buildResolveInfo } from './buildResolveInfo.js';
 import { cancellablePromise } from './cancellablePromise.js';
 import type { FieldDetailsList, FragmentDetails } from './collectFields.js';
 import { collectFields } from './collectFields.js';
@@ -690,40 +686,6 @@ function assertEventStream(result: unknown): AsyncIterable<unknown> {
   }
 
   return result;
-}
-
-/**
- * TODO: consider no longer exporting this function
- * @internal
- */
-// eslint-disable-next-line max-params
-export function buildResolveInfo(
-  validatedExecutionArgs: ValidatedExecutionArgs,
-  fieldDef: GraphQLField<unknown, unknown>,
-  fieldNodes: ReadonlyArray<FieldNode>,
-  parentType: GraphQLObjectType,
-  path: Path,
-  getAbortSignal: () => AbortSignal | undefined,
-  getAsyncHelpers: () => GraphQLResolveInfoHelpers,
-): GraphQLResolveInfo {
-  const { schema, fragmentDefinitions, rootValue, operation, variableValues } =
-    validatedExecutionArgs;
-  // The resolve function's optional fourth argument is a collection of
-  // information about the current execution state.
-  return {
-    fieldName: fieldDef.name,
-    fieldNodes,
-    returnType: fieldDef.type,
-    parentType,
-    path,
-    schema,
-    fragments: fragmentDefinitions,
-    rootValue,
-    operation,
-    variableValues,
-    getAbortSignal,
-    getAsyncHelpers,
-  };
 }
 
 function toNodes(fieldDetailsList: FieldDetailsList): ReadonlyArray<FieldNode> {
