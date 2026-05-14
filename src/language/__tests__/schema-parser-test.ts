@@ -1093,6 +1093,13 @@ input Hello {
     });
   });
 
+  it('Directive definition extensions require the experimental flag', () => {
+    expectToThrowJSON(() => parse('extend directive @foo @bar')).to.deep.equal({
+      message: 'Syntax Error: Unexpected Name "directive".',
+      locations: [{ line: 1, column: 8 }],
+    });
+  });
+
   it('Directive with incorrect locations', () => {
     expectSyntaxError(
       'directive @foo on FIELD | INCORRECT_LOCATION',
