@@ -124,4 +124,8 @@ export {
   isSubscriptionOperationDefinitionNode,
 } from './predicates.ts';
 
+// @see https://github.com/typescript-eslint/typescript-eslint/issues/10313
+// Deno  misclassifies this merged value+type re-export and requires `export type`.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore TS1205
 export { DirectiveLocation } from './directiveLocation.ts';

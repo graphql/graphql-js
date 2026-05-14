@@ -27,10 +27,11 @@ import {
   isOutputType,
 } from '../type/definition.ts';
 import { GraphQLDirective } from '../type/directives.ts';
-import { introspectionTypes, TypeKind } from '../type/introspection.ts';
+import { introspectionTypes } from '../type/introspection.ts';
 import { specifiedScalarTypes } from '../type/scalars.ts';
 import type { GraphQLSchemaValidationOptions } from '../type/schema.ts';
 import { GraphQLSchema } from '../type/schema.ts';
+import { TypeKind } from '../type/typeKind.ts';
 
 import type {
   IntrospectionDirective,

@@ -32,6 +32,13 @@ import {
 import type { GraphQLDirective } from './directives.ts';
 import { GraphQLBoolean, GraphQLString } from './scalars.ts';
 import type { GraphQLSchema } from './schema.ts';
+import { TypeKind } from './typeKind.ts';
+
+// @see https://github.com/typescript-eslint/typescript-eslint/issues/10313
+// Deno  misclassifies this merged value+type re-export and requires `export type`.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore TS1205
+export { TypeKind } from './typeKind.ts';
 
 export const __Schema: GraphQLObjectType = new GraphQLObjectType({
   name: '__Schema',
@@ -477,20 +484,6 @@ export const __EnumValue: GraphQLObjectType = new GraphQLObjectType({
       },
     }) as GraphQLFieldConfigMap<GraphQLEnumValue, unknown>,
 });
-
-export const TypeKind = {
-  SCALAR: 'SCALAR' as const,
-  OBJECT: 'OBJECT' as const,
-  INTERFACE: 'INTERFACE' as const,
-  UNION: 'UNION' as const,
-  ENUM: 'ENUM' as const,
-  INPUT_OBJECT: 'INPUT_OBJECT' as const,
-  LIST: 'LIST' as const,
-  NON_NULL: 'NON_NULL' as const,
-} as const;
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export type TypeKind = (typeof TypeKind)[keyof typeof TypeKind];
 
 export const __TypeKind: GraphQLEnumType = new GraphQLEnumType({
   name: '__TypeKind',

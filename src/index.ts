@@ -86,8 +86,6 @@ export {
   GraphQLDeprecatedDirective,
   GraphQLSpecifiedByDirective,
   GraphQLOneOfDirective,
-  // "Enum" of Type Kinds
-  TypeKind,
   // Constant Deprecation Reason
   DEFAULT_DEPRECATION_REASON,
   // GraphQL Types for introspection.
@@ -229,12 +227,17 @@ export type {
   GraphQLDefaultInput,
 } from './type/index.ts';
 
+// @see https://github.com/typescript-eslint/typescript-eslint/issues/10313
+// Deno  misclassifies this merged value+type re-export and requires `export type`.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore TS1205
+export { TypeKind } from './type/typeKind.ts';
+
 // Parse and operate on GraphQL language source files.
 // @see https://github.com/typescript-eslint/typescript-eslint/issues/10313
 // Deno  misclassifies this merged value+type re-export and requires `export type`.
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore TS1205
-
 export { Kind } from './language/kinds.ts';
 
 export {
@@ -262,7 +265,6 @@ export {
   visitInParallel,
   getEnterLeaveForKind,
   BREAK,
-  DirectiveLocation,
   // Predicates
   isDefinitionNode,
   isExecutableDefinitionNode,
@@ -277,6 +279,12 @@ export {
   isSchemaCoordinateNode,
   isSubscriptionOperationDefinitionNode,
 } from './language/index.ts';
+
+// @see https://github.com/typescript-eslint/typescript-eslint/issues/10313
+// Deno  misclassifies this merged value+type re-export and requires `export type`.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore TS1205
+export { DirectiveLocation } from './language/directiveLocation.ts';
 
 export type {
   ParseOptions,

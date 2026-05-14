@@ -191,13 +191,17 @@ export {
   __InputValue,
   __EnumValue,
   __TypeKind,
-  // "Enum" of Type Kinds
-  TypeKind,
   // Meta-field definitions.
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
 } from './introspection.ts';
+
+// @see https://github.com/typescript-eslint/typescript-eslint/issues/10313
+// Deno  misclassifies this merged value+type re-export and requires `export type`.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore TS1205
+export { TypeKind } from './typeKind.ts';
 
 // Validate GraphQL schema.
 export { validateSchema, assertValidSchema } from './validate.ts';

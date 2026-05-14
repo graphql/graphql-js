@@ -2,7 +2,7 @@ import type { Maybe } from '../jsutils/Maybe.ts';
 
 import type { DirectiveLocation } from '../language/directiveLocation.ts';
 
-import type { TypeKind } from '../type/introspection.ts';
+import type { TypeKind } from '../type/typeKind.ts';
 
 export interface IntrospectionOptions {
   /**
@@ -224,14 +224,14 @@ export type IntrospectionInputType =
   | IntrospectionInputObjectType;
 
 export interface IntrospectionScalarType {
-  readonly kind: typeof TypeKind.SCALAR;
+  readonly kind: TypeKind.SCALAR;
   readonly name: string;
   readonly description?: Maybe<string>;
   readonly specifiedByURL?: Maybe<string>;
 }
 
 export interface IntrospectionObjectType {
-  readonly kind: typeof TypeKind.OBJECT;
+  readonly kind: TypeKind.OBJECT;
   readonly name: string;
   readonly description?: Maybe<string>;
   readonly fields: ReadonlyArray<IntrospectionField>;
@@ -241,7 +241,7 @@ export interface IntrospectionObjectType {
 }
 
 export interface IntrospectionInterfaceType {
-  readonly kind: typeof TypeKind.INTERFACE;
+  readonly kind: TypeKind.INTERFACE;
   readonly name: string;
   readonly description?: Maybe<string>;
   readonly fields: ReadonlyArray<IntrospectionField>;
@@ -254,7 +254,7 @@ export interface IntrospectionInterfaceType {
 }
 
 export interface IntrospectionUnionType {
-  readonly kind: typeof TypeKind.UNION;
+  readonly kind: TypeKind.UNION;
   readonly name: string;
   readonly description?: Maybe<string>;
   readonly possibleTypes: ReadonlyArray<
@@ -263,14 +263,14 @@ export interface IntrospectionUnionType {
 }
 
 export interface IntrospectionEnumType {
-  readonly kind: typeof TypeKind.ENUM;
+  readonly kind: TypeKind.ENUM;
   readonly name: string;
   readonly description?: Maybe<string>;
   readonly enumValues: ReadonlyArray<IntrospectionEnumValue>;
 }
 
 export interface IntrospectionInputObjectType {
-  readonly kind: typeof TypeKind.INPUT_OBJECT;
+  readonly kind: TypeKind.INPUT_OBJECT;
   readonly name: string;
   readonly description?: Maybe<string>;
   readonly inputFields: ReadonlyArray<IntrospectionInputValue>;
@@ -280,14 +280,14 @@ export interface IntrospectionInputObjectType {
 export interface IntrospectionListTypeRef<
   T extends IntrospectionTypeRef = IntrospectionTypeRef,
 > {
-  readonly kind: typeof TypeKind.LIST;
+  readonly kind: TypeKind.LIST;
   readonly ofType: T;
 }
 
 export interface IntrospectionNonNullTypeRef<
   T extends IntrospectionTypeRef = IntrospectionTypeRef,
 > {
-  readonly kind: typeof TypeKind.NON_NULL;
+  readonly kind: TypeKind.NON_NULL;
   readonly ofType: T;
 }
 
