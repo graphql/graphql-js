@@ -1,12 +1,13 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
-import { expectEvents } from '../../__testUtils__/expectEvents.js';
-import { expectNoTracingActivity } from '../../__testUtils__/expectNoTracingActivity.js';
-import { expectToThrow } from '../../__testUtils__/expectToThrow.js';
-import { getTracingChannel } from '../../__testUtils__/getTracingChannel.js';
+import { expectEvents } from '../../__testUtils__/expectEvents.ts';
+import { expectNoTracingActivity } from '../../__testUtils__/expectNoTracingActivity.ts';
+import { expectToThrow } from '../../__testUtils__/expectToThrow.ts';
+import { getTracingChannel } from '../../__testUtils__/getTracingChannel.ts';
 
-import { parse } from '../parser.js';
+import { parse } from '../parser.ts';
 
 const parseChannel = getTracingChannel('graphql:parse');
 

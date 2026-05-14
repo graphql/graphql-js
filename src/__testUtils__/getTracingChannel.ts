@@ -1,9 +1,9 @@
-/* eslint-disable n/no-unsupported-features/node-builtins, import/no-nodejs-modules */
+/* eslint-disable n/no-unsupported-features/node-builtins */
 import dc from 'node:diagnostics_channel';
 
-import type { GraphQLChannelContextByName } from '../diagnostics.js';
+import type { GraphQLChannelContextByName } from '../diagnostics.ts';
 
-import type { TestTracingChannel } from './diagnosticsTracing.js';
+import type { TestTracingChannel } from './diagnosticsTracing.ts';
 
 /**
  * Resolve a graphql tracing channel by name on the real

@@ -38,7 +38,7 @@ export type {
   GraphQLResolveContext,
   GraphQLSubscribeContext,
   GraphQLValidateContext,
-} from './diagnostics.js';
+} from './diagnostics.ts';
 
 // The primary entry point into fulfilling a GraphQL request.
 export type { GraphQLArgs } from './graphql.ts';

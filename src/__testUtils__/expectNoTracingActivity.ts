@@ -1,10 +1,10 @@
 import { expect } from 'chai';
 
-import type { MinimalTracingChannel } from '../diagnostics.js';
+import type { MinimalTracingChannel } from '../diagnostics.ts';
 
-import { tracingSubChannels } from './diagnosticsTracing.js';
-import type { MethodSpy } from './spyOn.js';
-import { spyOnMethod } from './spyOn.js';
+import { tracingSubChannels } from './diagnosticsTracing.ts';
+import type { MethodSpy } from './spyOn.ts';
+import { spyOnMethod } from './spyOn.ts';
 
 /**
  * Assert that a graphql tracing channel stays on its zero-subscriber fast path.

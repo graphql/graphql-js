@@ -11,23 +11,23 @@
  * load silently no-ops and emission sites short-circuit.
  */
 
-import { isPromise } from './jsutils/isPromise.js';
-import type { Maybe } from './jsutils/Maybe.js';
-import type { ObjMap } from './jsutils/ObjMap.js';
+import { isPromise } from './jsutils/isPromise.ts';
+import type { Maybe } from './jsutils/Maybe.ts';
+import type { ObjMap } from './jsutils/ObjMap.ts';
 
-import type { GraphQLError } from './error/GraphQLError.js';
+import type { GraphQLError } from './error/GraphQLError.ts';
 
 import type {
   DocumentNode,
   OperationDefinitionNode,
   OperationTypeNode,
-} from './language/ast.js';
-import type { Source } from './language/source.js';
+} from './language/ast.ts';
+import type { Source } from './language/source.ts';
 
-import type { GraphQLSchema } from './type/schema.js';
+import type { GraphQLSchema } from './type/schema.ts';
 
-import type { ExecutionResult } from './execution/Executor.js';
-import type { ExperimentalIncrementalExecutionResults } from './execution/incremental/IncrementalExecutor.js';
+import type { ExecutionResult } from './execution/Executor.ts';
+import type { ExperimentalIncrementalExecutionResults } from './execution/incremental/IncrementalExecutor.ts';
 
 /**
  * Structural subset of `DiagnosticsChannel` sufficient for publishing and

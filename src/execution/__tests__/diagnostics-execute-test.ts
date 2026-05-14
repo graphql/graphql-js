@@ -1,28 +1,29 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
-import { expectEvents } from '../../__testUtils__/expectEvents.js';
-import { expectNoTracingActivity } from '../../__testUtils__/expectNoTracingActivity.js';
-import { expectPromise } from '../../__testUtils__/expectPromise.js';
-import { expectToThrow } from '../../__testUtils__/expectToThrow.js';
-import { getTracingChannel } from '../../__testUtils__/getTracingChannel.js';
-import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
+import { expectEvents } from '../../__testUtils__/expectEvents.ts';
+import { expectNoTracingActivity } from '../../__testUtils__/expectNoTracingActivity.ts';
+import { expectPromise } from '../../__testUtils__/expectPromise.ts';
+import { expectToThrow } from '../../__testUtils__/expectToThrow.ts';
+import { getTracingChannel } from '../../__testUtils__/getTracingChannel.ts';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';
 
-import type { OperationDefinitionNode } from '../../language/ast.js';
-import { OperationTypeNode } from '../../language/ast.js';
-import { parse } from '../../language/parser.js';
+import type { OperationDefinitionNode } from '../../language/ast.ts';
+import { OperationTypeNode } from '../../language/ast.ts';
+import { parse } from '../../language/parser.ts';
 
-import { GraphQLObjectType } from '../../type/definition.js';
-import { GraphQLString } from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+import { GraphQLObjectType } from '../../type/definition.ts';
+import { GraphQLString } from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
 import {
   execute,
   executeIgnoringIncremental,
   executeSync,
-} from '../execute.js';
+} from '../execute.ts';
 
 const schema = buildSchema(`
   type Query {

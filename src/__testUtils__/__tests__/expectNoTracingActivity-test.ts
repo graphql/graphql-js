@@ -1,8 +1,9 @@
-import { expect } from 'chai';
-import { describe, it } from 'mocha';
+import { describe, it } from 'node:test';
 
-import { expectNoTracingActivity } from '../expectNoTracingActivity.js';
-import { expectPromise } from '../expectPromise.js';
+import { expect } from 'chai';
+
+import { expectNoTracingActivity } from '../expectNoTracingActivity.ts';
+import { expectPromise } from '../expectPromise.ts';
 
 type TestTracingChannel = Parameters<typeof expectNoTracingActivity>[0];
 

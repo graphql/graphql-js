@@ -1,22 +1,29 @@
+import { describe, it } from 'node:test';
+
 import { assert, expect } from 'chai';
-import { describe, it } from 'mocha';
 
-import { expectEvents } from '../../__testUtils__/expectEvents.js';
-import { expectNoTracingActivity } from '../../__testUtils__/expectNoTracingActivity.js';
-import { expectToThrow } from '../../__testUtils__/expectToThrow.js';
-import { getTracingChannel } from '../../__testUtils__/getTracingChannel.js';
+import { expectEvents } from '../../__testUtils__/expectEvents.ts';
+import { expectNoTracingActivity } from '../../__testUtils__/expectNoTracingActivity.ts';
+import { expectToThrow } from '../../__testUtils__/expectToThrow.ts';
+import { getTracingChannel } from '../../__testUtils__/getTracingChannel.ts';
 
-import { isAsyncIterable } from '../../jsutils/isAsyncIterable.js';
+import { isAsyncIterable } from '../../jsutils/isAsyncIterable.ts';
 
-import type { OperationDefinitionNode } from '../../language/ast.js';
-import { OperationTypeNode } from '../../language/ast.js';
-import { parse } from '../../language/parser.js';
+import type { OperationDefinitionNode } from '../../language/ast.ts';
+import { OperationTypeNode } from '../../language/ast.ts';
+import { parse } from '../../language/parser.ts';
 
-import type { GraphQLSchema } from '../../type/schema.js';
+import type { GraphQLSchema } from '../../type/schema.ts';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { subscribe } from '../execute.js';
+import {
+  createSourceEventStream,
+  executeSubscriptionEvent,
+  mapSourceToResponseEvent,
+  subscribe,
+  validateSubscriptionArgs,
+} from '../execute.ts';
 
 const schema = buildSchema(`
   type Query {
@@ -185,6 +192,102 @@ describe('subscribe diagnostics channel', () => {
         assert(!secondResult.done, 'Expected second subscription event.');
 
         const returned = subscription.return?.();
+        if (returned !== undefined) {
+          await returned;
+        }
+        return [firstResult.value, secondResult.value] as const;
+      },
+      ([firstResult, secondResult]) => [
+        {
+          channel: 'start',
+          context: {
+            schema,
+            operation,
+            variableValues,
+            operationName: 'S',
+            operationType: OperationTypeNode.SUBSCRIPTION,
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            schema,
+            operation,
+            variableValues,
+            operationName: 'S',
+            operationType: OperationTypeNode.SUBSCRIPTION,
+            result: firstResult,
+          },
+        },
+        {
+          channel: 'start',
+          context: {
+            schema,
+            operation,
+            variableValues,
+            operationName: 'S',
+            operationType: OperationTypeNode.SUBSCRIPTION,
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            schema,
+            operation,
+            variableValues,
+            operationName: 'S',
+            operationType: OperationTypeNode.SUBSCRIPTION,
+            result: secondResult,
+          },
+        },
+      ],
+    );
+  });
+
+  it('emits execute root selection set events for each event with a custom per-event executor', async () => {
+    const document = parse('subscription S($tick: String) { tick }');
+    const operation = document.definitions[0] as OperationDefinitionNode;
+    const variableValues = { tick: 'ignored by the field' };
+
+    await expectEvents(
+      executeRootSelectionSetChannel,
+      async () => {
+        const validatedArgs = validateSubscriptionArgs({
+          schema,
+          document,
+          rootValue: { tick: twoTicks },
+          variableValues,
+        });
+        if (!('schema' in validatedArgs)) {
+          throw new Error('Unexpected validation errors');
+        }
+
+        const sourceEventStream = await createSourceEventStream(validatedArgs);
+        assert(isAsyncIterable(sourceEventStream));
+
+        const customExecutor: typeof executeSubscriptionEvent = (args) =>
+          executeSubscriptionEvent(args);
+
+        const responseStream = mapSourceToResponseEvent(
+          validatedArgs,
+          sourceEventStream,
+          customExecutor,
+        );
+
+        const firstResult = await responseStream.next();
+        expect(firstResult).to.deep.equal({
+          done: false,
+          value: { data: { tick: 'one' } },
+        });
+        assert(!firstResult.done, 'Expected first subscription event.');
+        const secondResult = await responseStream.next();
+        expect(secondResult).to.deep.equal({
+          done: false,
+          value: { data: { tick: 'two' } },
+        });
+        assert(!secondResult.done, 'Expected second subscription event.');
+
+        const returned = responseStream.return?.();
         if (returned !== undefined) {
           await returned;
         }

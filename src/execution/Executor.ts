@@ -44,7 +44,7 @@ import type { GraphQLSchema } from '../type/schema.ts';
 import type {
   GraphQLExecuteRootSelectionSetContext,
   GraphQLResolveContext,
-} from '../diagnostics.js';
+} from '../diagnostics.ts';
 import {
   executeRootSelectionSetChannel,
   resolveChannel,

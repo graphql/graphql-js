@@ -1,4 +1,4 @@
-import type { MinimalChannel, MinimalTracingChannel } from '../diagnostics.js';
+import type { MinimalChannel, MinimalTracingChannel } from '../diagnostics.ts';
 
 export type TracingSubChannel = {
   [Key in keyof MinimalTracingChannel]: MinimalTracingChannel[Key] extends MinimalChannel

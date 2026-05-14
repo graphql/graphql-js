@@ -29,7 +29,7 @@ import { assertValidSchema } from '../type/index.ts';
 
 import { getOperationAST } from '../utilities/getOperationAST.ts';
 
-import type { GraphQLExecuteContext } from '../diagnostics.js';
+import type { GraphQLExecuteContext } from '../diagnostics.ts';
 import {
   executeChannel,
   shouldTrace,
@@ -143,25 +143,6 @@ function buildOperationContextFromArgs(
     get operationType() {
       return resolveOperation()?.operation;
     },
-  };
-}
-
-/**
- * Build a graphql:execute channel context from ValidatedExecutionArgs.
- * Used by executeSubscriptionEvent, where the operation has already been
- * resolved during argument validation. The original document is not
- * available at this point, only the resolved operation; subscribers that
- * need the document should read it from the graphql:subscribe context.
- */
-function buildExecuteCtxFromValidatedArgs(
-  args: ValidatedExecutionArgs,
-): object {
-  return {
-    operation: args.operation,
-    schema: args.schema,
-    variableValues: args.variableValues,
-    operationName: args.operation.name?.value,
-    operationType: args.operation.operation,
   };
 }
 
@@ -1009,21 +990,12 @@ export function mapSourceToResponseEvent(
   sourceEventStream: AsyncIterable<unknown>,
   rootSelectionSetExecutor: RootSelectionSetExecutor = executeSubscriptionEvent,
 ): AsyncGenerator<ExecutionResult, void, void> {
-  // For each payload yielded from a subscription, map it over the normal
-  // GraphQL `execute` function, with `payload` as the rootValue.
   function mapFn(payload: unknown): PromiseOrValue<ExecutionResult> {
     const perEventExecutionArgs: ValidatedSubscriptionArgs = {
       ...validatedExecutionArgs,
       rootValue: payload,
     };
-    if (!shouldTrace(executeChannel)) {
-      return rootSelectionSetExecutor(perEventExecutionArgs);
-    }
-    return traceMixed(
-      executeChannel,
-      buildExecuteCtxFromValidatedArgs(validatedExecutionArgs),
-      () => rootSelectionSetExecutor(perEventExecutionArgs),
-    );
+    return rootSelectionSetExecutor(perEventExecutionArgs);
   }
 
   const externalAbortSignal = validatedExecutionArgs.externalAbortSignal;
@@ -1158,49 +1130,6 @@ function assertEventStream(result: unknown): AsyncIterable<unknown> {
   }
 
   return result;
-}
-
-/**
- * Build a graphql:execute channel context from ValidatedExecutionArgs.
- * Used by executeSubscriptionEvent, where the operation has already been
- * resolved during argument validation. The original document is not
- * available at this point, only the resolved operation; subscribers that
- * need the document should read it from the graphql:subscribe context.
- */
-function buildExecuteCtxFromValidatedArgs(
-  args: ValidatedExecutionArgs,
-): object {
-  let originalVariableValues: Maybe<{ readonly [variable: string]: unknown }>;
-  let hasResolvedOriginalVariableValues = false;
-
-  return {
-    operation: args.operation,
-    schema: args.schema,
-    get variableValues() {
-      if (!hasResolvedOriginalVariableValues) {
-        originalVariableValues = getOriginalVariableValues(args);
-        hasResolvedOriginalVariableValues = true;
-      }
-      return originalVariableValues;
-    },
-    operationName: args.operation.name?.value,
-    operationType: args.operation.operation,
-  };
-}
-
-function getOriginalVariableValues(
-  args: ValidatedExecutionArgs,
-): Maybe<{ readonly [variable: string]: unknown }> {
-  const originalVariableValues: { [variable: string]: unknown } = {};
-  for (const [variableName, source] of Object.entries(
-    args.variableValues.sources,
-  )) {
-    if (Object.hasOwn(source, 'value')) {
-      originalVariableValues[variableName] = source.value;
-    }
-  }
-
-  return originalVariableValues;
 }
 
 function toNodes(fieldDetailsList: FieldDetailsList): ReadonlyArray<FieldNode> {

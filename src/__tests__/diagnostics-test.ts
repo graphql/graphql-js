@@ -1,12 +1,12 @@
-/* eslint-disable import/no-nodejs-modules, n/no-unsupported-features/node-builtins */
+/* eslint-disable n/no-unsupported-features/node-builtins */
 import dc from 'node:diagnostics_channel';
+import { describe, it } from 'node:test';
 
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
-import { invariant } from '../jsutils/invariant.js';
+import { invariant } from '../jsutils/invariant.ts';
 
-import type { MinimalTracingChannel } from '../diagnostics.js';
+import type { MinimalTracingChannel } from '../diagnostics.ts';
 import {
   executeChannel,
   executeRootSelectionSetChannel,
@@ -15,7 +15,7 @@ import {
   shouldTrace,
   subscribeChannel,
   validateChannel,
-} from '../diagnostics.js';
+} from '../diagnostics.ts';
 
 describe('diagnostics', () => {
   it('auto-registers the graphql tracing channels', () => {

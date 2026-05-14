@@ -5,7 +5,7 @@ import type { Maybe } from '../jsutils/Maybe.ts';
 import type { GraphQLError } from '../error/GraphQLError.ts';
 import { syntaxError } from '../error/syntaxError.ts';
 
-import { parseChannel, shouldTrace } from '../diagnostics.js';
+import { parseChannel, shouldTrace } from '../diagnostics.ts';
 
 import type {
   ArgumentCoordinateNode,

@@ -1,13 +1,13 @@
 import { expect } from 'chai';
 
-import type { MinimalTracingChannel } from '../diagnostics.js';
+import type { MinimalTracingChannel } from '../diagnostics.ts';
 
 import type {
   TestTracingChannel,
   TracingSubChannel,
   TracingSubChannelRecord,
-} from './diagnosticsTracing.js';
-import { tracingSubChannels } from './diagnosticsTracing.js';
+} from './diagnosticsTracing.ts';
+import { tracingSubChannels } from './diagnosticsTracing.ts';
 
 export type CollectedEvent = {
   [Channel in TracingSubChannel]: {

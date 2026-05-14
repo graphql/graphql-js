@@ -1,19 +1,20 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
-import { expectEvents } from '../../__testUtils__/expectEvents.js';
-import { expectNoTracingActivity } from '../../__testUtils__/expectNoTracingActivity.js';
-import { getTracingChannel } from '../../__testUtils__/getTracingChannel.js';
+import { expectEvents } from '../../__testUtils__/expectEvents.ts';
+import { expectNoTracingActivity } from '../../__testUtils__/expectNoTracingActivity.ts';
+import { getTracingChannel } from '../../__testUtils__/getTracingChannel.ts';
 
-import { parse } from '../../language/parser.js';
+import { parse } from '../../language/parser.ts';
 
-import { GraphQLObjectType } from '../../type/definition.js';
-import { GraphQLString } from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+import { GraphQLObjectType } from '../../type/definition.ts';
+import { GraphQLString } from '../../type/scalars.ts';
+import { GraphQLSchema } from '../../type/schema.ts';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { execute } from '../execute.js';
+import { execute } from '../execute.ts';
 
 const schema = buildSchema(`
   type Query {
