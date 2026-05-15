@@ -1,3 +1,5 @@
+/** @category Schema Printing */
+
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
 import type { Maybe } from '../jsutils/Maybe';
@@ -36,6 +38,25 @@ import type { GraphQLSchema } from '../type/schema';
 
 import { astFromValue } from './astFromValue';
 
+/**
+ * Prints the schema.
+ * @param schema - GraphQL schema to use.
+ * @returns The printed string representation.
+ * @example
+ * ```ts
+ * import { buildSchema, printSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   directive @upper on FIELD_DEFINITION
+ *
+ *   type Query {
+ *     greeting: String @upper
+ *   }
+ * `);
+ *
+ * printSchema(schema); // => ['directive @upper on FIELD_DEFINITION', '', 'type Query {', '  greeting: String', '}'].join('\n')
+ * ```
+ */
 export function printSchema(schema: GraphQLSchema): string {
   return printFilteredSchema(
     schema,
@@ -44,6 +65,27 @@ export function printSchema(schema: GraphQLSchema): string {
   );
 }
 
+/**
+ * Prints the introspection schema.
+ * @param schema - GraphQL schema to use.
+ * @returns The printed string representation.
+ * @example
+ * ```ts
+ * import { buildSchema, printIntrospectionSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting: String
+ *   }
+ * `);
+ *
+ * const printed = printIntrospectionSchema(schema);
+ *
+ * printed; // matches /type __Schema/
+ * printed; // matches /enum __TypeKind/
+ * printed; // does not match /type Query/
+ * ```
+ */
 export function printIntrospectionSchema(schema: GraphQLSchema): string {
   return printFilteredSchema(schema, isSpecifiedDirective, isIntrospectionType);
 }
@@ -108,6 +150,8 @@ function printSchemaDefinition(schema: GraphQLSchema): Maybe<string> {
  * ```
  *
  * When using this naming convention, the schema description can be omitted.
+ *
+ * @internal
  */
 function isSchemaOfCommonNames(schema: GraphQLSchema): boolean {
   const queryType = schema.getQueryType();
@@ -128,6 +172,28 @@ function isSchemaOfCommonNames(schema: GraphQLSchema): boolean {
   return true;
 }
 
+/**
+ * Prints the type.
+ * @param type - The GraphQL type to inspect.
+ * @returns The printed string representation.
+ * @example
+ * ```ts
+ * import { buildSchema, printType } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type User {
+ *     id: ID!
+ *     name: String
+ *   }
+ *
+ *   type Query {
+ *     viewer: User
+ *   }
+ * `);
+ *
+ * printType(schema.getType('User')); // => ['type User {', '  id: ID!', '  name: String', '}'].join('\n')
+ * ```
+ */
 export function printType(type: GraphQLNamedType): string {
   if (isScalarType(type)) {
     return printScalar(type);

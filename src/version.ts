@@ -3,11 +3,13 @@
 
 /**
  * A string containing the version of the GraphQL.js library
+ * @category Version
  */
 export const version = '16.14.0' as string;
 
 /**
  * An object containing the components of the GraphQL.js version string
+ * @category Version
  */
 export const versionInfo = Object.freeze({
   major: 16 as number,

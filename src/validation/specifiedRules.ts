@@ -1,3 +1,5 @@
+/** @category Validation Rules */
+
 // Spec Section: "Executable Definitions"
 import { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule';
 // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
@@ -111,9 +113,7 @@ export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
   ...recommendedRules,
 ]);
 
-/**
- * @internal
- */
+/** @internal */
 export const specifiedSDLRules: ReadonlyArray<SDLValidationRule> =
   Object.freeze([
     LoneSchemaDefinitionRule,

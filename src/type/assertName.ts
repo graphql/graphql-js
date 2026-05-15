@@ -1,3 +1,5 @@
+/** @category Names */
+
 import { devAssert } from '../jsutils/devAssert';
 
 import { GraphQLError } from '../error/GraphQLError';
@@ -6,6 +8,15 @@ import { isNameContinue, isNameStart } from '../language/characterClasses';
 
 /**
  * Upholds the spec rules about naming.
+ * @param name - The GraphQL name to validate.
+ * @returns The validated GraphQL name.
+ * @example
+ * ```ts
+ * import { assertName } from 'graphql/type';
+ *
+ * assertName('User'); // => 'User'
+ * assertName('123User'); // throws an error
+ * ```
  */
 export function assertName(name: string): string {
   devAssert(name != null, 'Must provide name.');
@@ -34,8 +45,15 @@ export function assertName(name: string): string {
 
 /**
  * Upholds the spec rules about naming enum values.
+ * @param name - The GraphQL name to validate.
+ * @returns The validated GraphQL name.
+ * @example
+ * ```ts
+ * import { assertEnumValueName } from 'graphql/type';
  *
- * @internal
+ * assertEnumValueName('ACTIVE'); // => 'ACTIVE'
+ * assertEnumValueName('true'); // throws an error
+ * ```
  */
 export function assertEnumValueName(name: string): string {
   if (name === 'true' || name === 'false' || name === 'null') {

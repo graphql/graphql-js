@@ -1,3 +1,5 @@
+/** @category Validation Rules */
+
 import { GraphQLError } from '../../error/GraphQLError';
 
 import { print } from '../../language/printer';
@@ -17,6 +19,33 @@ import type { ValidationContext } from '../ValidationContext';
  * type condition must also be a composite type.
  *
  * See https://spec.graphql.org/draft/#sec-Fragments-On-Composite-Types
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { FragmentsOnCompositeTypesRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   fragment Bad on String { length }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [FragmentsOnCompositeTypesRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   fragment Good on Query { name }
+ * `);
+ * const validErrors = validate(schema, validDocument, [FragmentsOnCompositeTypesRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 export function FragmentsOnCompositeTypesRule(
   context: ValidationContext,

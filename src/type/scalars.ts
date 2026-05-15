@@ -1,3 +1,5 @@
+/** @category Scalars */
+
 import { inspect } from '../jsutils/inspect';
 import { isObjectLike } from '../jsutils/isObjectLike';
 
@@ -12,15 +14,16 @@ import { GraphQLScalarType } from './definition';
 /**
  * Maximum possible Int value as per GraphQL Spec (32-bit signed integer).
  * n.b. This differs from JavaScript's numbers that are IEEE 754 doubles safe up-to 2^53 - 1
- * */
+ */
 export const GRAPHQL_MAX_INT = 2147483647;
 
 /**
  * Minimum possible Int value as per GraphQL Spec (32-bit signed integer).
  * n.b. This differs from JavaScript's numbers that are IEEE 754 doubles safe starting at -(2^53 - 1)
- * */
+ */
 export const GRAPHQL_MIN_INT = -2147483648;
 
+/** The built-in `Int` scalar type. */
 export const GraphQLInt = new GraphQLScalarType<number>({
   name: 'Int',
   description:
@@ -84,6 +87,7 @@ export const GraphQLInt = new GraphQLScalarType<number>({
   },
 });
 
+/** The built-in `Float` scalar type. */
 export const GraphQLFloat = new GraphQLScalarType<number>({
   name: 'Float',
   description:
@@ -129,6 +133,7 @@ export const GraphQLFloat = new GraphQLScalarType<number>({
   },
 });
 
+/** The built-in `String` scalar type. */
 export const GraphQLString = new GraphQLScalarType<string>({
   name: 'String',
   description:
@@ -173,6 +178,7 @@ export const GraphQLString = new GraphQLScalarType<string>({
   },
 });
 
+/** The built-in `Boolean` scalar type. */
 export const GraphQLBoolean = new GraphQLScalarType<boolean>({
   name: 'Boolean',
   description: 'The `Boolean` scalar type represents `true` or `false`.',
@@ -211,6 +217,7 @@ export const GraphQLBoolean = new GraphQLScalarType<boolean>({
   },
 });
 
+/** The built-in `ID` scalar type. */
 export const GraphQLID = new GraphQLScalarType<string>({
   name: 'ID',
   description:
@@ -252,6 +259,7 @@ export const GraphQLID = new GraphQLScalarType<string>({
   },
 });
 
+/** All built-in scalar types defined by the GraphQL specification. */
 export const specifiedScalarTypes: ReadonlyArray<GraphQLScalarType> =
   Object.freeze([
     GraphQLString,
@@ -261,6 +269,26 @@ export const specifiedScalarTypes: ReadonlyArray<GraphQLScalarType> =
     GraphQLID,
   ]);
 
+/**
+ * Returns true when the scalar type is one of the scalars specified by GraphQL.
+ * @param type - The GraphQL type to inspect.
+ * @returns True when the scalar type is one of the scalars specified by GraphQL.
+ * @example
+ * ```ts
+ * import {
+ *   GraphQLScalarType,
+ *   GraphQLString,
+ *   isSpecifiedScalarType,
+ * } from 'graphql/type';
+ *
+ * const DateTime = new GraphQLScalarType({
+ *   name: 'DateTime',
+ * });
+ *
+ * isSpecifiedScalarType(GraphQLString); // => true
+ * isSpecifiedScalarType(DateTime); // => false
+ * ```
+ */
 export function isSpecifiedScalarType(type: GraphQLNamedType): boolean {
   return specifiedScalarTypes.some(({ name }) => type.name === name);
 }

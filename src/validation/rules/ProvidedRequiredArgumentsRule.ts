@@ -1,3 +1,5 @@
+/** @category Validation Rules */
+
 import { inspect } from '../../jsutils/inspect';
 import { keyMap } from '../../jsutils/keyMap';
 import type { ObjMap } from '../../jsutils/ObjMap';
@@ -23,6 +25,33 @@ import type {
  *
  * A field or directive is only valid if all required (non-null without a
  * default value) field arguments have been provided.
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { ProvidedRequiredArgumentsRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     field(required: String!): String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   { field }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [ProvidedRequiredArgumentsRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { field(required: "x") }
+ * `);
+ * const validErrors = validate(schema, validDocument, [ProvidedRequiredArgumentsRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 export function ProvidedRequiredArgumentsRule(
   context: ValidationContext,
@@ -59,9 +88,7 @@ export function ProvidedRequiredArgumentsRule(
   };
 }
 
-/**
- * @internal
- */
+/** @internal */
 export function ProvidedRequiredArgumentsOnDirectivesRule(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor {

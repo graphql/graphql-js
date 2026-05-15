@@ -1,3 +1,5 @@
+/** @category Custom Rules */
+
 import { GraphQLError } from '../../../error/GraphQLError';
 
 import type { FieldNode } from '../../../language/ast';
@@ -17,6 +19,33 @@ import type { ValidationContext } from '../../ValidationContext';
  * Note: This rule is optional and is not part of the Validation section of the
  * GraphQL Specification. This rule effectively disables introspection, which
  * does not reflect best practices and should only be done if absolutely necessary.
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { NoSchemaIntrospectionCustomRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   { __schema { queryType { name } } }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [NoSchemaIntrospectionCustomRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { name }
+ * `);
+ * const validErrors = validate(schema, validDocument, [NoSchemaIntrospectionCustomRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 export function NoSchemaIntrospectionCustomRule(
   context: ValidationContext,

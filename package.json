@@ -64,6 +64,7 @@
     "eslint": "8.13.0",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-internal-rules": "file:./resources/eslint-internal-rules",
+    "eslint-plugin-jsdoc": "38.1.6",
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-react": "7.29.4",
     "eslint-plugin-react-hooks": "4.4.0",

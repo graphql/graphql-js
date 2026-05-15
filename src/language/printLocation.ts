@@ -1,3 +1,5 @@
+/** @category Source */
+
 import type { Location } from './ast';
 import type { SourceLocation } from './location';
 import { getLocation } from './location';
@@ -5,6 +7,21 @@ import type { Source } from './source';
 
 /**
  * Render a helpful description of the location in the GraphQL Source document.
+ * @param location - The AST location to print.
+ * @returns A formatted source excerpt with line and column information.
+ * @example
+ * ```ts
+ * import { parse, printLocation } from 'graphql/language';
+ *
+ * const document = parse('type Query { hello: String }');
+ * const location = document.definitions[0].loc;
+ *
+ * if (location) {
+ *   const printed = printLocation(location);
+ *
+ *   printed; // => 'GraphQL request:1:1\n1 | type Query { hello: String }\n  | ^'
+ * }
+ * ```
  */
 export function printLocation(location: Location): string {
   return printSourceLocation(
@@ -15,6 +32,18 @@ export function printLocation(location: Location): string {
 
 /**
  * Render a helpful description of the location in the GraphQL Source document.
+ * @param source - The source document that contains the location.
+ * @param sourceLocation - The 1-indexed line and column to print.
+ * @returns A formatted source excerpt with line and column information.
+ * @example
+ * ```ts
+ * import { Source, printSourceLocation } from 'graphql/language';
+ *
+ * const source = new Source('type Query { hello: String }');
+ * const printed = printSourceLocation(source, { line: 1, column: 14 });
+ *
+ * printed; // => 'GraphQL request:1:14\n1 | type Query { hello: String }\n  |              ^'
+ * ```
  */
 export function printSourceLocation(
   source: Source,

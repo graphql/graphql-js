@@ -1,3 +1,5 @@
+/** @category Introspection */
+
 import { devAssert } from '../jsutils/devAssert';
 import { inspect } from '../jsutils/inspect';
 import { isObjectLike } from '../jsutils/isObjectLike';
@@ -60,6 +62,20 @@ import { valueFromAST } from './valueFromAST';
  *
  * This function expects a complete introspection result. Don't forget to check
  * the "errors" field of a server response before calling this function.
+ * @param introspection - Introspection result data to build from.
+ * @param options - Optional configuration for this operation.
+ * @returns The client schema represented by the introspection result.
+ * @example
+ * ```ts
+ * import { buildClientSchema, introspectionFromSchema, buildSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema('type Query { hello: String }');
+ * const clientSchema = buildClientSchema(introspectionFromSchema(schema), {
+ *   assumeValid: true,
+ * });
+ *
+ * clientSchema.getQueryType().name; // => 'Query'
+ * ```
  */
 export function buildClientSchema(
   introspection: IntrospectionQuery,

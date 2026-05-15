@@ -7,10 +7,37 @@ plugins:
   - internal-rules
   - node
   - import
+  - jsdoc
   - simple-import-sort
 settings:
   node:
     tryExtensions: ['.js', '.jsx', '.json', '.node', '.ts', '.d.ts']
+  jsdoc:
+    mode: typescript
+    ignoreInternal: true
+    ignorePrivate: true
+    structuredTags:
+      category:
+        name: text
+        type: false
+        required:
+          - name
+      packageDocumentation:
+        name: false
+        type: false
+      remarks:
+        name: false
+        type: false
+      defaultValue:
+        name: text
+        type: false
+      typeParam:
+        name: namepath-defining
+        type: false
+        required:
+          - name
+    tagNamePreference:
+      template: typeParam
 
 rules:
   ##############################################################################
@@ -655,10 +682,256 @@ overrides:
       '@typescript-eslint/type-annotation-spacing': off
   - files: 'src/**'
     rules:
+      internal-rules/require-graphql-public-api-docs: error
+      internal-rules/require-public-api-exports: error
       internal-rules/require-to-string-tag: error
-  - files: 'src/**/__*__/**'
+
+      ##########################################################################
+      # `eslint-plugin-jsdoc` rule list based on `v38.1.x`
+      # https://github.com/gajus/eslint-plugin-jsdoc
+      ##########################################################################
+
+      # Recommended rules
+      jsdoc/check-access: error
+      jsdoc/check-alignment: error
+      jsdoc/check-examples: off # Deprecated and not for ESLint >= 8
+      jsdoc/check-indentation: off # Existing docs intentionally indent wrapped text
+      jsdoc/check-line-alignment: off # Not recommended
+      jsdoc/check-param-names: error
+      jsdoc/check-property-names: error
+      jsdoc/check-tag-names:
+        - error
+        - definedTags:
+            - category
+            - defaultValue
+            - packageDocumentation
+            - remarks
+            - typeParam
+      jsdoc/check-syntax: off # Not recommended
+      jsdoc/check-types: error
+      jsdoc/check-values: error
+      jsdoc/empty-tags: error
+      jsdoc/implements-on-classes: error
+      jsdoc/match-description: off # Not recommended
+      jsdoc/match-name: off # Not recommended
+      jsdoc/multiline-blocks: error
+      jsdoc/newline-after-description: [error, never]
+      jsdoc/no-bad-blocks: off # Not recommended
+      jsdoc/no-defaults: off # Not recommended
+      jsdoc/no-missing-syntax: off # Not recommended
+      jsdoc/no-multi-asterisks: error
+      jsdoc/no-restricted-syntax: off # Not recommended
+      jsdoc/no-types: off # Not recommended
+      jsdoc/no-undefined-types: off # TypeScript handles undefined types
+      jsdoc/require-asterisk-prefix: off # Not recommended
+
+      # Requirement rules
+      jsdoc/require-description:
+        - error
+        - contexts:
+            - context: ClassDeclaration
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: FunctionDeclaration
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: MethodDefinition
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: PropertyDefinition
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: TSDeclareFunction
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: TSEnumDeclaration
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: TSEnumMember
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: TSInterfaceDeclaration
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: TSMethodSignature
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: TSPropertySignature
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: TSTypeAliasDeclaration
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: VariableDeclaration
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: ClassDeclaration
+              comment: 'JsdocBlock:has(JsdocTag[tag="deprecated"])'
+            - context: FunctionDeclaration
+              comment: 'JsdocBlock:has(JsdocTag[tag="deprecated"])'
+            - context: MethodDefinition
+              comment: 'JsdocBlock:has(JsdocTag[tag="deprecated"])'
+            - context: TSDeclareFunction
+              comment: 'JsdocBlock:has(JsdocTag[tag="deprecated"])'
+            - context: TSInterfaceDeclaration
+              comment: 'JsdocBlock:has(JsdocTag[tag="deprecated"])'
+            - context: TSTypeAliasDeclaration
+              comment: 'JsdocBlock:has(JsdocTag[tag="deprecated"])'
+            - context: VariableDeclaration
+              comment: 'JsdocBlock:has(JsdocTag[tag="deprecated"])'
+            - context: Program
+              comment: 'JsdocBlock:has(JsdocTag[tag="packageDocumentation"])'
+      jsdoc/require-description-complete-sentence: off # Not recommended
+      jsdoc/require-example:
+        - error
+        - checkConstructors: true
+          checkGetters: false
+          checkSetters: false
+          contexts:
+            - context: FunctionDeclaration
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: TSDeclareFunction
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: 'MethodDefinition:not([kind="get"]):not([kind="set"])'
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: TSMethodSignature
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+      jsdoc/require-file-overview: off # Enabled below only for public index.ts package entrypoints
+      jsdoc/require-hyphen-before-param-description: off # Not recommended
+      jsdoc/require-jsdoc: off # Public API JSDoc presence is enforced by internal-rules/require-public-api-exports
+      jsdoc/require-param:
+        - error
+        - checkConstructors: true
+          checkGetters: false
+          checkSetters: true
+          contexts:
+            - context: FunctionDeclaration
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: TSDeclareFunction
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: MethodDefinition
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: TSMethodSignature
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+          exemptedBy:
+            - internal
+      jsdoc/require-param-description:
+        - error
+        - contexts:
+            - context: FunctionDeclaration
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: TSDeclareFunction
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: MethodDefinition
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: TSMethodSignature
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+      jsdoc/require-param-name:
+        - error
+        - contexts:
+            - context: FunctionDeclaration
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: TSDeclareFunction
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: MethodDefinition
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: TSMethodSignature
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+      jsdoc/require-param-type: off # TypeScript handles parameter types
+      jsdoc/require-property: error
+      jsdoc/require-property-description: error
+      jsdoc/require-property-name: error
+      jsdoc/require-property-type: off # TypeScript handles property types
+      jsdoc/require-returns:
+        - error
+        - checkConstructors: false
+          checkGetters: true
+          contexts:
+            - context: FunctionDeclaration
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: TSDeclareFunction
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: MethodDefinition
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: TSMethodSignature
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+          exemptedBy:
+            - internal
+      jsdoc/require-returns-check: off # Too noisy for declaration-style docs and parser helpers
+      jsdoc/require-returns-description:
+        - error
+        - contexts:
+            - context: FunctionDeclaration
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: TSDeclareFunction
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: MethodDefinition
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+            - context: TSMethodSignature
+              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))'
+      jsdoc/require-returns-type: off # TypeScript handles return types
+      jsdoc/require-throws: off # TODO consider
+      jsdoc/require-yields: error
+      jsdoc/require-yields-check: error
+      jsdoc/sort-tags: error
+      jsdoc/tag-lines: [error, never, { noEndLines: true }]
+      jsdoc/valid-types: error
+  - files:
+      - 'src/index.ts'
+      - 'src/**/index.ts'
     rules:
+      jsdoc/require-file-overview:
+        - error
+        - tags:
+            packageDocumentation:
+              initialCommentsOnly: true
+              mustExist: true
+              preventDuplicates: true
+  - files: '**/__*__/**'
+    rules:
+      # API documentation rules document the source API surface, not tests or
+      # test helpers. ESLint does not support plugin-wide rule wildcards in
+      # config, so plugin rules must be disabled explicitly here.
+      internal-rules/require-graphql-public-api-docs: off
+      internal-rules/require-public-api-exports: off
       internal-rules/require-to-string-tag: off
+      jsdoc/check-access: off
+      jsdoc/check-alignment: off
+      jsdoc/check-examples: off
+      jsdoc/check-indentation: off
+      jsdoc/check-line-alignment: off
+      jsdoc/check-param-names: off
+      jsdoc/check-property-names: off
+      jsdoc/check-syntax: off
+      jsdoc/check-tag-names: off
+      jsdoc/check-types: off
+      jsdoc/check-values: off
+      jsdoc/empty-tags: off
+      jsdoc/implements-on-classes: off
+      jsdoc/match-description: off
+      jsdoc/match-name: off
+      jsdoc/multiline-blocks: off
+      jsdoc/newline-after-description: off
+      jsdoc/no-bad-blocks: off
+      jsdoc/no-defaults: off
+      jsdoc/no-missing-syntax: off
+      jsdoc/no-multi-asterisks: off
+      jsdoc/no-restricted-syntax: off
+      jsdoc/no-types: off
+      jsdoc/no-undefined-types: off
+      jsdoc/require-asterisk-prefix: off
+      jsdoc/require-description: off
+      jsdoc/require-description-complete-sentence: off
+      jsdoc/require-example: off
+      jsdoc/require-file-overview: off
+      jsdoc/require-hyphen-before-param-description: off
+      jsdoc/require-jsdoc: off
+      jsdoc/require-param: off
+      jsdoc/require-param-description: off
+      jsdoc/require-param-name: off
+      jsdoc/require-param-type: off
+      jsdoc/require-property: off
+      jsdoc/require-property-description: off
+      jsdoc/require-property-name: off
+      jsdoc/require-property-type: off
+      jsdoc/require-returns: off
+      jsdoc/require-returns-check: off
+      jsdoc/require-returns-description: off
+      jsdoc/require-returns-type: off
+      jsdoc/require-throws: off
+      jsdoc/require-yields: off
+      jsdoc/require-yields-check: off
+      jsdoc/sort-tags: off
+      jsdoc/tag-lines: off
+      jsdoc/valid-types: off
       node/no-unpublished-import: [error, { allowModules: ['chai', 'mocha'] }]
       import/no-deprecated: off
       import/no-restricted-paths: off
@@ -696,9 +969,10 @@ overrides:
       node: true
     rules:
       internal-rules/only-ascii: [error, { allowEmoji: true }]
+      import/no-extraneous-dependencies: off
+      node/no-extraneous-require: off
       node/no-unpublished-require: off
       node/no-sync: off
-      import/no-extraneous-dependencies: [error, { devDependencies: true }]
       import/no-nodejs-modules: off
       import/no-commonjs: off
       no-console: off

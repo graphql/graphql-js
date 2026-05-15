@@ -1,3 +1,5 @@
+/** @category Schema Construction */
+
 import { devAssert } from '../jsutils/devAssert';
 
 import type { DocumentNode } from '../language/ast';
@@ -14,6 +16,7 @@ import { assertValidSDL } from '../validation/validate';
 
 import { extendSchemaImpl } from './extendSchema';
 
+/** Options used when building a schema from SDL or a parsed SDL document. */
 export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
   /**
    * Set to true to assume the SDL is valid.
@@ -24,14 +27,41 @@ export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
 }
 
 /**
- * This takes the ast of a schema document produced by the parse function in
- * src/language/parser.js.
+ * Builds a GraphQLSchema from a parsed schema definition language document.
  *
  * If no schema definition is provided, then it will look for types named Query,
  * Mutation and Subscription.
  *
- * Given that AST it constructs a GraphQLSchema. The resulting schema
- * has no resolve methods, so execution will use default resolvers.
+ * The resulting schema has no resolver functions, so execution will use the
+ * default field resolver.
+ * @param documentAST - The parsed GraphQL document AST.
+ * @param options - Optional configuration for this operation.
+ * @returns The schema built from the provided SDL document.
+ * @example
+ * ```ts
+ * // Build a schema from a valid parsed SDL document.
+ * import { parse } from 'graphql/language';
+ * import { buildASTSchema } from 'graphql/utilities';
+ *
+ * const document = parse('type Query { hello: String }');
+ * const schema = buildASTSchema(document);
+ *
+ * schema.getQueryType().name; // => 'Query'
+ * ```
+ * @example
+ * ```ts
+ * // This variant uses validation options when the SDL references unknown types.
+ * import { parse } from 'graphql/language';
+ * import { buildASTSchema } from 'graphql/utilities';
+ *
+ * const document = parse('type Query { broken: MissingType }');
+ *
+ * buildASTSchema(document); // throws an error
+ * buildASTSchema(document, {
+ *   assumeValid: true,
+ *   assumeValidSDL: true,
+ * }); // does not throw
+ * ```
  */
 export function buildASTSchema(
   documentAST: DocumentNode,
@@ -92,8 +122,38 @@ export function buildASTSchema(
 }
 
 /**
- * A helper function to build a GraphQLSchema directly from a source
- * document.
+ * Builds a GraphQLSchema directly from a schema definition language source.
+ * @param source - The GraphQL source text or source object.
+ * @param options - Optional configuration for this operation.
+ * @returns The schema built from the provided SDL document.
+ * @example
+ * ```ts
+ * // Build a schema from SDL source using the default options.
+ * import { buildSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema('type Query { hello: String }');
+ *
+ * schema.getQueryType().name; // => 'Query'
+ * ```
+ * @example
+ * ```ts
+ * // This variant enables parser options and omits source locations.
+ * import { buildSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(
+ *   'directive @tag on FIELD_DEFINITION\n' +
+ *     'directive @compose @tag on FIELD_DEFINITION',
+ *   {
+ *     experimentalDirectivesOnDirectiveDefinitions: true,
+ *     noLocation: true,
+ *   },
+ * );
+ *
+ * const directive = schema.getDirective('compose');
+ *
+ * directive.name; // => 'compose'
+ * directive.astNode.loc; // => undefined
+ * ```
  */
 export function buildSchema(
   source: string | Source,

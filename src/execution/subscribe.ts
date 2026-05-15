@@ -1,3 +1,5 @@
+/** @category Subscriptions */
+
 import { devAssert } from '../jsutils/devAssert';
 import { inspect } from '../jsutils/inspect';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable';
@@ -32,7 +34,7 @@ import { getArgumentValues } from './values';
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
  *
- * Returns a Promise which resolves to either an AsyncIterator (if successful)
+ * Returns a Promise that resolves to either an AsyncIterator (if successful)
  * or an ExecutionResult (error). The promise will be rejected if the schema or
  * other arguments to this function are invalid, or if the resolved event stream
  * is not an async iterable.
@@ -48,7 +50,122 @@ import { getArgumentValues } from './values';
  * If the operation succeeded, the promise resolves to an AsyncIterator, which
  * yields a stream of ExecutionResults representing the response stream.
  *
- * Accepts either an object with named arguments, or individual arguments.
+ * Each payload yielded by the source event stream is executed with the payload
+ * as the root value. This maps the subscription source stream into the response
+ * stream described by the GraphQL specification.
+ *
+ * Accepts an object with named arguments.
+ * @param args - The arguments used to perform the operation.
+ * @returns A source stream mapped to execution results, or an execution result
+ * containing subscription errors.
+ * @example
+ * ```ts
+ * // Use a same-named rootValue function to provide the source event stream.
+ * import assert from 'node:assert';
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { subscribe } from 'graphql/execution';
+ *
+ * async function* greetings() {
+ *   yield { greeting: 'Hello' };
+ *   yield { greeting: 'Bonjour' };
+ * }
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     noop: String
+ *   }
+ *
+ *   type Subscription {
+ *     greeting: String
+ *   }
+ * `);
+ *
+ * const result = await subscribe({
+ *   schema,
+ *   document: parse('subscription { greeting }'),
+ *   rootValue: { greeting: () => greetings() },
+ * });
+ *
+ * assert('next' in result);
+ *
+ * const firstPayload = await result.next();
+ * firstPayload.value; // => { data: { greeting: 'Hello' } }
+ * ```
+ * @example
+ * ```ts
+ * // This variant supplies events through a custom subscribeFieldResolver.
+ * import assert from 'node:assert';
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { subscribe } from 'graphql/execution';
+ *
+ * async function* defaultGreetings() {
+ *   yield { greeting: 'Hello' };
+ * }
+ *
+ * async function* frenchGreetings() {
+ *   yield { greeting: 'Bonjour' };
+ * }
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     noop: String
+ *   }
+ *
+ *   type Subscription {
+ *     greeting(locale: String): String
+ *   }
+ * `);
+ *
+ * const result = await subscribe({
+ *   schema,
+ *   document: parse(
+ *     'subscription Greeting($locale: String) { greeting(locale: $locale) }',
+ *   ),
+ *   rootValue: {
+ *     greeting: (args, contextValue) => {
+ *       const locale = args.locale ?? contextValue.defaultLocale;
+ *       return locale === 'fr' ? frenchGreetings() : defaultGreetings();
+ *     },
+ *   },
+ *   contextValue: { defaultLocale: 'fr' },
+ *   variableValues: { locale: 'fr' },
+ *   operationName: 'Greeting',
+ *   subscribeFieldResolver: (rootValue, args, contextValue, info) => {
+ *     args.locale; // => 'fr'
+ *     return rootValue[info.fieldName](args, contextValue);
+ *   },
+ * });
+ *
+ * assert('next' in result);
+ *
+ * const firstPayload = await result.next();
+ * firstPayload.value; // => { data: { greeting: 'Bonjour' } }
+ * ```
+ * @example
+ * ```ts
+ * // This variant shows the error result when the schema has no subscription root.
+ * import assert from 'node:assert';
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { subscribe } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     noop: String
+ *   }
+ * `);
+ *
+ * const result = await subscribe({
+ *   schema,
+ *   document: parse('subscription { greeting }'),
+ * });
+ *
+ * assert('errors' in result);
+ *
+ * result.errors[0].message; // => 'Schema is not configured to execute subscription operation.'
+ * ```
  */
 export async function subscribe(
   args: ExecutionArgs,
@@ -65,19 +182,12 @@ export async function subscribe(
     return resultOrStream;
   }
 
-  // For each payload yielded from a subscription, map it over the normal
-  // GraphQL `execute` function, with `payload` as the rootValue.
-  // This implements the "MapSourceToResponseEvent" algorithm described in
-  // the GraphQL specification. The `execute` function provides the
-  // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
-  // "ExecuteQuery" algorithm, for which `execute` is also used.
   const mapSourceToResponse = (payload: unknown) =>
     execute({
       ...args,
       rootValue: payload,
     });
 
-  // Map every source value to a ExecutionResult value as described above.
   return mapAsyncIterator(resultOrStream, mapSourceToResponse);
 }
 
@@ -115,7 +225,7 @@ function toNormalizedArgs(args: BackwardsCompatibleArgs): ExecutionArgs {
  * Implements the "CreateSourceEventStream" algorithm described in the
  * GraphQL specification, resolving the subscription source event stream.
  *
- * Returns a Promise which resolves to either an AsyncIterable (if successful)
+ * Returns a Promise that resolves to either an AsyncIterable (if successful)
  * or an ExecutionResult (error). The promise will be rejected if the schema or
  * other arguments to this function are invalid, or if the resolved event stream
  * is not an async iterable.
@@ -124,7 +234,7 @@ function toNormalizedArgs(args: BackwardsCompatibleArgs): ExecutionArgs {
  * compliant subscription, a GraphQL Response (ExecutionResult) with
  * descriptive errors and no data will be returned.
  *
- * If the the source stream could not be created due to faulty subscription
+ * If the source stream could not be created due to faulty subscription
  * resolver logic or underlying systems, the promise will resolve to a single
  * ExecutionResult containing `errors` and no `data`.
  *
@@ -138,11 +248,85 @@ function toNormalizedArgs(args: BackwardsCompatibleArgs): ExecutionArgs {
  * different process or machine than the stateless GraphQL execution engine,
  * or otherwise separating these two steps. For more on this, see the
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
+ * @param args - The arguments used to perform the operation.
+ * @returns The source event stream, or an execution result containing subscription errors.
+ * @example
+ * ```ts
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { createSourceEventStream } from 'graphql/execution';
+ *
+ * async function* greetings() {
+ *   yield { greeting: 'Hello' };
+ * }
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     noop: String
+ *   }
+ *
+ *   type Subscription {
+ *     greeting: String
+ *   }
+ * `);
+ *
+ * const stream = await createSourceEventStream({
+ *   schema,
+ *   document: parse('subscription { greeting }'),
+ *   rootValue: { greeting: () => greetings() },
+ * });
+ *
+ * Symbol.asyncIterator in stream; // => true
+ * ```
  */
 export async function createSourceEventStream(
   args: ExecutionArgs,
 ): Promise<AsyncIterable<unknown> | ExecutionResult>;
-/** @deprecated will be removed in next major version in favor of named arguments */
+/**
+ * Creates the source event stream for a subscription operation using the legacy
+ * positional argument overload. Use the args object overload instead; this
+ * overload will be removed in the next major version.
+ * @param schema - GraphQL schema to use.
+ * @param document - The parsed GraphQL document containing the subscription
+ * operation.
+ * @param rootValue - Initial root value passed to the subscription resolver.
+ * @param contextValue - Application context value passed to resolvers.
+ * @param variableValues - Runtime variable values keyed by variable name.
+ * @param operationName - Name of the subscription operation to execute when
+ * the document contains multiple operations.
+ * @param subscribeFieldResolver - Resolver used for the root subscription
+ * field.
+ * @returns The source event stream, or an execution result containing
+ * subscription errors.
+ * @example
+ * ```ts
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { createSourceEventStream } from 'graphql/execution';
+ *
+ * async function* greetings() {
+ *   yield { greeting: 'Hello' };
+ * }
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     noop: String
+ *   }
+ *
+ *   type Subscription {
+ *     greeting: String
+ *   }
+ * `);
+ * const document = parse('subscription { greeting }');
+ *
+ * const stream = await createSourceEventStream(schema, document, {
+ *   greeting: () => greetings(),
+ * });
+ *
+ * Symbol.asyncIterator in stream; // => true
+ * ```
+ * @deprecated Will be removed in next major version in favor of named arguments.
+ */
 export async function createSourceEventStream(
   schema: GraphQLSchema,
   document: DocumentNode,
@@ -152,6 +336,7 @@ export async function createSourceEventStream(
   operationName?: Maybe<string>,
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
 ): Promise<AsyncIterable<unknown> | ExecutionResult>;
+/** @internal */
 export async function createSourceEventStream(
   ...rawArgs: BackwardsCompatibleArgs
 ) {

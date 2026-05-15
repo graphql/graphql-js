@@ -1,3 +1,5 @@
+/** @category Printing */
+
 import type { Maybe } from '../jsutils/Maybe';
 
 import type { ASTNode } from './ast';
@@ -9,6 +11,17 @@ import { visit } from './visitor';
 /**
  * Converts an AST into a string, using one set of reasonable
  * formatting rules.
+ * @param ast - The GraphQL AST node to print.
+ * @returns A stable string representation of the AST.
+ * @example
+ * ```ts
+ * import { parse, print } from 'graphql';
+ *
+ * const ast = parse('{ hero { name } }');
+ * const text = print(ast);
+ *
+ * text; // => '{\n  hero {\n    name\n  }\n}'
+ * ```
  */
 export function print(ast: ASTNode): string {
   return visit(ast, printDocASTReducer);
@@ -348,6 +361,8 @@ const printDocASTReducer: ASTReducer<string> = {
 /**
  * Given maybeArray, print an empty string if it is null or empty, otherwise
  * print all items together separated by separator if provided
+ *
+ * @internal
  */
 function join(
   maybeArray: Maybe<ReadonlyArray<string | undefined>>,
@@ -358,6 +373,8 @@ function join(
 
 /**
  * Given array, print each item on its own line, wrapped in an indented `{ }` block.
+ *
+ * @internal
  */
 function block(array: Maybe<ReadonlyArray<string | undefined>>): string {
   return wrap('{\n', indent(join(array, '\n')), '\n}');
@@ -365,6 +382,8 @@ function block(array: Maybe<ReadonlyArray<string | undefined>>): string {
 
 /**
  * If maybeString is not null or empty, then wrap with start and end, otherwise print an empty string.
+ *
+ * @internal
  */
 function wrap(
   start: string,

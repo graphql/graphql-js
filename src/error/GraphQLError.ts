@@ -1,3 +1,5 @@
+/** @category Errors */
+
 import { isObjectLike } from '../jsutils/isObjectLike';
 import type { Maybe } from '../jsutils/Maybe';
 
@@ -9,7 +11,6 @@ import type { Source } from '../language/source';
 
 /**
  * Custom extensions
- *
  * @remarks
  * Use a unique identifier name for your extension, for example the name of
  * your library or project. Do not use a shortened identifier as this increases
@@ -22,7 +23,6 @@ export interface GraphQLErrorExtensions {
 
 /**
  * Custom formatted extensions
- *
  * @remarks
  * Use a unique identifier name for your extension, for example the name of
  * your library or project. Do not use a shortened identifier as this increases
@@ -33,12 +33,24 @@ export interface GraphQLFormattedErrorExtensions {
   [attributeName: string]: unknown;
 }
 
+/** Options used to construct a GraphQLError. */
 export interface GraphQLErrorOptions {
+  /** AST node or nodes associated with this error. */
   nodes?: ReadonlyArray<ASTNode> | ASTNode | null;
+  /** Source document used to derive error locations. */
   source?: Maybe<Source>;
+  /** Character offsets in the source document associated with this error. */
   positions?: Maybe<ReadonlyArray<number>>;
+  /** Response path where this error occurred during execution. */
   path?: Maybe<ReadonlyArray<string | number>>;
-  originalError?: Maybe<Error & { readonly extensions?: unknown }>;
+  /** Original error that caused this GraphQLError, if one exists. */
+  originalError?: Maybe<
+    Error & {
+      /** Extension fields associated with this value. */
+      readonly extensions?: unknown;
+    }
+  >;
+  /** Extension fields to include in the formatted result. */
   extensions?: Maybe<GraphQLErrorExtensions>;
 }
 
@@ -97,9 +109,7 @@ export class GraphQLError extends Error {
    */
   readonly path: ReadonlyArray<string | number> | undefined;
 
-  /**
-   * An array of GraphQL AST Nodes corresponding to this error.
-   */
+  /** An array of GraphQL AST Nodes corresponding to this error. */
   readonly nodes: ReadonlyArray<ASTNode> | undefined;
 
   /**
@@ -116,18 +126,91 @@ export class GraphQLError extends Error {
    */
   readonly positions: ReadonlyArray<number> | undefined;
 
-  /**
-   * The original error thrown from a field resolver during execution.
-   */
+  /** Original error that caused this GraphQLError, if one exists. */
   readonly originalError: Error | undefined;
 
-  /**
-   * Extension fields to add to the formatted error.
-   */
+  /** Extension fields to add to the formatted error. */
   readonly extensions: GraphQLErrorExtensions;
 
+  /**
+   * Creates a GraphQLError instance.
+   * @param message - Human-readable error message.
+   * @param options - Error metadata such as source locations, response path, original error, and extensions.
+   * @example
+   * ```ts
+   * // Create an error from AST nodes and response metadata.
+   * import { parse } from 'graphql/language';
+   * import { GraphQLError } from 'graphql/error';
+   *
+   * const document = parse('{ greeting }');
+   * const fieldNode = document.definitions[0].selectionSet.selections[0];
+   * const error = new GraphQLError('Cannot query this field.', {
+   *   nodes: fieldNode,
+   *   path: ['greeting'],
+   *   extensions: { code: 'FORBIDDEN' },
+   * });
+   *
+   * error.message; // => 'Cannot query this field.'
+   * error.locations; // => [{ line: 1, column: 3 }]
+   * error.path; // => ['greeting']
+   * error.extensions; // => { code: 'FORBIDDEN' }
+   * ```
+   * @example
+   * ```ts
+   * // This variant derives locations from source positions and preserves the original error.
+   * import { Source } from 'graphql/language';
+   * import { GraphQLError } from 'graphql/error';
+   *
+   * const source = new Source('{ greeting }');
+   * const originalError = new Error('Database unavailable.');
+   * const error = new GraphQLError('Resolver failed.', {
+   *   source,
+   *   positions: [2],
+   *   path: ['greeting'],
+   *   originalError,
+   * });
+   *
+   * error.locations; // => [{ line: 1, column: 3 }]
+   * error.path; // => ['greeting']
+   * error.originalError; // => originalError
+   * ```
+   */
   constructor(message: string, options?: GraphQLErrorOptions);
   /**
+   * Creates a GraphQLError instance using the legacy positional constructor.
+   * Prefer the `GraphQLErrorOptions` object overload, which keeps optional error
+   * metadata in a single options bag.
+   * @param message - Human-readable error message.
+   * @param nodes - AST node or nodes associated with this error.
+   * @param source - Source document used to derive error locations.
+   * @param positions - Character offsets in the source document associated with
+   * this error.
+   * @param path - Response path where this error occurred during execution.
+   * @param originalError - Original error that caused this GraphQLError, if one
+   * exists.
+   * @param extensions - Extension fields to include in the formatted error.
+   * @example
+   * ```ts
+   * import { Source } from 'graphql/language';
+   * import { GraphQLError } from 'graphql/error';
+   *
+   * const source = new Source('{ greeting }');
+   * const originalError = new Error('Database unavailable.');
+   * const error = new GraphQLError(
+   *   'Resolver failed.',
+   *   undefined,
+   *   source,
+   *   [2],
+   *   ['greeting'],
+   *   originalError,
+   *   { code: 'INTERNAL' },
+   * );
+   *
+   * error.locations; // => [{ line: 1, column: 3 }]
+   * error.path; // => ['greeting']
+   * error.originalError; // => originalError
+   * error.extensions; // => { code: 'INTERNAL' }
+   * ```
    * @deprecated Please use the `GraphQLErrorOptions` constructor overload instead.
    */
   constructor(
@@ -209,10 +292,30 @@ export class GraphQLError extends Error {
     /* c8 ignore stop */
   }
 
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
   get [Symbol.toStringTag](): string {
     return 'GraphQLError';
   }
 
+  /**
+   * Returns this error as a human-readable message with source locations.
+   * @returns The formatted error string.
+   * @example
+   * ```ts
+   * import { Source } from 'graphql/language';
+   * import { GraphQLError } from 'graphql/error';
+   *
+   * const error = new GraphQLError('Cannot query field "name".', {
+   *   source: new Source('{ name }'),
+   *   positions: [2],
+   * });
+   *
+   * error.toString(); // => 'Cannot query field "name".\n\nGraphQL request:1:3\n1 | { name }\n  |   ^'
+   * ```
+   */
   toString(): string {
     let output = this.message;
 
@@ -231,6 +334,21 @@ export class GraphQLError extends Error {
     return output;
   }
 
+  /**
+   * Returns the JSON representation used when this object is serialized.
+   * @returns The JSON-serializable representation.
+   * @example
+   * ```ts
+   * import { GraphQLError } from 'graphql/error';
+   *
+   * const error = new GraphQLError('Resolver failed.', {
+   *   path: ['viewer', 'name'],
+   *   extensions: { code: 'INTERNAL' },
+   * });
+   *
+   * error.toJSON(); // => { message: 'Resolver failed.', path: ['viewer', 'name'], extensions: { code: 'INTERNAL' } }
+   * ```
+   */
   toJSON(): GraphQLFormattedError {
     type WritableFormattedError = {
       -readonly [P in keyof GraphQLFormattedError]: GraphQLFormattedError[P];
@@ -262,9 +380,7 @@ function undefinedIfEmpty<T>(
   return array === undefined || array.length === 0 ? undefined : array;
 }
 
-/**
- * See: https://spec.graphql.org/draft/#sec-Errors
- */
+/** See: https://spec.graphql.org/draft/#sec-Errors */
 export interface GraphQLFormattedError {
   /**
    * A short, human-readable summary of the problem that **SHOULD NOT** change
@@ -293,8 +409,19 @@ export interface GraphQLFormattedError {
 
 /**
  * Prints a GraphQLError to a string, representing useful location information
- * about the error's position in the source.
+ * about the error's position in the source. This helper is retained for
+ * backwards compatibility; call `error.toString()` instead because printError
+ * will be removed in v17.
+ * @param error - The error to format.
+ * @returns The printed string representation.
+ * @example
+ * ```ts
+ * import { GraphQLError, printError } from 'graphql/error';
  *
+ * const message = printError(new GraphQLError('Example error'));
+ *
+ * message; // => 'Example error'
+ * ```
  * @deprecated Please use `error.toString` instead. Will be removed in v17
  */
 export function printError(error: GraphQLError): string {
@@ -303,8 +430,19 @@ export function printError(error: GraphQLError): string {
 
 /**
  * Given a GraphQLError, format it according to the rules described by the
- * Response Format, Errors section of the GraphQL Specification.
+ * Response Format, Errors section of the GraphQL Specification. This helper is
+ * retained for backwards compatibility; call `error.toJSON()` instead because
+ * formatError will be removed in v17.
+ * @param error - The error to format.
+ * @returns The JSON-serializable formatted error.
+ * @example
+ * ```ts
+ * import { GraphQLError, formatError } from 'graphql/error';
  *
+ * const formatted = formatError(new GraphQLError('Example error'));
+ *
+ * formatted; // => { message: 'Example error' }
+ * ```
  * @deprecated Please use `error.toJSON` instead. Will be removed in v17
  */
 export function formatError(error: GraphQLError): GraphQLFormattedError {
