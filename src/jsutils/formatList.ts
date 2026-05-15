@@ -1,14 +1,18 @@
 import { invariant } from './invariant.ts';
 
 /**
- * Given [ A, B, C ] return 'A, B, or C'.
+ * Given [A, B, C] return 'A, B, or C'.
+ *
+ * @internal
  */
 export function orList(items: ReadonlyArray<string>): string {
   return formatList('or', items);
 }
 
 /**
- * Given [ A, B, C ] return 'A, B, and C'.
+ * Given [A, B, C] return 'A, B, and C'.
+ *
+ * @internal
  */
 export function andList(items: ReadonlyArray<string>): string {
   return formatList('and', items);

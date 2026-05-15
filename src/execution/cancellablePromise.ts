@@ -1,10 +1,12 @@
 import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.ts';
 
+/** @internal */
 export interface CancellablePromise<T> {
   promise: Promise<T>;
   abort: (reason?: unknown) => void;
 }
 
+/** @internal */
 export function withCancellation<T>(
   originalPromise: Promise<T>,
 ): CancellablePromise<T> {
@@ -36,6 +38,7 @@ export function withCancellation<T>(
   };
 }
 
+/** @internal */
 export function cancellablePromise<T>(
   promise: Promise<T>,
   abortSignal: AbortSignal,

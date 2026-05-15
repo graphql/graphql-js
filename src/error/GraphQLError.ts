@@ -1,3 +1,5 @@
+/** @category Errors */
+
 import { isObjectLike } from '../jsutils/isObjectLike.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
 
@@ -12,7 +14,6 @@ import type { Source } from '../language/source.ts';
 
 /**
  * Custom extensions
- *
  * @remarks
  * Use a unique identifier name for your extension, for example the name of
  * your library or project. Do not use a shortened identifier as this increases
@@ -25,7 +26,6 @@ export interface GraphQLErrorExtensions {
 
 /**
  * Custom formatted extensions
- *
  * @remarks
  * Use a unique identifier name for your extension, for example the name of
  * your library or project. Do not use a shortened identifier as this increases
@@ -36,12 +36,19 @@ export interface GraphQLFormattedErrorExtensions {
   [attributeName: string]: unknown;
 }
 
+/** Options used to construct a GraphQLError. */
 export interface GraphQLErrorOptions {
+  /** AST node or nodes associated with this error. */
   nodes?: ReadonlyArray<ASTNode> | ASTNode | null | undefined;
+  /** Source document used to derive error locations. */
   source?: Maybe<Source>;
+  /** Character offsets in the source document associated with this error. */
   positions?: Maybe<ReadonlyArray<number>>;
+  /** Response path where this error occurred during execution. */
   path?: Maybe<ReadonlyArray<string | number>>;
+  /** Original error that caused this GraphQLError, if one exists. */
   originalError?: Maybe<Error & { readonly extensions?: unknown }>;
+  /** Extension fields to include in the formatted result. */
   extensions?: Maybe<GraphQLErrorExtensions>;
 }
 
@@ -72,9 +79,7 @@ export class GraphQLError extends Error {
    */
   readonly path: ReadonlyArray<string | number> | undefined;
 
-  /**
-   * An array of GraphQL AST Nodes corresponding to this error.
-   */
+  /** An array of GraphQL AST Nodes corresponding to this error. */
   readonly nodes: ReadonlyArray<ASTNode> | undefined;
 
   /**
@@ -91,16 +96,55 @@ export class GraphQLError extends Error {
    */
   readonly positions: ReadonlyArray<number> | undefined;
 
-  /**
-   * The original error thrown from a field resolver during execution.
-   */
+  /** Original error that caused this GraphQLError, if one exists. */
   readonly originalError: Error | undefined;
 
-  /**
-   * Extension fields to add to the formatted error.
-   */
+  /** Extension fields to add to the formatted error. */
   readonly extensions: GraphQLErrorExtensions;
 
+  /**
+   * Creates a GraphQLError instance.
+   * @param message - Human-readable error message.
+   * @param options - Error metadata such as source locations, response path, original error, and extensions.
+   * @example
+   * ```ts
+   * // Create an error from AST nodes and response metadata.
+   * import { parse } from 'graphql/language';
+   * import { GraphQLError } from 'graphql/error';
+   *
+   * const document = parse('{ greeting }');
+   * const fieldNode = document.definitions[0].selectionSet.selections[0];
+   * const error = new GraphQLError('Cannot query this field.', {
+   *   nodes: fieldNode,
+   *   path: ['greeting'],
+   *   extensions: { code: 'FORBIDDEN' },
+   * });
+   *
+   * error.message; // => 'Cannot query this field.'
+   * error.locations; // => [{ line: 1, column: 3 }]
+   * error.path; // => ['greeting']
+   * error.extensions; // => { code: 'FORBIDDEN' }
+   * ```
+   * @example
+   * ```ts
+   * // This variant derives locations from source positions and preserves the original error.
+   * import { Source } from 'graphql/language';
+   * import { GraphQLError } from 'graphql/error';
+   *
+   * const source = new Source('{ greeting }');
+   * const originalError = new Error('Database unavailable.');
+   * const error = new GraphQLError('Resolver failed.', {
+   *   source,
+   *   positions: [2],
+   *   path: ['greeting'],
+   *   originalError,
+   * });
+   *
+   * error.locations; // => [{ line: 1, column: 3 }]
+   * error.path; // => ['greeting']
+   * error.originalError; // => originalError
+   * ```
+   */
   constructor(message: string, options: GraphQLErrorOptions = {}) {
     const { nodes, source, positions, path, originalError, extensions } =
       options;
@@ -171,10 +215,30 @@ export class GraphQLError extends Error {
     }
   }
 
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
   get [Symbol.toStringTag](): string {
     return 'GraphQLError';
   }
 
+  /**
+   * Returns this error as a human-readable message with source locations.
+   * @returns The formatted error string.
+   * @example
+   * ```ts
+   * import { Source } from 'graphql/language';
+   * import { GraphQLError } from 'graphql/error';
+   *
+   * const error = new GraphQLError('Cannot query field "name".', {
+   *   source: new Source('{ name }'),
+   *   positions: [2],
+   * });
+   *
+   * error.toString(); // => 'Cannot query field "name".\n\nGraphQL request:1:3\n1 | { name }\n  |   ^'
+   * ```
+   */
   override toString(): string {
     let output = this.message;
 
@@ -193,6 +257,21 @@ export class GraphQLError extends Error {
     return output;
   }
 
+  /**
+   * Returns the JSON representation used when this object is serialized.
+   * @returns The JSON-serializable representation.
+   * @example
+   * ```ts
+   * import { GraphQLError } from 'graphql/error';
+   *
+   * const error = new GraphQLError('Resolver failed.', {
+   *   path: ['viewer', 'name'],
+   *   extensions: { code: 'INTERNAL' },
+   * });
+   *
+   * error.toJSON(); // => { message: 'Resolver failed.', path: ['viewer', 'name'], extensions: { code: 'INTERNAL' } }
+   * ```
+   */
   toJSON(): GraphQLFormattedError {
     type WritableFormattedError = {
       -readonly [P in keyof GraphQLFormattedError]: GraphQLFormattedError[P];
@@ -224,9 +303,7 @@ function undefinedIfEmpty<T>(
   return array === undefined || array.length === 0 ? undefined : array;
 }
 
-/**
- * See: https://spec.graphql.org/draft/#sec-Errors
- */
+/** See: https://spec.graphql.org/draft/#sec-Errors */
 export interface GraphQLFormattedError {
   /**
    * A short, human-readable summary of the problem that **SHOULD NOT** change

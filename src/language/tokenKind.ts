@@ -1,3 +1,5 @@
+/** @category Lexing */
+
 /**
  * An exported enum describing the different kinds of tokens that the
  * lexer emits.
@@ -27,5 +29,10 @@ export const TokenKind = {
   BLOCK_STRING: 'BlockString' as const,
   COMMENT: 'Comment' as const,
 } as const;
+
+/**
+ * An exported enum describing the different kinds of tokens that the
+ * lexer emits.
+ */
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type TokenKind = (typeof TokenKind)[keyof typeof TokenKind];

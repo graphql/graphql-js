@@ -14,29 +14,39 @@ import { TokenKind } from './tokenKind.ts';
  * source lexes, the final Token emitted by the lexer will be of kind
  * EOF, after which the lexer will repeatedly return the same EOF token
  * whenever called.
+ *
+ * @internal
  */
 export class SchemaCoordinateLexer implements LexerInterface {
   source: Source;
 
   /**
    * The previously focused non-ignored token.
+   *
+   * @internal
    */
   lastToken: Token;
 
   /**
    * The currently focused non-ignored token.
+   *
+   * @internal
    */
   token: Token;
 
   /**
    * The (1-indexed) line containing the current token.
    * Since a schema coordinate may not contain newline, this value is always 1.
+   *
+   * @internal
    */
   line: 1 = 1 as const;
 
   /**
    * The character offset at which the current line begins.
    * Since a schema coordinate may not contain newline, this value is always 0.
+   *
+   * @internal
    */
   lineStart: 0 = 0 as const;
 
@@ -54,6 +64,8 @@ export class SchemaCoordinateLexer implements LexerInterface {
 
   /**
    * Advances the token stream to the next non-ignored token.
+   *
+   * @internal
    */
   advance(): Token {
     this.lastToken = this.token;
@@ -64,6 +76,8 @@ export class SchemaCoordinateLexer implements LexerInterface {
   /**
    * Looks ahead and returns the next non-ignored token, but does not change
    * the current Lexer token.
+   *
+   * @internal
    */
   lookahead(): Token {
     let token = this.token;
@@ -82,6 +96,8 @@ export class SchemaCoordinateLexer implements LexerInterface {
 
 /**
  * Gets the next token from the source starting at the given position.
+ *
+ * @internal
  */
 function readNextToken(lexer: SchemaCoordinateLexer, start: number): Token {
   const body = lexer.source.body;

@@ -7,6 +7,8 @@ import type { PromiseOrValue } from './PromiseOrValue.ts';
  *
  * This is akin to bluebird's `Promise.props`, but implemented only using
  * `Promise.all` so it will work with any implementation of ES6 promises.
+ *
+ * @internal
  */
 export function promiseForObject<T>(
   object: Readonly<ObjMap<PromiseOrValue<T>>>,

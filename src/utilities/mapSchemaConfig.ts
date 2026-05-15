@@ -50,6 +50,8 @@ import type { GraphQLSchemaNormalizedConfig } from '../type/schema.ts';
 
 /**
  * The set of GraphQL Schema Elements.
+ *
+ * @internal
  */
 export const SchemaElementKind = {
   SCHEMA: 'SCHEMA' as const,
@@ -65,10 +67,13 @@ export const SchemaElementKind = {
   INPUT_FIELD: 'INPUT_FIELD' as const,
   DIRECTIVE: 'DIRECTIVE' as const,
 } as const;
+
+/** @internal */
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 type SchemaElementKind =
   (typeof SchemaElementKind)[keyof typeof SchemaElementKind];
 
+/** @internal */
 export interface MappedSchemaContext {
   getNamedType: (typeName: string) => GraphQLNamedType;
   setNamedType: (type: GraphQLNamedType) => void;
@@ -160,6 +165,7 @@ type SchemaConfigMapper = (
   originalSchemaConfig: GraphQLSchemaNormalizedConfig,
 ) => GraphQLSchemaNormalizedConfig;
 
+/** @internal */
 export interface ConfigMapperMap {
   [SchemaElementKind.SCALAR]?: ScalarTypeConfigMapper;
   [SchemaElementKind.OBJECT]?: ObjectTypeConfigMapper;
@@ -175,9 +181,7 @@ export interface ConfigMapperMap {
   [SchemaElementKind.SCHEMA]?: SchemaConfigMapper;
 }
 
-/**
- * @internal
- */
+/** @internal */
 export function mapSchemaConfig(
   schemaConfig: GraphQLSchemaNormalizedConfig,
   configMapperMapFn: (context: MappedSchemaContext) => ConfigMapperMap,

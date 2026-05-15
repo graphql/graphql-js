@@ -31,11 +31,13 @@ import {
   getFragmentVariableValues,
 } from './values.ts';
 
+/** @internal */
 export interface DeferUsage {
   label: string | undefined;
   parentDeferUsage: DeferUsage | undefined;
 }
 
+/** @internal */
 export interface FragmentVariableValues {
   readonly sources: ReadOnlyObjMap<FragmentVariableValueSource>;
   readonly coerced: ReadOnlyObjMap<unknown>;
@@ -47,16 +49,20 @@ interface FragmentVariableValueSource {
   readonly fragmentVariableValues?: FragmentVariableValues;
 }
 
+/** @internal */
 export interface FieldDetails {
   node: FieldNode;
   deferUsage?: DeferUsage | undefined;
   fragmentVariableValues?: FragmentVariableValues | undefined;
 }
 
+/** @internal */
 export type FieldDetailsList = ReadonlyArray<FieldDetails>;
 
+/** @internal */
 export type GroupedFieldSet = ReadonlyMap<string, FieldDetailsList>;
 
+/** @internal */
 export interface FragmentDetails {
   definition: FragmentDefinitionNode;
   variableSignatures?: ObjMap<GraphQLVariableSignature> | undefined;
@@ -173,6 +179,7 @@ export function collectSubfields(
   };
 }
 
+/** @internal */
 // eslint-disable-next-line max-params
 function collectFieldsImpl(
   context: CollectFieldsContext,
@@ -335,6 +342,8 @@ function collectFieldsImpl(
  * Returns an object containing the `@defer` arguments if a field should be
  * deferred based on the experimental flag, defer directive present and
  * not disabled by the "if" argument.
+ *
+ * @internal
  */
 function getDeferUsage(
   variableValues: VariableValues,
@@ -366,6 +375,8 @@ function getDeferUsage(
 /**
  * Determines if a field should be included based on the `@include` and `@skip`
  * directives, where `@skip` has higher precedence than `@include`.
+ *
+ * @internal
  */
 function shouldIncludeNode(
   context: CollectFieldsContext,
@@ -417,6 +428,8 @@ function shouldIncludeNode(
 
 /**
  * Determines if a fragment is applicable to the given type.
+ *
+ * @internal
  */
 function doesFragmentConditionMatch(
   schema: GraphQLSchema,
@@ -439,6 +452,8 @@ function doesFragmentConditionMatch(
 
 /**
  * Implements the logic to compute the key of a given field's entry
+ *
+ * @internal
  */
 function getFieldEntryKey(node: FieldNode): string {
   return node.alias ? node.alias.value : node.name.value;

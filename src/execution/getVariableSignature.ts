@@ -16,7 +16,9 @@ import { typeFromAST } from '../utilities/typeFromAST.ts';
  *
  * Designed to have comparable interface to GraphQLArgument so that
  * getArgumentValues() can be reused for fragment arguments.
- * */
+ *
+ * @internal
+ */
 export interface GraphQLVariableSignature {
   name: string;
   type: GraphQLInputType;
@@ -24,6 +26,7 @@ export interface GraphQLVariableSignature {
   default: { literal: ConstValueNode } | undefined;
 }
 
+/** @internal */
 export function getVariableSignature(
   schema: GraphQLSchema,
   varDefNode: VariableDefinitionNode,

@@ -7,6 +7,8 @@ import type { PromiseOrValue } from './PromiseOrValue.ts';
  *
  * If the callback does not return a Promise, then this function will also not
  * return a Promise.
+ *
+ * @internal
  */
 export function promiseReduce<T, U>(
   values: Iterable<T>,

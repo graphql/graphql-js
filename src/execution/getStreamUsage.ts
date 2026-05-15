@@ -8,6 +8,7 @@ import type { FieldDetailsList } from './collectFields.ts';
 import type { ValidatedExecutionArgs } from './Executor.ts';
 import { getDirectiveValues } from './values.ts';
 
+/** @internal */
 export interface StreamUsage {
   label: string | undefined;
   initialCount: number;
@@ -18,6 +19,8 @@ export interface StreamUsage {
  * Returns an object containing info for streaming if a field should be
  * streamed based on the experimental flag, stream directive present and
  * not disabled by the "if" argument.
+ *
+ * @internal
  */
 export function getStreamUsage(
   validatedExecutionArgs: ValidatedExecutionArgs,

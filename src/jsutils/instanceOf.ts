@@ -6,6 +6,8 @@ import { inspect } from './inspect.ts';
  * detected.
  * See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
  * See: https://webpack.js.org/guides/production/
+ *
+ * @internal
  */
 function devInstanceOf(
   value: unknown,
@@ -62,6 +64,7 @@ interface Constructor {
   new (...args: Array<any>): any;
 }
 
+/** @internal */
 /* eslint-disable-next-line import/no-mutable-exports */
 export let instanceOf: (
   value: unknown,
@@ -69,6 +72,7 @@ export let instanceOf: (
   constructor: Constructor,
 ) => boolean = prodInstanceOf;
 
+/** @internal */
 export function enableDevInstanceOf(): void {
   instanceOf = devInstanceOf;
 }

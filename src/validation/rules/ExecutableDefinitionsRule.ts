@@ -1,3 +1,5 @@
+/** @category Validation Rules */
+
 import { GraphQLError } from '../../error/GraphQLError.ts';
 
 import { Kind } from '../../language/kinds.ts';
@@ -13,6 +15,33 @@ import type { ASTValidationContext } from '../ValidationContext.ts';
  * operation or fragment definitions.
  *
  * See https://spec.graphql.org/draft/#sec-Executable-Definitions
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { ExecutableDefinitionsRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   type Extra { field: String }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [ExecutableDefinitionsRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { name }
+ * `);
+ * const validErrors = validate(schema, validDocument, [ExecutableDefinitionsRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 export function ExecutableDefinitionsRule(
   context: ASTValidationContext,

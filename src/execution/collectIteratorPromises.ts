@@ -3,6 +3,8 @@ import { isPromiseLike } from '../jsutils/isPromise.ts';
 /**
  * Drain a sync iterator after abrupt completion so later promise rejections
  * can be observed before they become unhandled.
+ *
+ * @internal
  */
 export function collectIteratorPromises(
   iterator: Iterator<unknown>,

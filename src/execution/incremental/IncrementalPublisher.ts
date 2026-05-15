@@ -31,9 +31,7 @@ interface SubsequentIncrementalExecutionResultContext {
   hasNext: boolean;
 }
 
-/**
- * @internal
- */
+/** @internal */
 export class IncrementalPublisher {
   private _ids: Map<DeliveryGroup | ItemStream, string>;
   private _nextId: number;

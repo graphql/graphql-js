@@ -1,3 +1,5 @@
+/** @category Validation Rules */
+
 import type { ObjMap } from '../../jsutils/ObjMap.ts';
 
 import { GraphQLError } from '../../error/GraphQLError.ts';
@@ -23,10 +25,41 @@ function toNodes(fieldDetailsList: FieldDetailsList): ReadonlyArray<FieldNode> {
  * Subscriptions must only include a non-introspection field.
  *
  * A GraphQL subscription is valid only if it contains a single root field and
- * that root field is not an introspection field. `@skip` and `@include`
- * directives are forbidden.
+ * that root field is not an introspection field.
  *
  * See https://spec.graphql.org/draft/#sec-Single-root-field
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { SingleFieldSubscriptionsRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ *
+ *   type Subscription {
+ *     a: String
+ *     b: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   subscription { a b }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [SingleFieldSubscriptionsRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   subscription { a }
+ * `);
+ * const validErrors = validate(schema, validDocument, [SingleFieldSubscriptionsRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 export function SingleFieldSubscriptionsRule(
   context: ValidationContext,

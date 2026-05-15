@@ -1,3 +1,5 @@
+/** @category Validation Rules */
+
 import { GraphQLError } from '../../error/GraphQLError.ts';
 
 import type { ASTVisitor } from '../../language/visitor.ts';
@@ -11,6 +13,34 @@ import type { ValidationContext } from '../ValidationContext.ts';
  * are used, either directly or within a spread fragment.
  *
  * See https://spec.graphql.org/draft/#sec-All-Variables-Used
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { NoUnusedVariablesRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     field(arg: ID): String
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   query ($id: ID) { name }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [NoUnusedVariablesRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   query ($id: ID) { field(arg: $id) }
+ * `);
+ * const validErrors = validate(schema, validDocument, [NoUnusedVariablesRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 export function NoUnusedVariablesRule(context: ValidationContext): ASTVisitor {
   return {

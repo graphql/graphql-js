@@ -1,3 +1,5 @@
+/** @category Schema Printing */
+
 import { inspect } from '../jsutils/inspect.ts';
 import { invariant } from '../jsutils/invariant.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
@@ -36,6 +38,25 @@ import type { GraphQLSchema } from '../type/schema.ts';
 
 import { getDefaultValueAST } from './getDefaultValueAST.ts';
 
+/**
+ * Prints the schema.
+ * @param schema - GraphQL schema to use.
+ * @returns The printed string representation.
+ * @example
+ * ```ts
+ * import { buildSchema, printSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   directive @upper on FIELD_DEFINITION
+ *
+ *   type Query {
+ *     greeting: String @upper
+ *   }
+ * `);
+ *
+ * printSchema(schema); // => ['directive @upper on FIELD_DEFINITION', '', 'type Query {', '  greeting: String', '}'].join('\n')
+ * ```
+ */
 export function printSchema(schema: GraphQLSchema): string {
   return printFilteredSchema(
     schema,
@@ -44,6 +65,27 @@ export function printSchema(schema: GraphQLSchema): string {
   );
 }
 
+/**
+ * Prints the introspection schema.
+ * @param schema - GraphQL schema to use.
+ * @returns The printed string representation.
+ * @example
+ * ```ts
+ * import { buildSchema, printIntrospectionSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting: String
+ *   }
+ * `);
+ *
+ * const printed = printIntrospectionSchema(schema);
+ *
+ * printed; // matches /type __Schema/
+ * printed; // matches /enum __TypeKind/
+ * printed; // does not match /type Query/
+ * ```
+ */
 export function printIntrospectionSchema(schema: GraphQLSchema): string {
   return printFilteredSchema(schema, isSpecifiedDirective, isIntrospectionType);
 }
@@ -113,6 +155,8 @@ function printSchemaDefinition(schema: GraphQLSchema): Maybe<string> {
  * Note however that if any of these default names are used elsewhere in the
  * schema but not as a root operation type, the schema definition must still
  * be printed to avoid ambiguity.
+ *
+ * @internal
  */
 function hasDefaultRootOperationTypes(schema: GraphQLSchema): boolean {
   /* eslint-disable eqeqeq */
@@ -123,6 +167,28 @@ function hasDefaultRootOperationTypes(schema: GraphQLSchema): boolean {
   );
 }
 
+/**
+ * Prints the type.
+ * @param type - The GraphQL type to inspect.
+ * @returns The printed string representation.
+ * @example
+ * ```ts
+ * import { buildSchema, printType } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type User {
+ *     id: ID!
+ *     name: String
+ *   }
+ *
+ *   type Query {
+ *     viewer: User
+ *   }
+ * `);
+ *
+ * printType(schema.getType('User')); // => ['type User {', '  id: ID!', '  name: String', '}'].join('\n')
+ * ```
+ */
 export function printType(type: GraphQLNamedType): string {
   if (isScalarType(type)) {
     return printScalar(type);
@@ -269,6 +335,27 @@ function printInputValue(
   return argDecl + printDeprecated(argOrInputField.deprecationReason);
 }
 
+/**
+ * Prints a directive definition in GraphQL SDL.
+ * @param directive - Directive to print.
+ * @returns SDL string for the directive definition.
+ * @example
+ * ```ts
+ * import { DirectiveLocation, GraphQLDirective, GraphQLString } from 'graphql/type';
+ * import { printDirective } from 'graphql/utilities';
+ *
+ * const authDirective = new GraphQLDirective({
+ *   name: 'auth',
+ *   description: 'Requires authorization.',
+ *   locations: [DirectiveLocation.FIELD_DEFINITION],
+ *   args: {
+ *     scope: { type: GraphQLString },
+ *   },
+ * });
+ *
+ * printDirective(authDirective); // => '"""Requires authorization."""\ndirective @auth(scope: String) on FIELD_DEFINITION'
+ * ```
+ */
 export function printDirective(directive: GraphQLDirective): string {
   return (
     printDescription(directive) +

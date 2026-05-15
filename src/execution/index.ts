@@ -1,3 +1,10 @@
+/**
+ * Execute GraphQL operations and produce GraphQL execution results.
+ *
+ * These exports are also available from the root `graphql` package.
+ * @packageDocumentation
+ */
+
 export { pathToArray as responsePathAsArray } from '../jsutils/Path.ts';
 
 export {

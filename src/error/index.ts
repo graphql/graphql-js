@@ -1,3 +1,10 @@
+/**
+ * Create, format, and locate GraphQL errors.
+ *
+ * These exports are also available from the root `graphql` package.
+ * @packageDocumentation
+ */
+
 export { GraphQLError } from './GraphQLError.ts';
 export type {
   GraphQLErrorOptions,

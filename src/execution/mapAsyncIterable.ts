@@ -6,6 +6,8 @@ import { withConcurrentAbruptClose } from './withConcurrentAbruptClose.ts';
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator
  * which produces values mapped via calling the callback function.
+ *
+ * @internal
  */
 export function mapAsyncIterable<T, U>(
   iterable: AsyncGenerator<T> | AsyncIterable<T>,

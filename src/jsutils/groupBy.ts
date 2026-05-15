@@ -2,6 +2,8 @@ import { AccumulatorMap } from './AccumulatorMap.ts';
 
 /**
  * Groups array items into a Map, given a function to produce grouping key.
+ *
+ * @internal
  */
 export function groupBy<K, T>(
   list: ReadonlyArray<T>,

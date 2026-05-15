@@ -1,5 +1,7 @@
 /**
  * Memoizes the provided three-argument function.
+ *
+ * @internal
  */
 export function memoize3<
   A1 extends object,

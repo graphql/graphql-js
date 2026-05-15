@@ -200,16 +200,24 @@ function emitTSFiles(options: {
   emittedTSFiles: ReadonlyArray<string>;
 } {
   const { extension, ...rest } = options;
-  const tsOptions = readTSConfig({
+  const rootFiles = ['src/index.ts', 'src/dev/index.ts'];
+  const jsOptions = readTSConfig({
+    ...rest,
+    noEmit: false,
+    declaration: false,
+    listEmittedFiles: true,
+    removeComments: true,
+  });
+  const dtsOptions = readTSConfig({
     ...rest,
     noEmit: false,
     declaration: true,
     declarationDir: rest.outDir,
+    emitDeclarationOnly: true,
     listEmittedFiles: true,
   });
 
-  const tsHost = ts.createCompilerHost(tsOptions);
-  tsHost.writeFile = (filepath, body) => {
+  const writeFile = (filepath: string, body: string) => {
     if (extension === '.mjs') {
       if (filepath.match(/.js$/)) {
         let bodyToWrite = body;
@@ -237,24 +245,38 @@ function emitTSFiles(options: {
     writeGeneratedFile(filepath, body);
   };
 
-  const tsProgram = ts.createProgram(
-    ['src/index.ts', 'src/dev/index.ts'],
-    tsOptions,
-    tsHost,
-  );
-  const tsResult = tsProgram.emit(undefined, undefined, undefined, undefined, {
+  const jsHost = ts.createCompilerHost(jsOptions);
+  jsHost.writeFile = writeFile;
+  const jsProgram = ts.createProgram(rootFiles, jsOptions, jsHost);
+  const jsResult = jsProgram.emit(undefined, undefined, undefined, undefined, {
     before: [changeExtensionInImportPaths({ extension })],
     after: [inlineInvariant],
-    afterDeclarations: [changeExtensionInImportPathsInBundle({ extension })],
   });
+
+  const dtsHost = ts.createCompilerHost(dtsOptions);
+  dtsHost.writeFile = writeFile;
+  const dtsProgram = ts.createProgram(rootFiles, dtsOptions, dtsHost);
+  const dtsResult = dtsProgram.emit(
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    {
+      afterDeclarations: [changeExtensionInImportPathsInBundle({ extension })],
+    },
+  );
+
   assert(
-    !tsResult.emitSkipped,
+    !jsResult.emitSkipped && !dtsResult.emitSkipped,
     'Fail to generate `*.d.ts` files, please run `npm run check`',
   );
 
-  assert(tsResult.emittedFiles != null);
+  assert(jsResult.emittedFiles != null);
+  assert(dtsResult.emittedFiles != null);
   return {
-    emittedTSFiles: tsResult.emittedFiles.sort((a, b) => a.localeCompare(b)),
+    emittedTSFiles: [...jsResult.emittedFiles, ...dtsResult.emittedFiles].sort(
+      (a, b) => a.localeCompare(b),
+    ),
   };
 }
 

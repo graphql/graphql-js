@@ -8,6 +8,7 @@ import type { GraphQLArgument, GraphQLInputField } from '../type/definition.ts';
 import { astFromValue } from './astFromValue.ts';
 import { valueToLiteral } from './valueToLiteral.ts';
 
+/** @internal */
 export function getDefaultValueAST(
   argOrInputField: GraphQLArgument | GraphQLInputField,
 ): ConstValueNode | undefined {

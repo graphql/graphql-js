@@ -30,9 +30,7 @@ interface SubsequentIncrementalExecutionResultContext {
   hasNext: boolean;
 }
 
-/**
- * @internal
- */
+/** @internal */
 export class BranchingIncrementalPublisher {
   private _indices: Map<ItemStream, number>;
 

@@ -1,3 +1,5 @@
+/** @category Incremental Execution */
+
 /* eslint-disable max-params */
 import { invariant } from '../../jsutils/invariant.ts';
 import { isPromise, isPromiseLike } from '../../jsutils/isPromise.ts';
@@ -57,13 +59,11 @@ const buildExecutionPlanFromDeferred = memoize2(
 );
 
 /**
- * The result of GraphQL execution.
- *
- *   - `errors` is included when any errors occurred as a non-empty array.
- *   - `data` is the result of a successful execution of the query.
- *   - `hasNext` is true if a future payload is expected.
- *   - `extensions` is reserved for adding non-standard properties.
- *   - `incremental` is a list of the results from defer/stream directives.
+ * Results for an operation that produced incremental payloads.
+ * @typeParam TInitialData - Shape of the initial result data payload.
+ * @typeParam TDeferredData - Shape of deferred fragment data payloads.
+ * @typeParam TStreamItem - Shape of streamed list items.
+ * @typeParam TExtensions - Shape of extensions payloads.
  */
 export interface ExperimentalIncrementalExecutionResults<
   TInitialData = ObjMap<unknown>,
@@ -71,7 +71,9 @@ export interface ExperimentalIncrementalExecutionResults<
   TStreamItem = unknown,
   TExtensions = ObjMap<unknown>,
 > {
+  /** Initial execution result delivered before subsequent incremental payloads. */
   initialResult: InitialIncrementalExecutionResult<TInitialData, TExtensions>;
+  /** Async stream of incremental payloads delivered after the initial result. */
   subsequentResults: AsyncGenerator<
     SubsequentIncrementalExecutionResult<
       TDeferredData,
@@ -83,16 +85,25 @@ export interface ExperimentalIncrementalExecutionResults<
   >;
 }
 
+/**
+ * JSON-serializable form of incremental execution results.
+ * @typeParam TInitial - Shape of the formatted initial result data payload.
+ * @typeParam TDeferredData - Shape of formatted deferred fragment data payloads.
+ * @typeParam TStreamItem - Shape of formatted streamed list items.
+ * @typeParam TExtensions - Shape of formatted extensions payloads.
+ */
 export interface FormattedExperimentalIncrementalExecutionResults<
   TInitial = ObjMap<unknown>,
   TDeferredData = ObjMap<unknown>,
   TStreamItem = unknown,
   TExtensions = ObjMap<unknown>,
 > {
+  /** Formatted initial execution result. */
   initialResult: FormattedInitialIncrementalExecutionResult<
     TInitial,
     TExtensions
   >;
+  /** Async stream of formatted incremental payloads. */
   subsequentResults: AsyncGenerator<
     FormattedSubsequentIncrementalExecutionResult<
       TDeferredData,
@@ -103,98 +114,184 @@ export interface FormattedExperimentalIncrementalExecutionResults<
     void
   >;
 }
+/**
+ * Initial execution result for an operation that produced incremental payloads.
+ * @typeParam TData - Shape of the initial data payload.
+ * @typeParam TExtensions - Shape of the extensions payload.
+ */
 export interface InitialIncrementalExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
 > extends ExecutionResult<TData, TExtensions> {
+  /** Data produced by the initial execution payload. */
   data: TData;
+  /** Incremental payloads that are still pending after the initial result. */
   pending: ReadonlyArray<PendingResult>;
+  /** Indicates that subsequent incremental payloads will follow. */
   hasNext: true;
+  /** Additional non-standard metadata included in the initial result. */
   extensions?: TExtensions;
 }
 
+/**
+ * JSON-serializable form of an initial incremental execution result.
+ * @typeParam TInitialData - Shape of the formatted initial data payload.
+ * @typeParam TExtensions - Shape of the formatted extensions payload.
+ */
 export interface FormattedInitialIncrementalExecutionResult<
   TInitialData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
 > extends FormattedExecutionResult<TInitialData, TExtensions> {
+  /** Formatted data produced by the initial execution payload. */
   data: TInitialData;
+  /** Formatted list of incremental payloads still pending after the initial result. */
   pending: ReadonlyArray<PendingResult>;
+  /** Indicates whether subsequent incremental payloads will follow. */
   hasNext: boolean;
+  /** Additional non-standard metadata included in the formatted initial result. */
   extensions?: TExtensions;
 }
 
+/**
+ * Subsequent payload produced by incremental execution.
+ * @typeParam TDeferredData - Shape of deferred fragment data payloads.
+ * @typeParam TStreamItem - Shape of streamed list items.
+ * @typeParam TExtensions - Shape of the extensions payload.
+ */
 export interface SubsequentIncrementalExecutionResult<
   TDeferredData = ObjMap<unknown>,
   TStreamItem = unknown,
   TExtensions = ObjMap<unknown>,
 > {
+  /** Incremental payloads that became pending with this response. */
   pending?: ReadonlyArray<PendingResult>;
+  /** Deferred or streamed payloads delivered by this response. */
   incremental?: ReadonlyArray<
     IncrementalResult<TDeferredData, TStreamItem, TExtensions>
   >;
+  /** Incremental payloads that completed with this response. */
   completed?: ReadonlyArray<CompletedResult>;
+  /** Indicates whether more incremental payloads will follow. */
   hasNext: boolean;
+  /** Additional non-standard metadata included in this payload. */
   extensions?: TExtensions;
 }
 
+/**
+ * JSON-serializable form of a subsequent incremental execution payload.
+ * @typeParam TDeferredData - Shape of formatted deferred fragment data payloads.
+ * @typeParam TStreamItem - Shape of formatted streamed list items.
+ * @typeParam TExtensions - Shape of formatted extensions payloads.
+ */
 export interface FormattedSubsequentIncrementalExecutionResult<
   TDeferredData = ObjMap<unknown>,
   TStreamItem = unknown,
   TExtensions = ObjMap<unknown>,
 > {
+  /** Indicates whether more incremental payloads will follow. */
   hasNext: boolean;
+  /** Formatted incremental payloads that became pending with this response. */
   pending?: ReadonlyArray<PendingResult>;
+  /** Formatted deferred or streamed payloads delivered by this response. */
   incremental?: ReadonlyArray<
     FormattedIncrementalResult<TDeferredData, TStreamItem, TExtensions>
   >;
+  /** Formatted incremental payloads that completed with this response. */
   completed?: ReadonlyArray<FormattedCompletedResult>;
+  /** Additional non-standard metadata included in this formatted payload. */
   extensions?: TExtensions;
 }
 
+/**
+ * Incremental payload produced by a deferred fragment.
+ * @typeParam TDeferredData - Shape of deferred fragment data.
+ * @typeParam TExtensions - Shape of extensions payloads.
+ */
 export interface IncrementalDeferResult<
   TDeferredData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
 > {
+  /** Identifier matching this payload to a pending deferred fragment. */
   id: string;
+  /** Path from the deferred fragment location to this payload. */
   subPath?: ReadonlyArray<string | number>;
+  /** Errors raised while executing the deferred fragment. */
   errors?: ReadonlyArray<GraphQLError>;
+  /** Data produced by the deferred fragment. */
   data: TDeferredData;
+  /** Additional non-standard metadata included in this payload. */
   extensions?: TExtensions;
 }
 
+/**
+ * JSON-serializable form of a deferred fragment payload.
+ * @typeParam TDeferredData - Shape of formatted deferred fragment data.
+ * @typeParam TExtensions - Shape of formatted extensions payloads.
+ */
 export interface FormattedIncrementalDeferResult<
   TDeferredData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
 > {
+  /** Formatted errors raised while executing the deferred fragment. */
   errors?: ReadonlyArray<GraphQLFormattedError>;
+  /** Formatted data produced by the deferred fragment. */
   data: TDeferredData;
+  /** Identifier matching this payload to a pending deferred fragment. */
   id: string;
+  /** Path from the deferred fragment location to this payload. */
   subPath?: ReadonlyArray<string | number>;
+  /** Additional non-standard metadata included in this formatted payload. */
   extensions?: TExtensions;
 }
 
+/**
+ * Incremental payload produced by a streamed list field.
+ * @typeParam TStreamItem - Shape of streamed list items.
+ * @typeParam TExtensions - Shape of extensions payloads.
+ */
 export interface IncrementalStreamResult<
   TStreamItem = unknown,
   TExtensions = ObjMap<unknown>,
 > {
+  /** Identifier matching this payload to a pending stream. */
   id: string;
+  /** Path from the streamed field location to these items. */
   subPath?: ReadonlyArray<string | number>;
+  /** Errors raised while producing streamed items. */
   errors?: ReadonlyArray<GraphQLError>;
+  /** Streamed list items delivered by this payload. */
   items: ReadonlyArray<TStreamItem>;
+  /** Additional non-standard metadata included in this payload. */
   extensions?: TExtensions;
 }
 
+/**
+ * JSON-serializable form of a streamed list payload.
+ * @typeParam TStreamItem - Shape of formatted streamed list items.
+ * @typeParam TExtensions - Shape of formatted extensions payloads.
+ */
 export interface FormattedIncrementalStreamResult<
   TStreamItem = Array<unknown>,
   TExtensions = ObjMap<unknown>,
 > {
+  /** Formatted errors raised while producing streamed items. */
   errors?: ReadonlyArray<GraphQLFormattedError>;
+  /** Formatted streamed list items delivered by this payload. */
   items: ReadonlyArray<TStreamItem>;
+  /** Identifier matching this payload to a pending stream. */
   id: string;
+  /** Path from the streamed field location to these items. */
   subPath?: ReadonlyArray<string | number>;
+  /** Additional non-standard metadata included in this formatted payload. */
   extensions?: TExtensions;
 }
 
+/**
+ * Deferred fragment or streamed list payload produced by incremental execution.
+ * @typeParam TDeferredData - Shape of deferred fragment data.
+ * @typeParam TStreamItem - Shape of streamed list items.
+ * @typeParam TExtensions - Shape of extensions payloads.
+ */
 export type IncrementalResult<
   TDeferredData = ObjMap<unknown>,
   TStreamItem = unknown,
@@ -203,6 +300,12 @@ export type IncrementalResult<
   | IncrementalDeferResult<TDeferredData, TExtensions>
   | IncrementalStreamResult<TStreamItem, TExtensions>;
 
+/**
+ * JSON-serializable deferred fragment or streamed list payload.
+ * @typeParam TDeferredData - Shape of formatted deferred fragment data.
+ * @typeParam TStreamItem - Shape of formatted streamed list items.
+ * @typeParam TExtensions - Shape of formatted extensions payloads.
+ */
 export type FormattedIncrementalResult<
   TDeferredData = ObjMap<unknown>,
   TStreamItem = unknown,
@@ -211,23 +314,25 @@ export type FormattedIncrementalResult<
   | FormattedIncrementalDeferResult<TDeferredData, TExtensions>
   | FormattedIncrementalStreamResult<TStreamItem, TExtensions>;
 
+/** @internal */
 export interface PendingResult {
   id: string;
   path: ReadonlyArray<string | number>;
   label?: string;
 }
 
+/** @internal */
 export interface CompletedResult {
   id: string;
   errors?: ReadonlyArray<GraphQLError>;
 }
 
+/** @internal */
 export interface FormattedCompletedResult {
   id: string;
   errors?: ReadonlyArray<GraphQLFormattedError>;
 }
 
-/** @internal */
 interface ExecutionGroup extends Task<
   ExecutionGroupValue,
   StreamItemValue,
@@ -246,6 +351,7 @@ export interface DeliveryGroup extends Group<DeliveryGroup> {
   parent: DeliveryGroup | undefined;
 }
 
+/** @internal */
 export interface ItemStream extends Stream<
   ExecutionGroupValue,
   StreamItemValue,
@@ -257,6 +363,7 @@ export interface ItemStream extends Stream<
   initialCount: number;
 }
 
+/** @internal */
 export interface ExecutionGroupValue {
   deliveryGroups: ReadonlyArray<DeliveryGroup>;
   path: ReadonlyArray<string | number>;
@@ -264,6 +371,7 @@ export interface ExecutionGroupValue {
   data: ObjMap<unknown>;
 }
 
+/** @internal */
 export type IncrementalWork = Work<
   ExecutionGroupValue,
   StreamItemValue,
@@ -271,16 +379,19 @@ export type IncrementalWork = Work<
   ItemStream
 >;
 
+/** @internal */
 export interface ExecutionGroupResult {
   value: ExecutionGroupValue;
   work?: IncrementalWork | undefined;
 }
 
+/** @internal */
 export interface StreamItemValue {
   errors?: ReadonlyArray<GraphQLError>;
   item: unknown;
 }
 
+/** @internal */
 export interface StreamItemResult {
   value: StreamItemValue;
   work?: IncrementalWork | undefined;
@@ -336,6 +447,8 @@ export class IncrementalExecutor<
   /**
    * Given a completed execution context and data, build the `{ errors, data }`
    * response defined by the "Response" section of the GraphQL specification.
+   *
+   * @internal
    */
   override buildResponse(
     data: ObjMap<unknown> | null,
@@ -623,6 +736,8 @@ export class IncrementalExecutor<
    *
    * Note: As defer directives may be used with operations returning lists,
    * a DeferUsage object may correspond to many DeliveryGroups.
+   *
+   * @internal
    */
   getNewDeliveryGroupMap(
     newDeferUsages: ReadonlyArray<DeferUsage>,

@@ -1,3 +1,5 @@
+/** @category Validation Rules */
+
 import { didYouMean } from '../../jsutils/didYouMean.ts';
 import { suggestionList } from '../../jsutils/suggestionList.ts';
 
@@ -21,6 +23,33 @@ import type {
  *
  * See https://spec.graphql.org/draft/#sec-Argument-Names
  * See https://spec.graphql.org/draft/#sec-Directives-Are-In-Valid-Locations
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { KnownArgumentNamesRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     field(arg: String): String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   { field(unknown: "1") }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [KnownArgumentNamesRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { field(arg: "1") }
+ * `);
+ * const validErrors = validate(schema, validDocument, [KnownArgumentNamesRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
   return {
@@ -76,9 +105,7 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
   };
 }
 
-/**
- * @internal
- */
+/** @internal */
 export function KnownArgumentNamesOnDirectivesRule(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor {

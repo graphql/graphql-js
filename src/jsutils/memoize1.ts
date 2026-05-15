@@ -1,5 +1,7 @@
 /**
  * Memoizes the provided one-argument function.
+ *
+ * @internal
  */
 export function memoize1<A1 extends object, R>(
   fn: (a1: A1) => R,

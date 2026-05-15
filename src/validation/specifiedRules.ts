@@ -1,3 +1,5 @@
+/** @category Validation Rules */
+
 // Spec Section: "Defer And Stream Directive Labels Are Unique"
 import { DeferStreamDirectiveLabelRule } from './rules/DeferStreamDirectiveLabelRule.ts';
 // Spec Section: "Defer And Stream Directives Are Used On Valid Root Field"
@@ -128,9 +130,7 @@ export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
   ...recommendedRules,
 ]);
 
-/**
- * @internal
- */
+/** @internal */
 export const specifiedSDLRules: ReadonlyArray<SDLValidationRule> =
   Object.freeze([
     LoneSchemaDefinitionRule,

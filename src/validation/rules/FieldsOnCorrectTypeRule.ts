@@ -1,3 +1,5 @@
+/** @category Validation Rules */
+
 import { didYouMean } from '../../jsutils/didYouMean.ts';
 import { naturalCompare } from '../../jsutils/naturalCompare.ts';
 import { suggestionList } from '../../jsutils/suggestionList.ts';
@@ -28,6 +30,33 @@ import type { ValidationContext } from '../ValidationContext.ts';
  * parent type, or are an allowed meta field such as __typename.
  *
  * See https://spec.graphql.org/draft/#sec-Field-Selections
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { FieldsOnCorrectTypeRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   { missing }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [FieldsOnCorrectTypeRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { name }
+ * `);
+ * const validErrors = validate(schema, validDocument, [FieldsOnCorrectTypeRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 export function FieldsOnCorrectTypeRule(
   context: ValidationContext,
@@ -77,6 +106,8 @@ export function FieldsOnCorrectTypeRule(
  * Go through all of the implementations of type, as well as the interfaces that
  * they implement. If any of those types include the provided field, suggest them,
  * sorted by how often the type is referenced.
+ *
+ * @internal
  */
 function getSuggestedTypeNames(
   schema: GraphQLSchema,
@@ -135,6 +166,8 @@ function getSuggestedTypeNames(
 /**
  * For the field name provided, determine if there are any similar field names
  * that may be the result of a typo.
+ *
+ * @internal
  */
 function getSuggestedFieldNames(
   type: GraphQLOutputType,

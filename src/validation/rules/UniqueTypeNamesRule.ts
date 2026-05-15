@@ -1,3 +1,5 @@
+/** @category Validation Rules */
+
 import { GraphQLError } from '../../error/GraphQLError.ts';
 
 import type { NameNode, TypeDefinitionNode } from '../../language/ast.ts';
@@ -9,6 +11,26 @@ import type { SDLValidationContext } from '../ValidationContext.ts';
  * Unique type names
  *
  * A GraphQL document is only valid if all defined types have unique names.
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema } from 'graphql';
+ * import { UniqueTypeNamesRule } from 'graphql/validation';
+ *
+ * const invalidSDL = `
+ *   type Query { name: String } type Query { other: String }
+ * `;
+ *
+ * UniqueTypeNamesRule.name; // => 'UniqueTypeNamesRule'
+ * buildSchema(invalidSDL); // throws an error
+ *
+ * const validSDL = `
+ *   type Query { name: String } type Other { name: String }
+ * `;
+ *
+ * buildSchema(validSDL); // does not throw
+ * ```
  */
 export function UniqueTypeNamesRule(context: SDLValidationContext): ASTVisitor {
   const knownTypeNames = new Map<string, NameNode>();

@@ -38,7 +38,9 @@ ignoreRegExpList:
 
 words:
   - graphiql
+  - Jsdocs
   - metafield
+  - thunked
   - uncoerce
   - uncoerced
 

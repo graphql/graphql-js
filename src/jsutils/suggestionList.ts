@@ -3,6 +3,8 @@ import { naturalCompare } from './naturalCompare.ts';
 /**
  * Given an invalid input string and a list of valid options, returns a filtered
  * list of valid options sorted based on their similarity with the input.
+ *
+ * @internal
  */
 export function suggestionList(
   input: string,
@@ -38,6 +40,8 @@ export function suggestionList(
  * of 1.
  *
  * This distance can be useful for detecting typos in input or sorting
+ *
+ * @internal
  */
 class LexicalDistance {
   _input: string;

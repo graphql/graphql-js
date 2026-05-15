@@ -1,3 +1,4 @@
+/** @internal */
 export function invariant(
   condition: boolean,
   message?: string,

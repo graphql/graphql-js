@@ -1,11 +1,14 @@
 /**
  * Prints a string as a GraphQL StringValue literal. Replaces control characters
  * and excluded characters (" U+0022 and \\ U+005C) with escape sequences.
+ *
+ * @internal
  */
 export function printString(str: string): string {
   return `"${str.replace(escapedRegExp, escapedReplacer)}"`;
 }
 
+/** @internal */
 // eslint-disable-next-line no-control-regex
 const escapedRegExp = /[\x00-\x1f\x22\x5c\x7f-\x9f]/g;
 

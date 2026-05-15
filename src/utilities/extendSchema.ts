@@ -1,3 +1,5 @@
+/** @category Schema Construction */
+
 import { AccumulatorMap } from '../jsutils/AccumulatorMap.ts';
 import { invariant } from '../jsutils/invariant.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
@@ -72,6 +74,8 @@ interface Options extends GraphQLSchemaValidationOptions {
    * Set to true to assume the SDL is valid.
    *
    * Default: false
+   *
+   * @internal
    */
   assumeValidSDL?: boolean | undefined;
 }
@@ -87,6 +91,60 @@ interface Options extends GraphQLSchemaValidationOptions {
  *
  * This algorithm copies the provided schema, applying extensions while
  * producing the copy. The original schema remains unaltered.
+ * @param schema - GraphQL schema to use.
+ * @param documentAST - The parsed GraphQL document AST.
+ * @param options - Optional configuration for this operation.
+ * @returns A new schema with the extensions and definitions applied.
+ * @example
+ * ```ts
+ * // Extend a schema with new fields and types.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema, extendSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting: String
+ *   }
+ * `);
+ * const extensionAST = parse(`
+ *   extend type Query {
+ *     farewell: String
+ *   }
+ *
+ *   type Review {
+ *     body: String
+ *   }
+ * `);
+ *
+ * const extendedSchema = extendSchema(schema, extensionAST);
+ *
+ * schema.getType('Review'); // => undefined
+ * extendedSchema.getType('Review')?.name; // => 'Review'
+ * Object.keys(extendedSchema.getQueryType().getFields()); // => ['greeting', 'farewell']
+ * ```
+ * @example
+ * ```ts
+ * // This variant bypasses validation for an otherwise invalid extension.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema, extendSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting: String
+ *   }
+ * `);
+ * const invalidExtension = parse(`
+ *   extend type Missing {
+ *     field: String
+ *   }
+ * `);
+ *
+ * extendSchema(schema, invalidExtension); // throws an error
+ * extendSchema(schema, invalidExtension, {
+ *     assumeValid: true,
+ *     assumeValidSDL: true,
+ *   }); // does not throw
+ * ```
  */
 export function extendSchema(
   schema: GraphQLSchema,
@@ -106,9 +164,7 @@ export function extendSchema(
     : new GraphQLSchema(extendedConfig);
 }
 
-/**
- * @internal
- */
+/** @internal */
 export function extendSchemaImpl(
   schemaConfig: GraphQLSchemaNormalizedConfig,
   documentAST: DocumentNode,
@@ -617,6 +673,8 @@ const stdTypeMap = new Map(
 /**
  * Given a field or enum value node, returns the string value for the
  * deprecation reason.
+ *
+ * @internal
  */
 function getDeprecationReason(
   node:
@@ -633,6 +691,8 @@ function getDeprecationReason(
 
 /**
  * Given a scalar node, returns the string value for the specifiedByURL.
+ *
+ * @internal
  */
 function getSpecifiedByURL(
   node: ScalarTypeDefinitionNode | ScalarTypeExtensionNode,
@@ -644,6 +704,8 @@ function getSpecifiedByURL(
 
 /**
  * Given an input object node, returns if the node should be OneOf.
+ *
+ * @internal
  */
 function isOneOf(node: InputObjectTypeDefinitionNode): boolean {
   return Boolean(getDirectiveValues(GraphQLOneOfDirective, node));

@@ -12,6 +12,7 @@ export interface SharedExecutionContext {
   ) => Promise<Array<T>>;
 }
 
+/** @internal */
 export function createSharedExecutionContext(
   abortSignal: AbortSignal | undefined,
 ): SharedExecutionContext {

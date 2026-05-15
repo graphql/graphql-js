@@ -17,6 +17,7 @@ import type { GraphQLSchema } from '../type/schema.ts';
 
 import type { VariableValues } from './values.ts';
 
+/** @internal */
 export interface BuildResolveInfoExecutionArgs {
   schema: GraphQLSchema;
   fragmentDefinitions: ObjMap<FragmentDefinitionNode>;
@@ -25,6 +26,7 @@ export interface BuildResolveInfoExecutionArgs {
   variableValues: VariableValues;
 }
 
+/** @internal */
 // eslint-disable-next-line max-params
 export function buildResolveInfo(
   validatedExecutionArgs: BuildResolveInfoExecutionArgs,

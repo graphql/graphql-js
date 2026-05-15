@@ -1,3 +1,5 @@
+/** @category Lexing */
+
 import { syntaxError } from '../error/syntaxError.ts';
 
 import { Token } from './ast.ts';
@@ -31,28 +33,36 @@ export interface LexerInterface {
  * whenever called.
  */
 export class Lexer implements LexerInterface {
+  /** Source document used to derive error locations. */
   source: Source;
 
-  /**
-   * The previously focused non-ignored token.
-   */
+  /** Most recent non-ignored token returned by the lexer. */
   lastToken: Token;
 
-  /**
-   * The currently focused non-ignored token.
-   */
+  /** Current non-ignored token at the lexer cursor. */
   token: Token;
 
-  /**
-   * The (1-indexed) line containing the current token.
-   */
+  /** The (1-indexed) line containing the current token. */
   line: number;
 
-  /**
-   * The character offset at which the current line begins.
-   */
+  /** Character offset where the current line starts. */
   lineStart: number;
 
+  /**
+   * Creates a Lexer instance.
+   * @param source - Source document used to derive error locations.
+   * @example
+   * ```ts
+   * import { Lexer, Source, TokenKind } from 'graphql/language';
+   *
+   * const lexer = new Lexer(new Source('{ hello }'));
+   *
+   * lexer.token.kind; // => TokenKind.SOF
+   * lexer.advance().kind; // => TokenKind.BRACE_L
+   * lexer.advance().value; // => 'hello'
+   * lexer.advance().kind; // => TokenKind.BRACE_R
+   * ```
+   */
   constructor(source: Source) {
     const startOfFileToken = new Token(TokenKind.SOF, 0, 0, 0, 0);
 
@@ -63,12 +73,27 @@ export class Lexer implements LexerInterface {
     this.lineStart = 0;
   }
 
+  /**
+   * Returns the value used by `Object.prototype.toString`.
+   * @returns The built-in string tag for this object.
+   */
   get [Symbol.toStringTag](): string {
     return 'Lexer';
   }
 
   /**
    * Advances the token stream to the next non-ignored token.
+   * @returns The next non-ignored token.
+   * @example
+   * ```ts
+   * import { Lexer, Source } from 'graphql/language';
+   *
+   * const lexer = new Lexer(new Source('{ hello }'));
+   * const token = lexer.advance();
+   *
+   * token.kind; // => '{'
+   * lexer.token; // => token
+   * ```
    */
   advance(): Token {
     this.lastToken = this.token;
@@ -78,7 +103,18 @@ export class Lexer implements LexerInterface {
 
   /**
    * Looks ahead and returns the next non-ignored token, but does not change
-   * the current Lexer token.
+   * the state of Lexer.
+   * @returns The next non-ignored token without advancing the lexer.
+   * @example
+   * ```ts
+   * import { Lexer, Source } from 'graphql/language';
+   *
+   * const lexer = new Lexer(new Source('{ hello }'));
+   * const token = lexer.lookahead();
+   *
+   * token.kind; // => '{'
+   * lexer.token.kind; // => '<SOF>'
+   * ```
    */
   lookahead(): Token {
     let token = this.token;
@@ -101,9 +137,7 @@ export class Lexer implements LexerInterface {
   }
 }
 
-/**
- * @internal
- */
+/** @internal */
 export function isPunctuatorTokenKind(kind: TokenKind): boolean {
   return (
     kind === TokenKind.BANG ||
@@ -131,6 +165,8 @@ export function isPunctuatorTokenKind(kind: TokenKind): boolean {
  *
  * SourceCharacter ::
  *   - "Any Unicode scalar value"
+ *
+ * @internal
  */
 function isUnicodeScalarValue(code: number): boolean {
   return (
@@ -145,6 +181,8 @@ function isUnicodeScalarValue(code: number): boolean {
  * include surrogates. A surrogate pair is a valid source character as it
  * encodes a supplementary code point (above U+FFFF), but unpaired surrogate
  * code points are not valid source characters.
+ *
+ * @internal
  */
 function isSupplementaryCodePoint(body: string, location: number): boolean {
   return (
@@ -211,6 +249,8 @@ export function createToken(
  * This skips over whitespace until it finds the next lexable token, then lexes
  * punctuators immediately or calls the appropriate helper function for more
  * complicated tokens.
+ *
+ * @internal
  */
 function readNextToken(lexer: Lexer, start: number): Token {
   const body = lexer.source.body;
@@ -365,6 +405,8 @@ function readNextToken(lexer: Lexer, start: number): Token {
  *
  * CommentChar :: SourceCharacter but not LineTerminator
  * ```
+ *
+ * @internal
  */
 function readComment(lexer: Lexer, start: number): Token {
   const body = lexer.source.body;
@@ -426,6 +468,8 @@ function readComment(lexer: Lexer, start: number): Token {
  *
  * Sign :: one of + -
  * ```
+ *
+ * @internal
  */
 function readNumber(lexer: Lexer, start: number, firstCode: number): Token {
   const body = lexer.source.body;
@@ -501,6 +545,8 @@ function readNumber(lexer: Lexer, start: number, firstCode: number): Token {
 
 /**
  * Returns the new position in the source after reading one or more digits.
+ *
+ * @internal
  */
 function readDigits(lexer: Lexer, start: number, firstCode: number): number {
   if (!isDigit(firstCode)) {
@@ -543,6 +589,8 @@ function readDigits(lexer: Lexer, start: number, firstCode: number): number {
  *
  * EscapedCharacter :: one of `"` `\` `/` `b` `f` `n` `r` `t`
  * ```
+ *
+ * @internal
  */
 function readString(lexer: Lexer, start: number): Token {
   const body = lexer.source.body;
@@ -686,6 +734,8 @@ function readEscapedUnicodeFixedWidth(
  * will return 57005.
  *
  * Returns a negative number if any char was not a valid hexadecimal digit.
+ *
+ * @internal
  */
 function read16BitHexCode(body: string, position: number): number {
   // readHexDigit() returns -1 on error. ORing a negative value with any other
@@ -711,6 +761,8 @@ function read16BitHexCode(body: string, position: number): number {
  *   - `0` `1` `2` `3` `4` `5` `6` `7` `8` `9`
  *   - `A` `B` `C` `D` `E` `F`
  *   - `a` `b` `c` `d` `e` `f`
+ *
+ * @internal
  */
 function readHexDigit(code: number): number {
   return code >= 0x0030 && code <= 0x0039 // 0-9
@@ -733,6 +785,8 @@ function readHexDigit(code: number): number {
  * | `n`               | U+000A     | line feed (new line)         |
  * | `r`               | U+000D     | carriage return              |
  * | `t`               | U+0009     | horizontal tab               |
+ *
+ * @internal
  */
 function readEscapedCharacter(lexer: Lexer, position: number): EscapeSequence {
   const body = lexer.source.body;
@@ -776,6 +830,8 @@ function readEscapedCharacter(lexer: Lexer, position: number): EscapeSequence {
  *   - SourceCharacter but not `"""` or `\"""`
  *   - `\"""`
  * ```
+ *
+ * @internal
  */
 function readBlockString(lexer: Lexer, start: number): Token {
   const body = lexer.source.body;

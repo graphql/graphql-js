@@ -1,3 +1,5 @@
+/** @category Visiting */
+
 import { devAssert } from '../jsutils/devAssert.ts';
 import { inspect } from '../jsutils/inspect.ts';
 
@@ -5,10 +7,7 @@ import type { ASTNode } from './ast.ts';
 import { isNode, QueryDocumentKeys } from './ast.ts';
 import { Kind } from './kinds.ts';
 
-/**
- * A visitor is provided to visit, it contains the collection of
- * relevant functions to be called during the visitor's traversal.
- */
+/** A visitor defines the callbacks called during AST traversal. */
 export type ASTVisitor = EnterLeaveVisitor<ASTNode> | KindVisitor;
 
 type KindVisitor = {
@@ -23,29 +22,30 @@ interface EnterLeaveVisitor<TVisitedNode extends ASTNode> {
 }
 
 /**
- * A visitor is comprised of visit functions, which are called on each node
- * during the visitor's traversal.
+ * A visitor is composed of visit functions called for each node during traversal.
+ * @typeParam TVisitedNode - AST node type handled by this visitor function.
  */
 export type ASTVisitFn<TVisitedNode extends ASTNode> = (
-  /** The current node being visiting. */
+  /** Current node being visited. */
   node: TVisitedNode,
-  /** The index or key to this node from the parent node or Array. */
+  /** Index or key for this node within the parent node or array. */
   key: string | number | undefined,
-  /** The parent immediately above this node, which may be an Array. */
+  /** Parent immediately above this node, which may be an array. */
   parent: ASTNode | ReadonlyArray<ASTNode> | undefined,
-  /** The key path to get to this node from the root node. */
+  /** Key path from the root node to this node. */
   path: ReadonlyArray<string | number>,
   /**
-   * All nodes and Arrays visited before reaching parent of this node.
+   * All nodes and arrays visited before reaching this node's parent.
    * These correspond to array indices in `path`.
-   * Note: ancestors includes arrays which contain the parent of visited node.
+   * Note: ancestors includes arrays that contain the visited node's parent.
    */
   ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
 ) => any;
 
 /**
- * A reducer is comprised of reducer functions which convert AST nodes into
- * another form.
+ * A reducer is composed of reducer functions that convert AST nodes into another form.
+ *
+ * @internal
  */
 export type ASTReducer<R> = {
   readonly [NodeT in ASTNode as NodeT['kind']]?: {
@@ -55,18 +55,31 @@ export type ASTReducer<R> = {
 };
 
 type ASTReducerFn<TReducedNode extends ASTNode, R> = (
-  /** The current node being visiting. */
+  /**
+   * Current node being visited.
+   * @internal
+   */
   node: { [K in keyof TReducedNode]: ReducedField<TReducedNode[K], R> },
-  /** The index or key to this node from the parent node or Array. */
+  /**
+   * Index or key for this node within the parent node or array.
+   * @internal
+   */
   key: string | number | undefined,
-  /** The parent immediately above this node, which may be an Array. */
+  /**
+   * Parent immediately above this node, which may be an array.
+   * @internal
+   */
   parent: ASTNode | ReadonlyArray<ASTNode> | undefined,
-  /** The key path to get to this node from the root node. */
+  /**
+   * Key path from the root node to this node.
+   * @internal
+   */
   path: ReadonlyArray<string | number>,
   /**
-   * All nodes and Arrays visited before reaching parent of this node.
+   * All nodes and arrays visited before reaching this node's parent.
    * These correspond to array indices in `path`.
-   * Note: ancestors includes arrays which contain the parent of visited node.
+   * Note: ancestors includes arrays that contain the visited node's parent.
+   * @internal
    */
   ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
 ) => R;
@@ -77,13 +90,12 @@ type ReducedField<T, R> = T extends ASTNode
     ? ReadonlyArray<R>
     : T;
 
-/**
- * A KeyMap describes each the traversable properties of each kind of node.
- */
+/** A visitor key map describes the traversable child properties for each node kind. */
 export type ASTVisitorKeyMap = {
   [NodeT in ASTNode as NodeT['kind']]?: ReadonlyArray<keyof NodeT>;
 };
 
+/** A value that can be returned from a visitor function to stop traversal. */
 export const BREAK: unknown = Object.freeze({});
 
 /**
@@ -99,69 +111,90 @@ export const BREAK: unknown = Object.freeze({});
  * When using visit() to edit an AST, the original AST will not be modified, and
  * a new version of the AST with the changes applied will be returned from the
  * visit function.
- *
+ * @param root - The AST node at which to start traversal.
+ * @param visitor - The visitor or reducer functions to call while traversing.
+ * @param visitorKeys - Optional map of child keys to visit for each AST node kind.
+ * @returns The original AST, an edited AST, or a reduced value depending on the visitor.
+ * @typeParam N - The root AST node type returned when visiting without reducing.
+ * @example
  * ```ts
- * const editedAST = visit(ast, {
- *   enter(node, key, parent, path, ancestors) {
- *     // @return
- *     //   undefined: no action
- *     //   false: skip visiting this node
- *     //   visitor.BREAK: stop visiting altogether
- *     //   null: delete this node
- *     //   any value: replace this node with the returned value
+ * // Return values control traversal: undefined makes no change, false skips
+ * // a subtree, BREAK stops traversal, null removes a node, and any other
+ * // value replaces the current node.
+ * import { Kind, parse, print, visit } from 'graphql/language';
+ *
+ * const document = parse('{ hero { name } }');
+ * const editedAST = visit(document, {
+ *   Field: (node) => {
+ *     if (node.name.value === 'hero') {
+ *       return {
+ *         ...node,
+ *         name: { kind: Kind.NAME, value: 'human' },
+ *       };
+ *     }
  *   },
- *   leave(node, key, parent, path, ancestors) {
- *     // @return
- *     //   undefined: no action
- *     //   false: no action
- *     //   visitor.BREAK: stop visiting altogether
- *     //   null: delete this node
- *     //   any value: replace this node with the returned value
- *   }
  * });
+ *
+ * print(editedAST); // => '{\n  human {\n    name\n  }\n}'
  * ```
- *
- * Alternatively to providing enter() and leave() functions, a visitor can
- * instead provide functions named the same as the kinds of AST nodes, or
- * enter/leave visitors at a named key, leading to three permutations of the
- * visitor API:
- *
- * 1) Named visitors triggered when entering a node of a specific kind.
- *
+ * @example
  * ```ts
- * visit(ast, {
- *   Kind(node) {
- *     // enter the "Kind" node
- *   }
- * })
- * ```
+ * // A named visitor function runs when entering nodes of that kind.
+ * import { parse, visit } from 'graphql/language';
  *
- * 2) Named visitors that trigger upon entering and leaving a node of a specific kind.
+ * const document = parse('{ hero { name } }');
+ * const fieldNames = [];
  *
- * ```ts
- * visit(ast, {
- *   Kind: {
- *     enter(node) {
- *       // enter the "Kind" node
- *     }
- *     leave(node) {
- *       // leave the "Kind" node
- *     }
- *   }
- * })
- * ```
- *
- * 3) Generic visitors that trigger upon entering and leaving any node.
- *
- * ```ts
- * visit(ast, {
- *   enter(node) {
- *     // enter any node
+ * visit(document, {
+ *   Field: (node) => {
+ *     fieldNames.push(node.name.value);
  *   },
- *   leave(node) {
- *     // leave any node
- *   }
- * })
+ * });
+ *
+ * fieldNames; // => ['hero', 'name']
+ * ```
+ * @example
+ * ```ts
+ * // A named visitor object can provide separate enter and leave handlers for
+ * // nodes of that kind.
+ * import { parse, visit } from 'graphql/language';
+ *
+ * const document = parse('{ hero { name } }');
+ * const events = [];
+ *
+ * visit(document, {
+ *   Field: {
+ *     enter: (node) => {
+ *       events.push(`enter:${node.name.value}`);
+ *     },
+ *     leave: (node) => {
+ *       events.push(`leave:${node.name.value}`);
+ *     },
+ *   },
+ * });
+ *
+ * events; // => ['enter:hero', 'enter:name', 'leave:name', 'leave:hero']
+ * ```
+ * @example
+ * ```ts
+ * // Generic enter and leave handlers run for every node.
+ * import { parse, visit } from 'graphql/language';
+ *
+ * const document = parse('{ hero { name } }');
+ * let enterCount = 0;
+ * let leaveCount = 0;
+ *
+ * visit(document, {
+ *   enter: (node) => {
+ *     enterCount += 1;
+ *   },
+ *   leave: (node) => {
+ *     leaveCount += 1;
+ *   },
+ * });
+ *
+ * enterCount; // => leaveCount
+ * enterCount > 0; // => true
  * ```
  */
 export function visit<N extends ASTNode>(
@@ -169,11 +202,62 @@ export function visit<N extends ASTNode>(
   visitor: ASTVisitor,
   visitorKeys?: ASTVisitorKeyMap,
 ): N;
+/**
+ * Traverses an AST with reducer callbacks and returns the reduced value.
+ * @param root - The AST node where traversal starts.
+ * @param visitor - Reducer callbacks to invoke during traversal.
+ * @param visitorKeys - Optional mapping of child keys for each AST node kind.
+ * @returns The value produced by the reducer visitor.
+ * @typeParam R - The value produced by reducer visitor callbacks.
+ * @example
+ * ```ts
+ * // A reducer visitor returns values from leave handlers to build a reduced
+ * // result instead of returning an edited AST.
+ * import { parse, visit } from 'graphql/language';
+ *
+ * const document = parse('{ hero { name } }');
+ * const printed = visit(document, {
+ *   Name: {
+ *     leave: (node) => {
+ *       return node.value;
+ *     },
+ *   },
+ *   Field: {
+ *     leave: (node) => {
+ *       return node.selectionSet == null
+ *         ? node.name
+ *         : `${node.name} { ${node.selectionSet} }`;
+ *     },
+ *   },
+ *   SelectionSet: {
+ *     leave: (node) => {
+ *       return node.selections.join(' ');
+ *     },
+ *   },
+ *   OperationDefinition: {
+ *     leave: (node) => {
+ *       return node.selectionSet;
+ *     },
+ *   },
+ *   Document: {
+ *     leave: (node) => {
+ *       return node.definitions.join('\n');
+ *     },
+ *   },
+ * });
+ *
+ * printed; // => 'hero { name }'
+ * ```
+ */
 export function visit<R>(
   root: ASTNode,
   visitor: ASTReducer<R>,
   visitorKeys?: ASTVisitorKeyMap,
 ): R;
+/**
+ * Traverses an AST with visitor or reducer callbacks.
+ * @internal
+ */
 export function visit(
   root: ASTNode,
   visitor: ASTVisitor | ASTReducer<any>,
@@ -304,6 +388,25 @@ export function visit(
  * parallel. Each visitor will be visited for each node before moving on.
  *
  * If a prior visitor edits a node, no following visitors will see that node.
+ * @param visitors - The visitors to merge into one parallel visitor.
+ * @returns A visitor that delegates traversal to each provided visitor.
+ * @example
+ * ```ts
+ * import { parse, visit, visitInParallel } from 'graphql/language';
+ *
+ * const document = parse('{ hero { name } }');
+ * const events = [];
+ *
+ * visit(
+ *   document,
+ *   visitInParallel([
+ *     { Field: (node) => { events.push(`field:${node.name.value}`); } },
+ *     { Name: (node) => { events.push(`name:${node.value}`); } },
+ *   ]),
+ * );
+ *
+ * events; // => ['field:hero', 'name:hero', 'field:name', 'name:name']
+ * ```
  */
 export function visitInParallel(
   visitors: ReadonlyArray<ASTVisitor>,
@@ -368,6 +471,18 @@ export function visitInParallel(
 
 /**
  * Given a visitor instance and a node kind, return EnterLeaveVisitor for that kind.
+ * @param visitor - The visitor object to inspect.
+ * @param kind - The AST node kind to resolve handlers for.
+ * @returns The enter and leave handlers that apply for the given node kind.
+ * @example
+ * ```ts
+ * import { Kind, getEnterLeaveForKind } from 'graphql/language';
+ *
+ * const handlers = getEnterLeaveForKind({ Field: () => {} }, Kind.FIELD);
+ *
+ * typeof handlers.enter; // => 'function'
+ * handlers.leave; // => undefined
+ * ```
  */
 export function getEnterLeaveForKind(
   visitor: ASTVisitor,

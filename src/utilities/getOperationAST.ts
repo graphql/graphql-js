@@ -1,3 +1,5 @@
+/** @category Operations */
+
 import type { Maybe } from '../jsutils/Maybe.ts';
 
 import type { DocumentNode, OperationDefinitionNode } from '../language/ast.ts';
@@ -7,6 +9,20 @@ import { Kind } from '../language/kinds.ts';
  * Returns an operation AST given a document AST and optionally an operation
  * name. If a name is not provided, an operation is only returned if only one is
  * provided in the document.
+ * @param documentAST - The parsed GraphQL document AST.
+ * @param operationName - The optional operation name to select.
+ * @returns The resolved operation ast.
+ * @example
+ * ```ts
+ * import { parse } from 'graphql/language';
+ * import { getOperationAST } from 'graphql/utilities';
+ *
+ * const document = parse('query GetName { name }');
+ * const operation = getOperationAST(document, 'GetName');
+ *
+ * operation.name.value; // => 'GetName'
+ * getOperationAST(document, 'Missing'); // => undefined
+ * ```
  */
 export function getOperationAST(
   documentAST: DocumentNode,

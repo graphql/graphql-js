@@ -1,3 +1,5 @@
+/** @category Execution */
+
 import { inspect } from '../jsutils/inspect.ts';
 import { invariant } from '../jsutils/invariant.ts';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.ts';
@@ -91,6 +93,8 @@ import { getArgumentValues } from './values.ts';
  * 1) field references e.g `a`
  * 2) fragment "spreads" e.g. `...c`
  * 3) inline fragment "spreads" e.g. `...on Type { a }`
+ *
+ * @internal
  */
 
 /**
@@ -100,27 +104,44 @@ import { getArgumentValues } from './values.ts';
  * and the fragments defined in the query document
  */
 export interface ValidatedExecutionArgs {
+  /** Schema used for execution. */
   schema: GraphQLSchema;
   // TODO: consider deprecating/removing fragmentDefinitions if/when fragment
   // arguments are officially supported and/or the full fragment details are
   // exposed within GraphQLResolveInfo.
+  /** Fragment definitions keyed by fragment name. */
   fragmentDefinitions: ObjMap<FragmentDefinitionNode>;
+  /** Fragment details keyed by fragment name. */
   fragments: ObjMap<FragmentDetails>;
+  /** Root value passed to the operation. */
   rootValue: unknown;
+  /** Application context value passed to every resolver. */
   contextValue: unknown;
+  /** Operation definition selected for execution. */
   operation: OperationDefinitionNode;
+  /** Operation variable values with source metadata and coerced runtime values. */
   variableValues: VariableValues;
+  /** Resolver used for fields without an explicit resolver. */
   fieldResolver: GraphQLFieldResolver<any, any>;
+  /** Resolver used for abstract types without an explicit type resolver. */
   typeResolver: GraphQLTypeResolver<any, any>;
+  /** Resolver used for subscription fields without an explicit subscribe resolver. */
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
+  /** Whether suggestion text should be omitted from execution errors. */
   hideSuggestions: boolean;
+  /** Whether execution should use error propagation. */
   errorPropagation: boolean;
+  /** External signal that may abort execution. */
   externalAbortSignal: AbortSignal | undefined;
+  /** Whether incremental execution may begin eligible work early. */
   enableEarlyExecution: boolean;
+  /** Execution hooks supplied by the caller. */
   hooks: ExecutionHooks | undefined;
 }
 
+/** Validated execution arguments for a subscription operation. */
 export interface ValidatedSubscriptionArgs extends ValidatedExecutionArgs {
+  /** Subscription operation definition selected for execution. */
   operation: SubscriptionOperationDefinitionNode;
 }
 
@@ -128,6 +149,8 @@ export interface ValidatedSubscriptionArgs extends ValidatedExecutionArgs {
  * A memoized collection of relevant subfields with regard to the return
  * type. Memoizing ensures the subfields are not repeatedly calculated, which
  * saves overhead when resolving lists of values.
+ *
+ * @internal
  */
 export const collectSubfields: (
   validatedExecutionArgs: ValidatedExecutionArgs,
@@ -152,6 +175,7 @@ export const collectSubfields: (
   },
 );
 
+/** @internal */
 export const getStreamUsage: typeof _getStreamUsage = memoize2(
   (
     validatedExecutionArgs: ValidatedExecutionArgs,
@@ -159,9 +183,6 @@ export const getStreamUsage: typeof _getStreamUsage = memoize2(
   ) => _getStreamUsage(validatedExecutionArgs, fieldDetailsList),
 );
 
-/**
- * @internal
- */
 class CollectedErrors {
   private _errorPositions: Set<Path | undefined>;
   private _errors: Array<GraphQLError>;
@@ -199,29 +220,36 @@ class CollectedErrors {
 }
 
 /**
- * The result of GraphQL execution.
- *
- *   - `errors` is included when any errors occurred as a non-empty array.
- *   - `data` is the result of a successful execution of the query.
- *   - `hasNext` is true if a future payload is expected.
- *   - `extensions` is reserved for adding non-standard properties.
- *   - `incremental` is a list of the results from defer/stream directives.
+ * Represents the response produced by executing a GraphQL operation.
+ * @typeParam TData - Shape of the execution data payload.
+ * @typeParam TExtensions - Shape of the extensions payload.
  */
 export interface ExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
 > {
+  /** Errors raised while parsing, validating, or executing the operation. */
   errors?: ReadonlyArray<GraphQLError>;
+  /** Data returned by execution, or null when execution could not produce data. */
   data?: TData | null;
+  /** Additional non-standard metadata included in the execution result. */
   extensions?: TExtensions;
 }
 
+/**
+ * A JSON-serializable GraphQL execution result.
+ * @typeParam TData - Shape of the formatted data payload.
+ * @typeParam TExtensions - Shape of the formatted extensions payload.
+ */
 export interface FormattedExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
 > {
+  /** Errors raised while parsing, validating, or executing the operation. */
   errors?: ReadonlyArray<GraphQLFormattedError>;
+  /** Data returned by execution, or null when execution could not produce data. */
   data?: TData | null;
+  /** Additional non-standard metadata included in the formatted result. */
   extensions?: TExtensions;
 }
 
@@ -407,6 +435,8 @@ export class Executor<
   /**
    * Given a completed execution context and data, build the `{ errors, data }`
    * response defined by the "Response" section of the GraphQL specification.
+   *
+   * @internal
    */
   buildResponse(
     data: ObjMap<unknown> | null,
@@ -459,6 +489,8 @@ export class Executor<
   /**
    * Implements the "Executing selection sets" section of the spec
    * for fields that must be executed serially.
+   *
+   * @internal
    */
   executeFieldsSerially(
     parentType: GraphQLObjectType,
@@ -500,6 +532,8 @@ export class Executor<
   /**
    * Implements the "Executing selection sets" section of the spec
    * for fields that may be executed in parallel.
+   *
+   * @internal
    */
   executeFields(
     parentType: GraphQLObjectType,
@@ -554,6 +588,8 @@ export class Executor<
    * In particular, this function figures out the value that the field returns by
    * calling its resolve function, then calls completeValue to complete promises,
    * coercing scalars, or execute the sub-selection-set for objects.
+   *
+   * @internal
    */
   executeField(
     parentType: GraphQLObjectType,
@@ -685,6 +721,8 @@ export class Executor<
    *
    * Otherwise, the field type expects a sub-selection set, and will complete the
    * value by executing all sub-selections.
+   *
+   * @internal
    */
   completeValue(
     returnType: GraphQLOutputType,
@@ -808,6 +846,8 @@ export class Executor<
   /**
    * Complete a async iterator value by completing the result and calling
    * recursively until all the results are completed.
+   *
+   * @internal
    */
   async completeAsyncIterableValue(
     itemType: GraphQLOutputType,
@@ -917,6 +957,8 @@ export class Executor<
   /**
    * Complete a list value by completing each item in the list with the
    * inner type
+   *
+   * @internal
    */
   completeListValue(
     returnType: GraphQLList<GraphQLOutputType>,
@@ -1072,6 +1114,8 @@ export class Executor<
    * Complete a list item value by adding it to the completed results.
    *
    * Returns true if the value is a Promise.
+   *
+   * @internal
    */
   completeListItemValue(
     item: unknown,
@@ -1151,6 +1195,8 @@ export class Executor<
   /**
    * Complete a Scalar or Enum by serializing to a valid value, returning
    * null if serialization is not possible.
+   *
+   * @internal
    */
   completeLeafValue(returnType: GraphQLLeafType, result: unknown): unknown {
     const coerced = returnType.coerceOutputValue(result);
@@ -1166,6 +1212,8 @@ export class Executor<
   /**
    * Complete a value of an abstract type by determining the runtime object type
    * of that value, then complete the value for that type.
+   *
+   * @internal
    */
   completeAbstractValue(
     returnType: GraphQLAbstractType,
@@ -1272,6 +1320,8 @@ export class Executor<
 
   /**
    * Complete an Object value by executing all sub-selections.
+   *
+   * @internal
    */
   completeObjectValue(
     returnType: GraphQLObjectType,

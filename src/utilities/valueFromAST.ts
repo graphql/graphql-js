@@ -1,3 +1,5 @@
+/** @category Values */
+
 import { inspect } from '../jsutils/inspect.ts';
 import { invariant } from '../jsutils/invariant.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
@@ -32,7 +34,44 @@ import {
  * | Int / Float          | Number        |
  * | Enum Value           | Unknown       |
  * | NullValue            | null          |
+ * @param valueNode - GraphQL value AST node to convert.
+ * @param type - The GraphQL type to inspect.
+ * @param variables - Optional runtime variable values keyed by variable name.
+ * @returns The coerced JavaScript value, or undefined if the AST value cannot be coerced to the type.
+ * @example
+ * ```ts
+ * // Coerce literal values without variables.
+ * import { parseValue } from 'graphql/language';
+ * import {
+ *   GraphQLInputObjectType,
+ *   GraphQLInt,
+ *   GraphQLList,
+ *   GraphQLNonNull,
+ *   GraphQLString,
+ * } from 'graphql/type';
+ * import { valueFromAST } from 'graphql/utilities';
  *
+ * const ReviewInput = new GraphQLInputObjectType({
+ *   name: 'ReviewInput',
+ *   fields: {
+ *     stars: { type: new GraphQLNonNull(GraphQLInt) },
+ *     tags: { type: new GraphQLList(GraphQLString) },
+ *   },
+ * });
+ *
+ * valueFromAST(parseValue('{ stars: 5, tags: ["featured"] }'), ReviewInput); // => { stars: 5, tags: ['featured'] }
+ * valueFromAST(parseValue('{ stars: "bad" }'), ReviewInput); // => undefined
+ * ```
+ * @example
+ * ```ts
+ * // This variant resolves variable references from runtime values.
+ * import { parseValue } from 'graphql/language';
+ * import { GraphQLInt } from 'graphql/type';
+ * import { valueFromAST } from 'graphql/utilities';
+ *
+ * valueFromAST(parseValue('$stars'), GraphQLInt, { stars: 5 }); // => 5
+ * valueFromAST(parseValue('$stars'), GraphQLInt, {}); // => undefined
+ * ```
  * @deprecated use `coerceInputLiteral()` instead - will be removed in v18
  */
 export function valueFromAST(

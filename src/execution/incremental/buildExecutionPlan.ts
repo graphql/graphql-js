@@ -7,13 +7,16 @@ import type {
   GroupedFieldSet,
 } from '../collectFields.ts';
 
+/** @internal */
 export type DeferUsageSet = ReadonlySet<DeferUsage>;
 
+/** @internal */
 export interface ExecutionPlan {
   groupedFieldSet: GroupedFieldSet;
   newGroupedFieldSets: Map<DeferUsageSet, GroupedFieldSet>;
 }
 
+/** @internal */
 export function buildExecutionPlan(
   originalGroupedFieldSet: GroupedFieldSet,
   parentDeferUsages: DeferUsageSet = new Set<DeferUsage>(),

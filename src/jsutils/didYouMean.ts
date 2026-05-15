@@ -3,13 +3,17 @@ import { orList } from './formatList.ts';
 const MAX_SUGGESTIONS = 5;
 
 /**
- * Given [ A, B, C ] return ' Did you mean A, B, or C?'.
+ * Given [A, B, C] return ' Did you mean A, B, or C?'.
+ *
+ * @internal
  */
 export function didYouMean(suggestions: ReadonlyArray<string>): string;
+/** @internal */
 export function didYouMean(
   subMessage: string,
   suggestions: ReadonlyArray<string>,
 ): string;
+/** @internal */
 export function didYouMean(
   firstArg: string | ReadonlyArray<string>,
   secondArg?: ReadonlyArray<string>,

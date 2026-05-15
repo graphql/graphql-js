@@ -4,6 +4,7 @@
  *
  * See: https://en.wikipedia.org/wiki/Natural_sort_order
  *
+ * @internal
  */
 export function naturalCompare(aStr: string, bStr: string): number {
   let aIndex = 0;

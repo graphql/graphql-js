@@ -15,6 +15,8 @@ const asyncDispose: typeof Symbol.asyncDispose =
  * if that logic can cause that hanging `next()` call to return early).
  *
  * Errors from the provided functions are ignored.
+ *
+ * @internal
  */
 export function withConcurrentAbruptClose<T>(
   generator: AsyncGenerator<T, void, void>,

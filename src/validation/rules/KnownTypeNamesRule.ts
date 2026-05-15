@@ -1,3 +1,5 @@
+/** @category Validation Rules */
+
 import { didYouMean } from '../../jsutils/didYouMean.ts';
 import { suggestionList } from '../../jsutils/suggestionList.ts';
 
@@ -26,6 +28,33 @@ import type {
  * variable definitions and fragment conditions) are defined by the type schema.
  *
  * See https://spec.graphql.org/draft/#sec-Fragment-Spread-Type-Existence
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { KnownTypeNamesRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   fragment Bad on Missing { name }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [KnownTypeNamesRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   fragment Good on Query { name }
+ * `);
+ * const validErrors = validate(schema, validDocument, [KnownTypeNamesRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 export function KnownTypeNamesRule(
   context: ValidationContext | SDLValidationContext,

@@ -6,13 +6,14 @@
  * an object should be iterated-over e.g. Array, Map, Set, Int8Array,
  * TypedArray, etc. but excludes string literals.
  *
+ * @internal
  * @example
  * ```ts
- * isIterableObject([ 1, 2, 3 ]) // true
- * isIterableObject(new Map()) // true
- * isIterableObject('ABC') // false
- * isIterableObject({ key: 'value' }) // false
- * isIterableObject({ length: 1, 0: 'Alpha' }) // false
+ * isIterableObject([1, 2, 3]); // => true
+ * isIterableObject(new Map()); // => true
+ * isIterableObject('ABC'); // => false
+ * isIterableObject({ key: 'value' }); // => false
+ * isIterableObject({ length: 1, 0: 'Alpha' }); // => false
  * ```
  */
 export function isIterableObject(

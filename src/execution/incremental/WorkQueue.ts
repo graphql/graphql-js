@@ -4,6 +4,7 @@ import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 import type { Computation } from './Computation.ts';
 import { Queue } from './Queue.ts';
 
+/** @internal */
 export interface Group<TSelf extends Group<TSelf>> {
   parent?: TSelf | undefined;
 }
@@ -19,6 +20,7 @@ interface WorkResult<
   work?: Work<T, I, G, S> | undefined;
 }
 
+/** @internal */
 export interface Stream<
   T,
   I,
@@ -28,6 +30,7 @@ export interface Stream<
   queue: Queue<StreamItem<T, I, G, S>>;
 }
 
+/** @internal */
 export interface Work<T, I, G extends Group<G>, S extends Stream<T, I, G, S>> {
   groups?: ReadonlyArray<G>;
   tasks?: ReadonlyArray<Task<T, I, G, S>>;
@@ -39,6 +42,7 @@ interface NewWork<T, I, G extends Group<G>, S extends Stream<T, I, G, S>> {
   newStreams: ReadonlyArray<S>;
 }
 
+/** @internal */
 export interface WorkQueue<
   T,
   I,
@@ -50,6 +54,7 @@ export interface WorkQueue<
   events: AsyncGenerator<ReadonlyArray<WorkQueueEvent<T, I, G, S>>, void, void>;
 }
 
+/** @internal */
 export type StreamItem<
   T,
   I,
@@ -57,6 +62,7 @@ export type StreamItem<
   S extends Stream<T, I, G, S>,
 > = WorkResult<I, T, I, G, S>;
 
+/** @internal */
 export type TaskResult<
   T,
   I,
@@ -64,6 +70,7 @@ export type TaskResult<
   S extends Stream<T, I, G, S>,
 > = WorkResult<T, T, I, G, S>;
 
+/** @internal */
 export interface Task<T, I, G extends Group<G>, S extends Stream<T, I, G, S>> {
   groups: ReadonlyArray<G>;
   computation: Computation<TaskResult<T, I, G, S>>;
@@ -172,6 +179,7 @@ interface WorkQueueTerminationEvent {
   kind: 'WORK_QUEUE_TERMINATION';
 }
 
+/** @internal */
 export type WorkQueueEvent<
   T,
   I,

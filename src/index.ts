@@ -1,28 +1,22 @@
 /**
- * GraphQL.js provides a reference implementation for the GraphQL specification
- * but is also a useful utility for operating on GraphQL files and building
- * sophisticated tools.
+ * The root `graphql` package re-exports the public GraphQL.js API from its
+ * submodules and provides the high-level request pipeline helpers defined in
+ * this module.
  *
- * This primary module exports a general purpose function for fulfilling all
- * steps of the GraphQL specification in a single operation, but also includes
- * utilities for every part of the GraphQL specification:
- *
- *   - Parsing the GraphQL language.
- *   - Building a GraphQL type schema.
- *   - Validating a GraphQL request against a type schema.
- *   - Executing a GraphQL request against a type schema.
- *
- * This also includes utility functions for operating on GraphQL types and
- * GraphQL documents to facilitate building tools.
- *
- * You may also import from each sub-directory directly. For example, the
- * following two import statements are equivalent:
+ * You can import public exports from GraphQL.js modules through the root
+ * `graphql` package or through their module-specific entry point. For example,
+ * these two references resolve to the same `parse` function:
  *
  * ```ts
  * import { parse } from 'graphql';
  * import { parse } from 'graphql/language';
  * ```
  *
+ * Use the root package when you want a single import surface, or use submodules
+ * such as `graphql/language`, `graphql/type`, `graphql/execution`, and
+ * `graphql/utilities` when you want module-focused imports. This module also
+ * defines root-only APIs, such as request pipeline helpers and version
+ * metadata, that do not belong to a narrower submodule.
  * @packageDocumentation
  */
 

@@ -6,7 +6,7 @@ type MaybePromise<T> =
   | { status: 'pending'; promise: Promise<T> }
   | { status: 'rejected'; reason: unknown };
 
-/** @internal **/
+/** @internal * */
 export class Computation<T> {
   private _fn: () => PromiseOrValue<T>;
   private _onAbort: ((reason?: unknown) => PromiseOrValue<void>) | undefined;

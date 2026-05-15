@@ -1,3 +1,5 @@
+/** @category Execution */
+
 import { inspect } from '../jsutils/inspect.ts';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.ts';
 import { isObjectLike } from '../jsutils/isObjectLike.ts';
@@ -50,6 +52,7 @@ import { getArgumentValues, getVariableValues } from './values.ts';
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
   'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.';
 
+/** Function used to execute a validated root selection set for a subscription event. */
 export type RootSelectionSetExecutor = (
   validatedExecutionArgs: ValidatedSubscriptionArgs,
 ) => PromiseOrValue<ExecutionResult>;
@@ -64,11 +67,40 @@ export type RootSelectionSetExecutor = (
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
  *
+ * Field errors are collected into the response instead of rejecting the
+ * returned promise. Only the field that produced the error and its descendants
+ * are omitted; sibling fields continue to execute. Errors from fields of
+ * non-null type may propagate to the nearest nullable parent, which can be the
+ * entire response data.
+ *
  * This function does not support incremental delivery (`@defer` and `@stream`).
- * If an operation which would defer or stream data is executed with this
- * function, it will throw or return a rejected promise.
- * Use `experimentalExecuteIncrementally` if you want to support incremental
- * delivery.
+ * Use `experimentalExecuteIncrementally` to execute operations with
+ * incremental delivery enabled.
+ * @param args - The arguments used to perform the operation.
+ * @returns A completed execution result, or a promise resolving to one when execution is asynchronous.
+ * @example
+ * ```ts
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { execute } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting(name: String!): String
+ *   }
+ * `);
+ *
+ * const result = await execute({
+ *   schema,
+ *   document: parse('query ($name: String!) { greeting(name: $name) }'),
+ *   rootValue: {
+ *     greeting: ({ name }) => `Hello, ${name}!`,
+ *   },
+ *   variableValues: { name: 'Ada' },
+ * });
+ *
+ * result; // => { data: { greeting: 'Hello, Ada!' } }
+ * ```
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   if (args.schema.getDirective('defer') || args.schema.getDirective('stream')) {
@@ -90,12 +122,35 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
  * including `@defer` and `@stream` as proposed in
  * https://github.com/graphql/graphql-spec/pull/742
  *
- * This function returns a Promise of an ExperimentalIncrementalExecutionResults
- * object. This object either consists of a single ExecutionResult, or an
- * object containing an `initialResult` and a stream of `subsequentResults`.
+ * This function returns either a single ExecutionResult, or an
+ * ExperimentalIncrementalExecutionResults object containing an `initialResult`
+ * and a stream of `subsequentResults`.
  *
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
+ * @param args - Execution arguments for the GraphQL operation.
+ * @returns A single execution result or incremental execution results.
+ * @example
+ * ```ts
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { experimentalExecuteIncrementally } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting: String
+ *   }
+ * `);
+ *
+ * const result = await experimentalExecuteIncrementally({
+ *   schema,
+ *   document: parse('{ greeting }'),
+ *   rootValue: { greeting: 'Hello' },
+ * });
+ *
+ * result; // => { data: { greeting: 'Hello' } }
+ * ```
+ * @category Incremental Execution
  */
 export function experimentalExecuteIncrementally(
   args: ExecutionArgs,
@@ -112,6 +167,7 @@ export function experimentalExecuteIncrementally(
   return experimentalExecuteRootSelectionSet(validatedExecutionArgs);
 }
 
+/** @internal */
 export function executeIgnoringIncremental(
   args: ExecutionArgs,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
@@ -141,6 +197,27 @@ export function executeIgnoringIncremental(
  * Errors from sub-fields of a NonNull type may propagate to the top level,
  * at which point we still log the error and null the parent field, which
  * in this case is the entire response.
+ * @param validatedExecutionArgs - Validated execution arguments.
+ * @returns Execution result for the operation root selection set.
+ * @example
+ * ```ts
+ * import assert from 'node:assert';
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { executeRootSelectionSet, validateExecutionArgs } from 'graphql/execution';
+ *
+ * const schema = buildSchema('type Query { greeting: String }');
+ * const validatedArgs = validateExecutionArgs({
+ *   schema,
+ *   document: parse('{ greeting }'),
+ *   rootValue: { greeting: 'Hello' },
+ * });
+ *
+ * assert('schema' in validatedArgs);
+ *
+ * const result = await executeRootSelectionSet(validatedArgs);
+ * result; // => { data: { greeting: 'Hello' } }
+ * ```
  */
 export function executeRootSelectionSet(
   validatedExecutionArgs: ValidatedExecutionArgs,
@@ -150,6 +227,34 @@ export function executeRootSelectionSet(
   ).executeRootSelectionSet();
 }
 
+/**
+ * Executes the operation root selection set with incremental delivery enabled.
+ * @param validatedExecutionArgs - Validated execution arguments.
+ * @returns A single execution result or incremental execution results.
+ * @example
+ * ```ts
+ * import assert from 'node:assert';
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import {
+ *   experimentalExecuteRootSelectionSet,
+ *   validateExecutionArgs,
+ * } from 'graphql/execution';
+ *
+ * const schema = buildSchema('type Query { greeting: String }');
+ * const validatedArgs = validateExecutionArgs({
+ *   schema,
+ *   document: parse('{ greeting }'),
+ *   rootValue: { greeting: 'Hello' },
+ * });
+ *
+ * assert('schema' in validatedArgs);
+ *
+ * const result = await experimentalExecuteRootSelectionSet(validatedArgs);
+ * result; // => { data: { greeting: 'Hello' } }
+ * ```
+ * @category Incremental Execution
+ */
 export function experimentalExecuteRootSelectionSet(
   validatedExecutionArgs: ValidatedExecutionArgs,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
@@ -158,6 +263,7 @@ export function experimentalExecuteRootSelectionSet(
   ).executeRootSelectionSet();
 }
 
+/** @internal */
 export function executeRootSelectionSetIgnoringIncremental(
   validatedExecutionArgs: ValidatedExecutionArgs,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
@@ -168,6 +274,24 @@ export function executeRootSelectionSetIgnoringIncremental(
  * Also implements the "Executing requests" section of the GraphQL specification.
  * However, it guarantees to complete synchronously (or throw an error) assuming
  * that all field resolvers are also synchronous.
+ * @param args - The arguments used to perform the operation.
+ * @returns Completed execution output for a synchronous operation.
+ * @example
+ * ```ts
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { executeSync } from 'graphql/execution';
+ *
+ * const schema = buildSchema('type Query { greeting: String }');
+ *
+ * const result = executeSync({
+ *   schema,
+ *   document: parse('{ greeting }'),
+ *   rootValue: { greeting: 'Hello' },
+ * });
+ *
+ * result; // => { data: { greeting: 'Hello' } }
+ * ```
  */
 export function executeSync(args: ExecutionArgs): ExecutionResult {
   const result = experimentalExecuteIncrementally(args);
@@ -180,6 +304,38 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
   return result;
 }
 
+/**
+ * Executes a subscription operation once for a single source event.
+ * @param validatedExecutionArgs - Validated subscription execution arguments.
+ * @returns Execution result for the subscription event.
+ * @example
+ * ```ts
+ * import assert from 'node:assert';
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { executeSubscriptionEvent, validateSubscriptionArgs } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     noop: String
+ *   }
+ *
+ *   type Subscription {
+ *     greeting: String
+ *   }
+ * `);
+ * const validatedArgs = validateSubscriptionArgs({
+ *   schema,
+ *   document: parse('subscription { greeting }'),
+ *   rootValue: { greeting: 'Hello' },
+ * });
+ *
+ * assert('schema' in validatedArgs);
+ *
+ * const result = await executeSubscriptionEvent(validatedArgs);
+ * result; // => { data: { greeting: 'Hello' } }
+ * ```
+ */
 export function executeSubscriptionEvent(
   validatedExecutionArgs: ValidatedSubscriptionArgs,
 ): PromiseOrValue<ExecutionResult> {
@@ -191,7 +347,7 @@ export function executeSubscriptionEvent(
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
  *
- * Returns a Promise which resolves to either an AsyncIterator (if successful)
+ * Returns a Promise that resolves to either an AsyncIterator (if successful)
  * or an ExecutionResult (error). The promise will be rejected if the schema or
  * other arguments to this function are invalid, or if the resolved event stream
  * is not an async iterable.
@@ -213,6 +369,93 @@ export function executeSubscriptionEvent(
  * `@stream` directive.
  *
  * Accepts an object with named arguments.
+ * @param args - Execution arguments for the subscription operation.
+ * @returns A response stream for a valid subscription, or an execution result containing errors.
+ * @example
+ * ```ts
+ * // Use a same-named rootValue function to provide the source event stream.
+ * import assert from 'node:assert';
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { subscribe } from 'graphql/execution';
+ *
+ * async function* greetings() {
+ *   yield { greeting: 'Hello' };
+ *   yield { greeting: 'Bonjour' };
+ * }
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     noop: String
+ *   }
+ *
+ *   type Subscription {
+ *     greeting: String
+ *   }
+ * `);
+ *
+ * const result = await subscribe({
+ *   schema,
+ *   document: parse('subscription { greeting }'),
+ *   rootValue: { greeting: () => greetings() },
+ * });
+ *
+ * assert('next' in result);
+ *
+ * const firstPayload = await result.next();
+ * firstPayload.value; // => { data: { greeting: 'Hello' } }
+ * ```
+ * @example
+ * ```ts
+ * // This variant supplies events through a custom subscribeFieldResolver.
+ * import assert from 'node:assert';
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { subscribe } from 'graphql/execution';
+ *
+ * async function* defaultGreetings() {
+ *   yield { greeting: 'Hello' };
+ * }
+ *
+ * async function* frenchGreetings() {
+ *   yield { greeting: 'Bonjour' };
+ * }
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     noop: String
+ *   }
+ *
+ *   type Subscription {
+ *     greeting(locale: String): String
+ *   }
+ * `);
+ *
+ * const result = await subscribe({
+ *   schema,
+ *   document: parse(
+ *     'subscription Greeting($locale: String) { greeting(locale: $locale) }',
+ *   ),
+ *   rootValue: {
+ *     greeting: (args, contextValue) => {
+ *       const locale = args.locale ?? contextValue.defaultLocale;
+ *       return locale === 'fr' ? frenchGreetings() : defaultGreetings();
+ *     },
+ *   },
+ *   contextValue: { defaultLocale: 'fr' },
+ *   variableValues: { locale: 'fr' },
+ *   operationName: 'Greeting',
+ *   subscribeFieldResolver: (rootValue, args, contextValue, info) => {
+ *     args.locale; // => 'fr'
+ *     return rootValue[info.fieldName](args, contextValue);
+ *   },
+ * });
+ *
+ * assert('next' in result);
+ *
+ * const firstPayload = await result.next();
+ * firstPayload.value; // => { data: { greeting: 'Bonjour' } }
+ * ```
  */
 export function subscribe(
   args: ExecutionArgs,
@@ -251,7 +494,7 @@ export function subscribe(
  * GraphQL specification, resolving the subscription source event stream for a
  * previously validated subscription request.
  *
- * Returns a Promise which resolves to either an AsyncIterable (if successful)
+ * Returns a Promise that resolves to either an AsyncIterable (if successful)
  * or an ExecutionResult (error). The promise will be rejected if the validated
  * execution arguments are invalid, or if the resolved event stream is not an
  * async iterable.
@@ -260,7 +503,7 @@ export function subscribe(
  * compliant subscription, a GraphQL Response (ExecutionResult) with
  * descriptive errors and no data will be returned.
  *
- * If the the source stream could not be created due to faulty subscription
+ * If the source stream could not be created due to faulty subscription
  * resolver logic or underlying systems, the promise will resolve to a single
  * ExecutionResult containing `errors` and no `data`.
  *
@@ -274,6 +517,39 @@ export function subscribe(
  * different process or machine than the stateless GraphQL execution engine,
  * or otherwise separating these two steps. For more on this, see the
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
+ * @param validatedExecutionArgs - Validated subscription execution arguments.
+ * @returns A source event stream, or an execution result containing errors.
+ * @example
+ * ```ts
+ * import assert from 'node:assert';
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { createSourceEventStream, validateSubscriptionArgs } from 'graphql/execution';
+ *
+ * async function* greetings() {
+ *   yield { greeting: 'Hello' };
+ * }
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     noop: String
+ *   }
+ *
+ *   type Subscription {
+ *     greeting: String
+ *   }
+ * `);
+ * const validatedArgs = validateSubscriptionArgs({
+ *   schema,
+ *   document: parse('subscription { greeting }'),
+ *   rootValue: { greeting: () => greetings() },
+ * });
+ *
+ * assert('schema' in validatedArgs);
+ *
+ * const stream = await createSourceEventStream(validatedArgs);
+ * Symbol.asyncIterator in stream; // => true
+ * ```
  */
 export function createSourceEventStream(
   validatedExecutionArgs: ValidatedSubscriptionArgs,
@@ -298,23 +574,41 @@ export function createSourceEventStream(
   }
 }
 
+/** Arguments accepted by execute and executeSync. */
 export interface ExecutionArgs {
+  /** The schema used for validation or execution. */
   schema: GraphQLSchema;
+  /** The parsed GraphQL document to execute. */
   document: DocumentNode;
+  /** Initial root value passed to the operation. */
   rootValue?: unknown;
+  /** Application context value passed to every resolver. */
   contextValue?: unknown;
+  /** Runtime variable values keyed by variable name. */
   variableValues?: Maybe<{ readonly [variable: string]: unknown }>;
+  /** Name of the operation to execute when the document contains multiple operations. */
   operationName?: Maybe<string>;
+  /** Resolver used when a field does not define its own resolver. */
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  /** Resolver used when an abstract type does not define its own resolver. */
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+  /** Resolver used for the root subscription field. */
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  /** Whether suggestion text should be omitted from request errors. */
   hideSuggestions?: Maybe<boolean>;
+  /** AbortSignal used to cancel execution. */
   abortSignal?: Maybe<AbortSignal>;
+  /** Whether incremental execution may begin eligible work early. */
   enableEarlyExecution?: Maybe<boolean>;
+  /** Execution hooks invoked during this operation. */
   hooks?: Maybe<ExecutionHooks>;
   /** Additional execution options. */
   options?: {
-    /** Set the maximum number of errors allowed for coercing (defaults to 50). */
+    /**
+     * Set the maximum number of errors allowed for coercing (defaults to 50).
+     *
+     * @internal
+     */
     maxCoercionErrors?: number;
   };
 }
@@ -326,7 +620,56 @@ export interface ExecutionArgs {
  * Throws a GraphQLError if a valid execution context cannot be created.
  *
  * TODO: consider no longer exporting this function
- * @internal
+ * @param args - Execution arguments to validate.
+ * @returns Validated execution arguments, or validation errors.
+ * @example
+ * ```ts
+ * import assert from 'node:assert';
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { validateExecutionArgs } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   interface Named {
+ *     name: String!
+ *   }
+ *
+ *   type User implements Named {
+ *     name: String!
+ *   }
+ *
+ *   type Query {
+ *     viewer: Named
+ *   }
+ * `);
+ * const abortController = new AbortController();
+ * const validatedArgs = validateExecutionArgs({
+ *   schema,
+ *   document: parse('query Viewer { viewer { __typename name } }'),
+ *   rootValue: { viewer: { kind: 'user', name: 'Ada' } },
+ *   contextValue: { locale: 'en' },
+ *   operationName: 'Viewer',
+ *   fieldResolver: (source, _args, contextValue, info) => {
+ *     contextValue.locale; // => 'en'
+ *     return source[info.fieldName];
+ *   },
+ *   typeResolver: (value) => {
+ *     return value.kind === 'user' ? 'User' : undefined;
+ *   },
+ *   hideSuggestions: true,
+ *   abortSignal: abortController.signal,
+ *   enableEarlyExecution: true,
+ *   hooks: {
+ *     asyncWorkFinished: () => {},
+ *   },
+ *   options: { maxCoercionErrors: 1 },
+ * });
+ *
+ * assert('operation' in validatedArgs);
+ *
+ * validatedArgs.operation.name?.value; // => 'Viewer'
+ * validatedArgs.hideSuggestions; // => true
+ * ```
  */
 export function validateExecutionArgs(
   args: ExecutionArgs,
@@ -436,6 +779,36 @@ export function validateExecutionArgs(
   };
 }
 
+/**
+ * Validates execution arguments for a subscription operation.
+ * @param args - Execution arguments to validate.
+ * @returns Validated subscription execution arguments, or validation errors.
+ * @example
+ * ```ts
+ * import assert from 'node:assert';
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { validateSubscriptionArgs } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     noop: String
+ *   }
+ *
+ *   type Subscription {
+ *     greeting: String
+ *   }
+ * `);
+ * const validatedArgs = validateSubscriptionArgs({
+ *   schema,
+ *   document: parse('subscription { greeting }'),
+ * });
+ *
+ * assert('operation' in validatedArgs);
+ *
+ * validatedArgs.operation.operation; // => 'subscription'
+ * ```
+ */
 export function validateSubscriptionArgs(
   args: ExecutionArgs,
 ): ReadonlyArray<GraphQLError> | ValidatedSubscriptionArgs {
@@ -538,6 +911,42 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
  * Implements the "MapSourceToResponseEvent" algorithm described in the
  * GraphQL specification, mapping each event from a subscription source event
  * stream to an ExecutionResult in the response stream.
+ * @param validatedExecutionArgs - Validated subscription execution arguments.
+ * @param sourceEventStream - Source event stream returned by the subscription resolver.
+ * @param rootSelectionSetExecutor - Function used to execute each source event.
+ * @returns A response stream of execution results.
+ * @example
+ * ```ts
+ * import assert from 'node:assert';
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { mapSourceToResponseEvent, validateSubscriptionArgs } from 'graphql/execution';
+ *
+ * async function* events() {
+ *   yield { greeting: 'Hello' };
+ * }
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     noop: String
+ *   }
+ *
+ *   type Subscription {
+ *     greeting: String
+ *   }
+ * `);
+ * const validatedArgs = validateSubscriptionArgs({
+ *   schema,
+ *   document: parse('subscription { greeting }'),
+ * });
+ *
+ * assert('schema' in validatedArgs);
+ *
+ * const responseStream = mapSourceToResponseEvent(validatedArgs, events());
+ * const firstPayload = await responseStream.next();
+ *
+ * firstPayload.value; // => { data: { greeting: 'Hello' } }
+ * ```
  */
 export function mapSourceToResponseEvent(
   validatedExecutionArgs: ValidatedSubscriptionArgs,

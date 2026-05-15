@@ -1,3 +1,10 @@
+/**
+ * Validate GraphQL documents and schemas with the specified validation rules.
+ *
+ * These exports are also available from the root `graphql` package.
+ * @packageDocumentation
+ */
+
 export { validate } from './validate.ts';
 export type { ValidationOptions } from './validate.ts';
 
