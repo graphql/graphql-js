@@ -5,7 +5,6 @@ import { invariant } from '../jsutils/invariant.ts';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.ts';
 import { isIterableObject } from '../jsutils/isIterableObject.ts';
 import { isPromise, isPromiseLike } from '../jsutils/isPromise.ts';
-import type { Maybe } from '../jsutils/Maybe.ts';
 import { memoize2 } from '../jsutils/memoize2.ts';
 import { memoize3 } from '../jsutils/memoize3.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
@@ -99,7 +98,6 @@ import { getArgumentValues } from './values.ts';
  *
  * @internal
  */
-
 /**
  * A memoized collection of relevant subfields with regard to the return
  * type. Memoizing ensures the subfields are not repeatedly calculated, which
@@ -275,27 +273,10 @@ export class Executor<
   buildExecuteContextFromValidatedArgs(
     args: ValidatedExecutionArgs,
   ): GraphQLExecuteRootSelectionSetContext {
-    let originalVariableValues: Maybe<{ [variable: string]: unknown }>;
-    let hasResolvedOriginalVariableValues = false;
-
     return {
       schema: args.schema,
       operation: args.operation,
-      get variableValues(): Maybe<{ readonly [variable: string]: unknown }> {
-        if (!hasResolvedOriginalVariableValues) {
-          originalVariableValues = {};
-          for (const [variableName, source] of Object.entries(
-            args.variableValues.sources,
-          )) {
-            if (Object.hasOwn(source, 'value')) {
-              originalVariableValues[variableName] = source.value;
-            }
-          }
-
-          hasResolvedOriginalVariableValues = true;
-        }
-        return originalVariableValues;
-      },
+      variableValues: args.rawVariableValues,
       operationName: args.operation.name?.value,
       operationType: args.operation.operation,
     };

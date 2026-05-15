@@ -82,6 +82,8 @@ export interface ValidatedExecutionArgs {
   operation: OperationDefinitionNode;
   /** Operation variable values with source metadata and coerced runtime values. */
   variableValues: VariableValues;
+  /** Raw variable values provided by the caller before coercion. */
+  rawVariableValues: Maybe<{ readonly [variable: string]: unknown }>;
   /** Resolver used for fields without an explicit resolver. */
   fieldResolver: GraphQLFieldResolver<any, any>;
   /** Resolver used for abstract types without an explicit type resolver. */

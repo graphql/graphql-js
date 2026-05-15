@@ -413,7 +413,6 @@ describe('execute root selection set diagnostics channel', () => {
   it('emits the full async lifecycle when the root selection set returns a promise', async () => {
     const document = parse('query { async }');
     const operation = document.definitions[0] as OperationDefinitionNode;
-    const variableValues = {};
 
     await expectEvents(
       executeRootSelectionSetChannel,
@@ -429,7 +428,7 @@ describe('execute root selection set diagnostics channel', () => {
           context: {
             schema,
             operation,
-            variableValues,
+            variableValues: undefined,
             operationName: undefined,
             operationType: OperationTypeNode.QUERY,
           },
@@ -439,7 +438,7 @@ describe('execute root selection set diagnostics channel', () => {
           context: {
             schema,
             operation,
-            variableValues,
+            variableValues: undefined,
             operationName: undefined,
             operationType: OperationTypeNode.QUERY,
           },
@@ -449,7 +448,7 @@ describe('execute root selection set diagnostics channel', () => {
           context: {
             schema,
             operation,
-            variableValues,
+            variableValues: undefined,
             operationName: undefined,
             operationType: OperationTypeNode.QUERY,
           },
@@ -459,7 +458,7 @@ describe('execute root selection set diagnostics channel', () => {
           context: {
             schema,
             operation,
-            variableValues,
+            variableValues: undefined,
             operationName: undefined,
             operationType: OperationTypeNode.QUERY,
             result,

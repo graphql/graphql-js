@@ -813,6 +813,7 @@ export function validateExecutionArgs(
     externalAbortSignal: externalAbortSignal ?? undefined,
     enableEarlyExecution: enableEarlyExecution === true,
     hooks: hooks ?? undefined,
+    rawVariableValues: rawVariableValues ?? undefined,
   };
 }
 
