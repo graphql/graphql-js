@@ -7,13 +7,30 @@ import type { Source } from './source';
 import { TokenKind } from './tokenKind';
 
 /**
+ * Configuration options to control lexer behavior
+ */
+export interface LexerOptions {
+  /**
+   * Parser CPU and memory usage is linear to the number of tokens in a document
+   * however in extreme cases it becomes quadratic due to memory exhaustion.
+   * Parsing happens before validation so even invalid queries can burn lots of
+   * CPU time and memory.
+   * To prevent this you can set a maximum number of tokens allowed within a document.
+   */
+  maxTokens?: number | undefined;
+}
+
+/**
  * A Lexer interface which provides common properties and methods required for
  * lexing GraphQL source.
  *
  * @internal
  */
 export interface LexerInterface {
-  source: Source;
+  readonly _options: Readonly<LexerOptions>;
+  _tokenCounter: number;
+  readonly source: Source;
+  tokenCount: number;
   lastToken: Token;
   token: Token;
   line: number;
@@ -31,6 +48,11 @@ export interface LexerInterface {
  * whenever called.
  */
 export class Lexer implements LexerInterface {
+  /** @internal */
+  readonly _options: Readonly<LexerOptions>;
+  /** @internal */
+  _tokenCounter: number;
+
   source: Source;
 
   /**
@@ -53,9 +75,11 @@ export class Lexer implements LexerInterface {
    */
   lineStart: number;
 
-  constructor(source: Source) {
+  constructor(source: Source, options: LexerOptions = {}) {
     const startOfFileToken = new Token(TokenKind.SOF, 0, 0, 0, 0);
 
+    this._options = options;
+    this._tokenCounter = 0;
     this.source = source;
     this.lastToken = startOfFileToken;
     this.token = startOfFileToken;
@@ -65,6 +89,10 @@ export class Lexer implements LexerInterface {
 
   get [Symbol.toStringTag]() {
     return 'Lexer';
+  }
+
+  get tokenCount(): number {
+    return this._tokenCounter;
   }
 
   /**
@@ -200,8 +228,19 @@ export function createToken(
   end: number,
   value?: string,
 ): Token {
+  const { maxTokens } = lexer._options;
   const line = lexer.line;
   const col = 1 + start - lexer.lineStart;
+  if (kind !== TokenKind.EOF) {
+    ++lexer._tokenCounter;
+    if (maxTokens !== undefined && lexer._tokenCounter > maxTokens) {
+      throw syntaxError(
+        lexer.source,
+        start,
+        `Document contains more that ${maxTokens} tokens. Parsing aborted.`,
+      );
+    }
+  }
   return new Token(kind, start, end, line, col, value);
 }
 

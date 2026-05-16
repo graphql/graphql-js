@@ -8,9 +8,11 @@ import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
 import { inspect } from '../../jsutils/inspect';
 
 import { Kind } from '../kinds';
+import { Lexer } from '../lexer';
 import {
   parse,
   parseConstValue,
+  Parser,
   parseSchemaCoordinate,
   parseType,
   parseValue,
@@ -105,6 +107,25 @@ describe('Parser', () => {
 
     expect(() => parse('{ foo(bar: "baz") }', { maxTokens: 7 })).to.throw(
       'Syntax Error: Document contains more that 7 tokens. Parsing aborted.',
+    );
+
+    expect(() =>
+      parse('#\n{\n#\na\n#\na\n#\n}\n#', { maxTokens: 9 }),
+    ).to.not.throw();
+    expect(() => parse('#\n{\n#\na\n#\na\n#\n}\n#', { maxTokens: 8 })).to.throw(
+      'Syntax Error: Document contains more that 8 tokens. Parsing aborted.',
+    );
+  });
+
+  it('forbids maxTokens and lexer together', () => {
+    expect(
+      () =>
+        new Parser('{a}', {
+          maxTokens: 10,
+          lexer: new Lexer(new Source('{a}')),
+        }),
+    ).to.throw(
+      'Setting maxTokens has no effect when a custom lexer is supplied',
     );
   });
 

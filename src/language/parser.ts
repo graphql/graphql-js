@@ -112,7 +112,12 @@ export interface ParseOptions {
    * ```
    */
   allowLegacyFragmentVariables?: boolean;
+}
 
+/**
+ * @internal
+ */
+export interface ParseOptionsInternal extends ParseOptions {
   /**
    * EXPERIMENTAL:
    *
@@ -128,6 +133,8 @@ export interface ParseOptions {
   /**
    * You may override the Lexer class used to lex the source; this is used by
    * schema coordinates to introduce a lexer with a restricted syntax.
+   *
+   * Cannot be set if `maxTokens` is set.
    */
   lexer?: LexerInterface | undefined;
 }
@@ -217,10 +224,15 @@ export function parseType(
  */
 export function parseSchemaCoordinate(
   source: string | Source,
+  options?: ParseOptions | undefined,
 ): SchemaCoordinateNode {
   const sourceObj = isSource(source) ? source : new Source(source);
-  const lexer = new SchemaCoordinateLexer(sourceObj);
-  const parser = new Parser(source, { lexer });
+  const lexer = new SchemaCoordinateLexer(sourceObj, options);
+  const parser = new Parser(source, {
+    ...options,
+    maxTokens: undefined, // Handled by SchemaCoordinateLexer
+    lexer,
+  });
   parser.expectToken(TokenKind.SOF);
   const coordinate = parser.parseSchemaCoordinate();
   parser.expectToken(TokenKind.EOF);
@@ -239,26 +251,30 @@ export function parseSchemaCoordinate(
  * @internal
  */
 export class Parser {
-  protected _options: Omit<ParseOptions, 'lexer'>;
+  protected _options: ParseOptions;
   protected _lexer: LexerInterface;
-  protected _tokenCounter: number;
 
-  constructor(source: string | Source, options: ParseOptions = {}) {
+  constructor(source: string | Source, options: ParseOptionsInternal = {}) {
     const { lexer, ..._options } = options;
 
     if (lexer) {
+      if (options.maxTokens != null) {
+        throw new Error(
+          'Setting maxTokens has no effect when a custom lexer is supplied',
+        );
+      }
       this._lexer = lexer;
     } else {
       const sourceObj = isSource(source) ? source : new Source(source);
-      this._lexer = new Lexer(sourceObj);
+      const { maxTokens } = options;
+      this._lexer = new Lexer(sourceObj, { maxTokens });
     }
 
     this._options = _options;
-    this._tokenCounter = 0;
   }
 
   get tokenCount(): number {
-    return this._tokenCounter;
+    return this._lexer.tokenCount;
   }
 
   /**
@@ -1732,19 +1748,7 @@ export class Parser {
   }
 
   advanceLexer(): void {
-    const { maxTokens } = this._options;
-    const token = this._lexer.advance();
-
-    if (token.kind !== TokenKind.EOF) {
-      ++this._tokenCounter;
-      if (maxTokens !== undefined && this._tokenCounter > maxTokens) {
-        throw syntaxError(
-          this._lexer.source,
-          token.start,
-          `Document contains more that ${maxTokens} tokens. Parsing aborted.`,
-        );
-      }
-    }
+    this._lexer.advance();
   }
 }
 

@@ -12,6 +12,7 @@ export { TokenKind } from './tokenKind';
 export type { TokenKindEnum } from './tokenKind';
 
 export { Lexer } from './lexer';
+export type { LexerOptions } from './lexer';
 
 export {
   parse,

@@ -242,6 +242,7 @@ export {
 
 export type {
   ParseOptions,
+  LexerOptions,
   SourceLocation,
   TokenKindEnum,
   KindEnum,

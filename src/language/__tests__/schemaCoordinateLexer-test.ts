@@ -3,6 +3,7 @@ import { describe, it } from 'mocha';
 
 import { expectToThrowJSON } from '../../__testUtils__/expectJSON';
 
+import type { Token } from '../ast';
 import { SchemaCoordinateLexer } from '../schemaCoordinateLexer';
 import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
@@ -48,5 +49,14 @@ describe('SchemaCoordinateLexer', () => {
       message: 'Syntax Error: Invalid character: " ".',
       locations: [{ line: 1, column: 4 }],
     });
+  });
+
+  it('counts tokens', () => {
+    const lexer = new SchemaCoordinateLexer(new Source('Name.field'));
+    let token: Token;
+    do {
+      token = lexer.advance();
+    } while (token.kind !== TokenKind.EOF);
+    expect(lexer.tokenCount).to.eq(3);
   });
 });
