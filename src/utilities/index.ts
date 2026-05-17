@@ -123,6 +123,7 @@ export type {
   BreakingChange,
   DangerousChange,
   SafeChange,
+  SchemaChange,
 } from './findSchemaChanges.ts';
 
 // Wrapper type that contains DocumentNode and types that can be deduced from it.
