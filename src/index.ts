@@ -366,6 +366,8 @@ export {
   executeSubscriptionEvent,
   experimentalExecuteIncrementally,
   experimentalExecuteRootSelectionSet,
+  legacyExecuteIncrementally,
+  legacyExecuteRootSelectionSet,
   executeSync,
   defaultFieldResolver,
   defaultTypeResolver,
@@ -401,6 +403,18 @@ export type {
   FormattedIncrementalDeferResult,
   FormattedIncrementalStreamResult,
   FormattedIncrementalResult,
+  LegacyExperimentalIncrementalExecutionResults,
+  LegacyInitialIncrementalExecutionResult,
+  LegacySubsequentIncrementalExecutionResult,
+  LegacyIncrementalDeferResult,
+  LegacyIncrementalStreamResult,
+  LegacyIncrementalResult,
+  FormattedLegacyExperimentalIncrementalExecutionResults,
+  FormattedLegacyInitialIncrementalExecutionResult,
+  FormattedLegacySubsequentIncrementalExecutionResult,
+  FormattedLegacyIncrementalDeferResult,
+  FormattedLegacyIncrementalStreamResult,
+  FormattedLegacyIncrementalResult,
 } from './execution/index.ts';
 
 // Validate GraphQL documents.

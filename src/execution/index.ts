@@ -15,6 +15,10 @@ export {
   validateExecutionArgs,
   validateSubscriptionArgs,
 } from './execute.ts';
+export {
+  legacyExecuteIncrementally,
+  legacyExecuteRootSelectionSet,
+} from './legacyIncremental/legacyExecuteIncrementally.ts';
 export type { ExecutionArgs, RootSelectionSetExecutor } from './execute.ts';
 
 export type { AsyncWorkFinishedInfo, ExecutionHooks } from './hooks.ts';
@@ -40,6 +44,21 @@ export type {
   FormattedIncrementalStreamResult,
   FormattedIncrementalResult,
 } from './incremental/IncrementalExecutor.ts';
+
+export type {
+  LegacyExperimentalIncrementalExecutionResults,
+  LegacyInitialIncrementalExecutionResult,
+  LegacySubsequentIncrementalExecutionResult,
+  LegacyIncrementalDeferResult,
+  LegacyIncrementalStreamResult,
+  LegacyIncrementalResult,
+  FormattedLegacyExperimentalIncrementalExecutionResults,
+  FormattedLegacyInitialIncrementalExecutionResult,
+  FormattedLegacySubsequentIncrementalExecutionResult,
+  FormattedLegacyIncrementalDeferResult,
+  FormattedLegacyIncrementalStreamResult,
+  FormattedLegacyIncrementalResult,
+} from './legacyIncremental/BranchingIncrementalExecutor.ts';
 
 export { AbortedGraphQLExecutionError } from './AbortedGraphQLExecutionError.ts';
 
