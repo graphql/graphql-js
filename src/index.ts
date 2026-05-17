@@ -385,6 +385,7 @@ export type {
   RootSelectionSetExecutor,
   AsyncWorkFinishedInfo,
   ExecutionHooks,
+  VariableValues,
   ValidatedExecutionArgs,
   ValidatedSubscriptionArgs,
   ExecutionResult,

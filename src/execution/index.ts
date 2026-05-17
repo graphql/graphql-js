@@ -48,3 +48,4 @@ export {
   getVariableValues,
   getDirectiveValues,
 } from './values.ts';
+export type { VariableValues } from './values.ts';
