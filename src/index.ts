@@ -453,7 +453,7 @@ export {
   NoSchemaIntrospectionCustomRule,
 } from './validation/index.ts';
 
-export type { ValidationRule } from './validation/index.ts';
+export type { ValidationOptions, ValidationRule } from './validation/index.ts';
 
 // Create, format, and print GraphQL errors.
 export { GraphQLError, syntaxError, locatedError } from './error/index.ts';
