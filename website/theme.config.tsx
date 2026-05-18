@@ -212,16 +212,23 @@ const cfg: DocsThemeConfig = {
   banner: {
     content: (
       <>
-        🎬 That's a Wrap for GraphQLConf 2024! • Watch the Videos •{' '}
+        🎉{' '}
         <NextLink
-          href="https://graphql.org/conf/2024"
+          href="https://graphql.org/conf/2026/"
           className="underline after:content-['_→'] after:font-sans"
         >
-          Check out the recorded talks and workshops
+          Explore GraphQLConf 2026
+        </NextLink>{' '}
+        • May 19-21 • Fremont, CA •{' '}
+        <NextLink
+          href="https://graphql.org/conf/2026/schedule/"
+          className="underline after:content-['_→'] after:font-sans"
+        >
+          View the schedule
         </NextLink>
       </>
     ),
-    key: 'graphqlconf-2024',
+    key: 'graphqlconf-2026',
   },
   logo: graphQLLogo,
   docsRepositoryBase:
