@@ -2,6 +2,8 @@
 title: Using Custom Scalars
 ---
 
+import { Callout } from 'nextra/components';
+
 # Custom Scalars: When and How to Use Them
 
 In GraphQL, scalar types represent primitive data like strings, numbers, and booleans. 
@@ -20,6 +22,14 @@ Here’s a simple example of a custom scalar that handles date-time strings:
 
 ```js
 import { GraphQLScalarType, Kind } from 'graphql';
+
+function parseDate(value) {
+  const date = new Date(value);
+  if (isNaN(date.getTime())) {
+    throw new TypeError(`DateTime cannot represent an invalid date: ${value}`);
+  }
+  return date;
+}
 
 const DateTime = new GraphQLScalarType({
   name: 'DateTime',
@@ -125,6 +135,65 @@ const DateTime = new GraphQLScalarType({
 ```
 
 These functions give you full control over validation and data flow.
+
+## v17 scalar method names
+
+<Callout type="info">
+  GraphQL.js v16 uses `serialize`, `parseValue`, and `parseLiteral`. GraphQL.js
+  v17 keeps those names as deprecated aliases and introduces names that match
+  the GraphQL specification's coercion terminology.
+</Callout>
+
+When writing code that only needs to run on v17 and newer, prefer:
+
+- `coerceOutputValue`: Result coercion for values returned by resolvers.
+- `coerceInputValue`: Input coercion for variable values.
+- `coerceInputLiteral`: Input coercion for constant GraphQL literals.
+- `valueToLiteral`: Conversion from an external input value to a GraphQL
+  literal.
+
+During execution, GraphQL.js replaces variables before calling
+`coerceInputLiteral()`. If tooling or application code calls scalar literal
+coercion directly outside execution, it must call `replaceVariables()` itself
+before passing the literal to `coerceInputLiteral()`.
+
+```js
+import { GraphQLScalarType, Kind } from 'graphql';
+
+const DateTime = new GraphQLScalarType({
+  name: 'DateTime',
+  description: 'An ISO-8601 encoded UTC date string.',
+
+  coerceOutputValue(value) {
+    if (!(value instanceof Date)) {
+      throw new TypeError('DateTime can only serialize Date instances');
+    }
+    return value.toISOString();
+  },
+
+  coerceInputValue(value) {
+    return parseDate(value);
+  },
+
+  coerceInputLiteral(ast) {
+    if (ast.kind !== Kind.STRING) {
+      throw new TypeError(
+        `DateTime can only parse string values, but got: ${ast.kind}`,
+      );
+    }
+    return parseDate(ast.value);
+  },
+
+  valueToLiteral(value) {
+    if (typeof value === 'string') {
+      return { kind: Kind.STRING, value, block: false };
+    }
+  },
+});
+```
+
+If you need one scalar definition that supports both v16 and v17, keep the
+v16 method names until your minimum GraphQL.js version is v17.
 
 ## Learn more
 

@@ -23,14 +23,31 @@ const meta = {
   nullability: '',
   'abstract-types': '',
   'custom-scalars': '',
+  'constructing-types': '',
+  'oneof-input-objects': '',
+  'schema-coordinates': '',
+  'schema-evolution': '',
+  subscriptions: '',
   '-- 3': {
+    type: 'separator',
+    title: 'Experimental Specification Features',
+  },
+  'experimental-specification-features': '',
+  'defer-stream': '',
+  'fragment-arguments': '',
+  'directives-on-directives': '',
+  '-- 4': {
+    type: 'separator',
+    title: 'GraphQL.js Runtime Features',
+  },
+  'graphql-harness': '',
+  'advanced-execution-pipelines': '',
+  'abort-signals': '',
+  'execution-hooks': '',
+  '-- 5': {
     type: 'separator',
     title: 'Advanced Guides',
   },
-  'constructing-types': '',
-  'oneof-input-objects': '',
-  'defer-stream': '',
-  subscriptions: '',
   'type-generation': '',
   'cursor-based-pagination': '',
   'advanced-custom-scalars': '',
@@ -41,7 +58,7 @@ const meta = {
   'graphql-errors': '',
   'using-directives': '',
   'authorization-strategies': '',
-  '-- 4': {
+  '-- 6': {
     type: 'separator',
     title: 'Testing',
   },
@@ -50,7 +67,7 @@ const meta = {
   'testing-operations': '',
   'testing-resolvers': '',
   'testing-best-practices': '',
-  '-- 5': {
+  '-- 7': {
     type: 'separator',
     title: 'Production & Scaling',
   },

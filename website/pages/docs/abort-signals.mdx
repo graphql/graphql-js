@@ -1,0 +1,277 @@
+---
+title: Handling Abort Signals
+sidebarTitle: Abort Signals
+---
+
+import { Callout } from 'nextra/components';
+
+# Handling Abort Signals
+
+<Callout type="info">
+  Abort signal support is available in GraphQL.js v17 and newer. It is a
+  GraphQL.js runtime API, not GraphQL syntax or a transport protocol.
+</Callout>
+
+## What the specification says
+
+The GraphQL specification mentions cancellation in a narrow execution case.
+During ordinary execution, when a non-null execution error propagates to a
+parent response position, sibling response positions that have not executed or
+yielded a value
+[may be cancelled](https://spec.graphql.org/draft/#sec-Errors-and-Non-Null-Types)
+to avoid unnecessary work. The
+[conformance appendix](https://spec.graphql.org/draft/#sec-Appendix-Conformance)
+makes lowercase key words in normative portions of the specification carry
+their RFC 2119 meaning, so this is a normative `MAY`. It permits cancellation;
+it does not require every implementation to cancel work in that case.
+
+The subscription algorithms also describe cancellation of response streams and
+source streams. Those algorithms are still about GraphQL execution and stream
+lifecycle, not about a user or host cancelling a request that is already in
+flight.
+
+The specification does not define a cancellation primitive or a transport
+cancellation protocol.
+
+## What GraphQL.js v17 adds
+
+GraphQL.js v17 exposes cancellation for two related situations:
+
+- Internally, GraphQL.js can signal work that no longer contributes to the
+  returned result, such as work from response positions cancelled under the
+  specification's execution rules.
+- Externally, a host can pass `abortSignal` to `execute()`, `subscribe()`,
+  `graphql()`, or `experimentalExecuteIncrementally()` to cancel an issued
+  request while it is in flight.
+
+Both cases matter because long-running GraphQL operations often start other
+asynchronous work: database queries, HTTP requests, async iterators, loaders,
+and subscription streams. In v16, GraphQL.js had no standard way to ask that
+work to stop. In v17, GraphQL.js uses `AbortSignal` as its JavaScript runtime
+API for cancellation.
+
+GraphQL.js v17 uses the same resolver-scoped signal for internal cancellation
+and external request cancellation. Resolvers read that shared signal with
+`info.getAbortSignal()` and pass it to downstream APIs that support
+cancellation.
+
+Abort signals are cooperative. They let GraphQL.js and resolvers pass a
+cancellation request to downstream work, but JavaScript cannot force an
+arbitrary promise, database driver, HTTP client, or async iterator to stop. The
+downstream API has to accept the signal and honor it.
+
+GraphQL.js does not currently provide fine-grained per-field or per-branch
+abort signals. Resolvers in an operation share one resolver `AbortSignal`. For
+internally cancelled portions of an operation, GraphQL.js aborts that shared
+signal when the result that will actually be returned has finished, notifying
+pending resolver work together. An external abort also aborts the same shared
+resolver signal. This coarseness may change in future versions.
+
+## Using the signal in resolvers
+
+Resolvers obtain the abort signal via `info.getAbortSignal()`. Pass that
+signal to downstream APIs that support cancellation.
+
+```js
+const Query = new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+    user: {
+      type: User,
+      args: { id: { type: new GraphQLNonNull(GraphQLID) } },
+      async resolve(_source, args, _context, info) {
+        const abortSignal = info.getAbortSignal();
+
+        const response = await fetch(`https://users.example/${args.id}`, {
+          signal: abortSignal,
+        });
+
+        return response.json();
+      },
+    },
+  },
+});
+```
+
+As noted, this signal can be triggered by GraphQL.js itself. For example,
+suppose a query selects `user { profile recommendations }`, `profile` is
+non-null, and the `recommendations` resolver starts a slow downstream request.
+If `profile` throws and the error bubbles so that `user` becomes `null`, the
+`recommendations` result can no longer appear in the response. GraphQL.js does
+not currently create a separate signal for that one sibling branch. Instead,
+when the response that will actually be returned has finished, GraphQL.js
+aborts the shared resolver signal, so any still-pending resolver work that
+honors the signal can stop together.
+
+For work that does not accept `AbortSignal`, check the signal before starting
+and again between expensive steps. This is useful even for synchronous chunks:
+JavaScript cannot interrupt code that is already running, but the next check can
+avoid starting more work.
+
+```js
+async function loadReport(info) {
+  const abortSignal = info.getAbortSignal();
+
+  if (abortSignal?.aborted) {
+    throw abortSignal.reason;
+  }
+
+  const rows = await loadReportRows();
+
+  if (abortSignal?.aborted) {
+    throw abortSignal.reason;
+  }
+
+  const totals = calculateTotals(rows);
+
+  if (abortSignal?.aborted) {
+    throw abortSignal.reason;
+  }
+
+  return formatReport(totals);
+}
+```
+
+If the API exposes its own cancellation method, connect the abort event to that
+method:
+
+```js
+async function loadReportFromJob(info) {
+  const abortSignal = info.getAbortSignal();
+
+  if (abortSignal?.aborted) {
+    throw abortSignal.reason;
+  }
+
+  const job = startReportJob();
+  abortSignal?.addEventListener(
+    'abort',
+    () => {
+      job.cancel();
+    },
+    { once: true },
+  );
+
+  return job.result;
+}
+```
+
+Here `startReportJob()` represents an async API that does not accept
+`AbortSignal` directly, but does return an object with a `result` promise and a
+`cancel()` method.
+
+## Passing an external signal to execution
+
+GraphQL.js also lets a host cancel an issued request while it is in flight.
+Pass `abortSignal` to `graphql()`, `execute()`, `subscribe()`, or
+`experimentalExecuteIncrementally()`. If that external signal is aborted,
+GraphQL.js aborts the same resolver signal exposed through
+`info.getAbortSignal()`.
+
+```js
+import { execute, parse } from 'graphql';
+
+const controller = new AbortController();
+const document = parse(`
+  query User($id: ID!) {
+    user(id: $id) {
+      id
+      name
+    }
+  }
+`);
+
+const resultPromise = execute({
+  schema,
+  document,
+  variableValues: { id: '123' },
+  abortSignal: controller.signal,
+});
+
+setTimeout(() => {
+  controller.abort(new Error('Request timed out'));
+}, 500);
+
+const result = await resultPromise;
+```
+
+If the signal is aborted before execution finishes, asynchronous execution
+rejects. The abort reason becomes the rejection cause when possible.
+
+## Wiring HTTP request life cycles
+
+Most servers already know when a request is no longer useful: the client
+disconnects, a gateway timeout fires, or a framework cancellation token is
+triggered. Bridge that lifecycle to GraphQL.js so resolver cancellation follows
+request cancellation.
+
+```js
+const controller = new AbortController();
+
+req.on('close', () => {
+  controller.abort(new Error('Client disconnected'));
+});
+
+const result = await execute({
+  schema,
+  document,
+  variableValues,
+  contextValue,
+  abortSignal: controller.signal,
+});
+```
+
+This helps avoid expensive resolver work after the client is already gone.
+
+## Handling aborted execution
+
+GraphQL.js rejects with `AbortedGraphQLExecutionError` when execution is
+aborted after it has started. The error exposes the best partial result
+GraphQL.js can still produce.
+
+```js
+import { AbortedGraphQLExecutionError, execute } from 'graphql';
+
+try {
+  const result = await execute({
+    schema,
+    document,
+    abortSignal,
+  });
+  return result;
+} catch (error) {
+  if (error instanceof AbortedGraphQLExecutionError) {
+    const partialResult = await error.abortedResult;
+    logger.info({ partialResult }, 'GraphQL execution aborted');
+  }
+
+  throw error;
+}
+```
+
+`abortedResult` may be either a result or a promise for a result. For
+incremental delivery, it may contain the initial incremental result if that was
+already available.
+
+## Observing async cleanup
+
+An abort can stop GraphQL.js from producing more response data before every
+tracked async task has settled. Cleanup can continue after the response
+boundary, especially when resolvers use async iterators or when downstream
+libraries perform their own shutdown work.
+
+Use the experimental `asyncWorkFinished` execution hook when a host needs to
+observe that boundary. See [Execution Hooks](/docs/execution-hooks) for
+examples of logging cleanup completion, delaying response delivery until
+tracked work settles, and tracking resolver-started async work.
+
+## Practical guidance
+
+- Treat abort as cooperative cancellation. A resolver or downstream client that
+  ignores the signal may keep doing work outside GraphQL.js.
+- Pass the signal to downstream clients early, before starting expensive work.
+- Avoid swallowing abort errors in resolvers. Let GraphQL.js stop the operation.
+- Keep request timeouts at the server or transport layer, and connect those
+  timeouts to an `AbortController`.
+- Do not expose abort signals in the GraphQL schema. They are a JavaScript
+  runtime concern, not client query syntax.

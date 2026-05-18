@@ -1,0 +1,55 @@
+---
+title: Experimental Specification Features
+sidebarTitle: Experimental Specification Features
+---
+
+# Experimental Specification Features
+
+GraphQL.js v17 beta supports several GraphQL specification proposals. This page
+lists experimental features available in the v17 beta line; not every feature
+listed here is new to v17. These features are intentionally explicit: syntax
+usually requires a parser option or schema directive, and execution behavior
+usually requires a specific executor.
+
+GraphQL.js-specific runtime APIs, such as abort signals, execution hooks, and
+the harness API, are documented separately because they are not GraphQL language
+features.
+
+## Incremental delivery
+
+Incremental delivery adds `@defer`, `@stream`, and execution results with
+initial and subsequent payloads.
+
+The relevant GraphQL.js APIs are `GraphQLDeferDirective`,
+`GraphQLStreamDirective`, and `experimentalExecuteIncrementally()`.
+GraphQL.js does not include the directives in `specifiedDirectives`; a schema
+that uses them should add them explicitly and execute matching operations with
+`experimentalExecuteIncrementally()`. If you add them programmatically with the
+`GraphQLSchema` `directives` config property, include `specifiedDirectives` as
+well. Providing `directives` replaces the default directive list, whose default
+value is `specifiedDirectives`.
+
+See [Defer and Stream](/docs/defer-stream).
+
+## Fragment arguments
+
+Fragment arguments add fragment-local variable definitions and fragment-spread
+arguments. GraphQL.js exposes the syntax through the
+`experimentalFragmentArguments` parser option. The AST surface includes
+`FragmentArgumentNode`, and execution supports the resulting values.
+
+See [Fragment Arguments](/docs/fragment-arguments).
+
+## Directives on directive definitions
+
+The directives-on-directives proposal adds `DIRECTIVE_DEFINITION` as a
+directive location and allows directive metadata to be attached to directive
+definitions and directive extensions.
+
+GraphQL.js exposes the syntax through
+`experimentalDirectivesOnDirectiveDefinitions`. The AST surface includes
+`DirectiveLocation.DIRECTIVE_DEFINITION` and `DirectiveExtensionNode`.
+Directive deprecation metadata is surfaced on `GraphQLDirective`,
+introspection, and schema printing.
+
+See [Directives on Directives](/docs/directives-on-directives).

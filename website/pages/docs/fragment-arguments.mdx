@@ -1,0 +1,140 @@
+---
+title: Fragment Arguments
+sidebarTitle: Fragment Arguments
+---
+
+import { Callout } from 'nextra/components';
+
+# Fragment Arguments
+
+<Callout type="info">
+  Fragment arguments are available behind an experimental parser option in
+  GraphQL.js v17 and newer. They are pending GraphQL specification work.
+</Callout>
+
+GraphQL operation variables are defined at the operation level. That works for
+many documents, but reusable fragments sometimes need local parameters. Fragment
+arguments let a fragment define its own variables and let each fragment spread
+provide values for those variables.
+
+The feature is also called fragment variables because the fragment-level
+parameters are conceptually "variables" scoped to that fragment. They are passed
+as arguments on the fragment spread, using syntax similar to field arguments.
+
+## Changed from legacy fragment variables
+
+Older GraphQL.js versions had an experimental `allowLegacyFragmentVariables`
+parser option that added only syntax support for fragment definitions with
+variable-like syntax. That v16 experiment was parser-only: it could parse the
+syntax, but GraphQL.js did not apply fragment variable values during execution.
+
+`allowLegacyFragmentVariables` was removed in favor of the more complete
+`experimentalFragmentArguments` feature. `experimentalFragmentArguments`
+includes parser support and runtime execution support, including coercion and
+default value handling through the execution layer.
+
+## Syntax
+
+```graphql
+query Profile($viewerID: ID!) {
+  node(id: $viewerID) {
+    ...UserCard(size: 96)
+  }
+}
+
+fragment UserCard($size: Int = 48) on User {
+  id
+  name
+  avatar(size: $size)
+}
+```
+
+`$viewerID` is an operation variable. `$size` is local to `UserCard`.
+
+Different spreads can call the same fragment with different values:
+
+```graphql
+query Team {
+  lead {
+    ...UserCard(size: 96)
+  }
+  members {
+    ...UserCard(size: 32)
+  }
+}
+```
+
+## Enabling fragment arguments
+
+The parser rejects fragment arguments unless the experiment is enabled.
+
+```js
+import { parse } from 'graphql';
+
+const document = parse(source, {
+  experimentalFragmentArguments: true,
+});
+```
+
+`graphql()` in v17 accepts parse options too, so simple hosts can pass the same
+option through the top-level API:
+
+```js
+import { graphql } from 'graphql';
+
+const result = await graphql({
+  schema,
+  source,
+  experimentalFragmentArguments: true,
+});
+```
+
+## Runtime values and scope
+
+Fragment arguments are coerced using the fragment definition's variable
+definitions. If a fragment argument has a default value, the default is applied
+when a spread omits that argument.
+
+```graphql
+fragment UserCard($size: Int = 48) on User {
+  avatar(size: $size)
+}
+
+query {
+  viewer {
+    ...UserCard
+  }
+}
+```
+
+When an operation variable and a fragment argument share a name, the fragment
+argument is used inside that fragment. Avoid name reuse unless it is deliberate;
+distinct names are easier for humans and tools to follow.
+
+Resolvers do not need a separate API for fragment arguments. By the time a
+field resolver runs, GraphQL.js has applied the fragment argument values to the
+field arguments, directives, and nested fragment spreads that reference them.
+
+## AST and tooling changes
+
+When enabled, GraphQL.js adds:
+
+- `FragmentDefinitionNode.variableDefinitions`.
+- `FragmentSpreadNode.arguments`.
+- `FragmentArgumentNode`.
+- `Kind.FRAGMENT_ARGUMENT`.
+- The `FRAGMENT_VARIABLE_DEFINITION` directive location.
+
+The printer and visitor understand these nodes in v17. Tooling that uses custom
+visitors should include the new node kind when it needs to inspect or transform
+fragment spread arguments.
+
+```js
+import { Kind, visit } from 'graphql';
+
+visit(document, {
+  [Kind.FRAGMENT_ARGUMENT](node) {
+    console.log(node.name.value);
+  },
+});
+```

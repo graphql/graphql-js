@@ -74,6 +74,53 @@ console.log('Running a GraphQL API server at localhost:4000/graphql');
 
 The exclamation point in `Int!` indicates that `numDice` can't be null, which means we can skip a bit of validation logic to make our server code simpler. We can let `numSides` be null and assume that by default a die has 6 sides.
 
+## Default argument values
+
+When an argument has a natural default, define that default in the schema
+instead of filling it in inside every resolver. In SDL, add `= value` after the
+argument type:
+
+```graphql
+type Query {
+  rollDice(numDice: Int!, numSides: Int = 6): [Int]
+}
+```
+
+When constructing a schema in code, GraphQL.js v16 uses `defaultValue`:
+
+```js
+const rollDiceField = {
+  type: new GraphQLList(GraphQLFloat),
+  args: {
+    numDice: { type: new GraphQLNonNull(GraphQLInt) },
+    numSides: { type: GraphQLInt, defaultValue: 6 },
+  },
+};
+```
+
+GraphQL.js v17 also supports the more explicit `default` shape for new code:
+
+```js
+const rollDiceField = {
+  type: new GraphQLList(GraphQLFloat),
+  args: {
+    numDice: { type: new GraphQLNonNull(GraphQLInt) },
+    numSides: { type: GraphQLInt, default: { value: 6 } },
+  },
+};
+```
+
+`defaultValue` is the legacy way to provide an already-coerced JavaScript
+value. For new code in v17, use `default: { value }` with the raw JavaScript
+input value before coercion; on the built schema, that same case is represented
+as `argument.default.value`. Keeping the raw value lets GraphQL.js validate the
+default and report it through introspection without reconstructing the GraphQL
+literal from an already-coerced value, which fixes a subtle source of incorrect
+default values for some schemas. If you already have a GraphQL
+literal instead, use `default: { literal }`. GraphQL.js now uses the literal
+form internally when building a schema from SDL. `defaultValue` still works in
+v17, but is deprecated for removal in v18.
+
 So far, our resolver functions took no arguments. When a resolver takes arguments, they are passed as one "args" object, as the first argument to the function. So rollDice could be implemented as:
 
 ```js

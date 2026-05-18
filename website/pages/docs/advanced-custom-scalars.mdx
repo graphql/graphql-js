@@ -2,10 +2,38 @@
 title: Best Practices for Custom Scalars
 ---
 
+import { Callout } from 'nextra/components';
+
 # Custom Scalars: Best Practices and Testing
 
 Custom scalars must behave predictably and clearly. To maintain a consistent, reliable 
 schema, follow these best practices.
+
+<Callout type="info">
+  GraphQL.js v17 renames the scalar hooks to the coercion terms used by the
+  specification. The v16 names still work in v17, but are deprecated for
+  removal in v18.
+</Callout>
+
+### Map v16 names to v17 names
+
+| v16 name | v17 name | Purpose |
+| --- | --- | --- |
+| `serialize` | `coerceOutputValue` | Convert resolver values into response values. |
+| `parseValue` | `coerceInputValue` | Convert variable values into internal values. |
+| `parseLiteral` | `coerceInputLiteral` | Convert constant GraphQL literals into internal values. |
+| `astFromValue()` | `valueToLiteral()` | Convert external input values into GraphQL literals. |
+
+If your scalar supports both v16 and v17, keep the v16 method names for now.
+When your minimum version is v17, implement the v17 names and add
+`valueToLiteral()` if tooling needs to print defaults or external values for
+that scalar.
+
+In v16, `parseLiteral(ast, variables)` could receive variable values directly.
+In v17, `coerceInputLiteral()` receives a constant literal. During execution,
+GraphQL.js calls `replaceVariables()` before scalar literal coercion. If
+tooling calls `coerceInputLiteral()` directly outside execution, it must call
+`replaceVariables()` first.
 
 ### Document expected formats and validation
 
@@ -14,11 +42,12 @@ Provide a clear description of the scalar's accepted input and output formats. F
 
 Clear descriptions help clients understand valid input and reduce mistakes.
 
-### Validate consistently across `parseValue` and `parseLiteral`
+### Validate consistently across value and literal coercion
 
 Clients can send values either through variables or inline literals.
-Your `parseValue` and `parseLiteral` functions should apply the same validation logic in 
-both cases.
+Your value and literal coercion functions should apply the same validation
+logic in both cases. In v16 those functions are `parseValue` and
+`parseLiteral`; in v17 they are `coerceInputValue` and `coerceInputLiteral`.
 
 Use a shared helper to avoid duplication:
 
@@ -32,7 +61,7 @@ function parseDate(value) {
 }
 ```
 
-Both `parseValue` and `parseLiteral` should call this function.
+Both input coercion paths should call this function.
 
 ### Return clear errors
 
@@ -69,8 +98,9 @@ Tests should cover three areas: coercion functions, schema integration, and erro
 
 ### Unit test serialization and parsing
 
-Write unit tests for each function: `serialize`, `parseValue`, and `parseLiteral`.
-Test with both valid and invalid inputs.
+Write unit tests for each function: `serialize`, `parseValue`, and
+`parseLiteral` in v16, or `coerceOutputValue`, `coerceInputValue`, and
+`coerceInputLiteral` in v17. Test with both valid and invalid inputs.
 
 ```js
 describe('DateTime scalar', () => {

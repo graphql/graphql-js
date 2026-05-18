@@ -24,12 +24,30 @@ GraphQL.js v16 is the current stable release. v17 is available as an alpha for
 early testing and feedback. The alpha may change and should not be used in
 production.
 
+## Setting Up Your Project
+
 To create a new project and install the latest stable release (v16) in your
 current directory:
 
 ```sh npm2yarn
-npm init
+npm init -y
 npm install graphql --save
+```
+
+After running these commands, you'll have:
+- `package.json` - your project configuration file
+- `node_modules/` - directory where npm packages are installed
+
+Next, you need to configure your project to support ES6 import/export syntax.
+Update your `package.json` to include `"type": "module"`:
+
+```json
+{
+  "type": "module",
+  "name": "graphql-starter",
+  "version": "1.0.0",
+  ...
+}
 ```
 
 To try the v17 alpha instead:
@@ -40,7 +58,7 @@ npm install graphql@alpha --save
 
 ## Writing Code
 
-To handle GraphQL queries, we need a schema that defines the `Query` type, and we need an API root with a function called a "resolver" for each API endpoint. For an API that just returns "Hello world!", we can put this code in a file named `server.js`:
+To handle GraphQL queries, we need a schema that defines the `Query` type, and we need an API root with a function called a "resolver" for each API endpoint. For an API that just returns "Hello world!", create a file named `server.js` in your project root (the same directory as your `package.json`):
 
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>

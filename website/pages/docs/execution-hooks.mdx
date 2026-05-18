@@ -1,0 +1,192 @@
+---
+title: Execution Hooks and Async Cleanup
+sidebarTitle: Execution Hooks
+---
+
+import { Callout } from 'nextra/components';
+
+# Execution Hooks and Async Cleanup
+
+<Callout type="warning">
+  Execution hooks are experimental in GraphQL.js v17. The current hook surface
+  may change before it becomes stable.
+</Callout>
+
+GraphQL execution can stop producing a result before every piece of async work
+started by execution has settled. This is most visible with cancellation:
+JavaScript does not have preemptive cancellation for promises. An
+`AbortSignal` is cooperative, so it only helps when downstream async functions
+accept the signal and honor it.
+
+GraphQL.js cannot force arbitrary JavaScript work to stop. What it can do is
+track async work it knows about and tell the host when that tracked work has
+finished. The `asyncWorkFinished` hook is that boundary.
+
+## `asyncWorkFinished`
+
+Pass hooks through `execute()`, `subscribe()`, `graphql()`, or
+`experimentalExecuteIncrementally()`.
+
+```js
+import { execute } from 'graphql';
+
+await execute({
+  schema,
+  document,
+  hooks: {
+    asyncWorkFinished({ validatedExecutionArgs }) {
+      logger.debug(
+        {
+          operationName: validatedExecutionArgs.operation.name?.value,
+        },
+        'GraphQL async work finished',
+      );
+    },
+  },
+});
+```
+
+The hook fires after GraphQL.js has stopped producing payloads and all tracked
+async execution work has settled. It is useful when a host needs to observe
+work that continues after the response boundary, such as async iterator
+cleanup, cleanup after an aborted execution, or resolver-started work that was
+explicitly registered for tracking.
+
+## What GraphQL.js can track
+
+GraphQL.js tracks async work that is part of execution and work registered
+through resolver info helpers. It does not automatically know about arbitrary
+background work started by your application.
+
+Use `promiseAll()` when a resolver awaits several async branches and you want
+rejected branches to be tracked consistently:
+
+```js
+async resolve(_source, args, _context, info) {
+  const { promiseAll } = info.getAsyncHelpers();
+
+  const [user, permissions] = await promiseAll([
+    loadUser(args.id),
+    loadPermissions(args.id),
+  ]);
+
+  return { user, permissions };
+}
+```
+
+Use `track()` for async cleanup or side effects that a resolver starts but does
+not return or await:
+
+```js
+async resolve(_source, _args, _context, info) {
+  const { track } = info.getAsyncHelpers();
+  const cleanup = closeResourceLater().catch(() => undefined);
+
+  track([cleanup]);
+
+  return 'ok';
+}
+```
+
+If the resolver is already awaiting or returning the work, do that normally.
+Use `track()` only for work that would otherwise be invisible to GraphQL.js.
+
+## Logging and telemetry
+
+For many hosts, the hook is an observability point. It can record how long
+tracked async cleanup continued after execution started or after a response was
+produced.
+
+```js
+const startedAt = Date.now();
+
+await execute({
+  schema,
+  document,
+  hooks: {
+    asyncWorkFinished({ validatedExecutionArgs }) {
+      metrics.record('graphql.async_work_finished', {
+        operationName: validatedExecutionArgs.operation.name?.value,
+        elapsedMs: Date.now() - startedAt,
+      });
+    },
+  },
+});
+```
+
+## Waiting before returning a result
+
+Some hosts prefer not to return the GraphQL result to the transport until
+tracked async cleanup has finished. For example, a test harness may want the
+operation to leave no pending execution work before assertions run.
+
+```js
+import {
+  executeRootSelectionSet,
+  validateExecutionArgs,
+} from 'graphql';
+
+async function executeAndWaitForAsyncWork(args) {
+  const validatedArgs = validateExecutionArgs(args);
+
+  if (!('schema' in validatedArgs)) {
+    return { errors: validatedArgs };
+  }
+
+  let markAsyncWorkFinished;
+  const asyncWorkFinished = new Promise((resolve) => {
+    markAsyncWorkFinished = resolve;
+  });
+
+  const result = executeRootSelectionSet({
+    ...validatedArgs,
+    hooks: {
+      ...validatedArgs.hooks,
+      asyncWorkFinished(info) {
+        validatedArgs.hooks?.asyncWorkFinished?.(info);
+        markAsyncWorkFinished();
+      },
+    },
+  });
+
+  const executionResult = await result;
+  await asyncWorkFinished;
+
+  return executionResult;
+}
+```
+
+This pattern trades response latency for a stronger lifecycle boundary. It is
+usually better for tests, controlled batch jobs, and framework internals than
+for latency-sensitive HTTP handlers.
+
+## Host cleanup
+
+The hook can also release host-owned bookkeeping that should stay alive until
+GraphQL.js has finished tracked async work.
+
+```js
+await execute({
+  schema,
+  document,
+  contextValue: requestContext,
+  hooks: {
+    asyncWorkFinished({ validatedExecutionArgs }) {
+      requestRegistry.delete(validatedExecutionArgs);
+      requestContext.loaderCache.clear();
+    },
+  },
+});
+```
+
+## Aborts and incremental delivery
+
+Hooks are especially useful when execution is aborted or incremental delivery is
+used:
+
+- Abort may stop payload production before cleanup is complete.
+- Async iterator `return()` paths can continue after the response boundary.
+- Deferred work can leave short-lived cleanup tasks after the final patch.
+
+Pair hooks with [Handling Abort Signals](/docs/abort-signals) for timeout and
+cancellation instrumentation.

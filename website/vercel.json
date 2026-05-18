@@ -1,6 +1,11 @@
 {
   "redirects": [
     {
+      "source": "/api-v16/graphql-http",
+      "destination": "/docs/graphql-http",
+      "permanent": true
+    },
+    {
       "source": "/api",
       "destination": "/api-v16/graphql",
       "permanent": true

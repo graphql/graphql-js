@@ -1,23 +1,35 @@
 ---
-title: Enabling Defer & Stream
+title: Enabling Defer and Stream
+sidebarTitle: Defer and Stream
 ---
+
+import { Callout } from 'nextra/components';
 
 # Enabling Defer and Stream
 
-import { Callout } from 'nextra/components'
- 
-<Callout type="info" emoji="ℹ️">
-  These exports are only available in v17 and beyond.
+<Callout type="info">
+  `@defer`, `@stream`, and `experimentalExecuteIncrementally()` are available
+  in GraphQL.js v17 and newer. Incremental delivery is pending GraphQL
+  specification work.
 </Callout>
 
-The `@defer` and `@stream` directives are not enabled by default.
-In order to use these directives, you must add them to your GraphQL Schema and
-use the `experimentalExecuteIncrementally` function instead of `execute`.
+`@defer` and `@stream` allow a GraphQL operation to produce an initial result
+and later incremental payloads. This is useful when part of a response is slow,
+large, or naturally delivered over time.
+
+GraphQL.js keeps this feature explicit. You must add the directives to the
+schema and use the experimental executor.
+
+## Add the directives to your schema
+
+If the `directives` option is passed to `GraphQLSchema`, the default directive
+list is replaced. Include `specifiedDirectives` when adding experimental
+directives.
 
 ```js
 import {
-  GraphQLSchema,
   GraphQLDeferDirective,
+  GraphQLSchema,
   GraphQLStreamDirective,
   specifiedDirectives,
 } from 'graphql';
@@ -30,11 +42,163 @@ const schema = new GraphQLSchema({
     GraphQLStreamDirective,
   ],
 });
+```
 
-const result = experimentalExecuteIncrementally({
+Once a schema includes `@defer` or `@stream`, execute operations against that
+schema with `experimentalExecuteIncrementally()`. `execute()` is the
+single-result executor and will reject schemas that contain the experimental
+incremental directives.
+
+## Execute incrementally
+
+```js
+import { experimentalExecuteIncrementally, parse } from 'graphql';
+
+const document = parse(`
+  query ProductPage {
+    product(id: "abc") {
+      id
+      name
+      ...Reviews @defer(label: "reviews")
+    }
+  }
+
+  fragment Reviews on Product {
+    reviews {
+      body
+      rating
+    }
+  }
+`);
+
+const result = await experimentalExecuteIncrementally({
   schema,
   document,
 });
 ```
 
-If the `directives` option is passed to `GraphQLSchema`, the default directives will not be included. `specifiedDirectives` must be passed to ensure all standard directives are added in addition to `defer` & `stream`.
+The result is either a normal `ExecutionResult` or an incremental result object.
+
+```js
+if ('initialResult' in result) {
+  sendInitialPayload(result.initialResult);
+
+  for await (const subsequentResult of result.subsequentResults) {
+    sendIncrementalPayload(subsequentResult);
+  }
+} else {
+  sendSinglePayload(result);
+}
+```
+
+GraphQL.js produces the execution results; your server transport is responsible
+for serializing and delivering them to the client.
+
+## Transport framing guidance
+
+`experimentalExecuteIncrementally()` gives you result objects, not a wire
+protocol. Pick a transport framing format that your clients already support and
+test it end to end.
+
+- HTTP multipart responses for clients that support incremental patches.
+- Server-sent events when your stack already uses event streams.
+- WebSocket message streams for subscription-like transports.
+
+Keep transport concerns separate from execution concerns: validate operation
+behavior first, then validate framing and client reassembly separately.
+
+## `@defer`
+
+`@defer` can be applied to fragment spreads and inline fragments. It defers the
+fragment when `if` is `true` or omitted.
+
+```graphql
+query ProductPage($includeReviews: Boolean! = true) {
+  product(id: "abc") {
+    id
+    name
+    ...Reviews @defer(if: $includeReviews, label: "reviews")
+  }
+}
+```
+
+The `label` argument is optional, but labels must be unique for active
+`@defer` and `@stream` usages in the operation.
+
+## `@stream`
+
+`@stream` can be applied to list fields. It sends `initialCount` items in the
+initial result and streams later items in subsequent payloads.
+
+```graphql
+query Feed {
+  feed(first: 100) @stream(initialCount: 10, label: "feed") {
+    id
+    title
+  }
+}
+```
+
+`initialCount` is non-null and defaults to `0`.
+
+Resolvers may return normal iterables, promises, or async iterables for list
+fields. Async iterables are especially useful with `@stream` because the
+executor can complete list items as they become available.
+
+## Early execution
+
+`enableEarlyExecution` allows deferred work to begin before all non-deferred
+work has completed.
+
+```js
+const result = await experimentalExecuteIncrementally({
+  schema,
+  document,
+  enableEarlyExecution: true,
+});
+```
+
+This can reduce total latency for expensive deferred sections, but it can also
+increase concurrent work. Measure before enabling it broadly.
+
+## Validation limits
+
+GraphQL.js validates the current incremental delivery rules:
+
+- `@defer` and `@stream` are not supported on subscription operations.
+- `@stream` must be used on list fields.
+- `@stream(initialCount:)` must be non-null.
+- Active `@defer` and `@stream` labels must be unique.
+- Root field usage must follow the current proposal rules.
+- Multiple active `@stream` instances cannot target the same field instance.
+
+Those checks are exposed through the validation rules
+`DeferStreamDirectiveLabelRule`, `DeferStreamDirectiveOnRootFieldRule`,
+`DeferStreamDirectiveOnValidOperationsRule`, and
+`StreamDirectiveOnListFieldRule`.
+
+If a fragment is shared between query and subscription operations, use the
+directive `if` argument to disable incremental behavior in the subscription.
+
+```graphql
+subscription Events($incremental: Boolean! = false) {
+  event {
+    ...EventFields @defer(if: $incremental)
+  }
+}
+```
+
+## Cancellation
+
+Incremental execution accepts `abortSignal`. Aborting stops new payload
+production and attempts to close async iterators.
+
+```js
+const controller = new AbortController();
+
+const result = await experimentalExecuteIncrementally({
+  schema,
+  document,
+  abortSignal: controller.signal,
+});
+```
