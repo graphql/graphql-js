@@ -9,6 +9,7 @@ import {
   changeExtensionInImportPathsInBundle,
 } from './change-extension-in-import-paths.ts';
 import { inlineInvariant } from './inline-invariant.ts';
+import { stripPrivateDeclarations } from './strip-private-declarations.ts';
 import type { PlatformConditionalExports } from './utils.ts';
 import {
   buildCJSDevModeStub,
@@ -262,7 +263,10 @@ function emitTSFiles(options: {
     undefined,
     undefined,
     {
-      afterDeclarations: [changeExtensionInImportPathsInBundle({ extension })],
+      afterDeclarations: [
+        stripPrivateDeclarations(),
+        changeExtensionInImportPathsInBundle({ extension }),
+      ],
     },
   );
 

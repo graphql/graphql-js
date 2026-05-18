@@ -118,6 +118,7 @@ export function assertType(type: unknown): GraphQLType {
   return type;
 }
 
+/** @private */
 const scalarSymbol: unique symbol = Symbol('Scalar');
 
 /**
@@ -175,6 +176,7 @@ export function assertScalarType(type: unknown): GraphQLScalarType {
   return type;
 }
 
+/** @private */
 const objectSymbol: unique symbol = Symbol('Object');
 
 /**
@@ -244,6 +246,7 @@ export function assertObjectType(type: unknown): GraphQLObjectType {
   return type;
 }
 
+/** @private */
 const fieldSymbol: unique symbol = Symbol('Field');
 
 /**
@@ -289,6 +292,7 @@ export function assertField(field: unknown): GraphQLField {
   return field;
 }
 
+/** @private */
 const argumentSymbol: unique symbol = Symbol('Argument');
 
 /**
@@ -334,6 +338,7 @@ export function assertArgument(arg: unknown): GraphQLArgument {
   return arg;
 }
 
+/** @private */
 const interfaceSymbol: unique symbol = Symbol('Interface');
 
 /**
@@ -405,6 +410,7 @@ export function assertInterfaceType(type: unknown): GraphQLInterfaceType {
   return type;
 }
 
+/** @private */
 const unionSymbol: unique symbol = Symbol('Union');
 
 /**
@@ -478,6 +484,7 @@ export function assertUnionType(type: unknown): GraphQLUnionType {
   return type;
 }
 
+/** @private */
 const enumSymbol: unique symbol = Symbol('Enum');
 
 /**
@@ -541,6 +548,7 @@ export function assertEnumType(type: unknown): GraphQLEnumType {
   return type;
 }
 
+/** @private */
 const enumValueSymbol: unique symbol = Symbol('EnumValue');
 
 /**
@@ -588,6 +596,7 @@ export function assertEnumValue(value: unknown): GraphQLEnumValue {
   return value;
 }
 
+/** @private */
 const inputObjectSymbol: unique symbol = Symbol('InputObject');
 
 /**
@@ -661,6 +670,7 @@ export function assertInputObjectType(type: unknown): GraphQLInputObjectType {
   return type;
 }
 
+/** @private */
 const inputFieldSymbol: unique symbol = Symbol('InputField');
 
 /**
@@ -708,6 +718,7 @@ export function assertInputField(field: unknown): GraphQLInputField {
   return field;
 }
 
+/** @private */
 const listSymbol: unique symbol = Symbol('List');
 
 /**
@@ -801,6 +812,7 @@ export function assertListType(type: unknown): GraphQLList<GraphQLType> {
   return type;
 }
 
+/** @private */
 const nonNullSymbol: unique symbol = Symbol('NonNull');
 
 /**
@@ -1318,7 +1330,10 @@ export function assertAbstractType(type: unknown): GraphQLAbstractType {
 export class GraphQLList<
   T extends GraphQLType,
 > implements GraphQLSchemaElement {
-  /** Internal runtime marker used to identify GraphQLList instances. */
+  /**
+   * Internal runtime marker used to identify GraphQLList instances.
+   * @private
+   */
   readonly __kind: symbol;
   /** The type wrapped by this list or non-null type. */
   readonly ofType: T;
@@ -1410,7 +1425,10 @@ export class GraphQLList<
 export class GraphQLNonNull<
   T extends GraphQLNullableType,
 > implements GraphQLSchemaElement {
-  /** Internal runtime marker used to identify GraphQLNonNull instances. */
+  /**
+   * Internal runtime marker used to identify GraphQLNonNull instances.
+   * @private
+   */
   readonly __kind: symbol;
   /** The type wrapped by this list or non-null type. */
   readonly ofType: T;
@@ -1990,7 +2008,10 @@ export class GraphQLScalarType<
   TInternal = unknown,
   TExternal = TInternal,
 > implements GraphQLSchemaElement {
-  /** Internal runtime marker used to identify GraphQLScalarType instances. */
+  /**
+   * Internal runtime marker used to identify GraphQLScalarType instances.
+   * @private
+   */
   readonly __kind: symbol;
   /** The GraphQL name for this schema element. */
   name: string;
@@ -2387,7 +2408,10 @@ export class GraphQLObjectType<
   TContext = any,
   TAbstract = any,
 > implements GraphQLSchemaElement {
-  /** Internal runtime marker used to identify GraphQLObjectType instances. */
+  /**
+   * Internal runtime marker used to identify GraphQLObjectType instances.
+   * @private
+   */
   readonly __kind: typeof objectSymbol = objectSymbol;
   /** The GraphQL name for this schema element. */
   name: string;
@@ -2971,7 +2995,10 @@ export class GraphQLField<
   TContext = any,
   TArgs = any,
 > implements GraphQLSchemaElement {
-  /** Internal runtime marker used to identify GraphQLField instances. */
+  /**
+   * Internal runtime marker used to identify GraphQLField instances.
+   * @private
+   */
   readonly __kind: symbol;
   /** Object or interface type that owns this field, if known. */
   parentType:
@@ -3141,7 +3168,10 @@ export class GraphQLField<
 
 /** A resolved GraphQL argument definition. */
 export class GraphQLArgument implements GraphQLSchemaElement {
-  /** Internal runtime marker used to identify GraphQLArgument instances. */
+  /**
+   * Internal runtime marker used to identify GraphQLArgument instances.
+   * @private
+   */
   readonly __kind: symbol;
   /** Field or directive that owns this argument. */
   parent: GraphQLField | GraphQLDirective;
@@ -3402,7 +3432,10 @@ export class GraphQLInterfaceType<
   TSource = any,
   TContext = any,
 > implements GraphQLSchemaElement {
-  /** Internal runtime marker used to identify GraphQLInterfaceType instances. */
+  /**
+   * Internal runtime marker used to identify GraphQLInterfaceType instances.
+   * @private
+   */
   readonly __kind: symbol;
   /** The GraphQL name for this schema element. */
   name: string;
@@ -3739,7 +3772,10 @@ export class GraphQLUnionType<
   TSource = any,
   TContext = any,
 > implements GraphQLSchemaElement {
-  /** Internal runtime marker used to identify GraphQLUnionType instances. */
+  /**
+   * Internal runtime marker used to identify GraphQLUnionType instances.
+   * @private
+   */
   readonly __kind: symbol;
   /** The GraphQL name for this schema element. */
   name: string;
@@ -4028,7 +4064,10 @@ export interface GraphQLEnumTypeExtensions {
  * will be used as its internal value.
  */
 export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
-  /** Internal runtime marker used to identify GraphQLEnumType instances. */
+  /**
+   * Internal runtime marker used to identify GraphQLEnumType instances.
+   * @private
+   */
   readonly __kind: symbol;
   /** The GraphQL name for this schema element. */
   name: string;
@@ -4604,7 +4643,10 @@ export interface GraphQLEnumValueNormalizedConfig extends GraphQLEnumValueConfig
 
 /** A resolved GraphQL enum value definition. */
 export class GraphQLEnumValue implements GraphQLSchemaElement {
-  /** Internal runtime marker used to identify GraphQLEnumValue instances. */
+  /**
+   * Internal runtime marker used to identify GraphQLEnumValue instances.
+   * @private
+   */
   readonly __kind: symbol;
   /** Enum type that owns this enum value. */
   parentEnum: GraphQLEnumType;
@@ -4771,7 +4813,10 @@ export interface GraphQLInputObjectTypeExtensions {
  * ```
  */
 export class GraphQLInputObjectType implements GraphQLSchemaElement {
-  /** Internal runtime marker used to identify GraphQLInputObjectType instances. */
+  /**
+   * Internal runtime marker used to identify GraphQLInputObjectType instances.
+   * @private
+   */
   readonly __kind: symbol;
   /** The GraphQL name for this schema element. */
   name: string;
@@ -5081,7 +5126,10 @@ export type GraphQLInputFieldNormalizedConfigMap =
 
 /** A resolved GraphQL input field definition. */
 export class GraphQLInputField implements GraphQLSchemaElement {
-  /** Internal runtime marker used to identify GraphQLInputField instances. */
+  /**
+   * Internal runtime marker used to identify GraphQLInputField instances.
+   * @private
+   */
   readonly __kind: symbol;
   /** Input object type that owns this input field. */
   parentType: GraphQLInputObjectType;

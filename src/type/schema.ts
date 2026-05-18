@@ -100,6 +100,7 @@ export interface GraphQLSchemaExtensions {
   [attributeName: string | symbol]: unknown;
 }
 
+/** @private */
 const schemaSymbol: unique symbol = Symbol('Schema');
 
 /**
@@ -190,7 +191,10 @@ const schemaSymbol: unique symbol = Symbol('Schema');
  * ```
  */
 export class GraphQLSchema {
-  /** Internal runtime marker used to identify GraphQLSchema instances. */
+  /**
+   * Internal runtime marker used to identify GraphQLSchema instances.
+   * @private
+   */
   readonly __kind: typeof schemaSymbol = schemaSymbol;
   /** Human-readable description for this schema element, if provided. */
   description: Maybe<string>;

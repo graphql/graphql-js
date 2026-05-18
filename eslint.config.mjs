@@ -11,6 +11,9 @@ import { defineConfig } from 'eslint/config';
 
 import { parser as tsParser, plugin as tsPlugin } from 'typescript-eslint';
 
+const publicJsdocBlock =
+  'JsdocBlock:not(:has(JsdocTag[tag="internal"])):not(:has(JsdocTag[tag="private"]))';
+
 export default defineConfig(
   {
     ignores: [
@@ -777,51 +780,51 @@ export default defineConfig(
           contexts: [
             {
               context: 'ClassDeclaration',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'FunctionDeclaration',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'MethodDefinition',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'PropertyDefinition',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'TSDeclareFunction',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'TSEnumDeclaration',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'TSEnumMember',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'TSInterfaceDeclaration',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'TSMethodSignature',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'TSPropertySignature',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'TSTypeAliasDeclaration',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'VariableDeclaration',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'ClassDeclaration',
@@ -868,19 +871,19 @@ export default defineConfig(
           contexts: [
             {
               context: 'FunctionDeclaration',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'TSDeclareFunction',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'MethodDefinition:not([kind="get"]):not([kind="set"])',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'TSMethodSignature',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
           ],
         },
@@ -897,22 +900,22 @@ export default defineConfig(
           contexts: [
             {
               context: 'FunctionDeclaration',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'TSDeclareFunction',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'MethodDefinition',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'TSMethodSignature',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
           ],
-          exemptedBy: ['internal'],
+          exemptedBy: ['internal', 'private'],
         },
       ],
       'jsdoc/require-param-description': [
@@ -921,19 +924,19 @@ export default defineConfig(
           contexts: [
             {
               context: 'FunctionDeclaration',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'TSDeclareFunction',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'MethodDefinition',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'TSMethodSignature',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
           ],
         },
@@ -944,19 +947,19 @@ export default defineConfig(
           contexts: [
             {
               context: 'FunctionDeclaration',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'TSDeclareFunction',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'MethodDefinition',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'TSMethodSignature',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
           ],
         },
@@ -974,22 +977,22 @@ export default defineConfig(
           contexts: [
             {
               context: 'FunctionDeclaration',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'TSDeclareFunction',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'MethodDefinition',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'TSMethodSignature',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
           ],
-          exemptedBy: ['internal'],
+          exemptedBy: ['internal', 'private'],
         },
       ],
       'jsdoc/require-returns-check': 'off',
@@ -999,19 +1002,19 @@ export default defineConfig(
           contexts: [
             {
               context: 'FunctionDeclaration',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'TSDeclareFunction',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'MethodDefinition',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
             {
               context: 'TSMethodSignature',
-              comment: 'JsdocBlock:not(:has(JsdocTag[tag="internal"]))',
+              comment: publicJsdocBlock,
             },
           ],
         },

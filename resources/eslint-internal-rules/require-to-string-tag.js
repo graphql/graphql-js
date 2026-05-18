@@ -18,7 +18,10 @@ function requireToStringTag(context) {
 
       const jsDoc = context.getSourceCode().getJSDocComment(classNode)?.value;
       // FIXME: use proper TSDoc parser instead of includes once we fix TSDoc comments
-      if (jsDoc?.includes('@internal') === true) {
+      if (
+        jsDoc?.includes('@internal') === true ||
+        jsDoc?.includes('@private') === true
+      ) {
         return;
       }
 

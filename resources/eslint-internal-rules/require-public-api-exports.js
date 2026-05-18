@@ -33,12 +33,16 @@ function requirePublicApiExports(context) {
 
   function hasPublicDoc(node) {
     const comment = ownJsdocComment(node);
-    return comment != null && !hasTag(comment, 'internal');
+    return comment != null && !hasNonPublicTag(comment);
   }
 
   function hasInternalDoc(node) {
     const comment = ownJsdocComment(node);
-    return comment != null && hasTag(comment, 'internal');
+    return comment != null && hasNonPublicTag(comment);
+  }
+
+  function hasNonPublicTag(comment) {
+    return hasTag(comment, 'internal') || hasTag(comment, 'private');
   }
 
   function ownJsdocComment(node) {
@@ -73,14 +77,14 @@ function requirePublicApiExports(context) {
   function reportUnexpectedInternalDoc(node, name) {
     context.report({
       node,
-      message: `Public API declaration "${name}" is exported by a public index.ts file and must not have @internal JSDoc.`,
+      message: `Public API declaration "${name}" is exported by a public index.ts file and must not have @internal or @private JSDoc.`,
     });
   }
 
   function reportMissingInternalDoc(node, name) {
     context.report({
       node,
-      message: `Internal declaration "${name}" is exported from src but is not exported by a public index.ts file and must have @internal JSDoc.`,
+      message: `Internal declaration "${name}" is exported from src but is not exported by a public index.ts file and must have @internal or @private JSDoc.`,
     });
   }
 

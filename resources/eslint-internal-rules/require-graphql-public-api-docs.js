@@ -53,7 +53,7 @@ function requireGraphqlPublicApiDocs(context) {
 
   function checkPublicDoc(node, label, fileCategory, options = {}) {
     const comment = parsedCommentFor(node);
-    if (comment == null || comment.tags.has('internal')) {
+    if (comment == null || hasNonPublicTag(comment)) {
       return;
     }
 
@@ -77,6 +77,10 @@ function requireGraphqlPublicApiDocs(context) {
       typeParameterNames(node),
       label,
     );
+  }
+
+  function hasNonPublicTag(comment) {
+    return comment.tags.has('internal') || comment.tags.has('private');
   }
 
   function checkPublicMemberDocs(declaration, ownerName) {

@@ -8,6 +8,7 @@ interface Location {
   column: number;
 }
 
+/** @private */
 const sourceSymbol: unique symbol = Symbol('Source');
 
 /**
@@ -18,7 +19,10 @@ const sourceSymbol: unique symbol = Symbol('Source');
  * The `line` and `column` properties in `locationOffset` are 1-indexed.
  */
 export class Source {
-  /** Internal runtime marker used to identify Source instances. */
+  /**
+   * Internal runtime marker used to identify Source instances.
+   * @private
+   */
   readonly __kind: symbol;
 
   /** The GraphQL source text. */

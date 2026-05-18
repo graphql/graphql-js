@@ -24,6 +24,7 @@ import type {
 import { GraphQLArgument, GraphQLNonNull } from './definition.ts';
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from './scalars.ts';
 
+/** @private */
 const directiveSymbol: unique symbol = Symbol('Directive');
 
 /**
@@ -92,7 +93,10 @@ export interface GraphQLDirectiveExtensions {
  * behavior. Type system creators will usually not create these directly.
  */
 export class GraphQLDirective implements GraphQLSchemaElement {
-  /** Internal runtime marker used to identify GraphQLDirective instances. */
+  /**
+   * Internal runtime marker used to identify GraphQLDirective instances.
+   * @private
+   */
   readonly __kind: symbol;
   /** The GraphQL name for this schema element. */
   name: string;
