@@ -21,6 +21,11 @@ import {
   writeGeneratedFile,
 } from './utils.ts';
 
+const devTypeFiles = [
+  ['.ts', '.js'],
+  ['.mts', '.mjs'],
+] as const;
+
 console.log('\n./npmDist');
 await buildPackage('./npmDist', false);
 showDirStats('./npmDist');
@@ -128,8 +133,8 @@ async function buildPackage(outDir: string, isESMOnly: boolean): Promise<void> {
           `${dir}/${innerName}`,
         );
 
-        const line = `export * from '${relativePathToProd}/${relativePathAndName}.mjs';`;
-        for (const typeExt of ['.ts', '.mts']) {
+        for (const [typeExt, targetExt] of devTypeFiles) {
+          const line = `export * from '${relativePathToProd}/${relativePathAndName}${targetExt}';`;
           writeGeneratedFile(
             path.join(
               devDir,

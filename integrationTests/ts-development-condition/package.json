@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "description": "graphql-js development condition should expose valid TypeScript declarations",
+  "type": "commonjs",
+  "scripts": {
+    "test": "tsc --project tsconfig.json"
+  },
+  "dependencies": {
+    "graphql": "file:../graphql.tgz",
+    "typescript": "~6.0.3"
+  }
+}

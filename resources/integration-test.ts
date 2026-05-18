@@ -51,6 +51,7 @@ describe('Integration Tests', () => {
   }
 
   testOnNodeProject('ts');
+  testOnNodeProject('ts-development-condition');
   testOnNodeProject('node');
   testOnNodeProject('webpack');
 
