@@ -1337,6 +1337,8 @@ export class GraphQLList<
   readonly __kind: symbol;
   /** The type wrapped by this list or non-null type. */
   readonly ofType: T;
+  // eslint-disable-next-line @typescript-eslint/no-unused-private-class-members
+  declare private readonly __GraphQLListTypeBrand: never;
 
   /**
    * Creates a GraphQLList instance.
@@ -1432,6 +1434,8 @@ export class GraphQLNonNull<
   readonly __kind: symbol;
   /** The type wrapped by this list or non-null type. */
   readonly ofType: T;
+  // eslint-disable-next-line @typescript-eslint/no-unused-private-class-members
+  declare private readonly __GraphQLNonNullTypeBrand: never;
 
   /**
    * Creates a GraphQLNonNull instance.
