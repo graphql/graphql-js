@@ -13,13 +13,13 @@ const meta = {
       },
     },
   },
-  'api-v16': {
+  api: {
     type: 'menu',
     title: 'API',
     items: {
-      2: {
-        title: 'V16',
-        href: '/api-v16/graphql',
+      'graphql-http': {
+        title: 'graphql-http',
+        href: '/docs/graphql-http',
       },
     },
   },
