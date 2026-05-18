@@ -1,4 +1,5 @@
-/* eslint-disable internal-rules/only-ascii */
+/* eslint-disable @typescript-eslint/strict-boolean-expressions, internal-rules/only-ascii */
+
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import type { DocsThemeConfig } from 'nextra-theme-docs';
@@ -199,18 +200,14 @@ const cfg: DocsThemeConfig = {
       <>
         <title>{title}</title>
         <meta property="og:title" content={title} />
-        {description != null && description !== '' && (
+        {description && (
           <>
             <meta name="description" content={description} />
             <meta property="og:description" content={description} />
           </>
         )}
-        {canonical != null && canonical !== '' && (
-          <link rel="canonical" href={canonical} />
-        )}
-        {image != null && image !== '' && (
-          <meta name="og:image" content={image} />
-        )}
+        {canonical && <link rel="canonical" href={canonical} />}
+        {image && <meta name="og:image" content={image} />}
         <meta property="og:image" content="/img/og-image.png" />
         <meta property="twitter:site" content="@graphql" />
       </>
@@ -219,16 +216,23 @@ const cfg: DocsThemeConfig = {
   banner: {
     content: (
       <>
-        🎬 That&apos;s a Wrap for GraphQLConf 2024! • Watch the Videos •{' '}
+        🎉{' '}
         <NextLink
-          href="https://graphql.org/conf/2024"
+          href="https://graphql.org/conf/2026/"
           className="underline after:content-['_→'] after:font-sans"
         >
-          Check out the recorded talks and workshops
+          Explore GraphQLConf 2026
+        </NextLink>{' '}
+        • May 19-21 • Fremont, CA •{' '}
+        <NextLink
+          href="https://graphql.org/conf/2026/schedule/"
+          className="underline after:content-['_→'] after:font-sans"
+        >
+          View the schedule
         </NextLink>
       </>
     ),
-    key: 'graphqlconf-2024',
+    key: 'graphqlconf-2026',
   },
   logo: graphQLLogo,
   docsRepositoryBase:
