@@ -60,6 +60,8 @@ words:
   - sublinks
   - thunked
   - tsdoc
+  - worktree
+  - worktrees
   - instanceof
 
   # Different names used inside tests

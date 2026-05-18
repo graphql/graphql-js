@@ -36,6 +36,7 @@
     "release:metadata": "node resources/release-metadata.js",
     "benchmark": "node benchmark/benchmark.js",
     "test": "npm run lint && npm run check && npm run testonly && npm run prettier:check && npm run check:spelling && npm run check:integrations",
+    "generate:docs": "node resources/generate-api.js",
     "lint": "eslint --cache --max-warnings 0 .",
     "check": "tsc --pretty",
     "testonly": "mocha --full-trace src/**/__tests__/**/*-test.ts",

@@ -1,0 +1,9 @@
+{
+  "name": "graphql-js-api-docs",
+  "private": true,
+  "type": "commonjs",
+  "devDependencies": {
+    "typedoc": "0.28.19",
+    "typescript": "5.6.3"
+  }
+}
