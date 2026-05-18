@@ -1,0 +1,75 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/type/validation
+
+## Functions
+
+### validateSchema()
+
+Implements the "Type Validation" sub-sections of the specification's
+"Type System" section.
+
+Validation runs synchronously, returning an array of encountered errors, or
+an empty array if no errors were encountered and the Schema is valid.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">validateSchema</span>(schema: <a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a>): <span className="api-signature-keyword">readonly</span> <a href="/api-v16/error/errors#graphqlerror">GraphQLError</a>[]</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | GraphQL schema to use. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v16/error/errors#graphqlerror">GraphQLError</a>[]</ApiType> | Schema validation errors, or an empty array when the schema is valid. |
+
+#### Example
+
+```ts
+import { validateSchema } from 'graphql/type';
+import { buildSchema } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+const errors = validateSchema(schema);
+
+errors; // => []
+```
+
+### assertValidSchema()
+
+Utility function which asserts a schema is valid by throwing an error if
+it is invalid.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertValidSchema</span>(schema: <a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a>): <span className="api-signature-keyword">void</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | GraphQL schema to use. |
+
+#### Example
+
+```ts
+import { assertValidSchema } from 'graphql/type';
+import { buildSchema } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+assertValidSchema(schema); // does not throw
+```

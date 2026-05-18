@@ -1,0 +1,746 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/type/schema
+
+## Classes
+
+### GraphQLSchema
+
+Schema Definition
+
+A Schema is created by supplying the root types of each type of operation,
+query and mutation (optional). A schema definition is then supplied to the
+validator and executor.
+
+Example:
+
+```ts
+const MyAppQueryRootType = new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+    greeting: { type: GraphQLString },
+  },
+});
+
+const MyAppMutationRootType = new GraphQLObjectType({
+  name: 'Mutation',
+  fields: {
+    setGreeting: { type: GraphQLString },
+  },
+});
+
+const MyAppSchema = new GraphQLSchema({
+  query: MyAppQueryRootType,
+  mutation: MyAppMutationRootType,
+});
+```
+
+Note: When the schema is constructed, by default only the types that are
+reachable by traversing the root types are included, other types must be
+explicitly referenced.
+
+Example:
+
+```ts
+const characterInterface = new GraphQLInterfaceType({
+  name: 'Character',
+  fields: {
+    name: { type: GraphQLString },
+  },
+});
+
+const humanType = new GraphQLObjectType({
+  name: 'Human',
+  interfaces: [characterInterface],
+  fields: {
+    name: { type: GraphQLString },
+  },
+});
+
+const droidType = new GraphQLObjectType({
+  name: 'Droid',
+  interfaces: [characterInterface],
+  fields: {
+    name: { type: GraphQLString },
+  },
+});
+
+const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      hero: { type: characterInterface },
+    },
+  }),
+  // Since this schema references only the `Character` interface it's
+  // necessary to explicitly list the types that implement it if
+  // you want them to be included in the final schema.
+  types: [humanType, droidType],
+});
+```
+
+Note: If an array of `directives` are provided to GraphQLSchema, that will be
+the exact list of directives represented and allowed. If `directives` is not
+provided then a default set of the specified directives (e.g. `@include` and
+`@skip`) will be used. If you wish to provide *additional* directives to these
+specified directives, you must explicitly declare them. Example:
+
+```ts
+const MyAppSchema = new GraphQLSchema({
+  query: MyAppQueryRootType,
+  directives: specifiedDirectives.concat([myCustomDirective]),
+});
+```
+
+#### Constructor
+
+Creates a GraphQLSchema instance.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-keyword">new</span> <span className="api-signature-name">GraphQLSchema</span>(config: <span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/schema#graphqlschemaconfig">GraphQLSchemaConfig</a>&gt;)</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| config | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/schema#graphqlschemaconfig">GraphQLSchemaConfig</a>&gt;</ApiType> | Configuration describing this object. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> |  |
+
+#### Members
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| __kind | <ApiType><span className="api-signature-keyword">typeof</span> <span className="api-signature-type">schemaSymbol</span></ApiType> | `schemaSymbol` | Internal runtime marker used to identify GraphQLSchema instances. |
+| description | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> |  | Human-readable description for this schema element, if provided. |
+| extensions | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/schema#graphqlschemaextensions">GraphQLSchemaExtensions</a>&gt;</ApiType> |  | Extension fields to include in the formatted result. |
+| astNode | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#schemadefinitionnode">SchemaDefinitionNode</a>&gt;</ApiType> |  | AST node from which this schema element was built, if available. |
+| extensionASTNodes | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#schemaextensionnode">SchemaExtensionNode</a>[]</ApiType> |  | AST extension nodes applied to this schema element. |
+| assumeValid | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> |  | Whether this schema instance skips validation checks. |
+| __validationErrors | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">readonly</span> <a href="/api-v17/error/errors#graphqlerror">GraphQLError</a>[]&gt;</ApiType> |  | Cached schema validation errors, if validation has already run. |
+
+#### getQueryType()
+
+Returns the root object type for query operations.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getQueryType</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>&gt;</ApiType> | The query root type, if this schema defines one. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+
+schema.getQueryType()?.name; // => 'Query'
+```
+
+#### getMutationType()
+
+Returns the root object type for mutation operations.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getMutationType</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>&gt;</ApiType> | The mutation root type, if this schema defines one. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+
+  type Mutation {
+    setGreeting(value: String!): String
+  }
+`);
+
+schema.getMutationType()?.name; // => 'Mutation'
+```
+
+#### getSubscriptionType()
+
+Returns the root object type for subscription operations.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getSubscriptionType</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>&gt;</ApiType> | The subscription root type, if this schema defines one. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+
+  type Subscription {
+    greetings: String
+  }
+`);
+
+schema.getSubscriptionType()?.name; // => 'Subscription'
+```
+
+#### getRootType()
+
+Returns the root object type for the requested operation kind.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getRootType</span>(operation: <a href="/api-v17/language/kinds#operationtypenode">OperationTypeNode</a>): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>&gt;</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| operation | <ApiType><a href="/api-v17/language/kinds#operationtypenode">OperationTypeNode</a></ApiType> | Operation kind to resolve. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>&gt;</ApiType> | The root object type for the operation kind, if this schema defines one. |
+
+##### Example
+
+```ts
+import { OperationTypeNode } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+
+  type Mutation {
+    setGreeting(value: String!): String
+  }
+`);
+
+schema.getRootType(OperationTypeNode.QUERY)?.name; // => 'Query'
+schema.getRootType(OperationTypeNode.MUTATION)?.name; // => 'Mutation'
+schema.getRootType(OperationTypeNode.SUBSCRIPTION); // => undefined
+```
+
+#### getTypeMap()
+
+Returns all named types known to this schema.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getTypeMap</span>(): <span className="api-signature-type">ObjMap</span>&lt;<a href="/api-v17/type/definitions#graphqlnamedtype">GraphQLNamedType</a>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">ObjMap</span>&lt;<a href="/api-v17/type/definitions#graphqlnamedtype">GraphQLNamedType</a>&gt;</ApiType> | A map of schema types keyed by type name. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type User {
+    name: String
+  }
+
+  type Query {
+    viewer: User
+  }
+`);
+
+const typeMap = schema.getTypeMap();
+
+typeMap.User.name; // => 'User'
+typeMap.Query.name; // => 'Query'
+typeMap.String.name; // => 'String'
+```
+
+#### getType()
+
+Returns the named type with the provided name.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getType</span>(name: <span className="api-signature-keyword">string</span>): <a href="/api-v17/type/definitions#graphqlnamedtype">GraphQLNamedType</a> | <span className="api-signature-keyword">undefined</span></ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name to look up. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlnamedtype">GraphQLNamedType</a> &#124; <span className="api-signature-keyword">undefined</span></ApiType> | The named schema type, if one exists. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type User {
+    name: String
+  }
+
+  type Query {
+    viewer: User
+  }
+`);
+
+schema.getType('User')?.toString(); // => 'User'
+schema.getType('Missing'); // => undefined
+```
+
+#### getPossibleTypes()
+
+Returns object types that may be returned for an abstract type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getPossibleTypes</span>(abstractType: <a href="/api-v17/type/definitions#graphqlabstracttype">GraphQLAbstractType</a>): <span className="api-signature-keyword">readonly</span> <a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>[]</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| abstractType | <ApiType><a href="/api-v17/type/definitions#graphqlabstracttype">GraphQLAbstractType</a></ApiType> | Interface or union type to inspect. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>[]</ApiType> | Object types that may satisfy the abstract type. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertInterfaceType, assertUnionType } from 'graphql/type';
+
+const schema = buildSchema(`
+  interface Node {
+    id: ID!
+  }
+
+  type User implements Node {
+    id: ID!
+  }
+
+  type Organization implements Node {
+    id: ID!
+  }
+
+  union SearchResult = User | Organization
+
+  type Query {
+    node: Node
+    search: [SearchResult]
+  }
+`);
+
+const Node = assertInterfaceType(schema.getType('Node'));
+const SearchResult = assertUnionType(schema.getType('SearchResult'));
+
+schema.getPossibleTypes(Node).map((type) => type.name); // => ['User', 'Organization']
+schema.getPossibleTypes(SearchResult).map((type) => type.name); // => ['User', 'Organization']
+```
+
+#### getImplementations()
+
+Returns objects and interfaces that implement an interface type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getImplementations</span>(interfaceType: <a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a>): &#123; objects: <span className="api-signature-keyword">readonly</span> <a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>[]; interfaces: <span className="api-signature-keyword">readonly</span> <a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a>[] &#125;</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| interfaceType | <ApiType><a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a></ApiType> | Interface type to inspect. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>&#123; objects: <span className="api-signature-keyword">readonly</span> <a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>[]; interfaces: <span className="api-signature-keyword">readonly</span> <a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a>[] &#125;</ApiType> | Object and interface implementations of the interface. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertInterfaceType } from 'graphql/type';
+
+const schema = buildSchema(`
+  interface Resource {
+    url: String!
+  }
+
+  interface Image implements Resource {
+    url: String!
+    width: Int
+  }
+
+  type Photo implements Resource & Image {
+    url: String!
+    width: Int
+  }
+
+  type Query {
+    resource: Resource
+  }
+`);
+
+const Resource = assertInterfaceType(schema.getType('Resource'));
+const implementations = schema.getImplementations(Resource);
+
+implementations.interfaces.map((type) => type.name); // => ['Image']
+implementations.objects.map((type) => type.name); // => ['Photo']
+```
+
+#### isSubType()
+
+Returns whether one type is a possible runtime subtype of an abstract type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isSubType</span>(abstractType: <a href="/api-v17/type/definitions#graphqlabstracttype">GraphQLAbstractType</a>, maybeSubType: <a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a> | <a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a>): <span className="api-signature-keyword">boolean</span></ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| abstractType | <ApiType><a href="/api-v17/type/definitions#graphqlabstracttype">GraphQLAbstractType</a></ApiType> | Interface or union type to inspect. |
+| maybeSubType | <ApiType><a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a> &#124; <a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a></ApiType> | Object or interface type to test as a possible subtype. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | True when the subtype may satisfy the abstract type. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertInterfaceType, assertObjectType } from 'graphql/type';
+
+const schema = buildSchema(`
+  interface Node {
+    id: ID!
+  }
+
+  type User implements Node {
+    id: ID!
+  }
+
+  type Review {
+    body: String
+  }
+
+  type Query {
+    node: Node
+    review: Review
+  }
+`);
+
+const Node = assertInterfaceType(schema.getType('Node'));
+const User = assertObjectType(schema.getType('User'));
+const Review = assertObjectType(schema.getType('Review'));
+
+schema.isSubType(Node, User); // => true
+schema.isSubType(Node, Review); // => false
+```
+
+#### getDirectives()
+
+Returns directives available in this schema.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getDirectives</span>(): <span className="api-signature-keyword">readonly</span> <a href="/api-v17/type/directives#graphqldirective">GraphQLDirective</a>[]</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/type/directives#graphqldirective">GraphQLDirective</a>[]</ApiType> | Directives available in this schema. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  directive @upper on FIELD_DEFINITION
+
+  type Query {
+    greeting: String @upper
+  }
+`);
+
+schema.getDirectives().map((directive) => directive.name); // => ['include', 'skip', 'deprecated', 'specifiedBy', 'oneOf', 'upper']
+```
+
+#### getDirective()
+
+Returns the current directive definition.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getDirective</span>(name: <span className="api-signature-keyword">string</span>): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/directives#graphqldirective">GraphQLDirective</a>&gt;</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name to look up. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/directives#graphqldirective">GraphQLDirective</a>&gt;</ApiType> | The current directive definition, if known. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  directive @upper on FIELD_DEFINITION
+
+  type Query {
+    greeting: String @upper
+  }
+`);
+
+schema.getDirective('upper')?.name; // => 'upper'
+schema.getDirective('missing'); // => undefined
+```
+
+#### getField()
+
+This method looks up the field on the given type definition.
+It has special casing for the three introspection fields, `__schema`,
+`__type` and `__typename`.
+
+`__typename` is special because it can always be queried as a field, even
+in situations where no other fields are allowed, like on a Union.
+
+`__schema` and `__type` could get automatically added to the query type,
+but that would require mutating type definitions, which would cause issues.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getField</span>(parentType: <a href="/api-v17/type/definitions#graphqlcompositetype">GraphQLCompositeType</a>, fieldName: <span className="api-signature-keyword">string</span>): <a href="/api-v17/type/definitions#graphqlfield">GraphQLField</a>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">unknown</span>&gt; | <span className="api-signature-keyword">undefined</span></ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| parentType | <ApiType><a href="/api-v17/type/definitions#graphqlcompositetype">GraphQLCompositeType</a></ApiType> | Composite type to look up the field on. |
+| fieldName | <ApiType><span className="api-signature-keyword">string</span></ApiType> | Field name to look up. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlfield">GraphQLField</a>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">unknown</span>&gt; &#124; <span className="api-signature-keyword">undefined</span></ApiType> | The field definition, including supported introspection fields. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const queryType = schema.getQueryType();
+
+schema.getField(queryType, 'greeting')?.name; // => 'greeting'
+schema.getField(queryType, '__typename')?.name; // => '__typename'
+schema.getField(queryType, 'missing'); // => undefined
+```
+
+#### toConfig()
+
+Returns a normalized configuration object for this object.
+
+The returned config preserves the original `assumeValid` flag so the schema
+can be recreated with the same validation behavior.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toConfig</span>(): &#123; description: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;; types: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/type/definitions#graphqlnamedtype">GraphQLNamedType</a>&gt;; directives: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/type/directives#graphqldirective">GraphQLDirective</a>&gt;; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt;; extensionASTNodes: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#schemaextensionnode">SchemaExtensionNode</a>&gt;; assumeValid: <span className="api-signature-keyword">boolean</span> &#125;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>&#123; description: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;; types: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/type/definitions#graphqlnamedtype">GraphQLNamedType</a>&gt;; directives: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/type/directives#graphqldirective">GraphQLDirective</a>&gt;; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt;; extensionASTNodes: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#schemaextensionnode">SchemaExtensionNode</a>&gt;; assumeValid: <span className="api-signature-keyword">boolean</span> &#125;</ApiType> | A configuration object that can be used to recreate this object. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { GraphQLSchema } from 'graphql/type';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+
+const config = schema.toConfig();
+const schemaCopy = new GraphQLSchema(config);
+
+config.query?.name; // => 'Query'
+schemaCopy.getQueryType()?.name; // => 'Query'
+```
+
+## Functions
+
+### isSchema()
+
+Test if the given value is a GraphQL schema.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isSchema</span>(schema: <span className="api-signature-keyword">unknown</span>): schema is GraphQLSchema</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Value to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>schema is GraphQLSchema</ApiType> | True when the value is a GraphQLSchema. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { GraphQLString, isSchema } from 'graphql/type';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+
+isSchema(schema); // => true
+isSchema(GraphQLString); // => false
+```
+
+### assertSchema()
+
+Returns the value as a GraphQLSchema, or throws if it is not a schema.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertSchema</span>(schema: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | GraphQL schema to use. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | The value typed as a GraphQLSchema. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertSchema, GraphQLString } from 'graphql/type';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+
+assertSchema(schema); // => schema
+assertSchema(GraphQLString); // throws an error
+```
+
+## Types
+
+### GraphQLSchemaExtensions
+
+**Interface.** Custom extensions
+
+**Remarks:** Use a unique identifier name for your extension, for example the name of
+your library or project. Do not use a shortened identifier as this increases
+the risk of conflicts. We recommend you add at most one extension field,
+an object which can contain all the values you need.
+
+### GraphQLSchemaConfig
+
+**Interface.** Configuration used to construct a GraphQLSchema.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| query? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>&gt;</ApiType> | Root object type for query operations. |
+| mutation? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>&gt;</ApiType> | Root object type for mutation operations. |
+| subscription? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>&gt;</ApiType> | Root object type for subscription operations. |
+| types? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">readonly</span> <a href="/api-v17/type/definitions#graphqlnamedtype">GraphQLNamedType</a>[]&gt;</ApiType> | Object types that belong to this union type. |
+| directives? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">readonly</span> <a href="/api-v17/type/directives#graphqldirective">GraphQLDirective</a>[]&gt;</ApiType> | Directives available in this schema or applied to this AST node. |
+| extensions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/schema#graphqlschemaextensions">GraphQLSchemaExtensions</a>&gt;&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#schemadefinitionnode">SchemaDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+| extensionASTNodes? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#schemaextensionnode">SchemaExtensionNode</a>[]&gt;</ApiType> | AST extension nodes applied to this schema element. |

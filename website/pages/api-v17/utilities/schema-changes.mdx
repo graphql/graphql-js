@@ -1,0 +1,257 @@
+import { ApiSignature, ApiType, ApiTag } from '../../../components/ApiTags';
+
+# graphql/utilities/schema-changes
+
+## Functions
+
+### findBreakingChanges()
+
+<ApiTag kind="deprecated" />
+
+Given two schemas, returns an Array containing descriptions of all the types
+of breaking changes covered by the other functions down below.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">findBreakingChanges</span>(oldSchema: <a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a>, newSchema: <a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a>): <a href="/api-v17/utilities/schema-changes#breakingchange">BreakingChange</a>[]</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| oldSchema | <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | Schema before the change. |
+| newSchema | <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | Schema after the change. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/utilities/schema-changes#breakingchange">BreakingChange</a>[]</ApiType> | Breaking changes between the two schemas. |
+
+#### Example
+
+```ts
+import { buildSchema, findBreakingChanges } from 'graphql/utilities';
+
+const oldSchema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const newSchema = buildSchema(`
+  type Query {
+    hello: String
+  }
+`);
+
+const changes = findBreakingChanges(oldSchema, newSchema);
+
+changes.map((change) => change.type); // => ['FIELD_REMOVED']
+```
+
+### findDangerousChanges()
+
+<ApiTag kind="deprecated" />
+
+Given two schemas, returns an Array containing descriptions of all the types
+of potentially dangerous changes covered by the other functions down below.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">findDangerousChanges</span>(oldSchema: <a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a>, newSchema: <a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a>): <a href="/api-v17/utilities/schema-changes#dangerouschange">DangerousChange</a>[]</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| oldSchema | <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | Schema before the change. |
+| newSchema | <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | Schema after the change. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/utilities/schema-changes#dangerouschange">DangerousChange</a>[]</ApiType> | Dangerous changes between the two schemas. |
+
+#### Example
+
+```ts
+import { buildSchema, findDangerousChanges } from 'graphql/utilities';
+
+const oldSchema = buildSchema(`
+  enum Episode {
+    NEW_HOPE
+  }
+
+  type Query {
+    episode: Episode
+  }
+`);
+const newSchema = buildSchema(`
+  enum Episode {
+    NEW_HOPE
+    EMPIRE
+  }
+
+  type Query {
+    episode: Episode
+  }
+`);
+
+const changes = findDangerousChanges(oldSchema, newSchema);
+
+changes.map((change) => change.type); // => ['VALUE_ADDED_TO_ENUM']
+```
+
+### findSchemaChanges()
+
+Finds all schema changes between two schemas.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">findSchemaChanges</span>(oldSchema: <a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a>, newSchema: <a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a>): <a href="/api-v17/utilities/schema-changes#schemachange">SchemaChange</a>[]</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| oldSchema | <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | Schema before the change. |
+| newSchema | <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | Schema after the change. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/utilities/schema-changes#schemachange">SchemaChange</a>[]</ApiType> | Safe, dangerous, and breaking changes between the two schemas. |
+
+#### Example
+
+```ts
+import { buildSchema, findSchemaChanges } from 'graphql/utilities';
+
+const oldSchema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const newSchema = buildSchema(`
+  type Query {
+    greeting(name: String): String
+    farewell: String
+  }
+`);
+
+const changes = findSchemaChanges(oldSchema, newSchema);
+
+changes.map((change) => change.type); // => ['OPTIONAL_ARG_ADDED', 'FIELD_ADDED']
+```
+
+## Enumerations
+
+### BreakingChangeType
+
+**Enumeration.** Categories of schema changes that may break existing operations.
+
+> This is not a TypeScript `enum`. GraphQL.js exports `BreakingChangeType` as both a runtime const object of literal values and a TypeScript type alias for those values.
+
+#### Members
+
+| Name | Value | Description |
+| --- | --- | --- |
+| `TYPE_REMOVED` | `"TYPE_REMOVED"` |  |
+| `TYPE_CHANGED_KIND` | `"TYPE_CHANGED_KIND"` |  |
+| `TYPE_REMOVED_FROM_UNION` | `"TYPE_REMOVED_FROM_UNION"` |  |
+| `VALUE_REMOVED_FROM_ENUM` | `"VALUE_REMOVED_FROM_ENUM"` |  |
+| `REQUIRED_INPUT_FIELD_ADDED` | `"REQUIRED_INPUT_FIELD_ADDED"` |  |
+| `IMPLEMENTED_INTERFACE_REMOVED` | `"IMPLEMENTED_INTERFACE_REMOVED"` |  |
+| `FIELD_REMOVED` | `"FIELD_REMOVED"` |  |
+| `FIELD_CHANGED_KIND` | `"FIELD_CHANGED_KIND"` |  |
+| `REQUIRED_ARG_ADDED` | `"REQUIRED_ARG_ADDED"` |  |
+| `ARG_REMOVED` | `"ARG_REMOVED"` |  |
+| `ARG_CHANGED_KIND` | `"ARG_CHANGED_KIND"` |  |
+| `DIRECTIVE_REMOVED` | `"DIRECTIVE_REMOVED"` |  |
+| `DIRECTIVE_ARG_REMOVED` | `"DIRECTIVE_ARG_REMOVED"` |  |
+| `REQUIRED_DIRECTIVE_ARG_ADDED` | `"REQUIRED_DIRECTIVE_ARG_ADDED"` |  |
+| `DIRECTIVE_REPEATABLE_REMOVED` | `"DIRECTIVE_REPEATABLE_REMOVED"` |  |
+| `DIRECTIVE_LOCATION_REMOVED` | `"DIRECTIVE_LOCATION_REMOVED"` |  |
+
+### DangerousChangeType
+
+**Enumeration.** Categories of schema changes that may be dangerous for existing operations.
+
+> This is not a TypeScript `enum`. GraphQL.js exports `DangerousChangeType` as both a runtime const object of literal values and a TypeScript type alias for those values.
+
+#### Members
+
+| Name | Value | Description |
+| --- | --- | --- |
+| `VALUE_ADDED_TO_ENUM` | `"VALUE_ADDED_TO_ENUM"` |  |
+| `TYPE_ADDED_TO_UNION` | `"TYPE_ADDED_TO_UNION"` |  |
+| `OPTIONAL_INPUT_FIELD_ADDED` | `"OPTIONAL_INPUT_FIELD_ADDED"` |  |
+| `OPTIONAL_ARG_ADDED` | `"OPTIONAL_ARG_ADDED"` |  |
+| `IMPLEMENTED_INTERFACE_ADDED` | `"IMPLEMENTED_INTERFACE_ADDED"` |  |
+| `ARG_DEFAULT_VALUE_CHANGE` | `"ARG_DEFAULT_VALUE_CHANGE"` |  |
+
+### SafeChangeType
+
+**Enumeration.** Categories of schema changes that are considered safe for existing operations.
+
+> This is not a TypeScript `enum`. GraphQL.js exports `SafeChangeType` as both a runtime const object of literal values and a TypeScript type alias for those values.
+
+#### Members
+
+| Name | Value | Description |
+| --- | --- | --- |
+| `DESCRIPTION_CHANGED` | `"DESCRIPTION_CHANGED"` |  |
+| `TYPE_ADDED` | `"TYPE_ADDED"` |  |
+| `OPTIONAL_INPUT_FIELD_ADDED` | `"OPTIONAL_INPUT_FIELD_ADDED"` |  |
+| `OPTIONAL_ARG_ADDED` | `"OPTIONAL_ARG_ADDED"` |  |
+| `DIRECTIVE_ADDED` | `"DIRECTIVE_ADDED"` |  |
+| `FIELD_ADDED` | `"FIELD_ADDED"` |  |
+| `DIRECTIVE_REPEATABLE_ADDED` | `"DIRECTIVE_REPEATABLE_ADDED"` |  |
+| `DIRECTIVE_LOCATION_ADDED` | `"DIRECTIVE_LOCATION_ADDED"` |  |
+| `OPTIONAL_DIRECTIVE_ARG_ADDED` | `"OPTIONAL_DIRECTIVE_ARG_ADDED"` |  |
+| `FIELD_CHANGED_KIND_SAFE` | `"FIELD_CHANGED_KIND_SAFE"` |  |
+| `ARG_CHANGED_KIND_SAFE` | `"ARG_CHANGED_KIND_SAFE"` |  |
+| `ARG_DEFAULT_VALUE_ADDED` | `"ARG_DEFAULT_VALUE_ADDED"` |  |
+
+## Types
+
+### BreakingChange
+
+**Interface.** Description of a schema change that may break existing operations.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><a href="/api-v17/utilities/schema-changes#breakingchangetype">BreakingChangeType</a></ApiType> | Specific kind of breaking schema change. |
+| description | <ApiType><span className="api-signature-keyword">string</span></ApiType> | Human-readable description of the breaking schema change. |
+
+### DangerousChange
+
+**Interface.** Description of a schema change that may be dangerous for existing operations.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><a href="/api-v17/utilities/schema-changes#dangerouschangetype">DangerousChangeType</a></ApiType> | Specific kind of dangerous schema change. |
+| description | <ApiType><span className="api-signature-keyword">string</span></ApiType> | Human-readable description of the dangerous schema change. |
+
+### SafeChange
+
+**Interface.** Description of a schema change that is considered safe for existing operations.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><a href="/api-v17/utilities/schema-changes#safechangetype">SafeChangeType</a></ApiType> | Specific kind of safe schema change. |
+| description | <ApiType><span className="api-signature-keyword">string</span></ApiType> | Human-readable description of the safe schema change. |
+
+### SchemaChange
+
+**Type alias.** Any schema change detected between two schemas.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">SchemaChange</span> = <a href="/api-v17/utilities/schema-changes#safechange">SafeChange</a> | <a href="/api-v17/utilities/schema-changes#dangerouschange">DangerousChange</a> | <a href="/api-v17/utilities/schema-changes#breakingchange">BreakingChange</a>;</ApiSignature>

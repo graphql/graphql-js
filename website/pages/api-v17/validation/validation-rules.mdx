@@ -1,0 +1,2037 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/validation/validation-rules
+
+## Functions
+
+### DeferStreamDirectiveLabelRule()
+
+Defer and stream directive labels are unique
+
+A GraphQL document is only valid if defer and stream directives' label argument is static and unique.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">DeferStreamDirectiveLabelRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { validate, DeferStreamDirectiveLabelRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    friends: [String]
+  }
+`);
+const invalidDocument = parse(`
+  {
+    friends @stream(label: "friends")
+    other: friends @stream(label: "friends")
+  }
+`);
+const validDocument = parse(`
+  {
+    friends @stream(label: "friends")
+    other: friends @stream(label: "otherFriends")
+  }
+`);
+
+validate(schema, invalidDocument, [DeferStreamDirectiveLabelRule]).length; // => 1
+validate(schema, validDocument, [DeferStreamDirectiveLabelRule]); // => []
+```
+
+### DeferStreamDirectiveOnRootFieldRule()
+
+Defer and stream directives are used on valid root field
+
+A GraphQL document is only valid if defer directives are not used on root mutation or subscription types.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">DeferStreamDirectiveOnRootFieldRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { validate, DeferStreamDirectiveOnRootFieldRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    message: String
+  }
+
+  type Mutation {
+    updateMessage: String
+  }
+`);
+const invalidDocument = parse(`
+  mutation { ... @defer { updateMessage } }
+`);
+const validDocument = parse(`
+  { ... @defer { message } }
+`);
+
+validate(schema, invalidDocument, [DeferStreamDirectiveOnRootFieldRule]).length; // => 1
+validate(schema, validDocument, [DeferStreamDirectiveOnRootFieldRule]); // => []
+```
+
+### DeferStreamDirectiveOnValidOperationsRule()
+
+Defer And Stream Directives Are Used On Valid Operations
+
+A GraphQL document is only valid if defer directives are not used on root mutation or subscription types.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">DeferStreamDirectiveOnValidOperationsRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import {
+  validate,
+  DeferStreamDirectiveOnValidOperationsRule,
+} from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    message: Message
+  }
+
+  type Subscription {
+    message: Message
+  }
+
+  type Message {
+    body: String
+  }
+`);
+const invalidDocument = parse(`
+  subscription {
+    message {
+      ...MessageBody @defer
+    }
+  }
+
+  fragment MessageBody on Message {
+    body
+  }
+`);
+const validDocument = parse(`
+  subscription {
+    message {
+      ...MessageBody @defer(if: false)
+    }
+  }
+
+  fragment MessageBody on Message {
+    body
+  }
+`);
+
+validate(schema, invalidDocument, [DeferStreamDirectiveOnValidOperationsRule])
+  .length; // => 1
+validate(schema, validDocument, [DeferStreamDirectiveOnValidOperationsRule]); // => []
+```
+
+### ExecutableDefinitionsRule()
+
+Executable definitions
+
+A GraphQL document is only valid for execution if all definitions are either
+operation or fragment definitions.
+
+See https://spec.graphql.org/draft/#sec-Executable-Definitions
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">ExecutableDefinitionsRule</span>(context: <span className="api-signature-type">ASTValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><span className="api-signature-type">ASTValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { ExecutableDefinitionsRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  type Extra { field: String }
+`);
+const invalidErrors = validate(schema, invalidDocument, [ExecutableDefinitionsRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { name }
+`);
+const validErrors = validate(schema, validDocument, [ExecutableDefinitionsRule]);
+
+validErrors; // => []
+```
+
+### FieldsOnCorrectTypeRule()
+
+Fields on correct type
+
+A GraphQL document is only valid if all fields selected are defined by the
+parent type, or are an allowed meta field such as __typename.
+
+See https://spec.graphql.org/draft/#sec-Field-Selections
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">FieldsOnCorrectTypeRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { FieldsOnCorrectTypeRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  { missing }
+`);
+const invalidErrors = validate(schema, invalidDocument, [FieldsOnCorrectTypeRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { name }
+`);
+const validErrors = validate(schema, validDocument, [FieldsOnCorrectTypeRule]);
+
+validErrors; // => []
+```
+
+### FragmentsOnCompositeTypesRule()
+
+Fragments on composite type
+
+Fragments use a type condition to determine if they apply, since fragments
+can only be spread into a composite type (object, interface, or union), the
+type condition must also be a composite type.
+
+See https://spec.graphql.org/draft/#sec-Fragments-On-Composite-Types
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">FragmentsOnCompositeTypesRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { FragmentsOnCompositeTypesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  fragment Bad on String { length }
+`);
+const invalidErrors = validate(schema, invalidDocument, [FragmentsOnCompositeTypesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  fragment Good on Query { name }
+`);
+const validErrors = validate(schema, validDocument, [FragmentsOnCompositeTypesRule]);
+
+validErrors; // => []
+```
+
+### KnownArgumentNamesRule()
+
+Known argument names
+
+A GraphQL field is only valid if all supplied arguments are defined by
+that field.
+
+See https://spec.graphql.org/draft/#sec-Argument-Names
+See https://spec.graphql.org/draft/#sec-Directives-Are-In-Valid-Locations
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">KnownArgumentNamesRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { KnownArgumentNamesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    field(arg: String): String
+  }
+`);
+
+const invalidDocument = parse(`
+  { field(unknown: "1") }
+`);
+const invalidErrors = validate(schema, invalidDocument, [KnownArgumentNamesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { field(arg: "1") }
+`);
+const validErrors = validate(schema, validDocument, [KnownArgumentNamesRule]);
+
+validErrors; // => []
+```
+
+### KnownDirectivesRule()
+
+Known directives
+
+A GraphQL document is only valid if all `@directives` are known by the
+schema and legally positioned.
+
+See https://spec.graphql.org/draft/#sec-Directives-Are-Defined
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">KnownDirectivesRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a> | <span className="api-signature-type">SDLValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a> &#124; <span className="api-signature-type">SDLValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { KnownDirectivesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  { name @unknown }
+`);
+const invalidErrors = validate(schema, invalidDocument, [KnownDirectivesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { name @include(if: true) }
+`);
+const validErrors = validate(schema, validDocument, [KnownDirectivesRule]);
+
+validErrors; // => []
+```
+
+### KnownFragmentNamesRule()
+
+Known fragment names
+
+A GraphQL document is only valid if all `...Fragment` fragment spreads refer
+to fragments defined in the same document.
+
+See https://spec.graphql.org/draft/#sec-Fragment-spread-target-defined
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">KnownFragmentNamesRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { KnownFragmentNamesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  { ...Missing }
+`);
+const invalidErrors = validate(schema, invalidDocument, [KnownFragmentNamesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  fragment NameFields on Query { name } query { ...NameFields }
+`);
+const validErrors = validate(schema, validDocument, [KnownFragmentNamesRule]);
+
+validErrors; // => []
+```
+
+### KnownOperationTypesRule()
+
+Known Operation Types
+
+A GraphQL document is only valid if when it contains an operation,
+the root type for the operation exists within the schema.
+
+See https://spec.graphql.org/draft/#sec-Operation-Type-Existence
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">KnownOperationTypesRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { validate, KnownOperationTypesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const invalidDocument = parse('mutation { greeting }');
+const validDocument = parse('{ greeting }');
+
+validate(schema, invalidDocument, [KnownOperationTypesRule])[0].message; // => 'The mutation operation is not supported by the schema.'
+validate(schema, validDocument, [KnownOperationTypesRule]); // => []
+```
+
+### KnownTypeNamesRule()
+
+Known type names
+
+A GraphQL document is only valid if referenced types (specifically
+variable definitions and fragment conditions) are defined by the type schema.
+
+See https://spec.graphql.org/draft/#sec-Fragment-Spread-Type-Existence
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">KnownTypeNamesRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a> | <span className="api-signature-type">SDLValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a> &#124; <span className="api-signature-type">SDLValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { KnownTypeNamesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  fragment Bad on Missing { name }
+`);
+const invalidErrors = validate(schema, invalidDocument, [KnownTypeNamesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  fragment Good on Query { name }
+`);
+const validErrors = validate(schema, validDocument, [KnownTypeNamesRule]);
+
+validErrors; // => []
+```
+
+### LoneAnonymousOperationRule()
+
+Lone anonymous operation
+
+A GraphQL document is only valid if when it contains an anonymous operation
+(the query short-hand) that it contains only that one operation definition.
+
+See https://spec.graphql.org/draft/#sec-Lone-Anonymous-Operation
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">LoneAnonymousOperationRule</span>(context: <span className="api-signature-type">ASTValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><span className="api-signature-type">ASTValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { LoneAnonymousOperationRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  query { name } query Other { name }
+`);
+const invalidErrors = validate(schema, invalidDocument, [LoneAnonymousOperationRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { name }
+`);
+const validErrors = validate(schema, validDocument, [LoneAnonymousOperationRule]);
+
+validErrors; // => []
+```
+
+### LoneSchemaDefinitionRule()
+
+Lone Schema definition
+
+A GraphQL document is only valid if it contains only one schema definition.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">LoneSchemaDefinitionRule</span>(context: <span className="api-signature-type">SDLValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><span className="api-signature-type">SDLValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql';
+import { LoneSchemaDefinitionRule } from 'graphql/validation';
+
+const invalidSDL = `
+  schema { query: Query } schema { query: Query } type Query { name: String }
+`;
+
+LoneSchemaDefinitionRule.name; // => 'LoneSchemaDefinitionRule'
+buildSchema(invalidSDL); // throws an error
+
+const validSDL = `
+  schema { query: Query } type Query { name: String }
+`;
+
+buildSchema(validSDL); // does not throw
+```
+
+### MaxIntrospectionDepthRule()
+
+Implements the max introspection depth validation rule.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">MaxIntrospectionDepthRule</span>(context: <span className="api-signature-type">ASTValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><span className="api-signature-type">ASTValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { MaxIntrospectionDepthRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  { __schema { types { fields { type { fields { type { fields { name } } } } } } } }
+`);
+const invalidErrors = validate(schema, invalidDocument, [MaxIntrospectionDepthRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { __schema { queryType { name } } }
+`);
+const validErrors = validate(schema, validDocument, [MaxIntrospectionDepthRule]);
+
+validErrors; // => []
+```
+
+### NoFragmentCyclesRule()
+
+No fragment cycles
+
+The graph of fragment spreads must not form any cycles including spreading itself.
+Otherwise an operation could infinitely spread or infinitely execute on cycles in the underlying data.
+
+See https://spec.graphql.org/draft/#sec-Fragment-spreads-must-not-form-cycles
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">NoFragmentCyclesRule</span>(context: <span className="api-signature-type">ASTValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><span className="api-signature-type">ASTValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { NoFragmentCyclesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  fragment A on Query { ...B } fragment B on Query { ...A } query { ...A }
+`);
+const invalidErrors = validate(schema, invalidDocument, [NoFragmentCyclesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  fragment A on Query { name } query { ...A }
+`);
+const validErrors = validate(schema, validDocument, [NoFragmentCyclesRule]);
+
+validErrors; // => []
+```
+
+### NoUndefinedVariablesRule()
+
+No undefined variables
+
+A GraphQL operation is only valid if all variables encountered, both directly
+and via fragment spreads, are defined by that operation.
+
+See https://spec.graphql.org/draft/#sec-All-Variable-Uses-Defined
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">NoUndefinedVariablesRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { NoUndefinedVariablesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    field(arg: ID): String
+  }
+`);
+
+const invalidDocument = parse(`
+  query ($id: ID) { field(arg: $missing) }
+`);
+const invalidErrors = validate(schema, invalidDocument, [NoUndefinedVariablesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  query ($id: ID) { field(arg: $id) }
+`);
+const validErrors = validate(schema, validDocument, [NoUndefinedVariablesRule]);
+
+validErrors; // => []
+```
+
+### NoUnusedFragmentsRule()
+
+No unused fragments
+
+A GraphQL document is only valid if all fragment definitions are spread
+within operations, or spread within other fragments spread within operations.
+
+See https://spec.graphql.org/draft/#sec-Fragments-Must-Be-Used
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">NoUnusedFragmentsRule</span>(context: <span className="api-signature-type">ASTValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><span className="api-signature-type">ASTValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { NoUnusedFragmentsRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  fragment Unused on Query { name } query { name }
+`);
+const invalidErrors = validate(schema, invalidDocument, [NoUnusedFragmentsRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  fragment Used on Query { name } query { ...Used }
+`);
+const validErrors = validate(schema, validDocument, [NoUnusedFragmentsRule]);
+
+validErrors; // => []
+```
+
+### NoUnusedVariablesRule()
+
+No unused variables
+
+A GraphQL operation is only valid if all variables defined by an operation
+are used, either directly or within a spread fragment.
+
+See https://spec.graphql.org/draft/#sec-All-Variables-Used
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">NoUnusedVariablesRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { NoUnusedVariablesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    field(arg: ID): String
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  query ($id: ID) { name }
+`);
+const invalidErrors = validate(schema, invalidDocument, [NoUnusedVariablesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  query ($id: ID) { field(arg: $id) }
+`);
+const validErrors = validate(schema, validDocument, [NoUnusedVariablesRule]);
+
+validErrors; // => []
+```
+
+### OverlappingFieldsCanBeMergedRule()
+
+Overlapping fields can be merged
+
+A selection set is only valid if all fields (including spreading any
+fragments) either correspond to distinct response names or can be merged
+without ambiguity.
+
+See https://spec.graphql.org/draft/#sec-Field-Selection-Merging
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">OverlappingFieldsCanBeMergedRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { OverlappingFieldsCanBeMergedRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    dog: Dog
+  }
+
+  type Dog {
+    name: String
+    barkVolume: Int
+  }
+`);
+
+const invalidDocument = parse(`
+  { dog { value: barkVolume value: name } }
+`);
+const invalidErrors = validate(schema, invalidDocument, [OverlappingFieldsCanBeMergedRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { dog { barkVolume name } }
+`);
+const validErrors = validate(schema, validDocument, [OverlappingFieldsCanBeMergedRule]);
+
+validErrors; // => []
+```
+
+### PossibleFragmentSpreadsRule()
+
+Possible fragment spread
+
+A fragment spread is only valid if the type condition could ever possibly
+be true: if there is a non-empty intersection of the possible parent types,
+and possible types which pass the type condition.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">PossibleFragmentSpreadsRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { PossibleFragmentSpreadsRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    dog: Dog
+  }
+
+  type Dog {
+    barkVolume: Int
+  }
+
+  type Cat {
+    meowVolume: Int
+  }
+`);
+
+const invalidDocument = parse(`
+  { dog { ... on Cat { meowVolume } } }
+`);
+const invalidErrors = validate(schema, invalidDocument, [PossibleFragmentSpreadsRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { dog { ... on Dog { barkVolume } } }
+`);
+const validErrors = validate(schema, validDocument, [PossibleFragmentSpreadsRule]);
+
+validErrors; // => []
+```
+
+### PossibleTypeExtensionsRule()
+
+Possible type extension
+
+A type extension is only valid if the type is defined and has the same kind.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">PossibleTypeExtensionsRule</span>(context: <span className="api-signature-type">SDLValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><span className="api-signature-type">SDLValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql';
+import { PossibleTypeExtensionsRule } from 'graphql/validation';
+
+const invalidSDL = `
+  extend type Missing { name: String } type Query { name: String }
+`;
+
+PossibleTypeExtensionsRule.name; // => 'PossibleTypeExtensionsRule'
+buildSchema(invalidSDL); // throws an error
+
+const validSDL = `
+  type Query { name: String } extend type Query { other: String }
+`;
+
+buildSchema(validSDL); // does not throw
+```
+
+### ProvidedRequiredArgumentsRule()
+
+Provided required arguments
+
+A field or directive is only valid if all required (non-null without a
+default value) field arguments have been provided.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">ProvidedRequiredArgumentsRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { ProvidedRequiredArgumentsRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    field(required: String!): String
+  }
+`);
+
+const invalidDocument = parse(`
+  { field }
+`);
+const invalidErrors = validate(schema, invalidDocument, [ProvidedRequiredArgumentsRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { field(required: "x") }
+`);
+const validErrors = validate(schema, validDocument, [ProvidedRequiredArgumentsRule]);
+
+validErrors; // => []
+```
+
+### ScalarLeafsRule()
+
+Scalar leafs
+
+A GraphQL document is valid only if all leaf fields (fields without
+sub selections) are of scalar or enum types.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">ScalarLeafsRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { ScalarLeafsRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  { name { length } }
+`);
+const invalidErrors = validate(schema, invalidDocument, [ScalarLeafsRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { name }
+`);
+const validErrors = validate(schema, validDocument, [ScalarLeafsRule]);
+
+validErrors; // => []
+```
+
+### SingleFieldSubscriptionsRule()
+
+Subscriptions must only include a non-introspection field.
+
+A GraphQL subscription is valid only if it contains a single root field and
+that root field is not an introspection field.
+
+See https://spec.graphql.org/draft/#sec-Single-root-field
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">SingleFieldSubscriptionsRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { SingleFieldSubscriptionsRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+
+  type Subscription {
+    a: String
+    b: String
+  }
+`);
+
+const invalidDocument = parse(`
+  subscription { a b }
+`);
+const invalidErrors = validate(schema, invalidDocument, [SingleFieldSubscriptionsRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  subscription { a }
+`);
+const validErrors = validate(schema, validDocument, [SingleFieldSubscriptionsRule]);
+
+validErrors; // => []
+```
+
+### StreamDirectiveOnListFieldRule()
+
+Stream directives are used on list fields
+
+A GraphQL document is only valid if stream directives are used on list fields.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">StreamDirectiveOnListFieldRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { validate, StreamDirectiveOnListFieldRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+    friends: [String]
+  }
+`);
+const invalidDocument = parse('{ name @stream(initialCount: 0) }');
+const validDocument = parse('{ friends @stream(initialCount: 0) }');
+
+validate(schema, invalidDocument, [StreamDirectiveOnListFieldRule]).length; // => 1
+validate(schema, validDocument, [StreamDirectiveOnListFieldRule]); // => []
+```
+
+### UniqueArgumentDefinitionNamesRule()
+
+Unique argument definition names
+
+A GraphQL Object or Interface type is only valid if all its fields have uniquely named arguments.
+A GraphQL Directive is only valid if all its arguments are uniquely named.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">UniqueArgumentDefinitionNamesRule</span>(context: <span className="api-signature-type">SDLValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><span className="api-signature-type">SDLValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql';
+import { UniqueArgumentDefinitionNamesRule } from 'graphql/validation';
+
+const invalidSDL = `
+  type Query { field(arg: String, arg: Int): String }
+`;
+
+UniqueArgumentDefinitionNamesRule.name; // => 'UniqueArgumentDefinitionNamesRule'
+buildSchema(invalidSDL); // throws an error
+
+const validSDL = `
+  type Query { field(arg: String): String }
+`;
+
+buildSchema(validSDL); // does not throw
+```
+
+### UniqueArgumentNamesRule()
+
+Unique argument names
+
+A GraphQL field or directive is only valid if all supplied arguments are
+uniquely named.
+
+See https://spec.graphql.org/draft/#sec-Argument-Names
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">UniqueArgumentNamesRule</span>(context: <span className="api-signature-type">ASTValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><span className="api-signature-type">ASTValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { UniqueArgumentNamesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    field(arg: String): String
+  }
+`);
+
+const invalidDocument = parse(`
+  { field(arg: "1", arg: "2") }
+`);
+const invalidErrors = validate(schema, invalidDocument, [UniqueArgumentNamesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { field(arg: "1") }
+`);
+const validErrors = validate(schema, validDocument, [UniqueArgumentNamesRule]);
+
+validErrors; // => []
+```
+
+### UniqueDirectiveNamesRule()
+
+Unique directive names
+
+A GraphQL document is only valid if all defined directives have unique names.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">UniqueDirectiveNamesRule</span>(context: <span className="api-signature-type">SDLValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><span className="api-signature-type">SDLValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql';
+import { UniqueDirectiveNamesRule } from 'graphql/validation';
+
+const invalidSDL = `
+  directive @tag on FIELD directive @tag on QUERY type Query { name: String }
+`;
+
+UniqueDirectiveNamesRule.name; // => 'UniqueDirectiveNamesRule'
+buildSchema(invalidSDL); // throws an error
+
+const validSDL = `
+  directive @tag on FIELD type Query { name: String }
+`;
+
+buildSchema(validSDL); // does not throw
+```
+
+### UniqueDirectivesPerLocationRule()
+
+Unique directive names per location
+
+A GraphQL document is only valid if all non-repeatable directives at
+a given location are uniquely named.
+
+See https://spec.graphql.org/draft/#sec-Directives-Are-Unique-Per-Location
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">UniqueDirectivesPerLocationRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a> | <span className="api-signature-type">SDLValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a> &#124; <span className="api-signature-type">SDLValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { UniqueDirectivesPerLocationRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  { name @include(if: true) @include(if: false) }
+`);
+const invalidErrors = validate(schema, invalidDocument, [UniqueDirectivesPerLocationRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { name @include(if: true) }
+`);
+const validErrors = validate(schema, validDocument, [UniqueDirectivesPerLocationRule]);
+
+validErrors; // => []
+```
+
+### UniqueEnumValueNamesRule()
+
+Unique enum value names
+
+A GraphQL enum type is only valid if all its values are uniquely named.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">UniqueEnumValueNamesRule</span>(context: <span className="api-signature-type">SDLValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><span className="api-signature-type">SDLValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql';
+import { UniqueEnumValueNamesRule } from 'graphql/validation';
+
+const invalidSDL = `
+  enum Status { ACTIVE ACTIVE } type Query { status: Status }
+`;
+
+UniqueEnumValueNamesRule.name; // => 'UniqueEnumValueNamesRule'
+buildSchema(invalidSDL); // throws an error
+
+const validSDL = `
+  enum Status { ACTIVE INACTIVE } type Query { status: Status }
+`;
+
+buildSchema(validSDL); // does not throw
+```
+
+### UniqueFieldDefinitionNamesRule()
+
+Unique field definition names
+
+A GraphQL complex type is only valid if all its fields are uniquely named.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">UniqueFieldDefinitionNamesRule</span>(context: <span className="api-signature-type">SDLValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><span className="api-signature-type">SDLValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql';
+import { UniqueFieldDefinitionNamesRule } from 'graphql/validation';
+
+const invalidSDL = `
+  type Query { name: String name: String }
+`;
+
+UniqueFieldDefinitionNamesRule.name; // => 'UniqueFieldDefinitionNamesRule'
+buildSchema(invalidSDL); // throws an error
+
+const validSDL = `
+  type Query { name: String other: String }
+`;
+
+buildSchema(validSDL); // does not throw
+```
+
+### UniqueFragmentNamesRule()
+
+Unique fragment names
+
+A GraphQL document is only valid if all defined fragments have unique names.
+
+See https://spec.graphql.org/draft/#sec-Fragment-Name-Uniqueness
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">UniqueFragmentNamesRule</span>(context: <span className="api-signature-type">ASTValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><span className="api-signature-type">ASTValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { UniqueFragmentNamesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  fragment A on Query { name } fragment A on Query { name } query { ...A }
+`);
+const invalidErrors = validate(schema, invalidDocument, [UniqueFragmentNamesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  fragment A on Query { name } query { ...A }
+`);
+const validErrors = validate(schema, validDocument, [UniqueFragmentNamesRule]);
+
+validErrors; // => []
+```
+
+### UniqueInputFieldNamesRule()
+
+Unique input field names
+
+A GraphQL input object value is only valid if all supplied fields are
+uniquely named.
+
+See https://spec.graphql.org/draft/#sec-Input-Object-Field-Uniqueness
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">UniqueInputFieldNamesRule</span>(context: <span className="api-signature-type">ASTValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><span className="api-signature-type">ASTValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { UniqueInputFieldNamesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  input Filter {
+    name: String
+  }
+
+  type Query {
+    search(filter: Filter): String
+  }
+`);
+
+const invalidDocument = parse(`
+  { search(filter: { name: "a", name: "b" }) }
+`);
+const invalidErrors = validate(schema, invalidDocument, [UniqueInputFieldNamesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { search(filter: { name: "a" }) }
+`);
+const validErrors = validate(schema, validDocument, [UniqueInputFieldNamesRule]);
+
+validErrors; // => []
+```
+
+### UniqueOperationNamesRule()
+
+Unique operation names
+
+A GraphQL document is only valid if all defined operations have unique names.
+
+See https://spec.graphql.org/draft/#sec-Operation-Name-Uniqueness
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">UniqueOperationNamesRule</span>(context: <span className="api-signature-type">ASTValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><span className="api-signature-type">ASTValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { UniqueOperationNamesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  query Same { name } query Same { name }
+`);
+const invalidErrors = validate(schema, invalidDocument, [UniqueOperationNamesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  query One { name } query Two { name }
+`);
+const validErrors = validate(schema, validDocument, [UniqueOperationNamesRule]);
+
+validErrors; // => []
+```
+
+### UniqueOperationTypesRule()
+
+Unique operation types
+
+A GraphQL document is only valid if it has only one type per operation.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">UniqueOperationTypesRule</span>(context: <span className="api-signature-type">SDLValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><span className="api-signature-type">SDLValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql';
+import { UniqueOperationTypesRule } from 'graphql/validation';
+
+const invalidSDL = `
+  schema { query: Query query: Other } type Query { name: String } type Other { name: String }
+`;
+
+UniqueOperationTypesRule.name; // => 'UniqueOperationTypesRule'
+buildSchema(invalidSDL); // throws an error
+
+const validSDL = `
+  schema { query: Query } type Query { name: String }
+`;
+
+buildSchema(validSDL); // does not throw
+```
+
+### UniqueTypeNamesRule()
+
+Unique type names
+
+A GraphQL document is only valid if all defined types have unique names.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">UniqueTypeNamesRule</span>(context: <span className="api-signature-type">SDLValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><span className="api-signature-type">SDLValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql';
+import { UniqueTypeNamesRule } from 'graphql/validation';
+
+const invalidSDL = `
+  type Query { name: String } type Query { other: String }
+`;
+
+UniqueTypeNamesRule.name; // => 'UniqueTypeNamesRule'
+buildSchema(invalidSDL); // throws an error
+
+const validSDL = `
+  type Query { name: String } type Other { name: String }
+`;
+
+buildSchema(validSDL); // does not throw
+```
+
+### UniqueVariableNamesRule()
+
+Unique variable names
+
+A GraphQL operation is only valid if all its variables are uniquely named.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">UniqueVariableNamesRule</span>(context: <span className="api-signature-type">ASTValidationContext</span>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><span className="api-signature-type">ASTValidationContext</span></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { UniqueVariableNamesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    field(arg: ID): String
+  }
+`);
+
+const invalidDocument = parse(`
+  query ($id: ID, $id: ID) { field(arg: $id) }
+`);
+const invalidErrors = validate(schema, invalidDocument, [UniqueVariableNamesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  query ($id: ID) { field(arg: $id) }
+`);
+const validErrors = validate(schema, validDocument, [UniqueVariableNamesRule]);
+
+validErrors; // => []
+```
+
+### ValuesOfCorrectTypeRule()
+
+Value literals of correct type
+
+A GraphQL document is only valid if all value literals are of the type
+expected at their position.
+
+See https://spec.graphql.org/draft/#sec-Values-of-Correct-Type
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">ValuesOfCorrectTypeRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { ValuesOfCorrectTypeRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    count(limit: Int): Int
+  }
+`);
+
+const invalidDocument = parse(`
+  { count(limit: "many") }
+`);
+const invalidErrors = validate(schema, invalidDocument, [ValuesOfCorrectTypeRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { count(limit: 1) }
+`);
+const validErrors = validate(schema, validDocument, [ValuesOfCorrectTypeRule]);
+
+validErrors; // => []
+```
+
+### VariablesAreInputTypesRule()
+
+Variables are input types
+
+A GraphQL operation is only valid if all the variables it defines are of
+input types (scalar, enum, or input object).
+
+See https://spec.graphql.org/draft/#sec-Variables-Are-Input-Types
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">VariablesAreInputTypesRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { VariablesAreInputTypesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    field(arg: ID): String
+  }
+
+  type User {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  query ($user: User) { field(arg: "1") }
+`);
+const invalidErrors = validate(schema, invalidDocument, [VariablesAreInputTypesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  query ($id: ID) { field(arg: $id) }
+`);
+const validErrors = validate(schema, validDocument, [VariablesAreInputTypesRule]);
+
+validErrors; // => []
+```
+
+### VariablesInAllowedPositionRule()
+
+Variables in allowed position
+
+Variable usages must be compatible with the arguments they are passed to.
+
+See https://spec.graphql.org/draft/#sec-All-Variable-Usages-are-Allowed
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">VariablesInAllowedPositionRule</span>(context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { VariablesInAllowedPositionRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    field(arg: ID!): String
+  }
+`);
+
+const invalidDocument = parse(`
+  query ($id: String) { field(arg: $id) }
+`);
+const invalidErrors = validate(schema, invalidDocument, [VariablesInAllowedPositionRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  query ($id: ID!) { field(arg: $id) }
+`);
+const validErrors = validate(schema, validDocument, [VariablesInAllowedPositionRule]);
+
+validErrors; // => []
+```
+
+## Constants
+
+### recommendedRules
+
+Technically these aren't part of the spec but they are strongly encouraged
+validation rules.
+
+<ApiType><span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/validation/validation-context#validationrule">ValidationRule</a>&gt;</ApiType>
+
+### specifiedRules
+
+This set includes all validation rules defined by the GraphQL spec.
+
+The order of the rules in this list has been adjusted to lead to the
+most clear output when encountering multiple validation errors.
+
+<ApiType><span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/validation/validation-context#validationrule">ValidationRule</a>&gt;</ApiType>

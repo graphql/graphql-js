@@ -1,0 +1,110 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/validation/validation
+
+## Functions
+
+### validate()
+
+Implements the "Validation" section of the spec.
+
+Validation runs synchronously, returning an array of encountered errors, or
+an empty array if no errors were encountered and the document is valid.
+
+A list of specific validation rules may be provided. If not provided, the
+default list of rules defined by the GraphQL specification will be used.
+
+Each validation rule is a function that returns a visitor
+(see the language/visitor API). Visitor methods are expected to return
+GraphQLErrors, or Arrays of GraphQLErrors when invalid.
+
+Validate will stop validation after a `maxErrors` limit has been reached.
+Attackers can send pathologically invalid queries to induce a DoS attack,
+so `maxErrors` defaults to 100 errors.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">validate</span>(schema: <a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a>, documentAST: <a href="/api-v17/language/ast#documentnode">DocumentNode</a>, rules: <span className="api-signature-keyword">readonly</span> <a href="/api-v17/validation/validation-context#validationrule">ValidationRule</a>[], options?: <a href="/api-v17/validation/validation#validationoptions">ValidationOptions</a>): <span className="api-signature-keyword">readonly</span> <a href="/api-v17/error/errors#graphqlerror">GraphQLError</a>[]</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| schema | <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> |  | Schema to validate against. |
+| documentAST | <ApiType><a href="/api-v17/language/ast#documentnode">DocumentNode</a></ApiType> |  | Document AST to validate. |
+| rules | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/validation/validation-context#validationrule">ValidationRule</a>[]</ApiType> | `specifiedRules` | Validation rules to apply. |
+| options? | <ApiType><a href="/api-v17/validation/validation#validationoptions">ValidationOptions</a></ApiType> |  | Validation options, including error limits and suggestions. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/error/errors#graphqlerror">GraphQLError</a>[]</ApiType> | Validation errors, or an empty array when the document is valid. |
+
+#### Example 1
+
+```ts
+// Validate with the default specified rules.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { validate } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    fullName: String
+  }
+`);
+
+validate(schema, parse('{ greeting }')); // => []
+
+const errors = validate(schema, parse('{ missing }'));
+errors[0].message; // => 'Cannot query field "missing" on type "Query".'
+```
+
+#### Example 2
+
+```ts
+// This variant uses a custom rule list and validation options.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { FieldsOnCorrectTypeRule, validate } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse('{ missingOne missingTwo }');
+
+const errors = validate(
+  schema,
+  document,
+  [FieldsOnCorrectTypeRule],
+  { maxErrors: 1 },
+);
+
+errors.length; // => 2
+errors[1].message; // => 'Too many validation errors, error limit reached. Validation aborted.'
+
+const hiddenSuggestionErrors = validate(
+  schema,
+  parse('{ name }'),
+  [FieldsOnCorrectTypeRule],
+  { hideSuggestions: true },
+);
+
+hiddenSuggestionErrors[0].message; // => 'Cannot query field "name" on type "Query".'
+```
+
+## Types
+
+### ValidationOptions
+
+**Interface.** Options used when validating a GraphQL document.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| maxErrors? | <ApiType><span className="api-signature-keyword">number</span></ApiType> | Maximum number of validation errors before validation stops. |
+| hideSuggestions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;</ApiType> | Whether suggestion text should be omitted from validation errors. |

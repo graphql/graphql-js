@@ -1,0 +1,229 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/language/parsing
+
+## Functions
+
+### parse()
+
+Given a GraphQL source, parses it into a Document.
+Throws GraphQLError if a syntax error is encountered.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">parse</span>(source: <span className="api-signature-keyword">string</span> | <a href="/api-v17/language/source#source">Source</a>, options?: <a href="/api-v17/language/parsing#parseoptions">ParseOptions</a>): <a href="/api-v17/language/ast#documentnode">DocumentNode</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| source | <ApiType><span className="api-signature-keyword">string</span> &#124; <a href="/api-v17/language/source#source">Source</a></ApiType> | A GraphQL source string or source object. |
+| options? | <ApiType><a href="/api-v17/language/parsing#parseoptions">ParseOptions</a></ApiType> | Optional parser configuration. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/ast#documentnode">DocumentNode</a></ApiType> | The parsed GraphQL document AST. |
+
+#### Example 1
+
+```ts
+// Parse a GraphQL document with the default parser options.
+import { parse } from 'graphql/language';
+
+const document = parse('{ hero { name } }');
+
+document.kind; // => 'Document'
+```
+
+#### Example 2
+
+```ts
+// This variant enables parser options and provides an explicit lexer.
+import { Lexer, Source, parse } from 'graphql/language';
+
+const document = parse(`
+  {
+    t { ...A(var: true) }
+  }
+  fragment A($var: Boolean = false) on T {
+    name
+  }
+`, {
+  experimentalFragmentArguments: true,
+  maxTokens: 80,
+  noLocation: true,
+});
+const directiveDocument = parse('directive @foo @bar on FIELD', {
+  experimentalDirectivesOnDirectiveDefinitions: true,
+});
+const source = new Source('{ hero }');
+const lexerDocument = parse(source, { lexer: new Lexer(source) });
+
+document.definitions[0].kind; // => 'OperationDefinition'
+document.definitions[1].kind; // => 'FragmentDefinition'
+document.loc; // => undefined
+directiveDocument.definitions[0].kind; // => 'DirectiveDefinition'
+lexerDocument.definitions[0].kind; // => 'OperationDefinition'
+```
+
+### parseValue()
+
+Given a string containing a GraphQL value (ex. `[42]`), parse the AST for
+that value.
+Throws GraphQLError if a syntax error is encountered.
+
+This is useful within tools that operate upon GraphQL Values directly and
+in isolation of complete GraphQL documents.
+
+Consider providing the results to the utility function: valueFromAST().
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">parseValue</span>(source: <span className="api-signature-keyword">string</span> | <a href="/api-v17/language/source#source">Source</a>, options?: <a href="/api-v17/language/parsing#parseoptions">ParseOptions</a>): <a href="/api-v17/language/ast#valuenode">ValueNode</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| source | <ApiType><span className="api-signature-keyword">string</span> &#124; <a href="/api-v17/language/source#source">Source</a></ApiType> | A GraphQL source string or source object containing a value. |
+| options? | <ApiType><a href="/api-v17/language/parsing#parseoptions">ParseOptions</a></ApiType> | Optional parser configuration. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/ast#valuenode">ValueNode</a></ApiType> | The parsed GraphQL value AST. |
+
+#### Example
+
+```ts
+import { parseValue } from 'graphql/language';
+
+const value = parseValue('[42]');
+
+value.kind; // => 'ListValue'
+```
+
+### parseConstValue()
+
+Similar to parseValue(), but raises a parse error if it encounters a
+variable. The return type will be a constant value.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">parseConstValue</span>(source: <span className="api-signature-keyword">string</span> | <a href="/api-v17/language/source#source">Source</a>, options?: <a href="/api-v17/language/parsing#parseoptions">ParseOptions</a>): <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| source | <ApiType><span className="api-signature-keyword">string</span> &#124; <a href="/api-v17/language/source#source">Source</a></ApiType> | A GraphQL source string or source object containing a constant value. |
+| options? | <ApiType><a href="/api-v17/language/parsing#parseoptions">ParseOptions</a></ApiType> | Optional parser configuration. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a></ApiType> | The parsed GraphQL constant value AST. |
+
+#### Example
+
+```ts
+import { parseConstValue } from 'graphql/language';
+
+const value = parseConstValue('{ enabled: true }');
+
+value.kind; // => 'ObjectValue'
+parseConstValue('$variable'); // throws an error
+```
+
+### parseType()
+
+Given a string containing a GraphQL Type (ex. `[Int!]`), parse the AST for
+that type.
+Throws GraphQLError if a syntax error is encountered.
+
+This is useful within tools that operate upon GraphQL Types directly and
+in isolation of complete GraphQL documents.
+
+Consider providing the results to the utility function: typeFromAST().
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">parseType</span>(source: <span className="api-signature-keyword">string</span> | <a href="/api-v17/language/source#source">Source</a>, options?: <a href="/api-v17/language/parsing#parseoptions">ParseOptions</a>): <a href="/api-v17/language/ast#typenode">TypeNode</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| source | <ApiType><span className="api-signature-keyword">string</span> &#124; <a href="/api-v17/language/source#source">Source</a></ApiType> | A GraphQL source string or source object containing a type reference. |
+| options? | <ApiType><a href="/api-v17/language/parsing#parseoptions">ParseOptions</a></ApiType> | Optional parser configuration. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/ast#typenode">TypeNode</a></ApiType> | The parsed GraphQL type AST. |
+
+#### Example
+
+```ts
+import { parseType } from 'graphql/language';
+
+const type = parseType('[String!]');
+
+type.kind; // => 'ListType'
+```
+
+### parseSchemaCoordinate()
+
+Given a string containing a GraphQL Schema Coordinate (ex. `Type.field`),
+parse the AST for that schema coordinate.
+Throws GraphQLError if a syntax error is encountered.
+
+Consider providing the results to the utility function:
+resolveASTSchemaCoordinate(). Or calling resolveSchemaCoordinate() directly
+with an unparsed source.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">parseSchemaCoordinate</span>(source: <span className="api-signature-keyword">string</span> | <a href="/api-v17/language/source#source">Source</a>): <a href="/api-v17/language/ast#schemacoordinatenode">SchemaCoordinateNode</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| source | <ApiType><span className="api-signature-keyword">string</span> &#124; <a href="/api-v17/language/source#source">Source</a></ApiType> | A GraphQL source string or source object containing a schema coordinate. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/ast#schemacoordinatenode">SchemaCoordinateNode</a></ApiType> | The parsed GraphQL schema coordinate AST. |
+
+#### Example
+
+```ts
+import { parseSchemaCoordinate } from 'graphql/language';
+
+const coordinate = parseSchemaCoordinate('Query.hero');
+
+coordinate.kind; // => 'MemberCoordinate'
+```
+
+## Types
+
+### ParseOptions
+
+**Interface.** Configuration options to control parser behavior
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| noLocation? | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | By default, the parser creates AST nodes that know the location<br />in the source that they correspond to. This configuration flag<br />disables that behavior for performance or testing. |
+| maxTokens? | <ApiType><span className="api-signature-keyword">number</span></ApiType> | Parser CPU and memory usage is linear to the number of tokens in a document<br />however in extreme cases it becomes quadratic due to memory exhaustion.<br />Parsing happens before validation so even invalid queries can burn lots of<br />CPU time and memory.<br />To prevent this you can set a maximum number of tokens allowed within a document. |
+| experimentalFragmentArguments? | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | EXPERIMENTAL:<br />If enabled, the parser will understand and parse fragment variable definitions<br />and arguments on fragment spreads. Fragment variable definitions will be represented<br />in the `variableDefinitions` field of the FragmentDefinitionNode.<br />Fragment spread arguments will be represented in the `arguments` field of FragmentSpreadNode.<br />For example:<br />```graphql {   t { ...A(var: true) } } fragment A($var: Boolean = false) on T {   ...B(x: $var) } ``` |
+| experimentalDirectivesOnDirectiveDefinitions? | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | EXPERIMENTAL:<br />If enabled, the parser will parse directives on directive definitions.<br />This syntax is not part of the GraphQL specification and may change.<br />```graphql directive @foo @bar on FIELD ``` |

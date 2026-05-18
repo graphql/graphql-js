@@ -1,0 +1,360 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/language/ast-predicates
+
+## Functions
+
+### isDefinitionNode()
+
+Returns true when the AST node is a definition node.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isDefinitionNode</span>(node: <a href="/api-v16/language/ast#astnode">ASTNode</a>): node is DefinitionNode</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| node | <ApiType><a href="/api-v16/language/ast#astnode">ASTNode</a></ApiType> | The AST node to test. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>node is DefinitionNode</ApiType> | True when the AST node is a definition node. |
+
+#### Example
+
+```ts
+import { parse, isDefinitionNode } from 'graphql/language';
+
+const document = parse('{ hello }');
+
+isDefinitionNode(document.definitions[0]); // => true
+isDefinitionNode(document); // => false
+```
+
+### isExecutableDefinitionNode()
+
+Returns true when the AST node is an executable definition node.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isExecutableDefinitionNode</span>(node: <a href="/api-v16/language/ast#astnode">ASTNode</a>): node is ExecutableDefinitionNode</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| node | <ApiType><a href="/api-v16/language/ast#astnode">ASTNode</a></ApiType> | The AST node to test. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>node is ExecutableDefinitionNode</ApiType> | True when the AST node is an executable definition node. |
+
+#### Example
+
+```ts
+import { parse, isExecutableDefinitionNode } from 'graphql/language';
+
+const query = parse('{ hello }');
+const schema = parse('type Query { hello: String }');
+
+isExecutableDefinitionNode(query.definitions[0]); // => true
+isExecutableDefinitionNode(schema.definitions[0]); // => false
+```
+
+### isSelectionNode()
+
+Returns true when the AST node is a selection node.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isSelectionNode</span>(node: <a href="/api-v16/language/ast#astnode">ASTNode</a>): node is SelectionNode</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| node | <ApiType><a href="/api-v16/language/ast#astnode">ASTNode</a></ApiType> | The AST node to test. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>node is SelectionNode</ApiType> | True when the AST node is a selection node. |
+
+#### Example
+
+```ts
+import { Kind, isSelectionNode } from 'graphql/language';
+
+const field = { kind: Kind.FIELD, name: { kind: Kind.NAME, value: 'hello' } };
+const document = { kind: Kind.DOCUMENT, definitions: [] };
+
+isSelectionNode(field); // => true
+isSelectionNode(document); // => false
+```
+
+### isValueNode()
+
+Returns true when the AST node is a value node.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isValueNode</span>(node: <a href="/api-v16/language/ast#astnode">ASTNode</a>): node is ValueNode</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| node | <ApiType><a href="/api-v16/language/ast#astnode">ASTNode</a></ApiType> | The AST node to test. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>node is ValueNode</ApiType> | True when the AST node is a value node. |
+
+#### Example
+
+```ts
+import { parseType, parseValue, isValueNode } from 'graphql/language';
+
+const value = parseValue('[42]');
+const type = parseType('[String!]');
+
+isValueNode(value); // => true
+isValueNode(type); // => false
+```
+
+### isConstValueNode()
+
+Returns true when the AST node is a constant value node.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isConstValueNode</span>(node: <a href="/api-v16/language/ast#astnode">ASTNode</a>): node is ConstValueNode</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| node | <ApiType><a href="/api-v16/language/ast#astnode">ASTNode</a></ApiType> | The AST node to test. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>node is ConstValueNode</ApiType> | True when the AST node is a constant value node. |
+
+#### Example
+
+```ts
+import { parseConstValue, parseValue, isConstValueNode } from 'graphql/language';
+
+const value = parseConstValue('[42]');
+const variable = parseValue('$id');
+
+isConstValueNode(value); // => true
+isConstValueNode(variable); // => false
+```
+
+### isTypeNode()
+
+Returns true when the AST node is a type node.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isTypeNode</span>(node: <a href="/api-v16/language/ast#astnode">ASTNode</a>): node is TypeNode</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| node | <ApiType><a href="/api-v16/language/ast#astnode">ASTNode</a></ApiType> | The AST node to test. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>node is TypeNode</ApiType> | True when the AST node is a type node. |
+
+#### Example
+
+```ts
+import { parseType, parseValue, isTypeNode } from 'graphql/language';
+
+const type = parseType('[String!]');
+const value = parseValue('[42]');
+
+isTypeNode(type); // => true
+isTypeNode(value); // => false
+```
+
+### isTypeSystemDefinitionNode()
+
+Returns true when the AST node is a type system definition node.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isTypeSystemDefinitionNode</span>(node: <a href="/api-v16/language/ast#astnode">ASTNode</a>): node is TypeSystemDefinitionNode</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| node | <ApiType><a href="/api-v16/language/ast#astnode">ASTNode</a></ApiType> | The AST node to test. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>node is TypeSystemDefinitionNode</ApiType> | True when the AST node is a type system definition node. |
+
+#### Example
+
+```ts
+import { parse, isTypeSystemDefinitionNode } from 'graphql/language';
+
+const schema = parse('type Query { hello: String }');
+const query = parse('{ hello }');
+
+isTypeSystemDefinitionNode(schema.definitions[0]); // => true
+isTypeSystemDefinitionNode(query.definitions[0]); // => false
+```
+
+### isTypeDefinitionNode()
+
+Returns true when the AST node is a type definition node.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isTypeDefinitionNode</span>(node: <a href="/api-v16/language/ast#astnode">ASTNode</a>): node is TypeDefinitionNode</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| node | <ApiType><a href="/api-v16/language/ast#astnode">ASTNode</a></ApiType> | The AST node to test. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>node is TypeDefinitionNode</ApiType> | True when the AST node is a type definition node. |
+
+#### Example
+
+```ts
+import { parse, isTypeDefinitionNode } from 'graphql/language';
+
+const typeDefinition = parse('type Query { hello: String }');
+const directiveDefinition = parse('directive @cache on FIELD');
+
+isTypeDefinitionNode(typeDefinition.definitions[0]); // => true
+isTypeDefinitionNode(directiveDefinition.definitions[0]); // => false
+```
+
+### isTypeSystemExtensionNode()
+
+Returns true when the AST node is a type system extension node.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isTypeSystemExtensionNode</span>(node: <a href="/api-v16/language/ast#astnode">ASTNode</a>): node is TypeSystemExtensionNode</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| node | <ApiType><a href="/api-v16/language/ast#astnode">ASTNode</a></ApiType> | The AST node to test. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>node is TypeSystemExtensionNode</ApiType> | True when the AST node is a type system extension node. |
+
+#### Example
+
+```ts
+import { parse, isTypeSystemExtensionNode } from 'graphql/language';
+
+const extension = parse('extend type Query { hello: String }');
+const definition = parse('type Query { hello: String }');
+
+isTypeSystemExtensionNode(extension.definitions[0]); // => true
+isTypeSystemExtensionNode(definition.definitions[0]); // => false
+```
+
+### isTypeExtensionNode()
+
+Returns true when the AST node is a type extension node.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isTypeExtensionNode</span>(node: <a href="/api-v16/language/ast#astnode">ASTNode</a>): node is TypeExtensionNode</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| node | <ApiType><a href="/api-v16/language/ast#astnode">ASTNode</a></ApiType> | The AST node to test. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>node is TypeExtensionNode</ApiType> | True when the AST node is a type extension node. |
+
+#### Example
+
+```ts
+import { parse, isTypeExtensionNode } from 'graphql/language';
+
+const extension = parse('extend type Query { hello: String }');
+const schemaExtension = parse('extend schema { query: Query }');
+
+isTypeExtensionNode(extension.definitions[0]); // => true
+isTypeExtensionNode(schemaExtension.definitions[0]); // => false
+```
+
+### isSchemaCoordinateNode()
+
+Returns true when the AST node is a schema coordinate node.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isSchemaCoordinateNode</span>(node: <a href="/api-v16/language/ast#astnode">ASTNode</a>): node is SchemaCoordinateNode</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| node | <ApiType><a href="/api-v16/language/ast#astnode">ASTNode</a></ApiType> | The AST node to test. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>node is SchemaCoordinateNode</ApiType> | True when the AST node is a schema coordinate node. |
+
+#### Example
+
+```ts
+import {
+  parse,
+  parseSchemaCoordinate,
+  isSchemaCoordinateNode,
+} from 'graphql/language';
+
+const coordinate = parseSchemaCoordinate('Query.hero');
+const document = parse('{ hero }');
+
+isSchemaCoordinateNode(coordinate); // => true
+isSchemaCoordinateNode(document); // => false
+```

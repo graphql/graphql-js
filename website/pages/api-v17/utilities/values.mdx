@@ -1,0 +1,605 @@
+import { ApiSignature, ApiType, ApiTag } from '../../../components/ApiTags';
+
+# graphql/utilities/values
+
+## Functions
+
+### astFromValue()
+
+<ApiTag kind="deprecated" />
+
+Produces a GraphQL Value AST given a JavaScript object.
+Function will match JavaScript/JSON values to GraphQL AST schema format
+by using suggested GraphQLInputType. For example:
+
+    astFromValue("value", GraphQLString)
+
+A GraphQL type must be provided, which will be used to interpret different
+JavaScript values.
+
+| JSON Value    | GraphQL Value        |
+| ------------- | -------------------- |
+| Object        | Input Object         |
+| Array         | List                 |
+| Boolean       | Boolean              |
+| String        | String / Enum Value  |
+| Number        | Int / Float          |
+| BigInt        | Int                  |
+| Unknown       | Enum Value           |
+| null          | NullValue            |
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">astFromValue</span>(value: <span className="api-signature-keyword">unknown</span>, type: <a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>&gt;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| value | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Runtime value to convert. |
+| type | <ApiType><a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>&gt;</ApiType> | A GraphQL value AST for the provided JavaScript value, or null when no literal can represent it. |
+
+#### Example
+
+```ts
+import { print } from 'graphql/language';
+import {
+  GraphQLInputObjectType,
+  GraphQLInt,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLString,
+} from 'graphql/type';
+import { astFromValue } from 'graphql/utilities';
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  fields: {
+    stars: { type: new GraphQLNonNull(GraphQLInt) },
+    tags: { type: new GraphQLList(GraphQLString) },
+  },
+});
+
+const valueNode = astFromValue(
+  { stars: 5, tags: ['featured', 'verified'] },
+  ReviewInput,
+);
+
+print(valueNode); // => '{ stars: 5, tags: ["featured", "verified"] }'
+astFromValue(undefined, GraphQLString); // => null
+astFromValue(null, new GraphQLNonNull(GraphQLString)); // => null
+```
+
+### coerceInputValue()
+
+Coerces a JavaScript value given a GraphQL Input Type.
+
+Returns `undefined` when the value could not be validly coerced according to
+the provided type. Use [`validateInputValue`](/api-v17/utilities/values#validateinputvalue) when coercion diagnostics
+are needed.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">coerceInputValue</span>(inputValue: <span className="api-signature-keyword">unknown</span>, type: <a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>): <span className="api-signature-keyword">unknown</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| inputValue | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | JavaScript value to coerce. |
+| type | <ApiType><a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a></ApiType> | GraphQL input type to coerce the value against. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Coerced value, or undefined if coercion fails. |
+
+#### Example
+
+```ts
+// Coerce runtime input values, returning undefined when coercion fails.
+import {
+  GraphQLInputObjectType,
+  GraphQLInt,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLString,
+} from 'graphql/type';
+import { coerceInputValue } from 'graphql/utilities';
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  fields: {
+    stars: { type: new GraphQLNonNull(GraphQLInt) },
+    tags: { type: new GraphQLList(GraphQLString) },
+  },
+});
+
+coerceInputValue({ stars: '5', tags: ['featured'] }, ReviewInput); // => { stars: 5, tags: ['featured'] }
+coerceInputValue({ stars: 'bad' }, ReviewInput); // => undefined
+```
+
+### coerceInputLiteral()
+
+Produces a coerced "internal" JavaScript value given a GraphQL Value AST.
+
+Returns `undefined` when the value could not be validly coerced according to
+the provided type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">coerceInputLiteral</span>(valueNode: <a href="/api-v17/language/ast#valuenode">ValueNode</a>, type: <a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>, variableValues?: <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/execution/values#variablevalues">VariableValues</a>&gt;, fragmentVariableValues?: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">FragmentVariableValues</span>&gt;): <span className="api-signature-keyword">unknown</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| valueNode | <ApiType><a href="/api-v17/language/ast#valuenode">ValueNode</a></ApiType> | GraphQL value AST node to coerce. |
+| type | <ApiType><a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a></ApiType> | GraphQL input type to coerce the literal against. |
+| variableValues? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/execution/values#variablevalues">VariableValues</a>&gt;</ApiType> | Operation variable values returned by getVariableValues. |
+| fragmentVariableValues? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">FragmentVariableValues</span>&gt;</ApiType> | Fragment variable values for the current fragment scope. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Coerced value, or undefined if coercion fails. |
+
+#### Example 1
+
+```ts
+// Coerce literal input values without variables.
+import { parseValue } from 'graphql/language';
+import {
+  GraphQLInputObjectType,
+  GraphQLInt,
+  GraphQLNonNull,
+  GraphQLString,
+} from 'graphql/type';
+import { coerceInputLiteral } from 'graphql/utilities';
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  fields: {
+    stars: { type: new GraphQLNonNull(GraphQLInt) },
+    comment: { type: GraphQLString },
+  },
+});
+
+coerceInputLiteral(parseValue('{ stars: 5, comment: "Loved it" }'), ReviewInput); // => { stars: 5, comment: 'Loved it' }
+coerceInputLiteral(parseValue('{ comment: "Missing" }'), ReviewInput); // => undefined
+```
+
+#### Example 2
+
+```ts
+// This variant resolves variable references using VariableValues from getVariableValues().
+import assert from 'node:assert';
+import { parse, parseValue } from 'graphql/language';
+import { GraphQLInt } from 'graphql/type';
+import { getVariableValues } from 'graphql/execution';
+import { buildSchema, coerceInputLiteral } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    review(stars: Int): String
+  }
+`);
+const document = parse('query ($stars: Int = 5) { review(stars: $stars) }');
+const operation = document.definitions[0];
+const result = getVariableValues(
+  schema,
+  operation.variableDefinitions,
+  { stars: '4' },
+);
+
+assert('variableValues' in result);
+
+coerceInputLiteral(parseValue('$stars'), GraphQLInt, result.variableValues); // => 4
+```
+
+### replaceVariables()
+
+Replaces any Variables found within an AST Value literal with literals
+supplied from a map of variable values, or removed if no variable replacement
+exists, returning a constant value.
+
+Used primarily to ensure only complete constant values are used during input
+coercion of custom scalars which accept complex literals.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">replaceVariables</span>(valueNode: <a href="/api-v17/language/ast#valuenode">ValueNode</a>, variableValues?: <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/execution/values#variablevalues">VariableValues</a>&gt;, fragmentVariableValues?: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">FragmentVariableValues</span>&gt;): <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| valueNode | <ApiType><a href="/api-v17/language/ast#valuenode">ValueNode</a></ApiType> | Value AST node in which variables should be replaced. |
+| variableValues? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/execution/values#variablevalues">VariableValues</a>&gt;</ApiType> | Operation variable values returned by getVariableValues. |
+| fragmentVariableValues? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">FragmentVariableValues</span>&gt;</ApiType> | Fragment variable values for the current fragment scope. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a></ApiType> | A constant value AST with variables replaced. |
+
+#### Example
+
+```ts
+import assert from 'node:assert';
+import { parse, parseValue, print } from 'graphql/language';
+import { getVariableValues } from 'graphql/execution';
+import { buildSchema, replaceVariables } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    review(stars: Int = 5): String
+  }
+`);
+const document = parse(
+  'query ($stars: Int = 5) { review(stars: $stars) }',
+);
+const operation = document.definitions[0];
+const result = getVariableValues(
+  schema,
+  operation.variableDefinitions,
+  { stars: 4 },
+);
+
+assert('variableValues' in result);
+
+const literal = replaceVariables(
+  parseValue('{ stars: $stars, comment: $missing }'),
+  result.variableValues,
+);
+
+print(literal); // => '{ stars: 4 }'
+```
+
+### validateInputValue()
+
+Validate that the provided input value is allowed for this type, collecting
+all errors via a callback function.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">validateInputValue</span>(inputValue: <span className="api-signature-keyword">unknown</span>, type: <a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>, onError: (error: <a href="/api-v17/error/errors#graphqlerror">GraphQLError</a>, path: <span className="api-signature-keyword">readonly</span> (<span className="api-signature-keyword">string</span> | <span className="api-signature-keyword">number</span>)[]): <span className="api-signature-keyword">void</span>, hideSuggestions?: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;): <span className="api-signature-keyword">void</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| inputValue | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | JavaScript value to validate. |
+| type | <ApiType><a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a></ApiType> | GraphQL input type to validate the value against. |
+| onError | <ApiType>(error: <a href="/api-v17/error/errors#graphqlerror">GraphQLError</a>, path: <span className="api-signature-keyword">readonly</span> (<span className="api-signature-keyword">string</span> &#124; <span className="api-signature-keyword">number</span>)[]): <span className="api-signature-keyword">void</span></ApiType> | Callback invoked for each validation error and path. |
+| hideSuggestions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;</ApiType> | Whether suggestion text should be omitted from errors. |
+
+#### Example 1
+
+```ts
+// Collect validation errors with their input paths.
+import {
+  GraphQLInputObjectType,
+  GraphQLInt,
+  GraphQLNonNull,
+} from 'graphql/type';
+import { validateInputValue } from 'graphql/utilities';
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  fields: {
+    stars: { type: new GraphQLNonNull(GraphQLInt) },
+  },
+});
+const errors = [];
+
+validateInputValue({ stars: 'bad' }, ReviewInput, (error, path) => {
+  errors.push({ message: error.message, path });
+});
+
+errors; // => [ { message: 'Expected value of type "Int", found: "bad".', path: ['stars'] } ]
+```
+
+#### Example 2
+
+```ts
+// This variant hides suggestion text for unknown input fields.
+import { GraphQLInputObjectType, GraphQLString } from 'graphql/type';
+import { validateInputValue } from 'graphql/utilities';
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  fields: {
+    comment: { type: GraphQLString },
+  },
+});
+const errors = [];
+
+validateInputValue(
+  { rating: 'extra field' },
+  ReviewInput,
+  (error) => {
+    errors.push(error.message);
+  },
+  true,
+);
+
+errors; // => ['Expected value of type "ReviewInput" not to include unknown field "rating", found: { rating: "extra field" }.']
+```
+
+### validateInputLiteral()
+
+Validate that the provided input literal is allowed for this type, collecting
+all errors via a callback function.
+
+If variable values are not provided, the literal is validated statically
+(not assuming that those variables are missing runtime values).
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">validateInputLiteral</span>(valueNode: <a href="/api-v17/language/ast#valuenode">ValueNode</a>, type: <a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>, onError: (error: <a href="/api-v17/error/errors#graphqlerror">GraphQLError</a>, path: <span className="api-signature-keyword">readonly</span> (<span className="api-signature-keyword">string</span> | <span className="api-signature-keyword">number</span>)[]): <span className="api-signature-keyword">void</span>, variables?: <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/execution/values#variablevalues">VariableValues</a>&gt;, fragmentVariableValues?: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">FragmentVariableValues</span>&gt;, hideSuggestions?: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;): <span className="api-signature-keyword">void</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| valueNode | <ApiType><a href="/api-v17/language/ast#valuenode">ValueNode</a></ApiType> | GraphQL value AST node to validate. |
+| type | <ApiType><a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a></ApiType> | GraphQL input type to validate the literal against. |
+| onError | <ApiType>(error: <a href="/api-v17/error/errors#graphqlerror">GraphQLError</a>, path: <span className="api-signature-keyword">readonly</span> (<span className="api-signature-keyword">string</span> &#124; <span className="api-signature-keyword">number</span>)[]): <span className="api-signature-keyword">void</span></ApiType> | Callback invoked for each validation error and path. |
+| variables? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/execution/values#variablevalues">VariableValues</a>&gt;</ApiType> | Operation variable values returned by getVariableValues. |
+| fragmentVariableValues? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">FragmentVariableValues</span>&gt;</ApiType> | Fragment variable values for the current fragment scope. |
+| hideSuggestions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;</ApiType> | Whether suggestion text should be omitted from errors. |
+
+#### Example 1
+
+```ts
+// Validate literal input values and collect literal paths.
+import { parseValue } from 'graphql/language';
+import {
+  GraphQLInputObjectType,
+  GraphQLInt,
+  GraphQLNonNull,
+} from 'graphql/type';
+import { validateInputLiteral } from 'graphql/utilities';
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  fields: {
+    stars: { type: new GraphQLNonNull(GraphQLInt) },
+  },
+});
+const errors = [];
+
+validateInputLiteral(parseValue('{ stars: "bad" }'), ReviewInput, (error, path) => {
+  errors.push({ message: error.message, path });
+});
+
+errors; // => [ { message: 'Expected value of type "Int", found: "bad".', path: ['stars'] } ]
+```
+
+#### Example 2
+
+```ts
+// This variant resolves variable references using VariableValues from getVariableValues().
+import assert from 'node:assert';
+import { parse, parseValue } from 'graphql/language';
+import { GraphQLInt } from 'graphql/type';
+import { getVariableValues } from 'graphql/execution';
+import { buildSchema, validateInputLiteral } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    review(stars: Int): String
+  }
+`);
+const document = parse('query ($stars: Int = 5) { review(stars: $stars) }');
+const operation = document.definitions[0];
+const result = getVariableValues(
+  schema,
+  operation.variableDefinitions,
+  { stars: '4' },
+);
+
+assert('variableValues' in result);
+
+const errors = [];
+validateInputLiteral(
+  parseValue('$stars'),
+  GraphQLInt,
+  (error) => errors.push(error.message),
+  result.variableValues,
+  undefined,
+  true,
+);
+
+errors; // => []
+```
+
+### valueFromAST()
+
+<ApiTag kind="deprecated" />
+
+Produces a JavaScript value given a GraphQL Value AST.
+
+A GraphQL type must be provided, which will be used to interpret different
+GraphQL Value literals.
+
+Returns `undefined` when the value could not be validly coerced according to
+the provided type.
+
+| GraphQL Value        | JSON Value    |
+| -------------------- | ------------- |
+| Input Object         | Object        |
+| List                 | Array         |
+| Boolean              | Boolean       |
+| String               | String        |
+| Int / Float          | Number        |
+| Enum Value           | Unknown       |
+| NullValue            | null          |
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">valueFromAST</span>(valueNode: <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#valuenode">ValueNode</a>&gt;, type: <a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>, variables?: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;&gt;): <span className="api-signature-keyword">unknown</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| valueNode | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#valuenode">ValueNode</a>&gt;</ApiType> | GraphQL value AST node to convert. |
+| type | <ApiType><a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a></ApiType> | The GraphQL type to inspect. |
+| variables? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;&gt;</ApiType> | Optional runtime variable values keyed by variable name. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The coerced JavaScript value, or undefined if the AST value cannot be coerced to the type. |
+
+#### Example 1
+
+```ts
+// Coerce literal values without variables.
+import { parseValue } from 'graphql/language';
+import {
+  GraphQLInputObjectType,
+  GraphQLInt,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLString,
+} from 'graphql/type';
+import { valueFromAST } from 'graphql/utilities';
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  fields: {
+    stars: { type: new GraphQLNonNull(GraphQLInt) },
+    tags: { type: new GraphQLList(GraphQLString) },
+  },
+});
+
+valueFromAST(parseValue('{ stars: 5, tags: ["featured"] }'), ReviewInput); // => { stars: 5, tags: ['featured'] }
+valueFromAST(parseValue('{ stars: "bad" }'), ReviewInput); // => undefined
+```
+
+#### Example 2
+
+```ts
+// This variant resolves variable references from runtime values.
+import { parseValue } from 'graphql/language';
+import { GraphQLInt } from 'graphql/type';
+import { valueFromAST } from 'graphql/utilities';
+
+valueFromAST(parseValue('$stars'), GraphQLInt, { stars: 5 }); // => 5
+valueFromAST(parseValue('$stars'), GraphQLInt, {}); // => undefined
+```
+
+### valueFromASTUntyped()
+
+Produces a JavaScript value given a GraphQL Value AST.
+
+Because no GraphQL type is provided, the returned JavaScript value reflects
+the provided GraphQL value AST.
+
+| GraphQL Value        | JavaScript Value |
+| -------------------- | ---------------- |
+| Input Object         | Object           |
+| List                 | Array            |
+| Boolean              | Boolean          |
+| String / Enum        | String           |
+| Int / Float          | Number           |
+| Null                 | null             |
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">valueFromASTUntyped</span>(valueNode: <a href="/api-v17/language/ast#valuenode">ValueNode</a>, variables?: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;&gt;): <span className="api-signature-keyword">unknown</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| valueNode | <ApiType><a href="/api-v17/language/ast#valuenode">ValueNode</a></ApiType> | GraphQL value AST node to convert. |
+| variables? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;&gt;</ApiType> | Optional runtime variable values keyed by variable name. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | JavaScript value represented by the GraphQL value AST. |
+
+#### Example
+
+```ts
+import { parseValue } from 'graphql/language';
+import { valueFromASTUntyped } from 'graphql/utilities';
+
+const value = valueFromASTUntyped(parseValue('[1, 2, 3]'));
+
+value; // => [1, 2, 3]
+valueFromASTUntyped(parseValue('$name'), { name: 'Ada' }); // => 'Ada'
+```
+
+### valueToLiteral()
+
+Produces a GraphQL Value AST given a JavaScript value and a GraphQL type.
+
+Scalar types are converted by calling the [`valueToLiteral`](/api-v17/utilities/values#valuetoliteral) method on that
+type, otherwise the default scalar [`valueToLiteral`](/api-v17/utilities/values#valuetoliteral) method is used, defined
+below.
+
+Provided value is a non-coerced "input" value. This function does not
+perform any coercion, however it does perform validation. Provided values
+which are invalid for the given type will result in an `undefined` return
+value.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">valueToLiteral</span>(value: <span className="api-signature-keyword">unknown</span>, type: <a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>): <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a> | <span className="api-signature-keyword">undefined</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| value | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | JavaScript value to convert. |
+| type | <ApiType><a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a></ApiType> | GraphQL input type to convert the value against. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a> &#124; <span className="api-signature-keyword">undefined</span></ApiType> | A GraphQL value AST, or undefined if the value is invalid. |
+
+#### Example
+
+```ts
+import { print } from 'graphql/language';
+import {
+  GraphQLInputObjectType,
+  GraphQLInt,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLString,
+} from 'graphql/type';
+import { valueToLiteral } from 'graphql/utilities';
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  fields: {
+    stars: { type: new GraphQLNonNull(GraphQLInt) },
+    tags: { type: new GraphQLList(GraphQLString) },
+  },
+});
+
+const literal = valueToLiteral({ stars: 5, tags: ['featured'] }, ReviewInput);
+
+print(literal); // => '{ stars: 5, tags: ["featured"] }'
+valueToLiteral({ tags: ['missing stars'] }, ReviewInput); // => undefined
+```

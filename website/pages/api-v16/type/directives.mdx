@@ -1,0 +1,322 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/type/directives
+
+## Classes
+
+### GraphQLDirective
+
+Directives are used by the GraphQL runtime as a way of modifying execution
+behavior. Type system creators will usually not create these directly.
+
+#### Constructor
+
+Creates a GraphQLDirective instance.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-keyword">new</span> <span className="api-signature-name">GraphQLDirective</span>(config: <span className="api-signature-type">Readonly</span>&lt;<a href="/api-v16/type/directives#graphqldirectiveconfig">GraphQLDirectiveConfig</a>&gt;)</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| config | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v16/type/directives#graphqldirectiveconfig">GraphQLDirectiveConfig</a>&gt;</ApiType> | Configuration describing this object. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v16/type/directives#graphqldirective">GraphQLDirective</a></ApiType> |  |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <span className="api-signature-keyword">string</span></ApiType> | Human-readable description for this schema element, if provided. |
+| locations | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v16/language/kinds#directivelocation">DirectiveLocation</a>[]</ApiType> | Locations where this directive may be applied. |
+| args | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v16/type/definitions#graphqlargument">GraphQLArgument</a>[]</ApiType> | Arguments accepted by this field or directive. |
+| isRepeatable | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether this directive may appear more than once at the same location. |
+| deprecationReason | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <span className="api-signature-keyword">string</span></ApiType> | Reason this element is deprecated, if one was provided. |
+| extensions | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v16/type/directives#graphqldirectiveextensions">GraphQLDirectiveExtensions</a>&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <a href="/api-v16/language/ast#directivedefinitionnode">DirectiveDefinitionNode</a></ApiType> | AST node from which this schema element was built, if available. |
+| extensionASTNodes | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v16/language/ast#directiveextensionnode">DirectiveExtensionNode</a>[]</ApiType> | AST extension nodes applied to this schema element. |
+
+#### toConfig()
+
+Returns a normalized configuration object for this object.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toConfig</span>(): &#123; args: <span className="api-signature-type">object</span>; isRepeatable: <span className="api-signature-keyword">boolean</span>; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt;; extensionASTNodes: <span className="api-signature-type">ReadonlyArray</span>&lt;&#123; kind: <a href="/api-v16/language/kinds#directive_extension">Kind.DIRECTIVE_EXTENSION</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; name: &#123; kind: <a href="/api-v16/language/kinds#name">Kind.NAME</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125;; directives?: <span className="api-signature-type">ReadonlyArray</span>&lt;&#123; kind: <a href="/api-v16/language/kinds#directive">Kind.DIRECTIVE</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; name: &#123; kind: <a href="/api-v16/language/kinds#name">Kind.NAME</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125;; arguments?: <span className="api-signature-type">ReadonlyArray</span>&lt;&#123; kind: <a href="/api-v16/language/kinds#argument">Kind.ARGUMENT</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; name: &#123; kind: <a href="/api-v16/language/kinds#name">Kind.NAME</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125;; value: &#123; kind: <a href="/api-v16/language/kinds#int">Kind.INT</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125; | &#123; kind: <a href="/api-v16/language/kinds#float">Kind.FLOAT</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125; | &#123; kind: <a href="/api-v16/language/kinds#string">Kind.STRING</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span>; block?: <span className="api-signature-keyword">boolean</span> &#125; | &#123; kind: <a href="/api-v16/language/kinds#boolean">Kind.BOOLEAN</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">boolean</span> &#125; | &#123; kind: <a href="/api-v16/language/kinds#null">Kind.NULL</a>; loc?: <a href="/api-v16/language/ast#location">Location</a> &#125; | &#123; kind: <a href="/api-v16/language/kinds#enum">Kind.ENUM</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125; | &#123; kind: <a href="/api-v16/language/kinds#list">Kind.LIST</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; values: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v16/language/ast#constvaluenode">ConstValueNode</a>&gt; &#125; | &#123; kind: <a href="/api-v16/language/kinds#object">Kind.OBJECT</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; fields: <span className="api-signature-type">ReadonlyArray</span>&lt;&#123; kind: <a href="/api-v16/language/kinds#object_field">Kind.OBJECT_FIELD</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; name: &#123; kind: <a href="/api-v16/language/kinds#name">Kind.NAME</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125;; value: <a href="/api-v16/language/ast#constvaluenode">ConstValueNode</a> &#125;&gt; &#125; &#125;&gt; &#125;&gt; &#125;&gt; &#125;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>&#123; args: <span className="api-signature-type">object</span>; isRepeatable: <span className="api-signature-keyword">boolean</span>; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt;; extensionASTNodes: <span className="api-signature-type">ReadonlyArray</span>&lt;&#123; kind: <a href="/api-v16/language/kinds#directive_extension">Kind.DIRECTIVE_EXTENSION</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; name: &#123; kind: <a href="/api-v16/language/kinds#name">Kind.NAME</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125;; directives?: <span className="api-signature-type">ReadonlyArray</span>&lt;&#123; kind: <a href="/api-v16/language/kinds#directive">Kind.DIRECTIVE</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; name: &#123; kind: <a href="/api-v16/language/kinds#name">Kind.NAME</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125;; arguments?: <span className="api-signature-type">ReadonlyArray</span>&lt;&#123; kind: <a href="/api-v16/language/kinds#argument">Kind.ARGUMENT</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; name: &#123; kind: <a href="/api-v16/language/kinds#name">Kind.NAME</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125;; value: &#123; kind: <a href="/api-v16/language/kinds#int">Kind.INT</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125; &#124; &#123; kind: <a href="/api-v16/language/kinds#float">Kind.FLOAT</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125; &#124; &#123; kind: <a href="/api-v16/language/kinds#string">Kind.STRING</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span>; block?: <span className="api-signature-keyword">boolean</span> &#125; &#124; &#123; kind: <a href="/api-v16/language/kinds#boolean">Kind.BOOLEAN</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">boolean</span> &#125; &#124; &#123; kind: <a href="/api-v16/language/kinds#null">Kind.NULL</a>; loc?: <a href="/api-v16/language/ast#location">Location</a> &#125; &#124; &#123; kind: <a href="/api-v16/language/kinds#enum">Kind.ENUM</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125; &#124; &#123; kind: <a href="/api-v16/language/kinds#list">Kind.LIST</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; values: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v16/language/ast#constvaluenode">ConstValueNode</a>&gt; &#125; &#124; &#123; kind: <a href="/api-v16/language/kinds#object">Kind.OBJECT</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; fields: <span className="api-signature-type">ReadonlyArray</span>&lt;&#123; kind: <a href="/api-v16/language/kinds#object_field">Kind.OBJECT_FIELD</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; name: &#123; kind: <a href="/api-v16/language/kinds#name">Kind.NAME</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125;; value: <a href="/api-v16/language/ast#constvaluenode">ConstValueNode</a> &#125;&gt; &#125; &#125;&gt; &#125;&gt; &#125;&gt; &#125;</ApiType> | A configuration object that can be used to recreate this object. |
+
+##### Example
+
+```ts
+import { DirectiveLocation } from 'graphql/language';
+import { GraphQLDirective, GraphQLString } from 'graphql/type';
+
+const tag = new GraphQLDirective({
+  name: 'tag',
+  locations: [DirectiveLocation.FIELD_DEFINITION],
+  args: {
+    name: { type: GraphQLString },
+  },
+});
+
+const config = tag.toConfig();
+const tagCopy = new GraphQLDirective(config);
+
+config.args.name.type; // => GraphQLString
+tagCopy.args[0].name; // => 'name'
+```
+
+#### toString()
+
+Returns the schema coordinate identifying this directive.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toString</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The directive schema coordinate. |
+
+##### Example
+
+```ts
+import { DirectiveLocation } from 'graphql/language';
+import { GraphQLDirective } from 'graphql/type';
+
+const tag = new GraphQLDirective({
+  name: 'tag',
+  locations: [DirectiveLocation.FIELD_DEFINITION],
+});
+
+tag.toString(); // => '@tag'
+```
+
+#### toJSON()
+
+Returns the JSON representation used when this object is serialized.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toJSON</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The JSON-serializable representation. |
+
+##### Example
+
+```ts
+import { DirectiveLocation } from 'graphql/language';
+import { GraphQLDirective } from 'graphql/type';
+
+const tag = new GraphQLDirective({
+  name: 'tag',
+  locations: [DirectiveLocation.FIELD_DEFINITION],
+});
+
+tag.toJSON(); // => '@tag'
+JSON.stringify({ directive: tag }); // => '{"directive":"@tag"}'
+```
+
+## Functions
+
+### isDirective()
+
+Test if the given value is a GraphQL directive.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isDirective</span>(directive: <span className="api-signature-keyword">unknown</span>): directive is GraphQLDirective</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| directive | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Value to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>directive is GraphQLDirective</ApiType> | True when the value is a GraphQLDirective. |
+
+#### Example
+
+```ts
+import { DirectiveLocation } from 'graphql/language';
+import { GraphQLDirective, GraphQLString, isDirective } from 'graphql/type';
+
+const upper = new GraphQLDirective({
+  name: 'upper',
+  locations: [DirectiveLocation.FIELD_DEFINITION],
+});
+
+isDirective(upper); // => true
+isDirective(GraphQLString); // => false
+```
+
+### assertDirective()
+
+Returns the value as a GraphQLDirective, or throws if it is not a directive.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertDirective</span>(directive: <span className="api-signature-keyword">unknown</span>): <a href="/api-v16/type/directives#graphqldirective">GraphQLDirective</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| directive | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Value to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v16/type/directives#graphqldirective">GraphQLDirective</a></ApiType> | The value typed as a GraphQLDirective. |
+
+#### Example
+
+```ts
+import { DirectiveLocation } from 'graphql/language';
+import { assertDirective, GraphQLDirective, GraphQLString } from 'graphql/type';
+
+const upper = new GraphQLDirective({
+  name: 'upper',
+  locations: [DirectiveLocation.FIELD_DEFINITION],
+});
+
+assertDirective(upper); // => upper
+assertDirective(GraphQLString); // throws an error
+```
+
+### isSpecifiedDirective()
+
+Returns true when the directive is one of the directives specified by GraphQL.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isSpecifiedDirective</span>(directive: <a href="/api-v16/type/directives#graphqldirective">GraphQLDirective</a>): <span className="api-signature-keyword">boolean</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| directive | <ApiType><a href="/api-v16/type/directives#graphqldirective">GraphQLDirective</a></ApiType> | Directive to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | True when the directive is specified by GraphQL. |
+
+#### Example
+
+```ts
+import {
+  GraphQLDirective,
+  GraphQLIncludeDirective,
+  isSpecifiedDirective,
+} from 'graphql/type';
+import { DirectiveLocation } from 'graphql/language';
+
+const customDirective = new GraphQLDirective({
+  name: 'auth',
+  locations: [DirectiveLocation.FIELD_DEFINITION],
+});
+
+isSpecifiedDirective(GraphQLIncludeDirective); // => true
+isSpecifiedDirective(customDirective); // => false
+```
+
+## Constants
+
+### GraphQLIncludeDirective
+
+Used to conditionally include fields or fragments.
+
+<ApiType><a href="/api-v16/type/directives#graphqldirective">GraphQLDirective</a></ApiType>
+
+### GraphQLSkipDirective
+
+Used to conditionally skip (exclude) fields or fragments.
+
+<ApiType><a href="/api-v16/type/directives#graphqldirective">GraphQLDirective</a></ApiType>
+
+### DEFAULT_DEPRECATION_REASON
+
+Constant string used for default reason for a deprecation.
+
+<ApiType>"No longer supported"</ApiType>
+
+### GraphQLDeprecatedDirective
+
+Used to declare element of a GraphQL schema as deprecated.
+
+The optional `reason` argument defaults to [`DEFAULT_DEPRECATION_REASON`](/api-v16/type/directives#default_deprecation_reason).
+
+<ApiType><a href="/api-v16/type/directives#graphqldirective">GraphQLDirective</a></ApiType>
+
+### GraphQLSpecifiedByDirective
+
+Used to provide a URL for specifying the behavior of custom scalar definitions.
+
+<ApiType><a href="/api-v16/type/directives#graphqldirective">GraphQLDirective</a></ApiType>
+
+### GraphQLOneOfDirective
+
+Used to indicate an Input Object is a OneOf Input Object.
+
+<ApiType><a href="/api-v16/type/directives#graphqldirective">GraphQLDirective</a></ApiType>
+
+### specifiedDirectives
+
+Full list of stable directives specified by GraphQL.js.
+
+<ApiType><span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v16/type/directives#graphqldirective">GraphQLDirective</a>&gt;</ApiType>
+
+## Types
+
+### GraphQLDirectiveExtensions
+
+**Interface.** Custom extensions
+
+**Remarks:** Use a unique identifier name for your extension, for example the name of
+your library or project. Do not use a shortened identifier as this increases
+the risk of conflicts. We recommend you add at most one extension field,
+an object which can contain all the values you need.
+
+### GraphQLDirectiveConfig
+
+**Interface.** Configuration used to construct a GraphQLDirective.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description? | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <span className="api-signature-keyword">string</span></ApiType> | Human-readable description for this schema element, if provided. |
+| locations | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v16/language/kinds#directivelocation">DirectiveLocation</a>[]</ApiType> | Locations where this directive may be applied. |
+| args? | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <a href="/api-v16/type/definitions#graphqlfieldconfigargumentmap">GraphQLFieldConfigArgumentMap</a></ApiType> | Arguments accepted by this field or directive. |
+| isRepeatable? | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <span className="api-signature-keyword">boolean</span></ApiType> | Whether this directive may appear more than once at the same location. |
+| deprecationReason? | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <span className="api-signature-keyword">string</span></ApiType> | Reason this element is deprecated, if one was provided. |
+| extensions? | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <span className="api-signature-type">Readonly</span>&lt;<a href="/api-v16/type/directives#graphqldirectiveextensions">GraphQLDirectiveExtensions</a>&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode? | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <a href="/api-v16/language/ast#directivedefinitionnode">DirectiveDefinitionNode</a></ApiType> | AST node from which this schema element was built, if available. |
+| extensionASTNodes? | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <span className="api-signature-keyword">readonly</span> <a href="/api-v16/language/ast#directiveextensionnode">DirectiveExtensionNode</a>[]</ApiType> | AST extension nodes applied to this schema element. |

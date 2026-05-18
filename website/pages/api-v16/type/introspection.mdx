@@ -1,0 +1,128 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/type/introspection
+
+## Functions
+
+### isIntrospectionType()
+
+Returns true when the type is one of the built-in introspection types.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isIntrospectionType</span>(type: <a href="/api-v16/type/definitions#graphqlnamedtype">GraphQLNamedType</a>): <span className="api-signature-keyword">boolean</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><a href="/api-v16/type/definitions#graphqlnamedtype">GraphQLNamedType</a></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | True when the type is one of the built-in introspection types. |
+
+#### Example
+
+```ts
+import { GraphQLString, isIntrospectionType, __Type } from 'graphql/type';
+
+isIntrospectionType(__Type); // => true
+isIntrospectionType(GraphQLString); // => false
+```
+
+## Constants
+
+### __Schema
+
+The introspection type describing a GraphQL schema.
+
+<ApiType><a href="/api-v16/type/definitions#graphqlobjecttype">GraphQLObjectType</a></ApiType>
+
+### __Directive
+
+The introspection type describing a GraphQL directive.
+
+<ApiType><a href="/api-v16/type/definitions#graphqlobjecttype">GraphQLObjectType</a></ApiType>
+
+### __DirectiveLocation
+
+The introspection enum describing directive locations.
+
+<ApiType><a href="/api-v16/type/definitions#graphqlenumtype">GraphQLEnumType</a></ApiType>
+
+### __Type
+
+The introspection type describing GraphQL types.
+
+<ApiType><a href="/api-v16/type/definitions#graphqlobjecttype">GraphQLObjectType</a></ApiType>
+
+### __Field
+
+The introspection type describing object and interface fields.
+
+<ApiType><a href="/api-v16/type/definitions#graphqlobjecttype">GraphQLObjectType</a></ApiType>
+
+### __InputValue
+
+The introspection type describing arguments and input fields.
+
+<ApiType><a href="/api-v16/type/definitions#graphqlobjecttype">GraphQLObjectType</a></ApiType>
+
+### __EnumValue
+
+The introspection type describing enum values.
+
+<ApiType><a href="/api-v16/type/definitions#graphqlobjecttype">GraphQLObjectType</a></ApiType>
+
+### __TypeKind
+
+The introspection enum describing GraphQL type kinds.
+
+<ApiType><a href="/api-v16/type/definitions#graphqlenumtype">GraphQLEnumType</a></ApiType>
+
+### SchemaMetaFieldDef
+
+Note that these are GraphQLField and not GraphQLFieldConfig,
+so the format for args is different.
+
+<ApiType><a href="/api-v16/type/definitions#graphqlfield">GraphQLField</a>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">unknown</span>&gt;</ApiType>
+
+### TypeMetaFieldDef
+
+The `__type` meta field definition used by introspection.
+
+<ApiType><a href="/api-v16/type/definitions#graphqlfield">GraphQLField</a>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">unknown</span>&gt;</ApiType>
+
+### TypeNameMetaFieldDef
+
+The `__typename` meta field definition used by execution and introspection.
+
+<ApiType><a href="/api-v16/type/definitions#graphqlfield">GraphQLField</a>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">unknown</span>&gt;</ApiType>
+
+### introspectionTypes
+
+All introspection types defined by the GraphQL specification.
+
+<ApiType><span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v16/type/definitions#graphqlnamedtype">GraphQLNamedType</a>&gt;</ApiType>
+
+## Enumerations
+
+### TypeKind
+
+**Enumeration.** The introspection enum describing the different kinds of GraphQL types.
+
+#### Members
+
+| Name | Value | Description |
+| --- | --- | --- |
+| `SCALAR` | `"SCALAR"` | A scalar type. |
+| `OBJECT` | `"OBJECT"` | An object type. |
+| `INTERFACE` | `"INTERFACE"` | An interface type. |
+| `UNION` | `"UNION"` | A union type. |
+| `ENUM` | `"ENUM"` | An enum type. |
+| `INPUT_OBJECT` | `"INPUT_OBJECT"` | An input object type. |
+| `LIST` | `"LIST"` | A list wrapper type. |
+| `NON_NULL` | `"NON_NULL"` | A non-null wrapper type. |

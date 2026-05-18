@@ -1,0 +1,48 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/execution/paths
+
+## Functions
+
+### responsePathAsArray()
+
+Given a Path, return an Array of the path keys.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">responsePathAsArray</span>(path: null | <span className="api-signature-keyword">undefined</span> | <span className="api-signature-type">Readonly</span>&lt;<a href="/api-v16/type/paths#responsepath">Path</a>&gt;): (<span className="api-signature-keyword">string</span> | <span className="api-signature-keyword">number</span>)[]</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| path | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <span className="api-signature-type">Readonly</span>&lt;<a href="/api-v16/type/paths#responsepath">Path</a>&gt;</ApiType> | The linked response path to flatten. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>(<span className="api-signature-keyword">string</span> &#124; <span className="api-signature-keyword">number</span>)[]</ApiType> | An array of response path keys from root to leaf. |
+
+#### Example
+
+```ts
+import { pathToArray } from 'graphql/jsutils/Path';
+
+const path = {
+  prev: {
+    prev: {
+      prev: undefined,
+      key: 'viewer',
+      typename: 'Query',
+    },
+    key: 'friends',
+    typename: 'User',
+  },
+  key: 0,
+  typename: undefined,
+};
+
+pathToArray(path); // => ['viewer', 'friends', 0]
+pathToArray(undefined); // => []
+```

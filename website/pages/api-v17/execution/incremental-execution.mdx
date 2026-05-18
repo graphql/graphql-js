@@ -1,0 +1,342 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/execution/incremental-execution
+
+## Functions
+
+### experimentalExecuteIncrementally()
+
+Implements the "Executing requests" section of the GraphQL specification,
+including `@defer` and `@stream` as proposed in
+https://github.com/graphql/graphql-spec/pull/742
+
+This function returns either a single ExecutionResult, or an
+ExperimentalIncrementalExecutionResults object containing an `initialResult`
+and a stream of `subsequentResults`.
+
+If the arguments to this function do not result in a legal execution context,
+a GraphQLError will be thrown immediately explaining the invalid input.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">experimentalExecuteIncrementally</span>(args: <a href="/api-v17/execution/execution#executionargs">ExecutionArgs</a>): <span className="api-signature-type">PromiseOrValue</span>&lt;<a href="/api-v17/execution/execution#executionresult">ExecutionResult</a> | <a href="/api-v17/execution/incremental-execution#experimentalincrementalexecutionresults">ExperimentalIncrementalExecutionResults</a>&gt;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| args | <ApiType><a href="/api-v17/execution/execution#executionargs">ExecutionArgs</a></ApiType> | Execution arguments for the GraphQL operation. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">PromiseOrValue</span>&lt;<a href="/api-v17/execution/execution#executionresult">ExecutionResult</a> &#124; <a href="/api-v17/execution/incremental-execution#experimentalincrementalexecutionresults">ExperimentalIncrementalExecutionResults</a>&gt;</ApiType> | A single execution result or incremental execution results. |
+
+#### Example
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { experimentalExecuteIncrementally } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+
+const result = await experimentalExecuteIncrementally({
+  schema,
+  document: parse('{ greeting }'),
+  rootValue: { greeting: 'Hello' },
+});
+
+result; // => { data: { greeting: 'Hello' } }
+```
+
+### experimentalExecuteRootSelectionSet()
+
+Executes the operation root selection set with incremental delivery enabled.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">experimentalExecuteRootSelectionSet</span>(validatedExecutionArgs: <a href="/api-v17/execution/execution#validatedexecutionargs">ValidatedExecutionArgs</a>): <span className="api-signature-type">PromiseOrValue</span>&lt;<a href="/api-v17/execution/execution#executionresult">ExecutionResult</a> | <a href="/api-v17/execution/incremental-execution#experimentalincrementalexecutionresults">ExperimentalIncrementalExecutionResults</a>&gt;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| validatedExecutionArgs | <ApiType><a href="/api-v17/execution/execution#validatedexecutionargs">ValidatedExecutionArgs</a></ApiType> | Validated execution arguments. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">PromiseOrValue</span>&lt;<a href="/api-v17/execution/execution#executionresult">ExecutionResult</a> &#124; <a href="/api-v17/execution/incremental-execution#experimentalincrementalexecutionresults">ExperimentalIncrementalExecutionResults</a>&gt;</ApiType> | A single execution result or incremental execution results. |
+
+#### Example
+
+```ts
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import {
+  experimentalExecuteRootSelectionSet,
+  validateExecutionArgs,
+} from 'graphql/execution';
+
+const schema = buildSchema('type Query { greeting: String }');
+const validatedArgs = validateExecutionArgs({
+  schema,
+  document: parse('{ greeting }'),
+  rootValue: { greeting: 'Hello' },
+});
+
+assert('schema' in validatedArgs);
+
+const result = await experimentalExecuteRootSelectionSet(validatedArgs);
+result; // => { data: { greeting: 'Hello' } }
+```
+
+## Types
+
+### ExperimentalIncrementalExecutionResults
+
+**Interface.** Results for an operation that produced incremental payloads.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TInitialData |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of the initial result data payload. |
+| TDeferredData |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of deferred fragment data payloads. |
+| TStreamItem |  | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Shape of streamed list items. |
+| TExtensions |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of extensions payloads. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| initialResult | <ApiType><a href="/api-v17/execution/incremental-execution#initialincrementalexecutionresult">InitialIncrementalExecutionResult</a>&lt;<span className="api-signature-type">TInitialData</span>, <span className="api-signature-type">TExtensions</span>&gt;</ApiType> | Initial execution result delivered before subsequent incremental payloads. |
+| subsequentResults | <ApiType><span className="api-signature-type">AsyncGenerator</span>&lt;<a href="/api-v17/execution/incremental-execution#subsequentincrementalexecutionresult">SubsequentIncrementalExecutionResult</a>&lt;<span className="api-signature-type">TDeferredData</span>, <span className="api-signature-type">TStreamItem</span>, <span className="api-signature-type">TExtensions</span>&gt;, <span className="api-signature-keyword">void</span>, <span className="api-signature-keyword">void</span>&gt;</ApiType> | Async stream of incremental payloads delivered after the initial result. |
+
+### FormattedExperimentalIncrementalExecutionResults
+
+**Interface.** JSON-serializable form of incremental execution results.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TInitial |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of the formatted initial result data payload. |
+| TDeferredData |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of formatted deferred fragment data payloads. |
+| TStreamItem |  | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Shape of formatted streamed list items. |
+| TExtensions |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of formatted extensions payloads. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| initialResult | <ApiType><a href="/api-v17/execution/incremental-execution#formattedinitialincrementalexecutionresult">FormattedInitialIncrementalExecutionResult</a>&lt;<span className="api-signature-type">TInitial</span>, <span className="api-signature-type">TExtensions</span>&gt;</ApiType> | Formatted initial execution result. |
+| subsequentResults | <ApiType><span className="api-signature-type">AsyncGenerator</span>&lt;<a href="/api-v17/execution/incremental-execution#formattedsubsequentincrementalexecutionresult">FormattedSubsequentIncrementalExecutionResult</a>&lt;<span className="api-signature-type">TDeferredData</span>, <span className="api-signature-type">TStreamItem</span>, <span className="api-signature-type">TExtensions</span>&gt;, <span className="api-signature-keyword">void</span>, <span className="api-signature-keyword">void</span>&gt;</ApiType> | Async stream of formatted incremental payloads. |
+
+### InitialIncrementalExecutionResult
+
+**Interface.** Initial execution result for an operation that produced incremental payloads.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TData |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of the initial data payload. |
+| TExtensions |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of the extensions payload. |
+
+<ApiSignature><span className="api-signature-keyword">interface</span> <span className="api-signature-name">InitialIncrementalExecutionResult</span>&lt;<span className="api-signature-type">TData</span> = <span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;, <span className="api-signature-type">TExtensions</span> = <span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;&gt; extends <a href="/api-v17/execution/execution#executionresult">ExecutionResult</a>&lt;<span className="api-signature-type">TData</span>, <span className="api-signature-type">TExtensions</span>&gt;</ApiSignature>
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| data | <ApiType><span className="api-signature-type">TData</span></ApiType> | Data produced by the initial execution payload. |
+| pending | <ApiType><span className="api-signature-keyword">readonly</span> &#123; id: <span className="api-signature-keyword">string</span>; path: <span className="api-signature-type">ReadonlyArray</span>&lt;<span className="api-signature-keyword">string</span> &#124; <span className="api-signature-keyword">number</span>&gt;; label?: <span className="api-signature-keyword">string</span> &#125;[]</ApiType> | Incremental payloads that are still pending after the initial result. |
+| hasNext | <ApiType>true</ApiType> | Indicates that subsequent incremental payloads will follow. |
+| extensions? | <ApiType><span className="api-signature-type">TExtensions</span></ApiType> | Additional non-standard metadata included in the initial result. |
+
+### FormattedInitialIncrementalExecutionResult
+
+**Interface.** JSON-serializable form of an initial incremental execution result.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TInitialData |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of the formatted initial data payload. |
+| TExtensions |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of the formatted extensions payload. |
+
+<ApiSignature><span className="api-signature-keyword">interface</span> <span className="api-signature-name">FormattedInitialIncrementalExecutionResult</span>&lt;<span className="api-signature-type">TInitialData</span> = <span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;, <span className="api-signature-type">TExtensions</span> = <span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;&gt; extends <a href="/api-v17/execution/execution#formattedexecutionresult">FormattedExecutionResult</a>&lt;<span className="api-signature-type">TInitialData</span>, <span className="api-signature-type">TExtensions</span>&gt;</ApiSignature>
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| data | <ApiType><span className="api-signature-type">TInitialData</span></ApiType> | Formatted data produced by the initial execution payload. |
+| pending | <ApiType><span className="api-signature-keyword">readonly</span> &#123; id: <span className="api-signature-keyword">string</span>; path: <span className="api-signature-type">ReadonlyArray</span>&lt;<span className="api-signature-keyword">string</span> &#124; <span className="api-signature-keyword">number</span>&gt;; label?: <span className="api-signature-keyword">string</span> &#125;[]</ApiType> | Formatted list of incremental payloads still pending after the initial result. |
+| hasNext | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Indicates whether subsequent incremental payloads will follow. |
+| extensions? | <ApiType><span className="api-signature-type">TExtensions</span></ApiType> | Additional non-standard metadata included in the formatted initial result. |
+
+### SubsequentIncrementalExecutionResult
+
+**Interface.** Subsequent payload produced by incremental execution.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TDeferredData |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of deferred fragment data payloads. |
+| TStreamItem |  | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Shape of streamed list items. |
+| TExtensions |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of the extensions payload. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| pending? | <ApiType><span className="api-signature-keyword">readonly</span> &#123; id: <span className="api-signature-keyword">string</span>; path: <span className="api-signature-type">ReadonlyArray</span>&lt;<span className="api-signature-keyword">string</span> &#124; <span className="api-signature-keyword">number</span>&gt;; label?: <span className="api-signature-keyword">string</span> &#125;[]</ApiType> | Incremental payloads that became pending with this response. |
+| incremental? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/execution/incremental-execution#incrementalresult">IncrementalResult</a>&lt;<span className="api-signature-type">TDeferredData</span>, <span className="api-signature-type">TStreamItem</span>, <span className="api-signature-type">TExtensions</span>&gt;[]</ApiType> | Deferred or streamed payloads delivered by this response. |
+| completed? | <ApiType><span className="api-signature-keyword">readonly</span> &#123; id: <span className="api-signature-keyword">string</span>; errors?: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/error/errors#graphqlerror">GraphQLError</a>&gt; &#125;[]</ApiType> | Incremental payloads that completed with this response. |
+| hasNext | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Indicates whether more incremental payloads will follow. |
+| extensions? | <ApiType><span className="api-signature-type">TExtensions</span></ApiType> | Additional non-standard metadata included in this payload. |
+
+### FormattedSubsequentIncrementalExecutionResult
+
+**Interface.** JSON-serializable form of a subsequent incremental execution payload.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TDeferredData |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of formatted deferred fragment data payloads. |
+| TStreamItem |  | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Shape of formatted streamed list items. |
+| TExtensions |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of formatted extensions payloads. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| hasNext | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Indicates whether more incremental payloads will follow. |
+| pending? | <ApiType><span className="api-signature-keyword">readonly</span> &#123; id: <span className="api-signature-keyword">string</span>; path: <span className="api-signature-type">ReadonlyArray</span>&lt;<span className="api-signature-keyword">string</span> &#124; <span className="api-signature-keyword">number</span>&gt;; label?: <span className="api-signature-keyword">string</span> &#125;[]</ApiType> | Formatted incremental payloads that became pending with this response. |
+| incremental? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/execution/incremental-execution#formattedincrementalresult">FormattedIncrementalResult</a>&lt;<span className="api-signature-type">TDeferredData</span>, <span className="api-signature-type">TStreamItem</span>, <span className="api-signature-type">TExtensions</span>&gt;[]</ApiType> | Formatted deferred or streamed payloads delivered by this response. |
+| completed? | <ApiType><span className="api-signature-keyword">readonly</span> &#123; id: <span className="api-signature-keyword">string</span>; errors?: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/error/errors#graphqlformattederror">GraphQLFormattedError</a>&gt; &#125;[]</ApiType> | Formatted incremental payloads that completed with this response. |
+| extensions? | <ApiType><span className="api-signature-type">TExtensions</span></ApiType> | Additional non-standard metadata included in this formatted payload. |
+
+### IncrementalDeferResult
+
+**Interface.** Incremental payload produced by a deferred fragment.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TDeferredData |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of deferred fragment data. |
+| TExtensions |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of extensions payloads. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| id | <ApiType><span className="api-signature-keyword">string</span></ApiType> | Identifier matching this payload to a pending deferred fragment. |
+| subPath? | <ApiType><span className="api-signature-keyword">readonly</span> (<span className="api-signature-keyword">string</span> &#124; <span className="api-signature-keyword">number</span>)[]</ApiType> | Path from the deferred fragment location to this payload. |
+| errors? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/error/errors#graphqlerror">GraphQLError</a>[]</ApiType> | Errors raised while executing the deferred fragment. |
+| data | <ApiType><span className="api-signature-type">TDeferredData</span></ApiType> | Data produced by the deferred fragment. |
+| extensions? | <ApiType><span className="api-signature-type">TExtensions</span></ApiType> | Additional non-standard metadata included in this payload. |
+
+### FormattedIncrementalDeferResult
+
+**Interface.** JSON-serializable form of a deferred fragment payload.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TDeferredData |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of formatted deferred fragment data. |
+| TExtensions |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of formatted extensions payloads. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| errors? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/error/errors#graphqlformattederror">GraphQLFormattedError</a>[]</ApiType> | Formatted errors raised while executing the deferred fragment. |
+| data | <ApiType><span className="api-signature-type">TDeferredData</span></ApiType> | Formatted data produced by the deferred fragment. |
+| id | <ApiType><span className="api-signature-keyword">string</span></ApiType> | Identifier matching this payload to a pending deferred fragment. |
+| subPath? | <ApiType><span className="api-signature-keyword">readonly</span> (<span className="api-signature-keyword">string</span> &#124; <span className="api-signature-keyword">number</span>)[]</ApiType> | Path from the deferred fragment location to this payload. |
+| extensions? | <ApiType><span className="api-signature-type">TExtensions</span></ApiType> | Additional non-standard metadata included in this formatted payload. |
+
+### IncrementalStreamResult
+
+**Interface.** Incremental payload produced by a streamed list field.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TStreamItem |  | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Shape of streamed list items. |
+| TExtensions |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of extensions payloads. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| id | <ApiType><span className="api-signature-keyword">string</span></ApiType> | Identifier matching this payload to a pending stream. |
+| subPath? | <ApiType><span className="api-signature-keyword">readonly</span> (<span className="api-signature-keyword">string</span> &#124; <span className="api-signature-keyword">number</span>)[]</ApiType> | Path from the streamed field location to these items. |
+| errors? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/error/errors#graphqlerror">GraphQLError</a>[]</ApiType> | Errors raised while producing streamed items. |
+| items | <ApiType><span className="api-signature-keyword">readonly</span> <span className="api-signature-type">TStreamItem</span>[]</ApiType> | Streamed list items delivered by this payload. |
+| extensions? | <ApiType><span className="api-signature-type">TExtensions</span></ApiType> | Additional non-standard metadata included in this payload. |
+
+### FormattedIncrementalStreamResult
+
+**Interface.** JSON-serializable form of a streamed list payload.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TStreamItem |  | <ApiType><span className="api-signature-keyword">unknown</span>[]</ApiType> | Shape of formatted streamed list items. |
+| TExtensions |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of formatted extensions payloads. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| errors? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/error/errors#graphqlformattederror">GraphQLFormattedError</a>[]</ApiType> | Formatted errors raised while producing streamed items. |
+| items | <ApiType><span className="api-signature-keyword">readonly</span> <span className="api-signature-type">TStreamItem</span>[]</ApiType> | Formatted streamed list items delivered by this payload. |
+| id | <ApiType><span className="api-signature-keyword">string</span></ApiType> | Identifier matching this payload to a pending stream. |
+| subPath? | <ApiType><span className="api-signature-keyword">readonly</span> (<span className="api-signature-keyword">string</span> &#124; <span className="api-signature-keyword">number</span>)[]</ApiType> | Path from the streamed field location to these items. |
+| extensions? | <ApiType><span className="api-signature-type">TExtensions</span></ApiType> | Additional non-standard metadata included in this formatted payload. |
+
+### IncrementalResult
+
+**Type alias.** Deferred fragment or streamed list payload produced by incremental execution.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TDeferredData |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of deferred fragment data. |
+| TStreamItem |  | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Shape of streamed list items. |
+| TExtensions |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of extensions payloads. |
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">IncrementalResult</span>&lt;<span className="api-signature-type">TDeferredData</span> = <span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;, <span className="api-signature-type">TStreamItem</span> = <span className="api-signature-keyword">unknown</span>, <span className="api-signature-type">TExtensions</span> = <span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;&gt; = <a href="/api-v17/execution/incremental-execution#incrementaldeferresult">IncrementalDeferResult</a>&lt;<span className="api-signature-type">TDeferredData</span>, <span className="api-signature-type">TExtensions</span>&gt; | <a href="/api-v17/execution/incremental-execution#incrementalstreamresult">IncrementalStreamResult</a>&lt;<span className="api-signature-type">TStreamItem</span>, <span className="api-signature-type">TExtensions</span>&gt;;</ApiSignature>
+
+### FormattedIncrementalResult
+
+**Type alias.** JSON-serializable deferred fragment or streamed list payload.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TDeferredData |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of formatted deferred fragment data. |
+| TStreamItem |  | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Shape of formatted streamed list items. |
+| TExtensions |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of formatted extensions payloads. |
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">FormattedIncrementalResult</span>&lt;<span className="api-signature-type">TDeferredData</span> = <span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;, <span className="api-signature-type">TStreamItem</span> = <span className="api-signature-keyword">unknown</span>, <span className="api-signature-type">TExtensions</span> = <span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;&gt; = <a href="/api-v17/execution/incremental-execution#formattedincrementaldeferresult">FormattedIncrementalDeferResult</a>&lt;<span className="api-signature-type">TDeferredData</span>, <span className="api-signature-type">TExtensions</span>&gt; | <a href="/api-v17/execution/incremental-execution#formattedincrementalstreamresult">FormattedIncrementalStreamResult</a>&lt;<span className="api-signature-type">TStreamItem</span>, <span className="api-signature-type">TExtensions</span>&gt;;</ApiSignature>

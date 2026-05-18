@@ -1,0 +1,267 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/utilities/schema-construction
+
+## Functions
+
+### buildASTSchema()
+
+Builds a GraphQLSchema from a parsed schema definition language document.
+
+If no schema definition is provided, then it will look for types named Query,
+Mutation and Subscription.
+
+The resulting schema has no resolver functions, so execution will use the
+default field resolver.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">buildASTSchema</span>(documentAST: <a href="/api-v16/language/ast#documentnode">DocumentNode</a>, options?: <a href="/api-v16/utilities/schema-construction#buildschemaoptions">BuildSchemaOptions</a>): <a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| documentAST | <ApiType><a href="/api-v16/language/ast#documentnode">DocumentNode</a></ApiType> | The parsed GraphQL document AST. |
+| options? | <ApiType><a href="/api-v16/utilities/schema-construction#buildschemaoptions">BuildSchemaOptions</a></ApiType> | Optional configuration for this operation. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | The schema built from the provided SDL document. |
+
+#### Example 1
+
+```ts
+// Build a schema from a valid parsed SDL document.
+import { parse } from 'graphql/language';
+import { buildASTSchema } from 'graphql/utilities';
+
+const document = parse('type Query { hello: String }');
+const schema = buildASTSchema(document);
+
+schema.getQueryType().name; // => 'Query'
+```
+
+#### Example 2
+
+```ts
+// This variant uses validation options when the SDL references unknown types.
+import { parse } from 'graphql/language';
+import { buildASTSchema } from 'graphql/utilities';
+
+const document = parse('type Query { broken: MissingType }');
+
+buildASTSchema(document); // throws an error
+buildASTSchema(document, {
+  assumeValid: true,
+  assumeValidSDL: true,
+}); // does not throw
+```
+
+### buildSchema()
+
+Builds a GraphQLSchema directly from a schema definition language source.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">buildSchema</span>(source: <span className="api-signature-keyword">string</span> | <a href="/api-v16/language/source#source">Source</a>, options?: <a href="/api-v16/utilities/schema-construction#buildschemaoptions">BuildSchemaOptions</a> &amp; <a href="/api-v16/language/parsing#parseoptions">ParseOptions</a>): <a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| source | <ApiType><span className="api-signature-keyword">string</span> &#124; <a href="/api-v16/language/source#source">Source</a></ApiType> | The GraphQL source text or source object. |
+| options? | <ApiType><a href="/api-v16/utilities/schema-construction#buildschemaoptions">BuildSchemaOptions</a> &amp; <a href="/api-v16/language/parsing#parseoptions">ParseOptions</a></ApiType> | Optional configuration for this operation. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | The schema built from the provided SDL document. |
+
+#### Example 1
+
+```ts
+// Build a schema from SDL source using the default options.
+import { buildSchema } from 'graphql/utilities';
+
+const schema = buildSchema('type Query { hello: String }');
+
+schema.getQueryType().name; // => 'Query'
+```
+
+#### Example 2
+
+```ts
+// This variant enables parser options and omits source locations.
+import { buildSchema } from 'graphql/utilities';
+
+const schema = buildSchema(
+  'directive @tag on FIELD_DEFINITION\n' +
+    'directive @compose @tag on FIELD_DEFINITION',
+  {
+    experimentalDirectivesOnDirectiveDefinitions: true,
+    noLocation: true,
+  },
+);
+
+const directive = schema.getDirective('compose');
+
+directive.name; // => 'compose'
+directive.astNode.loc; // => undefined
+```
+
+### extendSchema()
+
+Produces a new schema given an existing schema and a document which may
+contain GraphQL type extensions and definitions. The original schema will
+remain unaltered.
+
+Because a schema represents a graph of references, a schema cannot be
+extended without effectively making an entire copy. We do not know until it's
+too late if subgraphs remain unchanged.
+
+This algorithm copies the provided schema, applying extensions while
+producing the copy. The original schema remains unaltered.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">extendSchema</span>(schema: <a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a>, documentAST: <a href="/api-v16/language/ast#documentnode">DocumentNode</a>, options?: &#123; assumeValidSDL?: <span className="api-signature-keyword">boolean</span> &#125;): <a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | GraphQL schema to use. |
+| documentAST | <ApiType><a href="/api-v16/language/ast#documentnode">DocumentNode</a></ApiType> | The parsed GraphQL document AST. |
+| options? | <ApiType>&#123; assumeValidSDL?: <span className="api-signature-keyword">boolean</span> &#125;</ApiType> | Optional configuration for this operation. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | A new schema with the extensions and definitions applied. |
+
+#### Example 1
+
+```ts
+// Extend a schema with new fields and types.
+import { parse } from 'graphql/language';
+import { buildSchema, extendSchema } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const extensionAST = parse(`
+  extend type Query {
+    farewell: String
+  }
+
+  type Review {
+    body: String
+  }
+`);
+
+const extendedSchema = extendSchema(schema, extensionAST);
+
+schema.getType('Review'); // => undefined
+extendedSchema.getType('Review')?.name; // => 'Review'
+Object.keys(extendedSchema.getQueryType().getFields()); // => ['greeting', 'farewell']
+```
+
+#### Example 2
+
+```ts
+// This variant bypasses validation for an otherwise invalid extension.
+import { parse } from 'graphql/language';
+import { buildSchema, extendSchema } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const invalidExtension = parse(`
+  extend type Missing {
+    field: String
+  }
+`);
+
+extendSchema(schema, invalidExtension); // throws an error
+extendSchema(schema, invalidExtension, {
+    assumeValid: true,
+    assumeValidSDL: true,
+  }); // does not throw
+```
+
+### lexicographicSortSchema()
+
+Sort GraphQLSchema.
+
+This function returns a sorted copy of the given GraphQLSchema.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">lexicographicSortSchema</span>(schema: <a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a>): <a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | GraphQL schema to use. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | A copy of the schema with types, fields, arguments, and values sorted lexicographically. |
+
+#### Example
+
+```ts
+import { buildSchema, lexicographicSortSchema, printSchema } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    zebra: String
+    apple: String
+  }
+
+  enum Episode {
+    JEDI
+    NEW_HOPE
+    EMPIRE
+  }
+`);
+
+const sortedSchema = lexicographicSortSchema(schema);
+
+printSchema(sortedSchema);
+// =>
+// enum Episode {
+//   EMPIRE
+//   JEDI
+//   NEW_HOPE
+// }
+//
+// type Query {
+//   apple: String
+//   zebra: String
+// }
+```
+
+## Types
+
+### BuildSchemaOptions
+
+**Interface.** Options used when building a schema from SDL or a parsed SDL document.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| assumeValidSDL? | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Set to true to assume the SDL is valid.<br />Default: false |

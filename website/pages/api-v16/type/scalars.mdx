@@ -1,0 +1,94 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/type/scalars
+
+## Functions
+
+### isSpecifiedScalarType()
+
+Returns true when the scalar type is one of the scalars specified by GraphQL.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isSpecifiedScalarType</span>(type: <a href="/api-v16/type/definitions#graphqlnamedtype">GraphQLNamedType</a>): <span className="api-signature-keyword">boolean</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><a href="/api-v16/type/definitions#graphqlnamedtype">GraphQLNamedType</a></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | True when the scalar type is one of the scalars specified by GraphQL. |
+
+#### Example
+
+```ts
+import {
+  GraphQLScalarType,
+  GraphQLString,
+  isSpecifiedScalarType,
+} from 'graphql/type';
+
+const DateTime = new GraphQLScalarType({
+  name: 'DateTime',
+});
+
+isSpecifiedScalarType(GraphQLString); // => true
+isSpecifiedScalarType(DateTime); // => false
+```
+
+## Constants
+
+### GRAPHQL_MAX_INT
+
+Maximum possible Int value as per GraphQL Spec (32-bit signed integer).
+n.b. This differs from JavaScript's numbers that are IEEE 754 doubles safe up-to 2^53 - 1
+
+<ApiType>2147483647</ApiType>
+
+### GRAPHQL_MIN_INT
+
+Minimum possible Int value as per GraphQL Spec (32-bit signed integer).
+n.b. This differs from JavaScript's numbers that are IEEE 754 doubles safe starting at -(2^53 - 1)
+
+<ApiType>-2147483648</ApiType>
+
+### GraphQLInt
+
+The built-in `Int` scalar type.
+
+<ApiType><a href="/api-v16/type/definitions#graphqlscalartype">GraphQLScalarType</a>&lt;<span className="api-signature-keyword">number</span>, <span className="api-signature-keyword">number</span>&gt;</ApiType>
+
+### GraphQLFloat
+
+The built-in `Float` scalar type.
+
+<ApiType><a href="/api-v16/type/definitions#graphqlscalartype">GraphQLScalarType</a>&lt;<span className="api-signature-keyword">number</span>, <span className="api-signature-keyword">number</span>&gt;</ApiType>
+
+### GraphQLString
+
+The built-in `String` scalar type.
+
+<ApiType><a href="/api-v16/type/definitions#graphqlscalartype">GraphQLScalarType</a>&lt;<span className="api-signature-keyword">string</span>, <span className="api-signature-keyword">string</span>&gt;</ApiType>
+
+### GraphQLBoolean
+
+The built-in `Boolean` scalar type.
+
+<ApiType><a href="/api-v16/type/definitions#graphqlscalartype">GraphQLScalarType</a>&lt;<span className="api-signature-keyword">boolean</span>, <span className="api-signature-keyword">boolean</span>&gt;</ApiType>
+
+### GraphQLID
+
+The built-in `ID` scalar type.
+
+<ApiType><a href="/api-v16/type/definitions#graphqlscalartype">GraphQLScalarType</a>&lt;<span className="api-signature-keyword">string</span>, <span className="api-signature-keyword">string</span>&gt;</ApiType>
+
+### specifiedScalarTypes
+
+All built-in scalar types defined by the GraphQL specification.
+
+<ApiType><span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v16/type/definitions#graphqlscalartype">GraphQLScalarType</a>&gt;</ApiType>

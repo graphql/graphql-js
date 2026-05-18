@@ -1,0 +1,134 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/language/lexing
+
+## Classes
+
+### Lexer
+
+Given a Source object, creates a Lexer for that source.
+A Lexer is a stateful stream generator in that every time
+it is advanced, it returns the next token in the Source. Assuming the
+source lexes, the final Token emitted by the lexer will be of kind
+EOF, after which the lexer will repeatedly return the same EOF token
+whenever called.
+
+#### Constructor
+
+Creates a Lexer instance.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-keyword">new</span> <span className="api-signature-name">Lexer</span>(source: <a href="/api-v17/language/source#source">Source</a>)</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| source | <ApiType><a href="/api-v17/language/source#source">Source</a></ApiType> | Source document used to derive error locations. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/lexing#lexer">Lexer</a></ApiType> |  |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| source | <ApiType><a href="/api-v17/language/source#source">Source</a></ApiType> | Source document used to derive error locations. |
+| lastToken | <ApiType><a href="/api-v17/language/ast#token">Token</a></ApiType> | Most recent non-ignored token returned by the lexer. |
+| token | <ApiType><a href="/api-v17/language/ast#token">Token</a></ApiType> | Current non-ignored token at the lexer cursor. |
+| line | <ApiType><span className="api-signature-keyword">number</span></ApiType> | The (1-indexed) line containing the current token. |
+| lineStart | <ApiType><span className="api-signature-keyword">number</span></ApiType> | Character offset where the current line starts. |
+
+#### advance()
+
+Advances the token stream to the next non-ignored token.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">advance</span>(): <a href="/api-v17/language/ast#token">Token</a></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/ast#token">Token</a></ApiType> | The next non-ignored token. |
+
+##### Example
+
+```ts
+import { Lexer, Source } from 'graphql/language';
+
+const lexer = new Lexer(new Source('{ hello }'));
+const token = lexer.advance();
+
+token.kind; // => '{'
+lexer.token; // => token
+```
+
+#### lookahead()
+
+Looks ahead and returns the next non-ignored token, but does not change
+the state of Lexer.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">lookahead</span>(): <a href="/api-v17/language/ast#token">Token</a></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/ast#token">Token</a></ApiType> | The next non-ignored token without advancing the lexer. |
+
+##### Example
+
+```ts
+import { Lexer, Source } from 'graphql/language';
+
+const lexer = new Lexer(new Source('{ hello }'));
+const token = lexer.lookahead();
+
+token.kind; // => '{'
+lexer.token.kind; // => '<SOF>'
+```
+
+## Enumerations
+
+### TokenKind
+
+**Enumeration.** An exported enum describing the different kinds of tokens that the
+lexer emits.
+
+> This is not a TypeScript `enum`. GraphQL.js exports `TokenKind` as both a runtime const object of literal values and a TypeScript type alias for those values.
+
+#### Members
+
+| Name | Value | Description |
+| --- | --- | --- |
+| `SOF` | `"<SOF>"` |  |
+| `EOF` | `"<EOF>"` |  |
+| `BANG` | `"!"` |  |
+| `DOLLAR` | `"$"` |  |
+| `AMP` | `"&"` |  |
+| `PAREN_L` | `"("` |  |
+| `PAREN_R` | `")"` |  |
+| `DOT` | `"."` |  |
+| `SPREAD` | `"..."` |  |
+| `COLON` | `":"` |  |
+| `EQUALS` | `"="` |  |
+| `AT` | `"@"` |  |
+| `BRACKET_L` | `"["` |  |
+| `BRACKET_R` | `"]"` |  |
+| `BRACE_L` | `"{"` |  |
+| `PIPE` | <code>{"\"\u007c\""}</code> |  |
+| `BRACE_R` | `"}"` |  |
+| `NAME` | `"Name"` |  |
+| `INT` | `"Int"` |  |
+| `FLOAT` | `"Float"` |  |
+| `STRING` | `"String"` |  |
+| `BLOCK_STRING` | `"BlockString"` |  |
+| `COMMENT` | `"Comment"` |  |

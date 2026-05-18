@@ -1,0 +1,791 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/execution/execution
+
+## Classes
+
+### AbortedGraphQLExecutionError
+
+Error thrown when GraphQL execution is aborted.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TResult |  |  | Result value type. |
+
+#### Constructor
+
+Creates an error for an aborted GraphQL execution.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-keyword">new</span> <span className="api-signature-name">AbortedGraphQLExecutionError</span>(reason: <span className="api-signature-keyword">unknown</span>, result: <span className="api-signature-type">PromiseOrValue</span>&lt;<span className="api-signature-type">TResult</span>&gt;)</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| reason | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Abort reason used as the error cause. |
+| result | <ApiType><span className="api-signature-type">PromiseOrValue</span>&lt;<span className="api-signature-type">TResult</span>&gt;</ApiType> | Partial execution result available when execution stopped. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/execution/execution#abortedgraphqlexecutionerror">AbortedGraphQLExecutionError</a>&lt;<span className="api-signature-type">TResult</span>&gt;</ApiType> |  |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| abortedResult | <ApiType><span className="api-signature-type">PromiseOrValue</span>&lt;<span className="api-signature-type">TResult</span>&gt;</ApiType> | Partial execution result available when execution was aborted. |
+
+## Functions
+
+### execute()
+
+Implements the "Executing requests" section of the GraphQL specification.
+
+Returns either a synchronous ExecutionResult (if all encountered resolvers
+are synchronous), or a Promise of an ExecutionResult that will eventually be
+resolved and never rejected.
+
+If the arguments to this function do not result in a legal execution context,
+a GraphQLError will be thrown immediately explaining the invalid input.
+
+Field errors are collected into the response instead of rejecting the
+returned promise. Only the field that produced the error and its descendants
+are omitted; sibling fields continue to execute. Errors from fields of
+non-null type may propagate to the nearest nullable parent, which can be the
+entire response data.
+
+This function does not support incremental delivery (`@defer` and `@stream`).
+Use [`experimentalExecuteIncrementally`](/api-v17/execution/incremental-execution#experimentalexecuteincrementally) to execute operations with
+incremental delivery enabled.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">execute</span>(args: <a href="/api-v17/execution/execution#executionargs">ExecutionArgs</a>): <span className="api-signature-type">PromiseOrValue</span>&lt;<a href="/api-v17/execution/execution#executionresult">ExecutionResult</a>&gt;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| args | <ApiType><a href="/api-v17/execution/execution#executionargs">ExecutionArgs</a></ApiType> | The arguments used to perform the operation. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">PromiseOrValue</span>&lt;<a href="/api-v17/execution/execution#executionresult">ExecutionResult</a>&gt;</ApiType> | A completed execution result, or a promise resolving to one when execution is asynchronous. |
+
+#### Example
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { execute } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    greeting(name: String!): String
+  }
+`);
+
+const result = await execute({
+  schema,
+  document: parse('query ($name: String!) { greeting(name: $name) }'),
+  rootValue: {
+    greeting: ({ name }) => `Hello, ${name}!`,
+  },
+  variableValues: { name: 'Ada' },
+});
+
+result; // => { data: { greeting: 'Hello, Ada!' } }
+```
+
+### executeRootSelectionSet()
+
+Implements the "Executing operations" section of the spec.
+
+Returns a Promise that will eventually resolve to the data described by
+The "Response" section of the GraphQL specification.
+
+If errors are encountered while executing a GraphQL field, only that
+field and its descendants will be omitted, and sibling fields will still
+be executed. An execution which encounters errors will still result in a
+resolved Promise.
+
+Errors from sub-fields of a NonNull type may propagate to the top level,
+at which point we still log the error and null the parent field, which
+in this case is the entire response.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">executeRootSelectionSet</span>(validatedExecutionArgs: <a href="/api-v17/execution/execution#validatedexecutionargs">ValidatedExecutionArgs</a>): <span className="api-signature-type">PromiseOrValue</span>&lt;<a href="/api-v17/execution/execution#executionresult">ExecutionResult</a>&gt;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| validatedExecutionArgs | <ApiType><a href="/api-v17/execution/execution#validatedexecutionargs">ValidatedExecutionArgs</a></ApiType> | Validated execution arguments. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">PromiseOrValue</span>&lt;<a href="/api-v17/execution/execution#executionresult">ExecutionResult</a>&gt;</ApiType> | Execution result for the operation root selection set. |
+
+#### Example
+
+```ts
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { executeRootSelectionSet, validateExecutionArgs } from 'graphql/execution';
+
+const schema = buildSchema('type Query { greeting: String }');
+const validatedArgs = validateExecutionArgs({
+  schema,
+  document: parse('{ greeting }'),
+  rootValue: { greeting: 'Hello' },
+});
+
+assert('schema' in validatedArgs);
+
+const result = await executeRootSelectionSet(validatedArgs);
+result; // => { data: { greeting: 'Hello' } }
+```
+
+### executeSync()
+
+Also implements the "Executing requests" section of the GraphQL specification.
+However, it guarantees to complete synchronously (or throw an error) assuming
+that all field resolvers are also synchronous.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">executeSync</span>(args: <a href="/api-v17/execution/execution#executionargs">ExecutionArgs</a>): <a href="/api-v17/execution/execution#executionresult">ExecutionResult</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| args | <ApiType><a href="/api-v17/execution/execution#executionargs">ExecutionArgs</a></ApiType> | The arguments used to perform the operation. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/execution/execution#executionresult">ExecutionResult</a></ApiType> | Completed execution output for a synchronous operation. |
+
+#### Example
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { executeSync } from 'graphql/execution';
+
+const schema = buildSchema('type Query { greeting: String }');
+
+const result = executeSync({
+  schema,
+  document: parse('{ greeting }'),
+  rootValue: { greeting: 'Hello' },
+});
+
+result; // => { data: { greeting: 'Hello' } }
+```
+
+### executeSubscriptionEvent()
+
+Executes a subscription operation once for a single source event.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">executeSubscriptionEvent</span>(validatedExecutionArgs: <a href="/api-v17/execution/execution#validatedsubscriptionargs">ValidatedSubscriptionArgs</a>): <span className="api-signature-type">PromiseOrValue</span>&lt;<a href="/api-v17/execution/execution#executionresult">ExecutionResult</a>&gt;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| validatedExecutionArgs | <ApiType><a href="/api-v17/execution/execution#validatedsubscriptionargs">ValidatedSubscriptionArgs</a></ApiType> | Validated subscription execution arguments. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">PromiseOrValue</span>&lt;<a href="/api-v17/execution/execution#executionresult">ExecutionResult</a>&gt;</ApiType> | Execution result for the subscription event. |
+
+#### Example
+
+```ts
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { executeSubscriptionEvent, validateSubscriptionArgs } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+
+  type Subscription {
+    greeting: String
+  }
+`);
+const validatedArgs = validateSubscriptionArgs({
+  schema,
+  document: parse('subscription { greeting }'),
+  rootValue: { greeting: 'Hello' },
+});
+
+assert('schema' in validatedArgs);
+
+const result = await executeSubscriptionEvent(validatedArgs);
+result; // => { data: { greeting: 'Hello' } }
+```
+
+### subscribe()
+
+Implements the "Subscribe" algorithm described in the GraphQL specification.
+
+Returns a Promise that resolves to either an AsyncIterator (if successful)
+or an ExecutionResult (error). The promise will be rejected if the schema or
+other arguments to this function are invalid, or if the resolved event stream
+is not an async iterable.
+
+If the client-provided arguments to this function do not result in a
+compliant subscription, a GraphQL Response (ExecutionResult) with descriptive
+errors and no data will be returned.
+
+If the source stream could not be created due to faulty subscription resolver
+logic or underlying systems, the promise will resolve to a single
+ExecutionResult containing `errors` and no `data`.
+
+If the operation succeeded, the promise resolves to an AsyncIterator, which
+yields a stream of ExecutionResults representing the response stream.
+
+This function does not support incremental delivery (`@defer` and `@stream`).
+If an operation which would defer or stream data is executed with this
+function, a field error will be raised at the location of the `@defer` or
+`@stream` directive.
+
+Accepts an object with named arguments.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">subscribe</span>(args: <a href="/api-v17/execution/execution#executionargs">ExecutionArgs</a>): <span className="api-signature-type">PromiseOrValue</span>&lt;<a href="/api-v17/execution/execution#executionresult">ExecutionResult</a> | <span className="api-signature-type">AsyncGenerator</span>&lt;<a href="/api-v17/execution/execution#executionresult">ExecutionResult</a>, <span className="api-signature-keyword">void</span>, <span className="api-signature-keyword">void</span>&gt;&gt;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| args | <ApiType><a href="/api-v17/execution/execution#executionargs">ExecutionArgs</a></ApiType> | Execution arguments for the subscription operation. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">PromiseOrValue</span>&lt;<a href="/api-v17/execution/execution#executionresult">ExecutionResult</a> &#124; <span className="api-signature-type">AsyncGenerator</span>&lt;<a href="/api-v17/execution/execution#executionresult">ExecutionResult</a>, <span className="api-signature-keyword">void</span>, <span className="api-signature-keyword">void</span>&gt;&gt;</ApiType> | A response stream for a valid subscription, or an execution result containing errors. |
+
+#### Example 1
+
+```ts
+// Use a same-named rootValue function to provide the source event stream.
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { subscribe } from 'graphql/execution';
+
+async function* greetings() {
+  yield { greeting: 'Hello' };
+  yield { greeting: 'Bonjour' };
+}
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+
+  type Subscription {
+    greeting: String
+  }
+`);
+
+const result = await subscribe({
+  schema,
+  document: parse('subscription { greeting }'),
+  rootValue: { greeting: () => greetings() },
+});
+
+assert('next' in result);
+
+const firstPayload = await result.next();
+firstPayload.value; // => { data: { greeting: 'Hello' } }
+```
+
+#### Example 2
+
+```ts
+// This variant supplies events through a custom subscribeFieldResolver.
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { subscribe } from 'graphql/execution';
+
+async function* defaultGreetings() {
+  yield { greeting: 'Hello' };
+}
+
+async function* frenchGreetings() {
+  yield { greeting: 'Bonjour' };
+}
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+
+  type Subscription {
+    greeting(locale: String): String
+  }
+`);
+
+const result = await subscribe({
+  schema,
+  document: parse(
+    'subscription Greeting($locale: String) { greeting(locale: $locale) }',
+  ),
+  rootValue: {
+    greeting: (args, contextValue) => {
+      const locale = args.locale ?? contextValue.defaultLocale;
+      return locale === 'fr' ? frenchGreetings() : defaultGreetings();
+    },
+  },
+  contextValue: { defaultLocale: 'fr' },
+  variableValues: { locale: 'fr' },
+  operationName: 'Greeting',
+  subscribeFieldResolver: (rootValue, args, contextValue, info) => {
+    args.locale; // => 'fr'
+    return rootValue[info.fieldName](args, contextValue);
+  },
+});
+
+assert('next' in result);
+
+const firstPayload = await result.next();
+firstPayload.value; // => { data: { greeting: 'Bonjour' } }
+```
+
+### createSourceEventStream()
+
+Implements the "CreateSourceEventStream" algorithm described in the
+GraphQL specification, resolving the subscription source event stream for a
+previously validated subscription request.
+
+Returns a Promise that resolves to either an AsyncIterable (if successful)
+or an ExecutionResult (error). The promise will be rejected if the validated
+execution arguments are invalid, or if the resolved event stream is not an
+async iterable.
+
+If the client-provided arguments to this function do not result in a
+compliant subscription, a GraphQL Response (ExecutionResult) with
+descriptive errors and no data will be returned.
+
+If the source stream could not be created due to faulty subscription
+resolver logic or underlying systems, the promise will resolve to a single
+ExecutionResult containing `errors` and no `data`.
+
+If the operation succeeded, the promise resolves to the AsyncIterable for the
+event stream returned by the resolver.
+
+A Source Event Stream represents a sequence of events, each of which triggers
+a GraphQL execution for that event.
+
+This may be useful when hosting the stateful subscription service in a
+different process or machine than the stateless GraphQL execution engine,
+or otherwise separating these two steps. For more on this, see the
+"Supporting Subscriptions at Scale" information in the GraphQL specification.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">createSourceEventStream</span>(validatedExecutionArgs: <a href="/api-v17/execution/execution#validatedsubscriptionargs">ValidatedSubscriptionArgs</a>): <span className="api-signature-type">PromiseOrValue</span>&lt;<span className="api-signature-type">AsyncIterable</span>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">any</span>, <span className="api-signature-keyword">any</span>&gt; | <a href="/api-v17/execution/execution#executionresult">ExecutionResult</a>&gt;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| validatedExecutionArgs | <ApiType><a href="/api-v17/execution/execution#validatedsubscriptionargs">ValidatedSubscriptionArgs</a></ApiType> | Validated subscription execution arguments. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">PromiseOrValue</span>&lt;<span className="api-signature-type">AsyncIterable</span>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">any</span>, <span className="api-signature-keyword">any</span>&gt; &#124; <a href="/api-v17/execution/execution#executionresult">ExecutionResult</a>&gt;</ApiType> | A source event stream, or an execution result containing errors. |
+
+#### Example
+
+```ts
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { createSourceEventStream, validateSubscriptionArgs } from 'graphql/execution';
+
+async function* greetings() {
+  yield { greeting: 'Hello' };
+}
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+
+  type Subscription {
+    greeting: String
+  }
+`);
+const validatedArgs = validateSubscriptionArgs({
+  schema,
+  document: parse('subscription { greeting }'),
+  rootValue: { greeting: () => greetings() },
+});
+
+assert('schema' in validatedArgs);
+
+const stream = await createSourceEventStream(validatedArgs);
+Symbol.asyncIterator in stream; // => true
+```
+
+### validateExecutionArgs()
+
+Constructs a ExecutionContext object from the arguments passed to
+execute, which we will pass throughout the other execution methods.
+
+Throws a GraphQLError if a valid execution context cannot be created.
+
+TODO: consider no longer exporting this function
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">validateExecutionArgs</span>(args: <a href="/api-v17/execution/execution#executionargs">ExecutionArgs</a>): <a href="/api-v17/execution/execution#validatedexecutionargs">ValidatedExecutionArgs</a> | <span className="api-signature-keyword">readonly</span> <a href="/api-v17/error/errors#graphqlerror">GraphQLError</a>[]</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| args | <ApiType><a href="/api-v17/execution/execution#executionargs">ExecutionArgs</a></ApiType> | Execution arguments to validate. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/execution/execution#validatedexecutionargs">ValidatedExecutionArgs</a> &#124; <span className="api-signature-keyword">readonly</span> <a href="/api-v17/error/errors#graphqlerror">GraphQLError</a>[]</ApiType> | Validated execution arguments, or validation errors. |
+
+#### Example
+
+```ts
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { validateExecutionArgs } from 'graphql/execution';
+
+const schema = buildSchema(`
+  interface Named {
+    name: String!
+  }
+
+  type User implements Named {
+    name: String!
+  }
+
+  type Query {
+    viewer: Named
+  }
+`);
+const abortController = new AbortController();
+const validatedArgs = validateExecutionArgs({
+  schema,
+  document: parse('query Viewer { viewer { __typename name } }'),
+  rootValue: { viewer: { kind: 'user', name: 'Ada' } },
+  contextValue: { locale: 'en' },
+  operationName: 'Viewer',
+  fieldResolver: (source, _args, contextValue, info) => {
+    contextValue.locale; // => 'en'
+    return source[info.fieldName];
+  },
+  typeResolver: (value) => {
+    return value.kind === 'user' ? 'User' : undefined;
+  },
+  hideSuggestions: true,
+  abortSignal: abortController.signal,
+  enableEarlyExecution: true,
+  hooks: {
+    asyncWorkFinished: () => {},
+  },
+  options: { maxCoercionErrors: 1 },
+});
+
+assert('operation' in validatedArgs);
+
+validatedArgs.operation.name?.value; // => 'Viewer'
+validatedArgs.hideSuggestions; // => true
+```
+
+### validateSubscriptionArgs()
+
+Validates execution arguments for a subscription operation.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">validateSubscriptionArgs</span>(args: <a href="/api-v17/execution/execution#executionargs">ExecutionArgs</a>): <a href="/api-v17/execution/execution#validatedsubscriptionargs">ValidatedSubscriptionArgs</a> | <span className="api-signature-keyword">readonly</span> <a href="/api-v17/error/errors#graphqlerror">GraphQLError</a>[]</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| args | <ApiType><a href="/api-v17/execution/execution#executionargs">ExecutionArgs</a></ApiType> | Execution arguments to validate. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/execution/execution#validatedsubscriptionargs">ValidatedSubscriptionArgs</a> &#124; <span className="api-signature-keyword">readonly</span> <a href="/api-v17/error/errors#graphqlerror">GraphQLError</a>[]</ApiType> | Validated subscription execution arguments, or validation errors. |
+
+#### Example
+
+```ts
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { validateSubscriptionArgs } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+
+  type Subscription {
+    greeting: String
+  }
+`);
+const validatedArgs = validateSubscriptionArgs({
+  schema,
+  document: parse('subscription { greeting }'),
+});
+
+assert('operation' in validatedArgs);
+
+validatedArgs.operation.operation; // => 'subscription'
+```
+
+### mapSourceToResponseEvent()
+
+Implements the "MapSourceToResponseEvent" algorithm described in the
+GraphQL specification, mapping each event from a subscription source event
+stream to an ExecutionResult in the response stream.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">mapSourceToResponseEvent</span>(validatedExecutionArgs: <a href="/api-v17/execution/execution#validatedsubscriptionargs">ValidatedSubscriptionArgs</a>, sourceEventStream: <span className="api-signature-type">AsyncIterable</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;, rootSelectionSetExecutor: <a href="/api-v17/execution/execution#rootselectionsetexecutor">RootSelectionSetExecutor</a>): <span className="api-signature-type">AsyncGenerator</span>&lt;<a href="/api-v17/execution/execution#executionresult">ExecutionResult</a>, <span className="api-signature-keyword">void</span>, <span className="api-signature-keyword">void</span>&gt;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| validatedExecutionArgs | <ApiType><a href="/api-v17/execution/execution#validatedsubscriptionargs">ValidatedSubscriptionArgs</a></ApiType> |  | Validated subscription execution arguments. |
+| sourceEventStream | <ApiType><span className="api-signature-type">AsyncIterable</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> |  | Source event stream returned by the subscription resolver. |
+| rootSelectionSetExecutor | <ApiType><a href="/api-v17/execution/execution#rootselectionsetexecutor">RootSelectionSetExecutor</a></ApiType> | `executeSubscriptionEvent` | Function used to execute each source event. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">AsyncGenerator</span>&lt;<a href="/api-v17/execution/execution#executionresult">ExecutionResult</a>, <span className="api-signature-keyword">void</span>, <span className="api-signature-keyword">void</span>&gt;</ApiType> | A response stream of execution results. |
+
+#### Example
+
+```ts
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { mapSourceToResponseEvent, validateSubscriptionArgs } from 'graphql/execution';
+
+async function* events() {
+  yield { greeting: 'Hello' };
+}
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+
+  type Subscription {
+    greeting: String
+  }
+`);
+const validatedArgs = validateSubscriptionArgs({
+  schema,
+  document: parse('subscription { greeting }'),
+});
+
+assert('schema' in validatedArgs);
+
+const responseStream = mapSourceToResponseEvent(validatedArgs, events());
+const firstPayload = await responseStream.next();
+
+firstPayload.value; // => { data: { greeting: 'Hello' } }
+```
+
+## Constants
+
+### defaultTypeResolver
+
+If a resolveType function is not given, then a default resolve behavior is
+used which attempts two strategies:
+
+First, See if the provided value has a `__typename` field defined, if so, use
+that value as name of the resolved type.
+
+Otherwise, test each possible type for the abstract type by calling
+isTypeOf for the object being coerced, returning the first type that matches.
+
+<ApiType><a href="/api-v17/type/definitions#graphqltyperesolver">GraphQLTypeResolver</a>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">unknown</span>&gt;</ApiType>
+
+### defaultFieldResolver
+
+If a resolve function is not given, then a default resolve behavior is used
+which takes the property of the source object of the same name as the field
+and returns it as the result, or if it's a function, returns the result
+of calling that function while passing along args and context value.
+
+<ApiType><a href="/api-v17/type/definitions#graphqlfieldresolver">GraphQLFieldResolver</a>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">unknown</span>&gt;</ApiType>
+
+## Types
+
+### ValidatedExecutionArgs
+
+**Interface.** Data that must be available at all points during query execution.
+
+Namely, schema of the type system that is currently executing,
+and the fragments defined in the query document
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | Schema used for execution. |
+| fragmentDefinitions | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<a href="/api-v17/language/ast#fragmentdefinitionnode">FragmentDefinitionNode</a>&gt;</ApiType> | Fragment definitions keyed by fragment name. |
+| fragments | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-type">FragmentDetails</span>&gt;</ApiType> | Fragment details keyed by fragment name. |
+| rootValue | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Root value passed to the operation. |
+| contextValue | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Application context value passed to every resolver. |
+| operation | <ApiType><a href="/api-v17/language/ast#operationdefinitionnode">OperationDefinitionNode</a></ApiType> | Operation definition selected for execution. |
+| variableValues | <ApiType><a href="/api-v17/execution/values#variablevalues">VariableValues</a></ApiType> | Operation variable values with source metadata and coerced runtime values. |
+| fieldResolver | <ApiType><a href="/api-v17/type/definitions#graphqlfieldresolver">GraphQLFieldResolver</a>&lt;<span className="api-signature-keyword">any</span>, <span className="api-signature-keyword">any</span>&gt;</ApiType> | Resolver used for fields without an explicit resolver. |
+| typeResolver | <ApiType><a href="/api-v17/type/definitions#graphqltyperesolver">GraphQLTypeResolver</a>&lt;<span className="api-signature-keyword">any</span>, <span className="api-signature-keyword">any</span>&gt;</ApiType> | Resolver used for abstract types without an explicit type resolver. |
+| subscribeFieldResolver | <ApiType><a href="/api-v17/type/definitions#graphqlfieldresolver">GraphQLFieldResolver</a>&lt;<span className="api-signature-keyword">any</span>, <span className="api-signature-keyword">any</span>&gt;</ApiType> | Resolver used for subscription fields without an explicit subscribe resolver. |
+| hideSuggestions | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether suggestion text should be omitted from execution errors. |
+| errorPropagation | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether execution should use error propagation. |
+| externalAbortSignal | <ApiType><span className="api-signature-keyword">any</span></ApiType> | External signal that may abort execution. |
+| enableEarlyExecution | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether incremental execution may begin eligible work early. |
+| hooks | <ApiType><a href="/api-v17/execution/execution#executionhooks">ExecutionHooks</a> &#124; <span className="api-signature-keyword">undefined</span></ApiType> | Execution hooks supplied by the caller. |
+
+### ValidatedSubscriptionArgs
+
+**Interface.** Validated execution arguments for a subscription operation.
+
+<ApiSignature><span className="api-signature-keyword">interface</span> <span className="api-signature-name">ValidatedSubscriptionArgs</span> extends <a href="/api-v17/execution/execution#validatedexecutionargs">ValidatedExecutionArgs</a></ApiSignature>
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| operation | <ApiType><a href="/api-v17/language/ast#subscriptionoperationdefinitionnode">SubscriptionOperationDefinitionNode</a></ApiType> | Subscription operation definition selected for execution. |
+
+### ExecutionResult
+
+**Interface.** Represents the response produced by executing a GraphQL operation.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TData |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of the execution data payload. |
+| TExtensions |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of the extensions payload. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| errors? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/error/errors#graphqlerror">GraphQLError</a>[]</ApiType> | Errors raised while parsing, validating, or executing the operation. |
+| data? | <ApiType><span className="api-signature-type">TData</span> &#124; null</ApiType> | Data returned by execution, or null when execution could not produce data. |
+| extensions? | <ApiType><span className="api-signature-type">TExtensions</span></ApiType> | Additional non-standard metadata included in the execution result. |
+
+### FormattedExecutionResult
+
+**Interface.** A JSON-serializable GraphQL execution result.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TData |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of the formatted data payload. |
+| TExtensions |  | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Shape of the formatted extensions payload. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| errors? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/error/errors#graphqlformattederror">GraphQLFormattedError</a>[]</ApiType> | Errors raised while parsing, validating, or executing the operation. |
+| data? | <ApiType><span className="api-signature-type">TData</span> &#124; null</ApiType> | Data returned by execution, or null when execution could not produce data. |
+| extensions? | <ApiType><span className="api-signature-type">TExtensions</span></ApiType> | Additional non-standard metadata included in the formatted result. |
+
+### RootSelectionSetExecutor
+
+**Type alias.** Function used to execute a validated root selection set for a subscription event.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">RootSelectionSetExecutor</span> = (validatedExecutionArgs: <a href="/api-v17/execution/execution#validatedsubscriptionargs">ValidatedSubscriptionArgs</a>): <span className="api-signature-type">PromiseOrValue</span>&lt;<a href="/api-v17/execution/execution#executionresult">ExecutionResult</a>&gt;;</ApiSignature>
+
+### ExecutionArgs
+
+**Interface.** Arguments accepted by execute and executeSync.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | The schema used for validation or execution. |
+| document | <ApiType><a href="/api-v17/language/ast#documentnode">DocumentNode</a></ApiType> | The parsed GraphQL document to execute. |
+| rootValue? | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Initial root value passed to the operation. |
+| contextValue? | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Application context value passed to every resolver. |
+| variableValues? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">object</span>&gt;</ApiType> | Runtime variable values keyed by variable name. |
+| operationName? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Name of the operation to execute when the document contains multiple operations. |
+| fieldResolver? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlfieldresolver">GraphQLFieldResolver</a>&lt;<span className="api-signature-keyword">any</span>, <span className="api-signature-keyword">any</span>&gt;&gt;</ApiType> | Resolver used when a field does not define its own resolver. |
+| typeResolver? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqltyperesolver">GraphQLTypeResolver</a>&lt;<span className="api-signature-keyword">any</span>, <span className="api-signature-keyword">any</span>&gt;&gt;</ApiType> | Resolver used when an abstract type does not define its own resolver. |
+| subscribeFieldResolver? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlfieldresolver">GraphQLFieldResolver</a>&lt;<span className="api-signature-keyword">any</span>, <span className="api-signature-keyword">any</span>&gt;&gt;</ApiType> | Resolver used for the root subscription field. |
+| hideSuggestions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;</ApiType> | Whether suggestion text should be omitted from request errors. |
+| abortSignal? | <ApiType><span className="api-signature-keyword">any</span></ApiType> | AbortSignal used to cancel execution. |
+| enableEarlyExecution? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;</ApiType> | Whether incremental execution may begin eligible work early. |
+| hooks? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/execution/execution#executionhooks">ExecutionHooks</a>&gt;</ApiType> | Execution hooks invoked during this operation. |
+| options? | <ApiType><span className="api-signature-type">object</span></ApiType> | Additional execution options. |
+
+### AsyncWorkFinishedInfo
+
+**Interface.** Information passed to hooks after asynchronous execution work has finished.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| validatedExecutionArgs | <ApiType><a href="/api-v17/execution/execution#validatedexecutionargs">ValidatedExecutionArgs</a></ApiType> | Validated execution arguments for the operation that finished async work. |
+
+### ExecutionHooks
+
+**Interface.** Optional hooks invoked during GraphQL execution.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| asyncWorkFinished? | <ApiType>(info: <a href="/api-v17/execution/execution#asyncworkfinishedinfo">AsyncWorkFinishedInfo</a>): <span className="api-signature-keyword">void</span></ApiType> | Called after all tracked asynchronous execution work has settled. |

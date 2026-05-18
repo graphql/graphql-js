@@ -1,0 +1,52 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/development-mode
+
+## Functions
+
+### enableDevMode()
+
+Enables GraphQL.js development mode checks for this module instance.
+
+Production entry points leave development mode disabled by default. Call this
+before constructing schemas or executing requests when additional development
+diagnostics should run.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">enableDevMode</span>(): <span className="api-signature-keyword">void</span></ApiSignature>
+
+#### Example
+
+```ts
+import { enableDevMode, isDevModeEnabled } from 'graphql/devMode';
+
+isDevModeEnabled(); // => false
+enableDevMode();
+isDevModeEnabled(); // => true
+```
+
+### isDevModeEnabled()
+
+Returns whether GraphQL.js development mode has been enabled for this module
+instance.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isDevModeEnabled</span>(): <span className="api-signature-keyword">boolean</span></ApiSignature>
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | True when development mode is enabled. |
+
+#### Example
+
+```ts
+import { enableDevMode, isDevModeEnabled } from 'graphql/devMode';
+
+enableDevMode();
+
+isDevModeEnabled(); // => true
+```

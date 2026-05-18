@@ -1,0 +1,647 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/validation/validation-context
+
+## Classes
+
+### ValidationContext
+
+Validation context passed to query validation rules.
+
+#### Constructor
+
+Creates a ValidationContext instance.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-keyword">new</span> <span className="api-signature-name">ValidationContext</span>(schema: <a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a>, ast: <a href="/api-v17/language/ast#documentnode">DocumentNode</a>, typeInfo: <a href="/api-v17/utilities/type-info#typeinfo">TypeInfo</a>, onError: (error: <a href="/api-v17/error/errors#graphqlerror">GraphQLError</a>): <span className="api-signature-keyword">void</span>, hideSuggestions?: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;)</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | Schema used to validate the document. |
+| ast | <ApiType><a href="/api-v17/language/ast#documentnode">DocumentNode</a></ApiType> | Document AST being validated. |
+| typeInfo | <ApiType><a href="/api-v17/utilities/type-info#typeinfo">TypeInfo</a></ApiType> | TypeInfo instance used to track traversal state. |
+| onError | <ApiType>(error: <a href="/api-v17/error/errors#graphqlerror">GraphQLError</a>): <span className="api-signature-keyword">void</span></ApiType> | Callback invoked for each validation error. |
+| hideSuggestions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;</ApiType> | Whether suggestion text should be omitted from errors. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a></ApiType> |  |
+
+#### getSchema()
+
+Returns the schema being used by this validation context.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getSchema</span>(): <a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | The schema being validated against. |
+
+##### Example
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema, TypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const context = new ValidationContext(
+  schema,
+  parse('{ greeting }'),
+  new TypeInfo(schema),
+  () => {},
+);
+
+context.getSchema().getQueryType()?.name; // => 'Query'
+```
+
+#### getVariableUsages()
+
+Returns variable usages found directly within this node.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getVariableUsages</span>(node: <a href="/api-v17/language/ast#operationdefinitionnode">OperationDefinitionNode</a> | <a href="/api-v17/language/ast#fragmentdefinitionnode">FragmentDefinitionNode</a>): <span className="api-signature-keyword">readonly</span> &#123; node: <a href="/api-v17/language/ast#variablenode">VariableNode</a>; type: <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>&gt;; parentType: <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>&gt;; defaultValue: <span className="api-signature-keyword">unknown</span>; fragmentVariableDefinition: <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#variabledefinitionnode">VariableDefinitionNode</a>&gt; &#125;[]</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| node | <ApiType><a href="/api-v17/language/ast#operationdefinitionnode">OperationDefinitionNode</a> &#124; <a href="/api-v17/language/ast#fragmentdefinitionnode">FragmentDefinitionNode</a></ApiType> | The AST node to inspect or visit. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">readonly</span> &#123; node: <a href="/api-v17/language/ast#variablenode">VariableNode</a>; type: <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>&gt;; parentType: <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>&gt;; defaultValue: <span className="api-signature-keyword">unknown</span>; fragmentVariableDefinition: <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#variabledefinitionnode">VariableDefinitionNode</a>&gt; &#125;[]</ApiType> | Variable usages found directly within this node. |
+
+##### Example
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema, TypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting(name: String): String
+  }
+`);
+const document = parse('query ($name: String) { greeting(name: $name) }');
+const operation = document.definitions[0];
+const context = new ValidationContext(
+  schema,
+  document,
+  new TypeInfo(schema),
+  () => {},
+);
+
+const usages = context.getVariableUsages(operation);
+
+usages[0].node.name.value; // => 'name'
+String(usages[0].type); // => 'String'
+```
+
+#### getRecursiveVariableUsages()
+
+Returns variable usages for an operation, including variables used by referenced fragments.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getRecursiveVariableUsages</span>(operation: <a href="/api-v17/language/ast#operationdefinitionnode">OperationDefinitionNode</a>): <span className="api-signature-keyword">readonly</span> &#123; node: <a href="/api-v17/language/ast#variablenode">VariableNode</a>; type: <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>&gt;; parentType: <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>&gt;; defaultValue: <span className="api-signature-keyword">unknown</span>; fragmentVariableDefinition: <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#variabledefinitionnode">VariableDefinitionNode</a>&gt; &#125;[]</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| operation | <ApiType><a href="/api-v17/language/ast#operationdefinitionnode">OperationDefinitionNode</a></ApiType> | Operation definition to inspect. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">readonly</span> &#123; node: <a href="/api-v17/language/ast#variablenode">VariableNode</a>; type: <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>&gt;; parentType: <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>&gt;; defaultValue: <span className="api-signature-keyword">unknown</span>; fragmentVariableDefinition: <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#variabledefinitionnode">VariableDefinitionNode</a>&gt; &#125;[]</ApiType> | Variable usages reachable from the operation. |
+
+##### Example
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema, TypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    viewer: User
+  }
+
+  type User {
+    name(prefix: String): String
+  }
+`);
+const document = parse(`
+  query ($prefix: String) {
+    viewer {
+      ...UserName
+    }
+  }
+
+  fragment UserName on User {
+    name(prefix: $prefix)
+  }
+`);
+const operation = document.definitions[0];
+const context = new ValidationContext(
+  schema,
+  document,
+  new TypeInfo(schema),
+  () => {},
+);
+
+const usages = context.getRecursiveVariableUsages(operation);
+
+usages.map((usage) => usage.node.name.value); // => ['prefix']
+```
+
+#### getType()
+
+Returns the current output type at this point in traversal.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getType</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqloutputtype">GraphQLOutputType</a>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqloutputtype">GraphQLOutputType</a>&gt;</ApiType> | The current output type, if known. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse('{ greeting }');
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let typeName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    Field: () => {
+      typeName = String(context.getType());
+    },
+  }),
+);
+
+typeName; // => 'String'
+```
+
+#### getParentType()
+
+Returns the current parent composite type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getParentType</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlcompositetype">GraphQLCompositeType</a>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlcompositetype">GraphQLCompositeType</a>&gt;</ApiType> | The current parent composite type, if known. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse('{ greeting }');
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let parentTypeName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    Field: () => {
+      parentTypeName = context.getParentType()?.name;
+    },
+  }),
+);
+
+parentTypeName; // => 'Query'
+```
+
+#### getInputType()
+
+Returns the current input type at this point in traversal.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getInputType</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>&gt;</ApiType> | The current input type, if known. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    reviews(limit: Int): [String]
+  }
+`);
+const document = parse('{ reviews(limit: 5) }');
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let inputTypeName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    Argument: () => {
+      inputTypeName = String(context.getInputType());
+    },
+  }),
+);
+
+inputTypeName; // => 'Int'
+```
+
+#### getParentInputType()
+
+Returns the parent input type for the current input position.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getParentInputType</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>&gt;</ApiType> | The parent input type, if known. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  input ReviewFilter {
+    stars: Int
+  }
+
+  type Query {
+    reviews(filter: ReviewFilter): [String]
+  }
+`);
+const document = parse('{ reviews(filter: { stars: 5 }) }');
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let parentInputTypeName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    ObjectField: () => {
+      parentInputTypeName = String(context.getParentInputType());
+    },
+  }),
+);
+
+parentInputTypeName; // => 'ReviewFilter'
+```
+
+#### getFieldDef()
+
+Returns the current field definition.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getFieldDef</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlfield">GraphQLField</a>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">unknown</span>&gt;&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlfield">GraphQLField</a>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">unknown</span>&gt;&gt;</ApiType> | The current field definition, if known. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse('{ greeting }');
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let fieldName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    Field: () => {
+      fieldName = context.getFieldDef()?.name;
+    },
+  }),
+);
+
+fieldName; // => 'greeting'
+```
+
+#### getDirective()
+
+Returns the current directive definition.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getDirective</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/directives#graphqldirective">GraphQLDirective</a>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/directives#graphqldirective">GraphQLDirective</a>&gt;</ApiType> | The current directive definition, if known. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse('{ greeting @include(if: true) }');
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let directiveName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    Directive: () => {
+      directiveName = context.getDirective()?.name;
+    },
+  }),
+);
+
+directiveName; // => 'include'
+```
+
+#### getArgument()
+
+Returns the current argument definition.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getArgument</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlargument">GraphQLArgument</a>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlargument">GraphQLArgument</a>&gt;</ApiType> | The current argument definition, if known. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    reviews(limit: Int): [String]
+  }
+`);
+const document = parse('{ reviews(limit: 5) }');
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let argumentName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    Argument: () => {
+      argumentName = context.getArgument()?.name;
+    },
+  }),
+);
+
+argumentName; // => 'limit'
+```
+
+#### getFragmentSignature()
+
+Returns the fragment signature at the current traversal position.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getFragmentSignature</span>(): <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">FragmentSignature</span>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">FragmentSignature</span>&gt;</ApiType> | The current fragment signature, if one is active. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse(
+  `
+    {
+      ...GreetingFields
+    }
+
+    fragment GreetingFields on Query {
+      greeting
+    }
+  `,
+  { experimentalFragmentArguments: true },
+);
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let fragmentName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    FragmentSpread: () => {
+      fragmentName = context.getFragmentSignature()?.definition.name.value;
+    },
+  }),
+);
+
+fragmentName; // => 'GreetingFields'
+```
+
+#### getFragmentSignatureByName()
+
+Returns the function used to look up fragment signatures by name.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getFragmentSignatureByName</span>(): (fragmentName: <span className="api-signature-keyword">string</span>): <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">FragmentSignature</span>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>(fragmentName: <span className="api-signature-keyword">string</span>): <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">FragmentSignature</span>&gt;</ApiType> | A function that maps fragment names to fragment signatures. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse(
+  `
+    {
+      ...GreetingFields
+    }
+
+    fragment GreetingFields on Query {
+      greeting
+    }
+  `,
+  { experimentalFragmentArguments: true },
+);
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let fragmentName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    Document: () => {
+      const getFragmentSignature = context.getFragmentSignatureByName();
+      fragmentName =
+        getFragmentSignature('GreetingFields')?.definition.name.value;
+    },
+  }),
+);
+
+fragmentName; // => 'GreetingFields'
+```
+
+#### getEnumValue()
+
+Returns the current enum value definition.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getEnumValue</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlenumvalue">GraphQLEnumValue</a>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlenumvalue">GraphQLEnumValue</a>&gt;</ApiType> | The current enum value definition, if known. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  enum Sort {
+    NEWEST
+    OLDEST
+  }
+
+  type Query {
+    reviews(sort: Sort): [String]
+  }
+`);
+const document = parse('{ reviews(sort: OLDEST) }');
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let enumValueName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    EnumValue: () => {
+      enumValueName = context.getEnumValue()?.name;
+    },
+  }),
+);
+
+enumValueName; // => 'OLDEST'
+```
+
+## Types
+
+### ValidationRule
+
+**Type alias.** A function that creates an AST visitor for validating a GraphQL document.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">ValidationRule</span> = (context: <a href="/api-v17/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a>;</ApiSignature>

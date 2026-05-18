@@ -1,0 +1,325 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/execution/execution
+
+## Functions
+
+### execute()
+
+Implements the "Executing requests" section of the GraphQL specification.
+
+Returns either a synchronous ExecutionResult (if all encountered resolvers
+are synchronous), or a Promise of an ExecutionResult that will eventually be
+resolved and never rejected.
+
+If the arguments to this function do not result in a legal execution context,
+a GraphQLError will be thrown immediately explaining the invalid input.
+
+Field errors are collected into the response instead of rejecting the
+returned promise. Only the field that produced the error and its descendants
+are omitted; sibling fields continue to execute. Errors from fields of
+non-null type may propagate to the nearest nullable parent, which can be the
+entire response data.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">execute</span>(args: <a href="/api-v16/execution/execution#executionargs">ExecutionArgs</a>): <span className="api-signature-type">Promise</span>&lt;<a href="/api-v16/execution/execution#executionresult">ExecutionResult</a>&gt; | <a href="/api-v16/execution/execution#executionresult">ExecutionResult</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| args | <ApiType><a href="/api-v16/execution/execution#executionargs">ExecutionArgs</a></ApiType> | The arguments used to perform the operation. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Promise</span>&lt;<a href="/api-v16/execution/execution#executionresult">ExecutionResult</a>&gt; &#124; <a href="/api-v16/execution/execution#executionresult">ExecutionResult</a></ApiType> | A completed execution result, or a promise resolving to one when execution is asynchronous. |
+
+#### Example 1
+
+```ts
+// Execute an asynchronous operation with variables.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { execute } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    greeting(name: String!): String
+  }
+`);
+
+const result = await execute({
+  schema,
+  document: parse('query ($name: String!) { greeting(name: $name) }'),
+  rootValue: {
+    greeting: ({ name }) => `Hello, ${name}!`,
+  },
+  variableValues: { name: 'Ada' },
+});
+
+result; // => { data: { greeting: 'Hello, Ada!' } }
+```
+
+#### Example 2
+
+```ts
+// This variant supplies context plus custom field and type resolvers.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { execute } from 'graphql/execution';
+
+const schema = buildSchema(`
+  interface Named {
+    name: String!
+  }
+
+  type User implements Named {
+    name: String!
+  }
+
+  type Query {
+    viewer: Named
+  }
+`);
+
+const result = await execute({
+  schema,
+  document: parse('query Viewer { viewer { __typename name } }'),
+  rootValue: { viewer: { kind: 'user', name: 'Ada' } },
+  contextValue: { locale: 'en' },
+  operationName: 'Viewer',
+  fieldResolver: (source, _args, contextValue, info) => {
+    contextValue.locale; // => 'en'
+    return source[info.fieldName];
+  },
+  typeResolver: (value) => {
+    return value.kind === 'user' ? 'User' : undefined;
+  },
+});
+
+result; // => { data: { viewer: { __typename: 'User', name: 'Ada' } } }
+```
+
+#### Example 3
+
+```ts
+// This variant shows how resolver errors become field errors in the result.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { execute } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    broken: String
+  }
+`);
+const document = parse('{ broken }');
+
+const result = await execute({
+  schema,
+  document,
+  rootValue: {
+    broken: () => {
+      throw new Error('Resolver failed.');
+    },
+  },
+});
+
+result.data.broken; // => null
+result.errors[0].message; // => 'Resolver failed.'
+```
+
+#### Example 4
+
+```ts
+// This variant limits how many variable coercion errors are reported.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { execute } from 'graphql/execution';
+
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+  }
+
+  type Query {
+    review(input: ReviewInput!): String
+  }
+`);
+const document = parse(`
+  query ($first: ReviewInput!, $second: ReviewInput!) {
+    first: review(input: $first)
+    second: review(input: $second)
+  }
+`);
+
+const result = await execute({
+  schema,
+  document,
+  variableValues: {
+    first: { stars: 'bad' },
+    second: { stars: 'also bad' },
+  },
+  options: { maxCoercionErrors: 1 },
+});
+
+result.errors.length; // => 2
+result.errors[1].message; // matches /error limit reached/
+```
+
+### executeSync()
+
+Also implements the "Executing requests" section of the GraphQL specification.
+However, it guarantees to complete synchronously (or throw an error) assuming
+that all field resolvers are also synchronous.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">executeSync</span>(args: <a href="/api-v16/execution/execution#executionargs">ExecutionArgs</a>): <a href="/api-v16/execution/execution#executionresult">ExecutionResult</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| args | <ApiType><a href="/api-v16/execution/execution#executionargs">ExecutionArgs</a></ApiType> | The arguments used to perform the operation. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v16/execution/execution#executionresult">ExecutionResult</a></ApiType> | Completed execution output for a synchronous operation. |
+
+#### Example 1
+
+```ts
+// Execute an operation synchronously when all resolvers are synchronous.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { executeSync } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse('{ greeting }');
+
+const result = executeSync({
+  schema,
+  document,
+  rootValue: {
+    greeting: 'Hello',
+  },
+});
+
+result; // => { data: { greeting: 'Hello' } }
+```
+
+#### Example 2
+
+```ts
+// This variant shows executeSync throwing when a resolver returns a promise.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { executeSync } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+
+executeSync({
+  schema,
+  document: parse('{ greeting }'),
+  rootValue: {
+    greeting: async () => 'Hello',
+  },
+}); // throws an error
+```
+
+## Constants
+
+### defaultTypeResolver
+
+If a resolveType function is not given, then a default resolve behavior is
+used which attempts two strategies:
+
+First, See if the provided value has a `__typename` field defined, if so, use
+that value as name of the resolved type.
+
+Otherwise, test each possible type for the abstract type by calling
+isTypeOf for the object being coerced, returning the first type that matches.
+
+<ApiType><a href="/api-v16/type/definitions#graphqltyperesolver">GraphQLTypeResolver</a>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">unknown</span>&gt;</ApiType>
+
+### defaultFieldResolver
+
+If a resolve function is not given, then a default resolve behavior is used
+which takes the property of the source object of the same name as the field
+and returns it as the result, or if it's a function, returns the result
+of calling that function while passing along args and context value.
+
+<ApiType><a href="/api-v16/type/definitions#graphqlfieldresolver">GraphQLFieldResolver</a>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">unknown</span>&gt;</ApiType>
+
+## Types
+
+### ExecutionResult
+
+**Interface.** Represents the response produced by executing a GraphQL operation.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TData |  | <ApiType><span className="api-signature-type">object</span></ApiType> | Shape of the execution data payload. |
+| TExtensions |  | <ApiType><span className="api-signature-type">object</span></ApiType> | Shape of the extensions payload. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| errors? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v16/error/errors#graphqlerror">GraphQLError</a>[]</ApiType> | Errors raised while parsing, validating, or executing the operation. |
+| data? | <ApiType><span className="api-signature-type">TData</span> &#124; null</ApiType> | Data returned by execution, or null when execution could not produce data. |
+| extensions? | <ApiType><span className="api-signature-type">TExtensions</span></ApiType> | Extension fields to include in the formatted result. |
+
+### FormattedExecutionResult
+
+**Interface.** A JSON-serializable GraphQL execution result.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TData |  | <ApiType><span className="api-signature-type">object</span></ApiType> | Shape of the formatted data payload. |
+| TExtensions |  | <ApiType><span className="api-signature-type">object</span></ApiType> | Shape of the formatted extensions payload. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| errors? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v16/error/errors#graphqlformattederror">GraphQLFormattedError</a>[]</ApiType> | Errors raised while parsing, validating, or executing the operation. |
+| data? | <ApiType><span className="api-signature-type">TData</span> &#124; null</ApiType> | Data returned by execution, or null when execution could not produce data. |
+| extensions? | <ApiType><span className="api-signature-type">TExtensions</span></ApiType> | Extension fields to include in the formatted result. |
+
+### ExecutionArgs
+
+**Interface.** Arguments accepted by execute and executeSync.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | The schema used for validation or execution. |
+| document | <ApiType><a href="/api-v16/language/ast#documentnode">DocumentNode</a></ApiType> | The parsed GraphQL document to execute. |
+| rootValue? | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Initial root value passed to the operation. |
+| contextValue? | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Application context value passed to every resolver. |
+| variableValues? | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <span className="api-signature-type">object</span></ApiType> | Runtime variable values keyed by variable name. |
+| operationName? | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <span className="api-signature-keyword">string</span></ApiType> | Name of the operation to execute when the document contains multiple operations. |
+| fieldResolver? | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <a href="/api-v16/type/definitions#graphqlfieldresolver">GraphQLFieldResolver</a>&lt;<span className="api-signature-keyword">any</span>, <span className="api-signature-keyword">any</span>&gt;</ApiType> | Resolver used when a field does not define its own resolver. |
+| typeResolver? | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <a href="/api-v16/type/definitions#graphqltyperesolver">GraphQLTypeResolver</a>&lt;<span className="api-signature-keyword">any</span>, <span className="api-signature-keyword">any</span>&gt;</ApiType> | Resolver used when an abstract type does not define its own resolver. |
+| subscribeFieldResolver? | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <a href="/api-v16/type/definitions#graphqlfieldresolver">GraphQLFieldResolver</a>&lt;<span className="api-signature-keyword">any</span>, <span className="api-signature-keyword">any</span>&gt;</ApiType> | Resolver used for the root subscription field. |
+| options? | <ApiType>&#123; maxCoercionErrors?: <span className="api-signature-keyword">number</span> &#125;</ApiType> | Additional execution options. |

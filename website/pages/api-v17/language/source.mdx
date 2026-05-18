@@ -1,0 +1,159 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/language/source
+
+## Classes
+
+### Source
+
+A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
+optional, but they are useful for clients who store GraphQL documents in source files.
+For example, if the GraphQL input starts at line 40 in a file named `Foo.graphql`, it might
+be useful for `name` to be `"Foo.graphql"` and location to be `{ line: 40, column: 1 }`.
+The `line` and `column` properties in `locationOffset` are 1-indexed.
+
+#### Constructor
+
+Creates a Source instance.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-keyword">new</span> <span className="api-signature-name">Source</span>(body: <span className="api-signature-keyword">string</span>, name: <span className="api-signature-keyword">string</span>, locationOffset: &#123; line: <span className="api-signature-keyword">number</span>; column: <span className="api-signature-keyword">number</span> &#125;)</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| body | <ApiType><span className="api-signature-keyword">string</span></ApiType> |  | The GraphQL source text. |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | `'GraphQL request'` | Name used in diagnostics for this source. |
+| locationOffset | <ApiType>&#123; line: <span className="api-signature-keyword">number</span>; column: <span className="api-signature-keyword">number</span> &#125;</ApiType> | `{ line: 1, column: 1 }` | One-indexed line and column where this source begins. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/source#source">Source</a></ApiType> |  |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| __kind | <ApiType><span className="api-signature-keyword">symbol</span></ApiType> | Internal runtime marker used to identify Source instances. |
+| body | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL source text. |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | Name used in diagnostics for this source, such as a file path or request name. |
+| locationOffset | <ApiType>&#123; line: <span className="api-signature-keyword">number</span>; column: <span className="api-signature-keyword">number</span> &#125;</ApiType> | One-indexed line and column where this source begins. |
+
+## Functions
+
+### getLocation()
+
+Takes a Source and a UTF-8 character offset, and returns the corresponding
+line and column as a SourceLocation.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getLocation</span>(source: <a href="/api-v17/language/source#source">Source</a>, position: <span className="api-signature-keyword">number</span>): <a href="/api-v17/language/source#sourcelocation">SourceLocation</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| source | <ApiType><a href="/api-v17/language/source#source">Source</a></ApiType> | The source document that contains the position. |
+| position | <ApiType><span className="api-signature-keyword">number</span></ApiType> | The UTF-8 character offset in the source body. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/source#sourcelocation">SourceLocation</a></ApiType> | The 1-indexed line and column for the given source position. |
+
+#### Example
+
+```ts
+import { Source, getLocation } from 'graphql/language';
+
+const source = new Source('type Query { hello: String }');
+const location = getLocation(source, 13);
+
+location; // => { line: 1, column: 14 }
+```
+
+### printLocation()
+
+Render a helpful description of the location in the GraphQL Source document.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">printLocation</span>(location: <a href="/api-v17/language/ast#location">Location</a>): <span className="api-signature-keyword">string</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| location | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The AST location to print. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | A formatted source excerpt with line and column information. |
+
+#### Example
+
+```ts
+import { parse, printLocation } from 'graphql/language';
+
+const document = parse('type Query { hello: String }');
+const location = document.definitions[0].loc;
+
+if (location) {
+  const printed = printLocation(location);
+
+  printed; // => 'GraphQL request:1:1\n1 | type Query { hello: String }\n  | ^'
+}
+```
+
+### printSourceLocation()
+
+Render a helpful description of the location in the GraphQL Source document.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">printSourceLocation</span>(source: <a href="/api-v17/language/source#source">Source</a>, sourceLocation: <a href="/api-v17/language/source#sourcelocation">SourceLocation</a>): <span className="api-signature-keyword">string</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| source | <ApiType><a href="/api-v17/language/source#source">Source</a></ApiType> | The source document that contains the location. |
+| sourceLocation | <ApiType><a href="/api-v17/language/source#sourcelocation">SourceLocation</a></ApiType> | The 1-indexed line and column to print. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | A formatted source excerpt with line and column information. |
+
+#### Example
+
+```ts
+import { Source, printSourceLocation } from 'graphql/language';
+
+const source = new Source('type Query { hello: String }');
+const printed = printSourceLocation(source, { line: 1, column: 14 });
+
+printed; // => 'GraphQL request:1:14\n1 | type Query { hello: String }\n  |              ^'
+```
+
+## Types
+
+### SourceLocation
+
+**Interface.** Represents a location in a Source.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| line | <ApiType><span className="api-signature-keyword">number</span></ApiType> | One-indexed line number in the source document. |
+| column | <ApiType><span className="api-signature-keyword">number</span></ApiType> | One-indexed column number in the source document. |

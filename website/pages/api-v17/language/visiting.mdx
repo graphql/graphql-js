@@ -1,0 +1,117 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/language/visiting
+
+## Functions
+
+### visitInParallel()
+
+Creates a new visitor instance which delegates to many visitors to run in
+parallel. Each visitor will be visited for each node before moving on.
+
+If a prior visitor edits a node, no following visitors will see that node.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">visitInParallel</span>(visitors: <span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a>[]): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| visitors | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a>[]</ApiType> | The visitors to merge into one parallel visitor. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that delegates traversal to each provided visitor. |
+
+#### Example
+
+```ts
+import { parse, visit, visitInParallel } from 'graphql/language';
+
+const document = parse('{ hero { name } }');
+const events = [];
+
+visit(
+  document,
+  visitInParallel([
+    { Field: (node) => { events.push(`field:${node.name.value}`); } },
+    { Name: (node) => { events.push(`name:${node.value}`); } },
+  ]),
+);
+
+events; // => ['field:hero', 'name:hero', 'field:name', 'name:name']
+```
+
+### getEnterLeaveForKind()
+
+Given a visitor instance and a node kind, return EnterLeaveVisitor for that kind.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getEnterLeaveForKind</span>(visitor: <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a>, kind: <a href="/api-v17/language/kinds#kind">Kind</a>): &#123; enter?: (node: <a href="/api-v17/language/ast#astnode">ASTNode</a>, key: <span className="api-signature-keyword">string</span> | <span className="api-signature-keyword">number</span> | <span className="api-signature-keyword">undefined</span>, parent: <a href="/api-v17/language/ast#astnode">ASTNode</a> | <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a>&gt; | <span className="api-signature-keyword">undefined</span>, path: <span className="api-signature-type">ReadonlyArray</span>&lt;<span className="api-signature-keyword">string</span> | <span className="api-signature-keyword">number</span>&gt;, ancestors: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a> | <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a>&gt;&gt;) =&gt; <span className="api-signature-keyword">any</span> | <span className="api-signature-keyword">undefined</span>; leave?: (node: <a href="/api-v17/language/ast#astnode">ASTNode</a>, key: <span className="api-signature-keyword">string</span> | <span className="api-signature-keyword">number</span> | <span className="api-signature-keyword">undefined</span>, parent: <a href="/api-v17/language/ast#astnode">ASTNode</a> | <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a>&gt; | <span className="api-signature-keyword">undefined</span>, path: <span className="api-signature-type">ReadonlyArray</span>&lt;<span className="api-signature-keyword">string</span> | <span className="api-signature-keyword">number</span>&gt;, ancestors: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a> | <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a>&gt;&gt;) =&gt; <span className="api-signature-keyword">any</span> | <span className="api-signature-keyword">undefined</span> &#125;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| visitor | <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | The visitor object to inspect. |
+| kind | <ApiType><a href="/api-v17/language/kinds#kind">Kind</a></ApiType> | The AST node kind to resolve handlers for. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>&#123; enter?: (node: <a href="/api-v17/language/ast#astnode">ASTNode</a>, key: <span className="api-signature-keyword">string</span> &#124; <span className="api-signature-keyword">number</span> &#124; <span className="api-signature-keyword">undefined</span>, parent: <a href="/api-v17/language/ast#astnode">ASTNode</a> &#124; <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a>&gt; &#124; <span className="api-signature-keyword">undefined</span>, path: <span className="api-signature-type">ReadonlyArray</span>&lt;<span className="api-signature-keyword">string</span> &#124; <span className="api-signature-keyword">number</span>&gt;, ancestors: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a> &#124; <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a>&gt;&gt;) =&gt; <span className="api-signature-keyword">any</span> &#124; <span className="api-signature-keyword">undefined</span>; leave?: (node: <a href="/api-v17/language/ast#astnode">ASTNode</a>, key: <span className="api-signature-keyword">string</span> &#124; <span className="api-signature-keyword">number</span> &#124; <span className="api-signature-keyword">undefined</span>, parent: <a href="/api-v17/language/ast#astnode">ASTNode</a> &#124; <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a>&gt; &#124; <span className="api-signature-keyword">undefined</span>, path: <span className="api-signature-type">ReadonlyArray</span>&lt;<span className="api-signature-keyword">string</span> &#124; <span className="api-signature-keyword">number</span>&gt;, ancestors: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a> &#124; <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a>&gt;&gt;) =&gt; <span className="api-signature-keyword">any</span> &#124; <span className="api-signature-keyword">undefined</span> &#125;</ApiType> | The enter and leave handlers that apply for the given node kind. |
+
+#### Example
+
+```ts
+import { Kind, getEnterLeaveForKind } from 'graphql/language';
+
+const handlers = getEnterLeaveForKind({ Field: () => {} }, Kind.FIELD);
+
+typeof handlers.enter; // => 'function'
+handlers.leave; // => undefined
+```
+
+## Constants
+
+### BREAK
+
+A value that can be returned from a visitor function to stop traversal.
+
+<ApiType><span className="api-signature-keyword">unknown</span></ApiType>
+
+## Types
+
+### ASTVisitor
+
+**Type alias.** A visitor defines the callbacks called during AST traversal.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">ASTVisitor</span> = &#123; enter?: (node: <a href="/api-v17/language/ast#astnode">ASTNode</a>, key: <span className="api-signature-keyword">string</span> | <span className="api-signature-keyword">number</span> | <span className="api-signature-keyword">undefined</span>, parent: <a href="/api-v17/language/ast#astnode">ASTNode</a> | <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a>&gt; | <span className="api-signature-keyword">undefined</span>, path: <span className="api-signature-type">ReadonlyArray</span>&lt;<span className="api-signature-keyword">string</span> | <span className="api-signature-keyword">number</span>&gt;, ancestors: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a> | <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a>&gt;&gt;) =&gt; <span className="api-signature-keyword">any</span> | <span className="api-signature-keyword">undefined</span>; leave?: (node: <a href="/api-v17/language/ast#astnode">ASTNode</a>, key: <span className="api-signature-keyword">string</span> | <span className="api-signature-keyword">number</span> | <span className="api-signature-keyword">undefined</span>, parent: <a href="/api-v17/language/ast#astnode">ASTNode</a> | <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a>&gt; | <span className="api-signature-keyword">undefined</span>, path: <span className="api-signature-type">ReadonlyArray</span>&lt;<span className="api-signature-keyword">string</span> | <span className="api-signature-keyword">number</span>&gt;, ancestors: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a> | <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a>&gt;&gt;) =&gt; <span className="api-signature-keyword">any</span> | <span className="api-signature-keyword">undefined</span> &#125; | &#123;
+  readonly [NodeT in ASTNode as NodeT['kind']]?:
+    | ASTVisitFn&lt;NodeT&gt;
+    | EnterLeaveVisitor&lt;NodeT&gt;;
+&#125;;</ApiSignature>
+
+### ASTVisitFn
+
+**Type alias.** A visitor is composed of visit functions called for each node during traversal.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TVisitedNode | <ApiType><a href="/api-v17/language/ast#astnode">ASTNode</a></ApiType> |  | AST node type handled by this visitor function. |
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">ASTVisitFn</span>&lt;<span className="api-signature-type">TVisitedNode</span> extends <a href="/api-v17/language/ast#astnode">ASTNode</a>&gt; = (node: <span className="api-signature-type">TVisitedNode</span>, key: <span className="api-signature-keyword">string</span> | <span className="api-signature-keyword">number</span> | <span className="api-signature-keyword">undefined</span>, parent: <a href="/api-v17/language/ast#astnode">ASTNode</a> | <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a>&gt; | <span className="api-signature-keyword">undefined</span>, path: <span className="api-signature-type">ReadonlyArray</span>&lt;<span className="api-signature-keyword">string</span> | <span className="api-signature-keyword">number</span>&gt;, ancestors: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a> | <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#astnode">ASTNode</a>&gt;&gt;): <span className="api-signature-keyword">any</span>;</ApiSignature>
+
+### ASTVisitorKeyMap
+
+**Type alias.** A visitor key map describes the traversable child properties for each node kind.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">ASTVisitorKeyMap</span> = <span className="api-signature-type">mapped object</span>;</ApiSignature>

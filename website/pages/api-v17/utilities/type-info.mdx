@@ -1,0 +1,707 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/utilities/type-info
+
+## Classes
+
+### TypeInfo
+
+TypeInfo is a utility class which, given a GraphQL schema, can keep track
+of the current field and type definitions at any point in a GraphQL document
+AST during a recursive descent by calling `enter(node)` and `leave(node)`.
+
+#### Constructor
+
+Creates a TypeInfo instance.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-keyword">new</span> <span className="api-signature-name">TypeInfo</span>(schema: <a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a>, initialType?: <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqltype">GraphQLType</a>&gt;, fragmentSignatures?: <span className="api-signature-type">Maybe</span>&lt;(fragmentName: <span className="api-signature-keyword">string</span>): <span className="api-signature-type">Maybe</span>&lt;&#123; definition: <a href="/api-v17/language/ast#fragmentdefinitionnode">FragmentDefinitionNode</a>; variableDefinitions: <span className="api-signature-type">Map</span>&lt;<span className="api-signature-keyword">string</span>, <a href="/api-v17/language/ast#variabledefinitionnode">VariableDefinitionNode</a>&gt; &#125;&gt;&gt;)</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | Schema used for type lookups. |
+| initialType? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqltype">GraphQLType</a>&gt;</ApiType> | Optional type to use at the start of traversal. |
+| fragmentSignatures? | <ApiType><span className="api-signature-type">Maybe</span>&lt;(fragmentName: <span className="api-signature-keyword">string</span>): <span className="api-signature-type">Maybe</span>&lt;&#123; definition: <a href="/api-v17/language/ast#fragmentdefinitionnode">FragmentDefinitionNode</a>; variableDefinitions: <span className="api-signature-type">Map</span>&lt;<span className="api-signature-keyword">string</span>, <a href="/api-v17/language/ast#variabledefinitionnode">VariableDefinitionNode</a>&gt; &#125;&gt;&gt;</ApiType> | Fragment signatures available during traversal. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/utilities/type-info#typeinfo">TypeInfo</a></ApiType> |  |
+
+#### getType()
+
+Returns the current output type at this point in traversal.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getType</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqloutputtype">GraphQLOutputType</a>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqloutputtype">GraphQLOutputType</a>&gt;</ApiType> | The current output type, if known. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    viewer: User
+  }
+
+  type User {
+    name: String
+  }
+`);
+const typeInfo = new TypeInfo(schema);
+const fieldTypes = {};
+
+visit(
+  parse('{ viewer { name } }'),
+  visitWithTypeInfo(typeInfo, {
+    Field: (node) => {
+      fieldTypes[node.name.value] = String(typeInfo.getType());
+    },
+  }),
+);
+
+fieldTypes; // => { viewer: 'User', name: 'String' }
+```
+
+#### getParentType()
+
+Returns the current parent composite type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getParentType</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlcompositetype">GraphQLCompositeType</a>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlcompositetype">GraphQLCompositeType</a>&gt;</ApiType> | The current parent composite type, if known. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    viewer: User
+  }
+
+  type User {
+    name: String
+  }
+`);
+const typeInfo = new TypeInfo(schema);
+const parentTypes = {};
+
+visit(
+  parse('{ viewer { name } }'),
+  visitWithTypeInfo(typeInfo, {
+    Field: (node) => {
+      parentTypes[node.name.value] = String(typeInfo.getParentType());
+    },
+  }),
+);
+
+parentTypes; // => { viewer: 'Query', name: 'User' }
+```
+
+#### getInputType()
+
+Returns the current input type at this point in traversal.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getInputType</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>&gt;</ApiType> | The current input type, if known. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    reviews(stars: Int!, sort: Sort = NEWEST): [String]
+  }
+
+  enum Sort {
+    NEWEST
+    OLDEST
+  }
+`);
+const typeInfo = new TypeInfo(schema);
+const inputTypes = {};
+
+visit(
+  parse('{ reviews(stars: 5, sort: OLDEST) }'),
+  visitWithTypeInfo(typeInfo, {
+    Argument: (node) => {
+      inputTypes[node.name.value] = String(typeInfo.getInputType());
+    },
+  }),
+);
+
+inputTypes; // => { stars: 'Int!', sort: 'Sort' }
+```
+
+#### getParentInputType()
+
+Returns the parent input type for the current input position.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getParentInputType</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>&gt;</ApiType> | The parent input type, if known. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  input ReviewFilter {
+    stars: Int!
+  }
+
+  type Query {
+    reviews(filter: ReviewFilter): [String]
+  }
+`);
+const typeInfo = new TypeInfo(schema);
+const parentInputTypes = {};
+
+visit(
+  parse('{ reviews(filter: { stars: 5 }) }'),
+  visitWithTypeInfo(typeInfo, {
+    ObjectField: (node) => {
+      parentInputTypes[node.name.value] = String(typeInfo.getParentInputType());
+    },
+  }),
+);
+
+parentInputTypes; // => { stars: 'ReviewFilter' }
+```
+
+#### getFieldDef()
+
+Returns the current field definition.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getFieldDef</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlfield">GraphQLField</a>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">unknown</span>&gt;&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlfield">GraphQLField</a>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">unknown</span>&gt;&gt;</ApiType> | The current field definition, if known. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const typeInfo = new TypeInfo(schema);
+let fieldName;
+
+visit(
+  parse('{ greeting }'),
+  visitWithTypeInfo(typeInfo, {
+    Field: () => {
+      fieldName = typeInfo.getFieldDef()?.name;
+    },
+  }),
+);
+
+fieldName; // => 'greeting'
+```
+
+#### getDefaultValue()
+
+Returns the default input representation for the current input position.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getDefaultValue</span>(): <span className="api-signature-keyword">unknown</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The current default input, if one is available. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    reviews(limit: Int = 10): [String]
+  }
+`);
+const typeInfo = new TypeInfo(schema);
+let defaultLimit;
+
+visit(
+  parse('{ reviews(limit: 5) }'),
+  visitWithTypeInfo(typeInfo, {
+    Argument: () => {
+      defaultLimit = typeInfo.getDefaultValue();
+    },
+  }),
+);
+
+defaultLimit; // => { literal: { kind: 'IntValue', value: '10' } }
+```
+
+#### getDirective()
+
+Returns the current directive definition.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getDirective</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/directives#graphqldirective">GraphQLDirective</a>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/directives#graphqldirective">GraphQLDirective</a>&gt;</ApiType> | The current directive definition, if known. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const typeInfo = new TypeInfo(schema);
+let directiveName;
+
+visit(
+  parse('{ greeting @include(if: true) }'),
+  visitWithTypeInfo(typeInfo, {
+    Directive: () => {
+      directiveName = typeInfo.getDirective()?.name;
+    },
+  }),
+);
+
+directiveName; // => 'include'
+```
+
+#### getArgument()
+
+Returns the current argument definition.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getArgument</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlargument">GraphQLArgument</a>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlargument">GraphQLArgument</a>&gt;</ApiType> | The current argument definition, if known. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    reviews(limit: Int = 10): [String]
+  }
+`);
+const typeInfo = new TypeInfo(schema);
+let argumentName;
+
+visit(
+  parse('{ reviews(limit: 5) }'),
+  visitWithTypeInfo(typeInfo, {
+    Argument: () => {
+      argumentName = typeInfo.getArgument()?.name;
+    },
+  }),
+);
+
+argumentName; // => 'limit'
+```
+
+#### getFragmentSignature()
+
+Returns the current fragment signature.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getFragmentSignature</span>(): <span className="api-signature-type">Maybe</span>&lt;&#123; definition: <a href="/api-v17/language/ast#fragmentdefinitionnode">FragmentDefinitionNode</a>; variableDefinitions: <span className="api-signature-type">Map</span>&lt;<span className="api-signature-keyword">string</span>, <a href="/api-v17/language/ast#variabledefinitionnode">VariableDefinitionNode</a>&gt; &#125;&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;&#123; definition: <a href="/api-v17/language/ast#fragmentdefinitionnode">FragmentDefinitionNode</a>; variableDefinitions: <span className="api-signature-type">Map</span>&lt;<span className="api-signature-keyword">string</span>, <a href="/api-v17/language/ast#variabledefinitionnode">VariableDefinitionNode</a>&gt; &#125;&gt;</ApiType> | The fragment signature for the current fragment definition. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse(
+  `
+    {
+      ...GreetingFields
+    }
+
+    fragment GreetingFields on Query {
+      greeting
+    }
+  `,
+  { experimentalFragmentArguments: true },
+);
+const typeInfo = new TypeInfo(schema);
+let fragmentName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    FragmentSpread: () => {
+      fragmentName = typeInfo.getFragmentSignature()?.definition.name.value;
+    },
+  }),
+);
+
+fragmentName; // => 'GreetingFields'
+```
+
+#### getFragmentSignatureByName()
+
+Returns the function used to look up fragment signatures by name.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getFragmentSignatureByName</span>(): (fragmentName: <span className="api-signature-keyword">string</span>): <span className="api-signature-type">Maybe</span>&lt;&#123; definition: <a href="/api-v17/language/ast#fragmentdefinitionnode">FragmentDefinitionNode</a>; variableDefinitions: <span className="api-signature-type">Map</span>&lt;<span className="api-signature-keyword">string</span>, <a href="/api-v17/language/ast#variabledefinitionnode">VariableDefinitionNode</a>&gt; &#125;&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>(fragmentName: <span className="api-signature-keyword">string</span>): <span className="api-signature-type">Maybe</span>&lt;&#123; definition: <a href="/api-v17/language/ast#fragmentdefinitionnode">FragmentDefinitionNode</a>; variableDefinitions: <span className="api-signature-type">Map</span>&lt;<span className="api-signature-keyword">string</span>, <a href="/api-v17/language/ast#variabledefinitionnode">VariableDefinitionNode</a>&gt; &#125;&gt;</ApiType> | A function that maps fragment names to fragment signatures. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse(
+  `
+    {
+      ...GreetingFields
+    }
+
+    fragment GreetingFields on Query {
+      greeting
+    }
+  `,
+  { experimentalFragmentArguments: true },
+);
+const typeInfo = new TypeInfo(schema);
+let fragmentName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    Document: () => {
+      const getFragmentSignature = typeInfo.getFragmentSignatureByName();
+      fragmentName =
+        getFragmentSignature('GreetingFields')?.definition.name.value;
+    },
+  }),
+);
+
+fragmentName; // => 'GreetingFields'
+```
+
+#### getFragmentArgument()
+
+Returns the current fragment argument definition.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getFragmentArgument</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#variabledefinitionnode">VariableDefinitionNode</a>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#variabledefinitionnode">VariableDefinitionNode</a>&gt;</ApiType> | The variable definition for the current fragment argument. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting(name: String): String
+  }
+`);
+const document = parse(
+  `
+    {
+      ...GreetingFields(name: "Ada")
+    }
+
+    fragment GreetingFields($name: String) on Query {
+      greeting(name: $name)
+    }
+  `,
+  { experimentalFragmentArguments: true },
+);
+const typeInfo = new TypeInfo(schema);
+let argumentName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    FragmentArgument: () => {
+      argumentName = typeInfo.getFragmentArgument()?.variable.name.value;
+    },
+  }),
+);
+
+argumentName; // => 'name'
+```
+
+#### getEnumValue()
+
+Returns the current enum value definition.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getEnumValue</span>(): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlenumvalue">GraphQLEnumValue</a>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlenumvalue">GraphQLEnumValue</a>&gt;</ApiType> | The current enum value definition, if known. |
+
+##### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  enum Sort {
+    NEWEST
+    OLDEST
+  }
+
+  type Query {
+    reviews(sort: Sort = NEWEST): [String]
+  }
+`);
+const typeInfo = new TypeInfo(schema);
+let enumValueName;
+
+visit(
+  parse('{ reviews(sort: OLDEST) }'),
+  visitWithTypeInfo(typeInfo, {
+    EnumValue: () => {
+      enumValueName = typeInfo.getEnumValue()?.name;
+    },
+  }),
+);
+
+enumValueName; // => 'OLDEST'
+```
+
+#### enter()
+
+Updates this TypeInfo instance for an entered AST node.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">enter</span>(node: <a href="/api-v17/language/ast#astnode">ASTNode</a>): <span className="api-signature-keyword">void</span></ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| node | <ApiType><a href="/api-v17/language/ast#astnode">ASTNode</a></ApiType> | AST node being entered. |
+
+##### Example
+
+```ts
+import { Kind, parse } from 'graphql/language';
+import { buildSchema, TypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse('{ greeting }');
+const operation = document.definitions[0];
+const selectionSet = operation.selectionSet;
+const field = selectionSet.selections[0];
+const typeInfo = new TypeInfo(schema);
+
+typeInfo.enter(operation);
+typeInfo.enter(selectionSet);
+typeInfo.enter(field);
+
+field.kind; // => Kind.FIELD
+typeInfo.getParentType()?.name; // => 'Query'
+String(typeInfo.getType()); // => 'String'
+```
+
+#### leave()
+
+Updates this TypeInfo instance for a left AST node.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">leave</span>(node: <a href="/api-v17/language/ast#astnode">ASTNode</a>): <span className="api-signature-keyword">void</span></ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| node | <ApiType><a href="/api-v17/language/ast#astnode">ASTNode</a></ApiType> | AST node being entered. |
+
+##### Example
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema, TypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse('{ greeting }');
+const operation = document.definitions[0];
+const selectionSet = operation.selectionSet;
+const field = selectionSet.selections[0];
+const typeInfo = new TypeInfo(schema);
+
+typeInfo.enter(operation);
+typeInfo.enter(selectionSet);
+typeInfo.enter(field);
+String(typeInfo.getType()); // => 'String'
+
+typeInfo.leave(field);
+typeInfo.getType(); // => undefined
+```
+
+## Functions
+
+### visitWithTypeInfo()
+
+Creates a new visitor instance which maintains a provided TypeInfo instance
+along with visiting visitor.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">visitWithTypeInfo</span>(typeInfo: <a href="/api-v17/utilities/type-info#typeinfo">TypeInfo</a>, visitor: <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a>): <a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| typeInfo | <ApiType><a href="/api-v17/utilities/type-info#typeinfo">TypeInfo</a></ApiType> | TypeInfo instance to update during traversal. |
+| visitor | <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | Visitor callbacks to wrap with TypeInfo updates. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that keeps TypeInfo in sync while delegating callbacks. |
+
+#### Example
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const typeInfo = new TypeInfo(schema);
+const fields = [];
+
+visit(
+  parse('{ greeting }'),
+  visitWithTypeInfo(typeInfo, {
+    Field: (node) => {
+      fields.push({
+        name: node.name.value,
+        parentType: String(typeInfo.getParentType()),
+        type: String(typeInfo.getType()),
+      });
+    },
+  }),
+);
+
+fields; // => [{ name: 'greeting', parentType: 'Query', type: 'String' }]
+```

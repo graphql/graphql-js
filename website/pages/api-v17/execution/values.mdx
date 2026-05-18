@@ -1,0 +1,271 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/execution/values
+
+## Functions
+
+### getVariableValues()
+
+Prepares an object map of variableValues of the correct type based on the
+provided variable definitions and arbitrary input. If the input cannot be
+parsed to match the variable definitions, GraphQLError values are returned.
+
+Note: Returned maps use null prototypes to avoid collisions with
+Object prototype properties.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getVariableValues</span>(schema: <a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a>, varDefNodes: <span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#variabledefinitionnode">VariableDefinitionNode</a>[], inputs: <span className="api-signature-type">object</span>, options?: &#123; maxErrors?: <span className="api-signature-keyword">number</span>; hideSuggestions?: <span className="api-signature-keyword">boolean</span> &#125;): &#123; variableValues: &#123; sources: <span className="api-signature-type">ReadOnlyObjMap</span>&lt;&#123; signature: <span className="api-signature-type">GraphQLVariableSignature</span>; value?: <span className="api-signature-keyword">unknown</span> &#125;&gt;; coerced: <span className="api-signature-type">ReadOnlyObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt; &#125;; errors?: <span className="api-signature-keyword">never</span> &#125; | &#123; errors: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/error/errors#graphqlerror">GraphQLError</a>&gt;; variableValues?: <span className="api-signature-keyword">never</span> &#125;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | GraphQL schema to use. |
+| varDefNodes | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#variabledefinitionnode">VariableDefinitionNode</a>[]</ApiType> | The variable definition AST nodes to coerce. |
+| inputs | <ApiType><span className="api-signature-type">object</span></ApiType> | The runtime variable values keyed by variable name. |
+| options? | <ApiType>&#123; maxErrors?: <span className="api-signature-keyword">number</span>; hideSuggestions?: <span className="api-signature-keyword">boolean</span> &#125;</ApiType> | Optional configuration for this operation. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>&#123; variableValues: &#123; sources: <span className="api-signature-type">ReadOnlyObjMap</span>&lt;&#123; signature: <span className="api-signature-type">GraphQLVariableSignature</span>; value?: <span className="api-signature-keyword">unknown</span> &#125;&gt;; coerced: <span className="api-signature-type">ReadOnlyObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt; &#125;; errors?: <span className="api-signature-keyword">never</span> &#125; &#124; &#123; errors: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/error/errors#graphqlerror">GraphQLError</a>&gt;; variableValues?: <span className="api-signature-keyword">never</span> &#125;</ApiType> | Coerced variable values with source metadata, or request errors. |
+
+#### Example 1
+
+```ts
+// Coerce provided variables and apply operation defaults.
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { getVariableValues } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    reviews(stars: Int!, limit: Int = 10): [String]
+  }
+`);
+const document = parse(`
+  query ($stars: Int!, $limit: Int = 10) {
+    reviews(stars: $stars, limit: $limit)
+  }
+`);
+const operation = document.definitions[0];
+
+const result = getVariableValues(
+  schema,
+  operation.variableDefinitions,
+  { stars: '5' },
+);
+
+assert('variableValues' in result);
+
+result.variableValues.coerced; // => { stars: 5, limit: 10 }
+```
+
+#### Example 2
+
+```ts
+// This variant uses maxErrors to cap reported coercion errors.
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { getVariableValues } from 'graphql/execution';
+
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+  }
+
+  type Query {
+    review(input: ReviewInput!): String
+  }
+`);
+const document = parse(`
+  query ($first: ReviewInput!, $second: ReviewInput!) {
+    first: review(input: $first)
+    second: review(input: $second)
+  }
+`);
+const operation = document.definitions[0];
+
+const result = getVariableValues(
+  schema,
+  operation.variableDefinitions,
+  { first: { stars: 'bad' }, second: { stars: 'also bad' } },
+  { maxErrors: 1 },
+);
+
+assert('errors' in result);
+
+result.errors.length; // => 2
+result.errors[1].message; // matches /error limit reached/
+```
+
+### getArgumentValues()
+
+Prepares an object map of argument values given a list of argument
+definitions and list of argument AST nodes.
+
+Note: Returned value uses a null prototype to avoid collisions with
+JavaScript's own property names.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getArgumentValues</span>(def: <a href="/api-v17/type/definitions#graphqlfield">GraphQLField</a>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">unknown</span>&gt; | <a href="/api-v17/type/directives#graphqldirective">GraphQLDirective</a>, node: <a href="/api-v17/language/ast#fieldnode">FieldNode</a> | <a href="/api-v17/language/ast#directivenode">DirectiveNode</a>, variableValues?: <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/execution/values#variablevalues">VariableValues</a>&gt;, fragmentVariableValues?: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">FragmentVariableValues</span>&gt;, hideSuggestions?: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;): <span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| def | <ApiType><a href="/api-v17/type/definitions#graphqlfield">GraphQLField</a>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">unknown</span>&gt; &#124; <a href="/api-v17/type/directives#graphqldirective">GraphQLDirective</a></ApiType> | Field or directive definition that declares the arguments. |
+| node | <ApiType><a href="/api-v17/language/ast#fieldnode">FieldNode</a> &#124; <a href="/api-v17/language/ast#directivenode">DirectiveNode</a></ApiType> | Field or directive AST node supplying argument literals. |
+| variableValues? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/execution/values#variablevalues">VariableValues</a>&gt;</ApiType> | Operation variable values returned by getVariableValues. |
+| fragmentVariableValues? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">FragmentVariableValues</span>&gt;</ApiType> | Fragment variable values for the current fragment scope. |
+| hideSuggestions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;</ApiType> | Whether suggestion text should be omitted from errors. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | A map of coerced argument values. |
+
+#### Example 1
+
+```ts
+// Read literal argument values and defaults.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { getArgumentValues } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    reviews(stars: Int!, limit: Int = 10): [String]
+  }
+`);
+const fieldDef = schema.getQueryType().getFields().reviews;
+const document = parse('{ reviews(stars: 5) }');
+const fieldNode = document.definitions[0].selectionSet.selections[0];
+
+getArgumentValues(fieldDef, fieldNode); // => { stars: 5, limit: 10 }
+```
+
+#### Example 2
+
+```ts
+// This variant resolves argument values from operation variables.
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { getArgumentValues, getVariableValues } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    reviews(stars: Int!): [String]
+  }
+`);
+const fieldDef = schema.getQueryType().getFields().reviews;
+const document = parse('query ($stars: Int!) { reviews(stars: $stars) }');
+const operation = document.definitions[0];
+const fieldNode = document.definitions[0].selectionSet.selections[0];
+const variables = getVariableValues(
+  schema,
+  operation.variableDefinitions,
+  { stars: '5' },
+);
+
+assert('variableValues' in variables);
+
+getArgumentValues(fieldDef, fieldNode, variables.variableValues); // => { stars: 5 }
+getArgumentValues(fieldDef, fieldNode); // throws an error
+```
+
+### getDirectiveValues()
+
+Prepares an object map of argument values given a directive definition
+and a AST node which may contain directives. Optionally also accepts a map
+of variable values.
+
+If the directive does not exist on the node, returns undefined.
+
+Note: Returned value uses a null prototype to avoid collisions with
+JavaScript's own property names.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getDirectiveValues</span>(directiveDef: <a href="/api-v17/type/directives#graphqldirective">GraphQLDirective</a>, node: &#123; directives?: <span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#directivenode">DirectiveNode</a>[] &#125;, variableValues?: <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/execution/values#variablevalues">VariableValues</a>&gt;, fragmentVariableValues?: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">FragmentVariableValues</span>&gt;, hideSuggestions?: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;): <span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt; | <span className="api-signature-keyword">undefined</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| directiveDef | <ApiType><a href="/api-v17/type/directives#graphqldirective">GraphQLDirective</a></ApiType> | Directive definition to read argument definitions from. |
+| node | <ApiType>&#123; directives?: <span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#directivenode">DirectiveNode</a>[] &#125;</ApiType> | AST node that may contain directives. |
+| variableValues? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/execution/values#variablevalues">VariableValues</a>&gt;</ApiType> | Operation variable values returned by getVariableValues. |
+| fragmentVariableValues? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">FragmentVariableValues</span>&gt;</ApiType> | Fragment variable values for the current fragment scope. |
+| hideSuggestions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;</ApiType> | Whether suggestion text should be omitted from errors. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt; &#124; <span className="api-signature-keyword">undefined</span></ApiType> | A map of coerced directive argument values, or undefined when absent. |
+
+#### Example 1
+
+```ts
+// Read literal directive arguments from a node.
+import { parse } from 'graphql/language';
+import { GraphQLSkipDirective } from 'graphql/type';
+import { getDirectiveValues } from 'graphql/execution';
+
+const document = parse('{ name @skip(if: true) }');
+const fieldNode = document.definitions[0].selectionSet.selections[0];
+
+getDirectiveValues(GraphQLSkipDirective, fieldNode); // => { if: true }
+```
+
+#### Example 2
+
+```ts
+// This variant resolves directive arguments from variables and handles absent directives.
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { GraphQLIncludeDirective } from 'graphql/type';
+import { buildSchema } from 'graphql/utilities';
+import { getDirectiveValues, getVariableValues } from 'graphql/execution';
+
+const schema = buildSchema('type Query { name: String }');
+const document = parse('query ($includeName: Boolean!) { name @include(if: $includeName) }');
+const operation = document.definitions[0];
+const fieldNode = document.definitions[0].selectionSet.selections[0];
+const variables = getVariableValues(
+  schema,
+  operation.variableDefinitions,
+  { includeName: false },
+);
+
+assert('variableValues' in variables);
+
+getDirectiveValues(GraphQLIncludeDirective, fieldNode, variables.variableValues); // => { if: false }
+getDirectiveValues(GraphQLIncludeDirective, { directives: [] }); // => undefined
+```
+
+## Types
+
+### VariableValues
+
+**Interface.** Coerced variable values prepared for execution.
+
+The `coerced` map contains runtime values keyed by variable name. The
+`sources` map records whether each value came from request input, an operation
+default, or a fragment-variable default so utilities can preserve defaults
+when replacing variables in literals.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| sources | <ApiType><span className="api-signature-type">ReadOnlyObjMap</span>&lt;&#123; signature: <span className="api-signature-type">GraphQLVariableSignature</span>; value?: <span className="api-signature-keyword">unknown</span> &#125;&gt;</ApiType> | Source metadata for each variable value keyed by variable name. |
+| coerced | <ApiType><span className="api-signature-type">ReadOnlyObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;</ApiType> | Coerced runtime variable values keyed by variable name. |

@@ -1,0 +1,4679 @@
+import { ApiSignature, ApiType, ApiTag } from '../../../components/ApiTags';
+
+# graphql/type/definitions
+
+## Classes
+
+### GraphQLList
+
+List Type Wrapper
+
+A list is a wrapping type which points to another type.
+Lists are often created within the context of defining the fields of
+an object type.
+
+Example:
+
+```ts
+const PersonType = new GraphQLObjectType({
+  name: 'Person',
+  fields: () => ({
+    parents: { type: new GraphQLList(PersonType) },
+    children: { type: new GraphQLList(PersonType) },
+  })
+})
+```
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| T | <ApiType><a href="/api-v17/type/definitions#graphqltype">GraphQLType</a></ApiType> |  | The GraphQL type wrapped by this list type. |
+
+#### Constructor
+
+Creates a GraphQLList instance.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-keyword">new</span> <span className="api-signature-name">GraphQLList</span>(ofType: <span className="api-signature-type">T</span>)</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| ofType | <ApiType><span className="api-signature-type">T</span></ApiType> | The type to wrap. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqllist">GraphQLList</a>&lt;<span className="api-signature-type">T</span>&gt;</ApiType> |  |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| __kind | <ApiType><span className="api-signature-keyword">symbol</span></ApiType> | Internal runtime marker used to identify GraphQLList instances. |
+| ofType | <ApiType><span className="api-signature-type">T</span></ApiType> | The type wrapped by this list or non-null type. |
+
+#### toString()
+
+Returns this wrapping type as a GraphQL type-reference string.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toString</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL type-reference string. |
+
+##### Example
+
+```ts
+import { GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql/type';
+
+const stringList = new GraphQLList(GraphQLString);
+const requiredStringList = new GraphQLList(new GraphQLNonNull(GraphQLString));
+
+stringList.toString(); // => '[String]'
+requiredStringList.toString(); // => '[String!]'
+```
+
+#### toJSON()
+
+Returns the JSON representation used when this object is serialized.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toJSON</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The JSON-serializable representation. |
+
+##### Example
+
+```ts
+import { GraphQLList, GraphQLString } from 'graphql/type';
+
+const stringList = new GraphQLList(GraphQLString);
+
+stringList.toJSON(); // => '[String]'
+JSON.stringify({ type: stringList }); // => '{"type":"[String]"}'
+```
+
+### GraphQLNonNull
+
+Non-Null Type Wrapper
+
+A non-null is a wrapping type which points to another type.
+Non-null types enforce that their values are never null and can ensure
+an error is raised if this ever occurs during a request. It is useful for
+fields which you can make a strong guarantee on non-nullability, for example
+usually the id field of a database row will never be null.
+
+Example:
+
+```ts
+const RowType = new GraphQLObjectType({
+  name: 'Row',
+  fields: () => ({
+    id: { type: new GraphQLNonNull(GraphQLString) },
+  })
+})
+```
+Note: the enforcement of non-nullability occurs within the executor.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| T | <ApiType><a href="/api-v17/type/definitions#graphqlnullabletype">GraphQLNullableType</a></ApiType> |  | The nullable GraphQL type wrapped by this non-null type. |
+
+#### Constructor
+
+Creates a GraphQLNonNull instance.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-keyword">new</span> <span className="api-signature-name">GraphQLNonNull</span>(ofType: <span className="api-signature-type">T</span>)</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| ofType | <ApiType><span className="api-signature-type">T</span></ApiType> | The type to wrap. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlnonnull">GraphQLNonNull</a>&lt;<span className="api-signature-type">T</span>&gt;</ApiType> |  |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| __kind | <ApiType><span className="api-signature-keyword">symbol</span></ApiType> | Internal runtime marker used to identify GraphQLNonNull instances. |
+| ofType | <ApiType><span className="api-signature-type">T</span></ApiType> | The type wrapped by this list or non-null type. |
+
+#### toString()
+
+Returns this wrapping type as a GraphQL type-reference string.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toString</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL type-reference string. |
+
+##### Example
+
+```ts
+import { GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql/type';
+
+const requiredString = new GraphQLNonNull(GraphQLString);
+const requiredStringList = new GraphQLNonNull(
+  new GraphQLList(GraphQLString),
+);
+
+requiredString.toString(); // => 'String!'
+requiredStringList.toString(); // => '[String]!'
+```
+
+#### toJSON()
+
+Returns the JSON representation used when this object is serialized.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toJSON</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The JSON-serializable representation. |
+
+##### Example
+
+```ts
+import { GraphQLNonNull, GraphQLString } from 'graphql/type';
+
+const requiredString = new GraphQLNonNull(GraphQLString);
+
+requiredString.toJSON(); // => 'String!'
+JSON.stringify({ type: requiredString }); // => '{"type":"String!"}'
+```
+
+### GraphQLScalarType
+
+Scalar Type Definition
+
+Scalar types define the leaf values of a GraphQL response and the input
+values accepted by arguments and input object fields. A scalar type has a
+name and coercion functions that validate and convert runtime values and
+GraphQL literals.
+
+If a type's coerceOutputValue function returns `null` or does not return a
+value (i.e. it returns `undefined`) then an error will be raised and a
+`null` value will be returned in the response. Prefer validating inputs
+before execution so clients receive input diagnostics before result coercion
+fails.
+
+Example:
+
+```ts
+import { GraphQLScalarType, Kind } from 'graphql';
+
+const ensureOdd = (value) => {
+  if (!Number.isFinite(value)) {
+    throw new Error(
+      `Scalar "Odd" cannot represent "${value}" since it is not a finite number.`,
+    );
+  }
+
+  if (value % 2 === 0) {
+    throw new Error(`Scalar "Odd" cannot represent "${value}" since it is even.`);
+  }
+
+  return value;
+};
+
+const OddType = new GraphQLScalarType({
+  name: 'Odd',
+  coerceOutputValue: (value) => {
+    return ensureOdd(value);
+  },
+  coerceInputValue: (value) => {
+    return ensureOdd(value);
+  },
+  valueToLiteral: (value) => {
+    return { kind: Kind.INT, value: String(ensureOdd(value)) };
+  }
+});
+```
+
+Custom scalar behavior is defined via the following functions:
+
+ - coerceOutputValue(value): Implements "Result Coercion". Given an internal value,
+   produces an external value valid for this type. Returns undefined or
+   throws an error to indicate invalid values.
+
+ - coerceInputValue(value): Implements "Input Coercion" for values. Given an
+   external value (for example, variable values), produces an internal value
+   valid for this type. Returns undefined or throws an error to indicate
+   invalid values.
+
+ - coerceInputLiteral(ast): Implements "Input Coercion" for constant literals.
+   Given a GraphQL literal (AST) (for example, an argument value), produces
+   an internal value valid for this type. Returns undefined or throws an
+   error to indicate invalid values.
+
+ - valueToLiteral(value): Converts an external value to a GraphQL
+   literal (AST). Returns undefined or throws an error to indicate
+   invalid values.
+
+ Deprecated, to be removed in v18:
+
+ - serialize(value): Implements "Result Coercion". Renamed to
+   `coerceOutputValue()`.
+
+ - parseValue(value): Implements "Input Coercion" for values. Renamed to
+   `coerceInputValue()`.
+
+ - parseLiteral(ast): Implements "Input Coercion" for literals including
+   non-specified replacement of variables embedded within complex scalars.
+   Replaced by the combination of the `replaceVariables()` utility and the
+   `coerceInputLiteral()` method.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TInternal |  | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Internal runtime representation for this scalar. |
+| TExternal |  | <ApiType><span className="api-signature-type">TInternal</span></ApiType> | External representation accepted from or returned to callers. |
+
+#### Constructor
+
+Creates a GraphQLScalarType instance.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-keyword">new</span> <span className="api-signature-name">GraphQLScalarType</span>(config: <span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlscalartypeconfig">GraphQLScalarTypeConfig</a>&lt;<span className="api-signature-type">TInternal</span>, <span className="api-signature-type">TExternal</span>&gt;&gt;)</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| config | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlscalartypeconfig">GraphQLScalarTypeConfig</a>&lt;<span className="api-signature-type">TInternal</span>, <span className="api-signature-type">TExternal</span>&gt;&gt;</ApiType> | Configuration describing this object. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlscalartype">GraphQLScalarType</a>&lt;<span className="api-signature-type">TInternal</span>, <span className="api-signature-type">TExternal</span>&gt;</ApiType> |  |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| __kind | <ApiType><span className="api-signature-keyword">symbol</span></ApiType> | Internal runtime marker used to identify GraphQLScalarType instances. |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| specifiedByURL | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | URL identifying the behavior specified for this custom scalar. |
+| serialize | <ApiType><a href="/api-v17/type/definitions#graphqlscalarserializer">GraphQLScalarSerializer</a>&lt;<span className="api-signature-type">TExternal</span>&gt;</ApiType> | Legacy serializer used to convert internal values for response output. |
+| parseValue | <ApiType><a href="/api-v17/type/definitions#graphqlscalarvalueparser">GraphQLScalarValueParser</a>&lt;<span className="api-signature-type">TInternal</span>&gt;</ApiType> | Legacy parser used to convert externally provided input values. |
+| parseLiteral | <ApiType><a href="/api-v17/type/definitions#graphqlscalarliteralparser">GraphQLScalarLiteralParser</a>&lt;<span className="api-signature-type">TInternal</span>&gt;</ApiType> | Legacy parser used to convert externally provided input literals. |
+| coerceOutputValue | <ApiType><a href="/api-v17/type/definitions#graphqlscalaroutputvaluecoercer">GraphQLScalarOutputValueCoercer</a>&lt;<span className="api-signature-type">TExternal</span>&gt;</ApiType> | Coercer used to convert internal scalar values for response output. |
+| coerceInputValue | <ApiType><a href="/api-v17/type/definitions#graphqlscalarinputvaluecoercer">GraphQLScalarInputValueCoercer</a>&lt;<span className="api-signature-type">TInternal</span>&gt;</ApiType> | Coercer used to convert externally provided scalar input values. |
+| coerceInputLiteral | <ApiType><a href="/api-v17/type/definitions#graphqlscalarinputliteralcoercer">GraphQLScalarInputLiteralCoercer</a>&lt;<span className="api-signature-type">TInternal</span>&gt; &#124; <span className="api-signature-keyword">undefined</span></ApiType> | Coercer used to convert GraphQL scalar input literals. |
+| valueToLiteral | <ApiType>(inputValue: <span className="api-signature-keyword">unknown</span>) =&gt; <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a> &#124; <span className="api-signature-keyword">undefined</span> &#124; <span className="api-signature-keyword">undefined</span></ApiType> | Converter used to produce GraphQL literals from runtime input values. |
+| extensions | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlscalartypeextensions">GraphQLScalarTypeExtensions</a>&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#scalartypedefinitionnode">ScalarTypeDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+| extensionASTNodes | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#scalartypeextensionnode">ScalarTypeExtensionNode</a>[]</ApiType> | AST extension nodes applied to this schema element. |
+
+#### toConfig()
+
+Returns a normalized configuration object for this object.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toConfig</span>(): &#123; serialize: (outputValue: <span className="api-signature-keyword">unknown</span>) =&gt; <span className="api-signature-type">TExternal</span>; parseValue: (inputValue: <span className="api-signature-keyword">unknown</span>) =&gt; <span className="api-signature-type">TInternal</span>; parseLiteral: (valueNode: <a href="/api-v17/language/ast#valuenode">ValueNode</a>, variables: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;&gt;) =&gt; <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">TInternal</span>&gt;; coerceOutputValue: (outputValue: <span className="api-signature-keyword">unknown</span>) =&gt; <span className="api-signature-type">TExternal</span>; coerceInputValue: (inputValue: <span className="api-signature-keyword">unknown</span>) =&gt; <span className="api-signature-type">TInternal</span>; coerceInputLiteral: (valueNode: <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>) =&gt; <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">TInternal</span>&gt; | <span className="api-signature-keyword">undefined</span>; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt;; extensionASTNodes: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#scalartypeextensionnode">ScalarTypeExtensionNode</a>&gt; &#125;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>&#123; serialize: (outputValue: <span className="api-signature-keyword">unknown</span>) =&gt; <span className="api-signature-type">TExternal</span>; parseValue: (inputValue: <span className="api-signature-keyword">unknown</span>) =&gt; <span className="api-signature-type">TInternal</span>; parseLiteral: (valueNode: <a href="/api-v17/language/ast#valuenode">ValueNode</a>, variables: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;&gt;) =&gt; <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">TInternal</span>&gt;; coerceOutputValue: (outputValue: <span className="api-signature-keyword">unknown</span>) =&gt; <span className="api-signature-type">TExternal</span>; coerceInputValue: (inputValue: <span className="api-signature-keyword">unknown</span>) =&gt; <span className="api-signature-type">TInternal</span>; coerceInputLiteral: (valueNode: <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>) =&gt; <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">TInternal</span>&gt; &#124; <span className="api-signature-keyword">undefined</span>; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt;; extensionASTNodes: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#scalartypeextensionnode">ScalarTypeExtensionNode</a>&gt; &#125;</ApiType> | A configuration object that can be used to recreate this object. |
+
+##### Example
+
+```ts
+import { GraphQLScalarType } from 'graphql/type';
+
+const Url = new GraphQLScalarType({
+  name: 'Url',
+  description: 'An absolute URL string.',
+  specifiedByURL: 'https://url.spec.whatwg.org/',
+});
+
+const config = Url.toConfig();
+const UrlCopy = new GraphQLScalarType(config);
+
+config.name; // => 'Url'
+config.specifiedByURL; // => 'https://url.spec.whatwg.org/'
+UrlCopy.name; // => Url.name
+```
+
+#### toString()
+
+Returns the schema coordinate identifying this scalar type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toString</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The schema coordinate for this scalar type. |
+
+##### Example
+
+```ts
+import { GraphQLScalarType } from 'graphql/type';
+
+const DateTime = new GraphQLScalarType({ name: 'DateTime' });
+
+DateTime.toString(); // => 'DateTime'
+String(DateTime); // => 'DateTime'
+```
+
+#### toJSON()
+
+Returns the JSON representation used when this object is serialized.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toJSON</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The JSON-serializable representation. |
+
+##### Example
+
+```ts
+import { GraphQLScalarType } from 'graphql/type';
+
+const DateTime = new GraphQLScalarType({ name: 'DateTime' });
+
+DateTime.toJSON(); // => 'DateTime'
+JSON.stringify({ type: DateTime }); // => '{"type":"DateTime"}'
+```
+
+### GraphQLObjectType
+
+Object Type Definition
+
+Almost all of the GraphQL types you define will be object types. Object types
+have a name, but most importantly describe their fields.
+
+Example:
+
+```ts
+const AddressType = new GraphQLObjectType({
+  name: 'Address',
+  fields: {
+    street: { type: GraphQLString },
+    number: { type: GraphQLInt },
+    formatted: {
+      type: GraphQLString,
+      resolve: (obj) => {
+        return obj.number + ' ' + obj.street
+      }
+    }
+  }
+});
+```
+
+When two types need to refer to each other, or a type needs to refer to
+itself in a field, you can use a function expression (aka a closure or a
+thunk) to supply the fields lazily.
+
+Example:
+
+```ts
+const PersonType = new GraphQLObjectType({
+  name: 'Person',
+  fields: () => ({
+    name: { type: GraphQLString },
+    bestFriend: { type: PersonType },
+  })
+});
+```
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TSource |  | <ApiType><span className="api-signature-keyword">any</span></ApiType> | Source object type passed to resolvers. |
+| TContext |  | <ApiType><span className="api-signature-keyword">any</span></ApiType> | Context object type passed to resolvers. |
+| TAbstract |  | <ApiType><span className="api-signature-keyword">any</span></ApiType> | Runtime value type used for abstract type resolution. |
+
+#### Constructor
+
+Creates a GraphQLObjectType instance.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-keyword">new</span> <span className="api-signature-name">GraphQLObjectType</span>(config: <span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlobjecttypeconfig">GraphQLObjectTypeConfig</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>, <span className="api-signature-type">TAbstract</span>&gt;&gt;)</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| config | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlobjecttypeconfig">GraphQLObjectTypeConfig</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>, <span className="api-signature-type">TAbstract</span>&gt;&gt;</ApiType> | Configuration describing this object. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>, <span className="api-signature-type">TAbstract</span>&gt;</ApiType> |  |
+
+#### Members
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| __kind | <ApiType><span className="api-signature-keyword">typeof</span> <span className="api-signature-type">objectSymbol</span></ApiType> | `objectSymbol` | Internal runtime marker used to identify GraphQLObjectType instances. |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> |  | The GraphQL name for this schema element. |
+| description | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> |  | Human-readable description for this schema element, if provided. |
+| isTypeOf | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlistypeoffn">GraphQLIsTypeOfFn</a>&lt;<span className="api-signature-type">TAbstract</span>, <span className="api-signature-type">TContext</span>&gt;&gt;</ApiType> |  | Predicate used to determine whether a runtime value belongs to this object type. |
+| extensions | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlobjecttypeextensions">GraphQLObjectTypeExtensions</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;&gt;</ApiType> |  | Extension fields to include in the formatted result. |
+| astNode | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#objecttypedefinitionnode">ObjectTypeDefinitionNode</a>&gt;</ApiType> |  | AST node from which this schema element was built, if available. |
+| extensionASTNodes | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#objecttypeextensionnode">ObjectTypeExtensionNode</a>[]</ApiType> |  | AST extension nodes applied to this schema element. |
+
+#### getFields()
+
+Returns the fields defined by this type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getFields</span>(): <a href="/api-v17/type/definitions#graphqlfieldmap">GraphQLFieldMap</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlfieldmap">GraphQLFieldMap</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;</ApiType> | The fields keyed by field name. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertObjectType } from 'graphql/type';
+
+const schema = buildSchema(`
+  type User {
+    id: ID!
+    name: String
+  }
+
+  type Query {
+    viewer: User
+  }
+`);
+
+const User = assertObjectType(schema.getType('User'));
+const fields = User.getFields();
+
+Object.keys(fields); // => ['id', 'name']
+String(fields.id.type); // => 'ID!'
+```
+
+#### getInterfaces()
+
+Returns the interfaces implemented by this type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getInterfaces</span>(): <span className="api-signature-keyword">readonly</span> <a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a>[]</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a>[]</ApiType> | The implemented interfaces. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertObjectType } from 'graphql/type';
+
+const schema = buildSchema(`
+  interface Node {
+    id: ID!
+  }
+
+  type User implements Node {
+    id: ID!
+  }
+
+  type Query {
+    viewer: User
+  }
+`);
+
+const User = assertObjectType(schema.getType('User'));
+
+User.getInterfaces().map((type) => type.name); // => ['Node']
+```
+
+#### toConfig()
+
+Returns a normalized configuration object for this object.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toConfig</span>(): &#123; interfaces: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a>&gt;; fields: <span className="api-signature-type">ObjMap</span>&lt;&#123; args: <span className="api-signature-type">ObjMap</span>&lt;&#123; default: &#123; value: <span className="api-signature-keyword">unknown</span>; literal?: <span className="api-signature-keyword">never</span> &#125; | &#123; literal: <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>; value?: <span className="api-signature-keyword">never</span> &#125; | <span className="api-signature-keyword">undefined</span>; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;&gt;; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;&gt;; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt;; extensionASTNodes: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#objecttypeextensionnode">ObjectTypeExtensionNode</a>&gt; &#125;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>&#123; interfaces: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a>&gt;; fields: <span className="api-signature-type">ObjMap</span>&lt;&#123; args: <span className="api-signature-type">ObjMap</span>&lt;&#123; default: &#123; value: <span className="api-signature-keyword">unknown</span>; literal?: <span className="api-signature-keyword">never</span> &#125; &#124; &#123; literal: <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>; value?: <span className="api-signature-keyword">never</span> &#125; &#124; <span className="api-signature-keyword">undefined</span>; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;&gt;; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;&gt;; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt;; extensionASTNodes: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#objecttypeextensionnode">ObjectTypeExtensionNode</a>&gt; &#125;</ApiType> | A configuration object that can be used to recreate this object. |
+
+##### Example
+
+```ts
+import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+
+const User = new GraphQLObjectType({
+  name: 'User',
+  fields: {
+    name: { type: GraphQLString },
+  },
+});
+
+const config = User.toConfig();
+const UserCopy = new GraphQLObjectType(config);
+
+config.fields.name.type; // => GraphQLString
+UserCopy.getFields().name.type; // => GraphQLString
+```
+
+#### toString()
+
+Returns the schema coordinate identifying this object type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toString</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The schema coordinate for this object type. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertObjectType } from 'graphql/type';
+
+const schema = buildSchema(`
+  type User {
+    name: String
+  }
+
+  type Query {
+    viewer: User
+  }
+`);
+
+const User = assertObjectType(schema.getType('User'));
+
+User.toString(); // => 'User'
+```
+
+#### toJSON()
+
+Returns the JSON representation used when this object is serialized.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toJSON</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The JSON-serializable representation. |
+
+##### Example
+
+```ts
+import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+
+const User = new GraphQLObjectType({
+  name: 'User',
+  fields: { name: { type: GraphQLString } },
+});
+
+User.toJSON(); // => 'User'
+JSON.stringify({ type: User }); // => '{"type":"User"}'
+```
+
+### GraphQLInterfaceType
+
+Interface Type Definition
+
+When a field can return one of a heterogeneous set of types, a Interface type
+is used to describe what types are possible, what fields are in common across
+all types, as well as a function to determine which type is actually used
+when the field is resolved.
+
+Example:
+
+```ts
+const EntityType = new GraphQLInterfaceType({
+  name: 'Entity',
+  fields: {
+    name: { type: GraphQLString }
+  }
+});
+```
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TSource |  | <ApiType><span className="api-signature-keyword">any</span></ApiType> | Source object type passed to resolvers. |
+| TContext |  | <ApiType><span className="api-signature-keyword">any</span></ApiType> | Context object type passed to resolvers. |
+
+#### Constructor
+
+Creates a GraphQLInterfaceType instance.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-keyword">new</span> <span className="api-signature-name">GraphQLInterfaceType</span>(config: <span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlinterfacetypeconfig">GraphQLInterfaceTypeConfig</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;&gt;)</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| config | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlinterfacetypeconfig">GraphQLInterfaceTypeConfig</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;&gt;</ApiType> | Configuration describing this object. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;</ApiType> |  |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| __kind | <ApiType><span className="api-signature-keyword">symbol</span></ApiType> | Internal runtime marker used to identify GraphQLInterfaceType instances. |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| resolveType | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqltyperesolver">GraphQLTypeResolver</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;&gt;</ApiType> | Function that resolves the concrete object type for this abstract type. |
+| extensions | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlinterfacetypeextensions">GraphQLInterfaceTypeExtensions</a>&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#interfacetypedefinitionnode">InterfaceTypeDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+| extensionASTNodes | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#interfacetypeextensionnode">InterfaceTypeExtensionNode</a>[]</ApiType> | AST extension nodes applied to this schema element. |
+
+#### getFields()
+
+Returns the fields defined by this type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getFields</span>(): <a href="/api-v17/type/definitions#graphqlfieldmap">GraphQLFieldMap</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlfieldmap">GraphQLFieldMap</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;</ApiType> | The fields keyed by field name. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertInterfaceType } from 'graphql/type';
+
+const schema = buildSchema(`
+  interface Node {
+    id: ID!
+  }
+
+  type User implements Node {
+    id: ID!
+  }
+
+  type Query {
+    node: Node
+  }
+`);
+
+const Node = assertInterfaceType(schema.getType('Node'));
+const fields = Node.getFields();
+
+Object.keys(fields); // => ['id']
+String(fields.id.type); // => 'ID!'
+```
+
+#### getInterfaces()
+
+Returns the interfaces implemented by this type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getInterfaces</span>(): <span className="api-signature-keyword">readonly</span> <a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a>[]</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a>[]</ApiType> | The implemented interfaces. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertInterfaceType } from 'graphql/type';
+
+const schema = buildSchema(`
+  interface Resource {
+    url: String!
+  }
+
+  interface Image implements Resource {
+    url: String!
+    width: Int
+  }
+
+  type Photo implements Resource & Image {
+    url: String!
+    width: Int
+  }
+
+  type Query {
+    image: Image
+  }
+`);
+
+const Image = assertInterfaceType(schema.getType('Image'));
+
+Image.getInterfaces().map((type) => type.name); // => ['Resource']
+```
+
+#### toConfig()
+
+Returns a normalized configuration object for this object.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toConfig</span>(): &#123; interfaces: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a>&gt;; fields: <span className="api-signature-type">ObjMap</span>&lt;&#123; args: <span className="api-signature-type">ObjMap</span>&lt;&#123; default: &#123; value: <span className="api-signature-keyword">unknown</span>; literal?: <span className="api-signature-keyword">never</span> &#125; | &#123; literal: <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>; value?: <span className="api-signature-keyword">never</span> &#125; | <span className="api-signature-keyword">undefined</span>; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;&gt;; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;&gt;; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt;; extensionASTNodes: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#interfacetypeextensionnode">InterfaceTypeExtensionNode</a>&gt; &#125;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>&#123; interfaces: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a>&gt;; fields: <span className="api-signature-type">ObjMap</span>&lt;&#123; args: <span className="api-signature-type">ObjMap</span>&lt;&#123; default: &#123; value: <span className="api-signature-keyword">unknown</span>; literal?: <span className="api-signature-keyword">never</span> &#125; &#124; &#123; literal: <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>; value?: <span className="api-signature-keyword">never</span> &#125; &#124; <span className="api-signature-keyword">undefined</span>; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;&gt;; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;&gt;; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt;; extensionASTNodes: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#interfacetypeextensionnode">InterfaceTypeExtensionNode</a>&gt; &#125;</ApiType> | A configuration object that can be used to recreate this object. |
+
+##### Example
+
+```ts
+import { GraphQLID, GraphQLInterfaceType, GraphQLNonNull } from 'graphql/type';
+
+const Node = new GraphQLInterfaceType({
+  name: 'Node',
+  fields: {
+    id: { type: new GraphQLNonNull(GraphQLID) },
+  },
+});
+
+const config = Node.toConfig();
+const NodeCopy = new GraphQLInterfaceType(config);
+
+String(config.fields.id.type); // => 'ID!'
+String(NodeCopy.getFields().id.type); // => 'ID!'
+```
+
+#### toString()
+
+Returns the schema coordinate identifying this interface type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toString</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The schema coordinate for this interface type. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertInterfaceType } from 'graphql/type';
+
+const schema = buildSchema(`
+  interface Node {
+    id: ID!
+  }
+
+  type User implements Node {
+    id: ID!
+  }
+
+  type Query {
+    node: Node
+  }
+`);
+
+const Node = assertInterfaceType(schema.getType('Node'));
+
+Node.toString(); // => 'Node'
+```
+
+#### toJSON()
+
+Returns the JSON representation used when this object is serialized.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toJSON</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The JSON-serializable representation. |
+
+##### Example
+
+```ts
+import { GraphQLInterfaceType, GraphQLString } from 'graphql/type';
+
+const Named = new GraphQLInterfaceType({
+  name: 'Named',
+  fields: { name: { type: GraphQLString } },
+});
+
+Named.toJSON(); // => 'Named'
+JSON.stringify({ type: Named }); // => '{"type":"Named"}'
+```
+
+### GraphQLUnionType
+
+Union Type Definition
+
+When a field can return one of a heterogeneous set of types, a Union type
+is used to describe what types are possible as well as providing a function
+to determine which type is actually used when the field is resolved.
+
+Example:
+
+```ts
+const PetType = new GraphQLUnionType({
+  name: 'Pet',
+  types: [DogType, CatType],
+  resolveType: (value) => {
+    if (value instanceof Dog) {
+      return DogType;
+    }
+    if (value instanceof Cat) {
+      return CatType;
+    }
+  }
+});
+```
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TSource |  | <ApiType><span className="api-signature-keyword">any</span></ApiType> | Source object type passed to resolvers. |
+| TContext |  | <ApiType><span className="api-signature-keyword">any</span></ApiType> | Context object type passed to resolvers. |
+
+#### Constructor
+
+Creates a GraphQLUnionType instance.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-keyword">new</span> <span className="api-signature-name">GraphQLUnionType</span>(config: <span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqluniontypeconfig">GraphQLUnionTypeConfig</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;&gt;)</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| config | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqluniontypeconfig">GraphQLUnionTypeConfig</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;&gt;</ApiType> | Configuration describing this object. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqluniontype">GraphQLUnionType</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;</ApiType> |  |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| __kind | <ApiType><span className="api-signature-keyword">symbol</span></ApiType> | Internal runtime marker used to identify GraphQLUnionType instances. |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| resolveType | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqltyperesolver">GraphQLTypeResolver</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;&gt;</ApiType> | Function that resolves the concrete object type for this abstract type. |
+| extensions | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqluniontypeextensions">GraphQLUnionTypeExtensions</a>&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#uniontypedefinitionnode">UnionTypeDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+| extensionASTNodes | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#uniontypeextensionnode">UnionTypeExtensionNode</a>[]</ApiType> | AST extension nodes applied to this schema element. |
+
+#### getTypes()
+
+Returns the object types included in this union.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getTypes</span>(): <span className="api-signature-keyword">readonly</span> <a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>[]</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>[]</ApiType> | The union member object types. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertUnionType } from 'graphql/type';
+
+const schema = buildSchema(`
+  type Photo {
+    url: String!
+  }
+
+  type Video {
+    url: String!
+  }
+
+  union Media = Photo | Video
+
+  type Query {
+    media: [Media]
+  }
+`);
+
+const Media = assertUnionType(schema.getType('Media'));
+
+Media.getTypes().map((type) => type.name); // => ['Photo', 'Video']
+```
+
+#### toConfig()
+
+Returns a normalized configuration object for this object.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toConfig</span>(): &#123; types: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>&gt;; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt;; extensionASTNodes: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#uniontypeextensionnode">UnionTypeExtensionNode</a>&gt; &#125;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>&#123; types: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>&gt;; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt;; extensionASTNodes: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#uniontypeextensionnode">UnionTypeExtensionNode</a>&gt; &#125;</ApiType> | A configuration object that can be used to recreate this object. |
+
+##### Example
+
+```ts
+import { GraphQLObjectType, GraphQLString, GraphQLUnionType } from 'graphql/type';
+
+const Photo = new GraphQLObjectType({
+  name: 'Photo',
+  fields: { url: { type: GraphQLString } },
+});
+const Video = new GraphQLObjectType({
+  name: 'Video',
+  fields: { url: { type: GraphQLString } },
+});
+const Media = new GraphQLUnionType({
+  name: 'Media',
+  types: [Photo, Video],
+});
+
+const config = Media.toConfig();
+const MediaCopy = new GraphQLUnionType(config);
+
+MediaCopy.getTypes().map((type) => type.name); // => ['Photo', 'Video']
+```
+
+#### toString()
+
+Returns the schema coordinate identifying this union type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toString</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The schema coordinate for this union type. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertUnionType } from 'graphql/type';
+
+const schema = buildSchema(`
+  type Photo {
+    url: String!
+  }
+
+  union SearchResult = Photo
+
+  type Query {
+    search: [SearchResult]
+  }
+`);
+
+const SearchResult = assertUnionType(schema.getType('SearchResult'));
+
+SearchResult.toString(); // => 'SearchResult'
+```
+
+#### toJSON()
+
+Returns the JSON representation used when this object is serialized.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toJSON</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The JSON-serializable representation. |
+
+##### Example
+
+```ts
+import { GraphQLObjectType, GraphQLString, GraphQLUnionType } from 'graphql/type';
+
+const Photo = new GraphQLObjectType({
+  name: 'Photo',
+  fields: { url: { type: GraphQLString } },
+});
+const SearchResult = new GraphQLUnionType({
+  name: 'SearchResult',
+  types: [Photo],
+});
+
+SearchResult.toJSON(); // => 'SearchResult'
+JSON.stringify({ type: SearchResult }); // => '{"type":"SearchResult"}'
+```
+
+### GraphQLEnumType
+
+Enum Type Definition
+
+Enum types define leaf values whose serialized form is one of a fixed set
+of GraphQL enum names. Internally, enum values can map to any runtime value,
+often integers.
+
+Example:
+
+```ts
+import { GraphQLEnumType } from 'graphql/type';
+
+const RGBType = new GraphQLEnumType({
+  name: 'RGB',
+  values: {
+    RED: { value: 0 },
+    GREEN: { value: 1 },
+    BLUE: { value: 2 },
+  },
+});
+
+RGBType.getValue('GREEN')?.value; // => 1
+```
+
+Note: If a value is not provided in a definition, the name of the enum value
+will be used as its internal value.
+
+#### Constructor
+
+Creates a GraphQLEnumType instance.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-keyword">new</span> <span className="api-signature-name">GraphQLEnumType</span>(config: <span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlenumtypeconfig">GraphQLEnumTypeConfig</a>&gt;)</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| config | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlenumtypeconfig">GraphQLEnumTypeConfig</a>&gt;</ApiType> | Configuration describing this object. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlenumtype">GraphQLEnumType</a></ApiType> |  |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| __kind | <ApiType><span className="api-signature-keyword">symbol</span></ApiType> | Internal runtime marker used to identify GraphQLEnumType instances. |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| extensions | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlenumtypeextensions">GraphQLEnumTypeExtensions</a>&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#enumtypedefinitionnode">EnumTypeDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+| extensionASTNodes | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#enumtypeextensionnode">EnumTypeExtensionNode</a>[]</ApiType> | AST extension nodes applied to this schema element. |
+
+#### getValues()
+
+Returns the values defined by this enum type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getValues</span>(): <span className="api-signature-keyword">readonly</span> <a href="/api-v17/type/definitions#graphqlenumvalue">GraphQLEnumValue</a>[]</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/type/definitions#graphqlenumvalue">GraphQLEnumValue</a>[]</ApiType> | Enum value definitions in schema order. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertEnumType } from 'graphql/type';
+
+const schema = buildSchema(`
+  enum Episode {
+    NEW_HOPE
+    EMPIRE
+    JEDI
+  }
+
+  type Query {
+    episode: Episode
+  }
+`);
+
+const Episode = assertEnumType(schema.getType('Episode'));
+
+Episode.getValues().map((value) => value.name); // => ['NEW_HOPE', 'EMPIRE', 'JEDI']
+```
+
+#### getValue()
+
+Returns the enum value definition for a value name.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getValue</span>(name: <span className="api-signature-keyword">string</span>): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlenumvalue">GraphQLEnumValue</a>&gt;</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name to look up. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlenumvalue">GraphQLEnumValue</a>&gt;</ApiType> | The matching enum value definition, if it exists. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertEnumType } from 'graphql/type';
+
+const schema = buildSchema(`
+  enum Episode {
+    NEW_HOPE
+    EMPIRE
+  }
+
+  type Query {
+    episode: Episode
+  }
+`);
+
+const Episode = assertEnumType(schema.getType('Episode'));
+
+Episode.getValue('EMPIRE')?.name; // => 'EMPIRE'
+Episode.getValue('JEDI'); // => undefined
+```
+
+#### serialize()
+
+<ApiTag kind="deprecated" />
+
+Serializes a runtime enum value as a GraphQL enum name.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">serialize</span>(outputValue: <span className="api-signature-keyword">unknown</span>): <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| outputValue | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Runtime enum value to serialize. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | The GraphQL enum name for the runtime value. |
+
+##### Example
+
+```ts
+import { GraphQLEnumType } from 'graphql/type';
+
+const RGB = new GraphQLEnumType({
+  name: 'RGB',
+  values: {
+    RED: { value: 0 },
+    GREEN: { value: 1 },
+    BLUE: { value: 2 },
+  },
+});
+
+RGB.serialize(1); // => 'GREEN'
+RGB.serialize(3); // throws an error
+```
+
+#### coerceOutputValue()
+
+Coerces a runtime enum value to a GraphQL enum name.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">coerceOutputValue</span>(outputValue: <span className="api-signature-keyword">unknown</span>): <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| outputValue | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Runtime enum value to coerce. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | The GraphQL enum name for the runtime value. |
+
+##### Example
+
+```ts
+import { GraphQLEnumType } from 'graphql/type';
+
+const RGB = new GraphQLEnumType({
+  name: 'RGB',
+  values: {
+    RED: { value: 0 },
+    GREEN: { value: 1 },
+    BLUE: { value: 2 },
+  },
+});
+
+RGB.coerceOutputValue(1); // => 'GREEN'
+RGB.coerceOutputValue(3); // throws an error
+```
+
+#### parseValue()
+
+<ApiTag kind="deprecated" />
+
+Legacy enum parser for externally provided input values.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">parseValue</span>(inputValue: <span className="api-signature-keyword">unknown</span>, hideSuggestions?: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;): <span className="api-signature-keyword">any</span></ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| inputValue | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | External enum name to parse. |
+| hideSuggestions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;</ApiType> | Whether suggestion text should be omitted from errors. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">any</span></ApiType> | The internal runtime value for the enum name. |
+
+##### Example
+
+```ts
+import { GraphQLEnumType } from 'graphql/type';
+
+const RGB = new GraphQLEnumType({
+  name: 'RGB',
+  values: {
+    RED: { value: 0 },
+    GREEN: { value: 1 },
+    BLUE: { value: 2 },
+  },
+});
+
+RGB.parseValue('BLUE'); // => 2
+RGB.parseValue('PURPLE', true); // throws an error
+```
+
+#### coerceInputValue()
+
+Coerces an external enum name to its internal runtime value.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">coerceInputValue</span>(inputValue: <span className="api-signature-keyword">unknown</span>, hideSuggestions?: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;): <span className="api-signature-keyword">any</span></ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| inputValue | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | External enum name to coerce. |
+| hideSuggestions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;</ApiType> | Whether suggestion text should be omitted from errors. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">any</span></ApiType> | The internal runtime value for the enum name. |
+
+##### Example
+
+```ts
+import { GraphQLEnumType } from 'graphql/type';
+
+const RGB = new GraphQLEnumType({
+  name: 'RGB',
+  values: {
+    RED: { value: 0 },
+    GREEN: { value: 1 },
+    BLUE: { value: 2 },
+  },
+});
+
+RGB.coerceInputValue('BLUE'); // => 2
+RGB.coerceInputValue('PURPLE'); // throws an error
+RGB.coerceInputValue(2); // throws an error
+```
+
+#### parseLiteral()
+
+<ApiTag kind="deprecated" />
+
+Legacy enum parser for externally provided input literals.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">parseLiteral</span>(valueNode: <a href="/api-v17/language/ast#valuenode">ValueNode</a>, _variables: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;&gt;, hideSuggestions?: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;): <span className="api-signature-keyword">any</span></ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| valueNode | <ApiType><a href="/api-v17/language/ast#valuenode">ValueNode</a></ApiType> | Enum value AST node to parse. |
+| _variables | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;&gt;</ApiType> | Deprecated variable values parameter that is no longer used. |
+| hideSuggestions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;</ApiType> | Whether suggestion text should be omitted from errors. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">any</span></ApiType> | The internal runtime value for the enum literal. |
+
+##### Example
+
+```ts
+import { parseValue } from 'graphql/language';
+import { GraphQLEnumType } from 'graphql/type';
+
+const RGB = new GraphQLEnumType({
+  name: 'RGB',
+  values: {
+    RED: { value: 0 },
+    GREEN: { value: 1 },
+    BLUE: { value: 2 },
+  },
+});
+
+RGB.parseLiteral(parseValue('RED')); // => 0
+RGB.parseLiteral(parseValue('"RED"')); // throws an error
+```
+
+#### coerceInputLiteral()
+
+Coerces an enum value AST node to its internal runtime value.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">coerceInputLiteral</span>(valueNode: <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>, hideSuggestions?: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;): <span className="api-signature-keyword">any</span></ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| valueNode | <ApiType><a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a></ApiType> | Enum value AST node to coerce. |
+| hideSuggestions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;</ApiType> | Whether suggestion text should be omitted from errors. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">any</span></ApiType> | The internal runtime value for the enum literal. |
+
+##### Example
+
+```ts
+import { parseConstValue } from 'graphql/language';
+import { GraphQLEnumType } from 'graphql/type';
+
+const RGB = new GraphQLEnumType({
+  name: 'RGB',
+  values: {
+    RED: { value: 0 },
+    GREEN: { value: 1 },
+    BLUE: { value: 2 },
+  },
+});
+
+RGB.coerceInputLiteral(parseConstValue('RED')); // => 0
+RGB.coerceInputLiteral(parseConstValue('"RED"'), true); // throws an error
+```
+
+#### valueToLiteral()
+
+Converts a runtime enum value to a GraphQL enum value AST node.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">valueToLiteral</span>(value: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a> | <span className="api-signature-keyword">undefined</span></ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| value | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Runtime enum value to convert. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a> &#124; <span className="api-signature-keyword">undefined</span></ApiType> | Enum value AST node, or undefined if the value is invalid. |
+
+##### Example
+
+```ts
+import { print } from 'graphql/language';
+import { GraphQLEnumType } from 'graphql/type';
+
+const RGB = new GraphQLEnumType({
+  name: 'RGB',
+  values: {
+    RED: { value: 0 },
+    GREEN: { value: 1 },
+    BLUE: { value: 2 },
+  },
+});
+
+print(RGB.valueToLiteral(2)); // => 'BLUE'
+RGB.valueToLiteral(3); // => undefined
+```
+
+#### toConfig()
+
+Returns a normalized configuration object for this object.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toConfig</span>(): &#123; values: <span className="api-signature-type">ObjMap</span>&lt;&#123; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;&gt;; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt;; extensionASTNodes: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#enumtypeextensionnode">EnumTypeExtensionNode</a>&gt; &#125;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>&#123; values: <span className="api-signature-type">ObjMap</span>&lt;&#123; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;&gt;; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt;; extensionASTNodes: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#enumtypeextensionnode">EnumTypeExtensionNode</a>&gt; &#125;</ApiType> | A configuration object that can be used to recreate this object. |
+
+##### Example
+
+```ts
+import { GraphQLEnumType } from 'graphql/type';
+
+const RGB = new GraphQLEnumType({
+  name: 'RGB',
+  values: {
+    RED: { value: 0 },
+    GREEN: { value: 1 },
+    BLUE: { value: 2 },
+  },
+});
+
+const config = RGB.toConfig();
+const RGBCopy = new GraphQLEnumType(config);
+
+config.values.GREEN.value; // => 1
+RGBCopy.coerceOutputValue(2); // => 'BLUE'
+```
+
+#### toString()
+
+Returns the schema coordinate identifying this enum type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toString</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The schema coordinate for this enum type. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertEnumType } from 'graphql/type';
+
+const schema = buildSchema(`
+  enum Episode {
+    NEW_HOPE
+  }
+
+  type Query {
+    episode: Episode
+  }
+`);
+
+const Episode = assertEnumType(schema.getType('Episode'));
+
+Episode.toString(); // => 'Episode'
+```
+
+#### toJSON()
+
+Returns the JSON representation used when this object is serialized.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toJSON</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The JSON-serializable representation. |
+
+##### Example
+
+```ts
+import { GraphQLEnumType } from 'graphql/type';
+
+const Episode = new GraphQLEnumType({
+  name: 'Episode',
+  values: {
+    NEW_HOPE: {},
+  },
+});
+
+Episode.toJSON(); // => 'Episode'
+JSON.stringify({ type: Episode }); // => '{"type":"Episode"}'
+```
+
+### GraphQLInputObjectType
+
+Input Object Type Definition
+
+An input object defines a structured collection of fields which may be
+supplied to a field argument.
+
+Using `NonNull` will ensure that a value must be provided by the query
+
+Example:
+
+```ts
+const GeoPoint = new GraphQLInputObjectType({
+  name: 'GeoPoint',
+  fields: {
+    lat: { type: new GraphQLNonNull(GraphQLFloat) },
+    lon: { type: new GraphQLNonNull(GraphQLFloat) },
+    alt: { type: GraphQLFloat, default: { value: 0 } },
+  }
+});
+```
+
+#### Constructor
+
+Creates a GraphQLInputObjectType instance.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-keyword">new</span> <span className="api-signature-name">GraphQLInputObjectType</span>(config: <span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlinputobjecttypeconfig">GraphQLInputObjectTypeConfig</a>&gt;)</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| config | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlinputobjecttypeconfig">GraphQLInputObjectTypeConfig</a>&gt;</ApiType> | Configuration describing this object. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlinputobjecttype">GraphQLInputObjectType</a></ApiType> |  |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| __kind | <ApiType><span className="api-signature-keyword">symbol</span></ApiType> | Internal runtime marker used to identify GraphQLInputObjectType instances. |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| extensions | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlinputobjecttypeextensions">GraphQLInputObjectTypeExtensions</a>&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#inputobjecttypedefinitionnode">InputObjectTypeDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+| extensionASTNodes | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#inputobjecttypeextensionnode">InputObjectTypeExtensionNode</a>[]</ApiType> | AST extension nodes applied to this schema element. |
+| isOneOf | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether this input object uses the experimental OneOf input object semantics. |
+
+#### getFields()
+
+Returns the fields defined by this type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getFields</span>(): <a href="/api-v17/type/definitions#graphqlinputfieldmap">GraphQLInputFieldMap</a></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlinputfieldmap">GraphQLInputFieldMap</a></ApiType> | The fields keyed by field name. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertInputObjectType } from 'graphql/type';
+
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+    commentary: String = ""
+  }
+
+  type Query {
+    reviews(filter: ReviewInput): [String]
+  }
+`);
+
+const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
+const fields = ReviewInput.getFields();
+
+Object.keys(fields); // => ['stars', 'commentary']
+fields.commentary.default; // => { literal: { kind: 'StringValue', value: '' } }
+```
+
+#### toConfig()
+
+Returns a normalized configuration object for this object.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toConfig</span>(): &#123; fields: <span className="api-signature-type">ObjMap</span>&lt;&#123; default: &#123; value: <span className="api-signature-keyword">unknown</span>; literal?: <span className="api-signature-keyword">never</span> &#125; | &#123; literal: <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>; value?: <span className="api-signature-keyword">never</span> &#125; | <span className="api-signature-keyword">undefined</span>; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;&gt;; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt;; extensionASTNodes: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#inputobjecttypeextensionnode">InputObjectTypeExtensionNode</a>&gt; &#125;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>&#123; fields: <span className="api-signature-type">ObjMap</span>&lt;&#123; default: &#123; value: <span className="api-signature-keyword">unknown</span>; literal?: <span className="api-signature-keyword">never</span> &#125; &#124; &#123; literal: <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>; value?: <span className="api-signature-keyword">never</span> &#125; &#124; <span className="api-signature-keyword">undefined</span>; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;&gt;; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt;; extensionASTNodes: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v17/language/ast#inputobjecttypeextensionnode">InputObjectTypeExtensionNode</a>&gt; &#125;</ApiType> | A configuration object that can be used to recreate this object. |
+
+##### Example
+
+```ts
+import {
+  GraphQLInputObjectType,
+  GraphQLInt,
+  GraphQLNonNull,
+} from 'graphql/type';
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  fields: {
+    stars: { type: new GraphQLNonNull(GraphQLInt) },
+  },
+});
+
+const config = ReviewInput.toConfig();
+const ReviewInputCopy = new GraphQLInputObjectType(config);
+
+String(config.fields.stars.type); // => 'Int!'
+String(ReviewInputCopy.getFields().stars.type); // => 'Int!'
+```
+
+#### toString()
+
+Returns the schema coordinate identifying this input object type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toString</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The schema coordinate for this input object type. |
+
+##### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertInputObjectType } from 'graphql/type';
+
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+  }
+
+  type Query {
+    reviews(filter: ReviewInput): [String]
+  }
+`);
+
+const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
+
+ReviewInput.toString(); // => 'ReviewInput'
+```
+
+#### toJSON()
+
+Returns the JSON representation used when this object is serialized.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toJSON</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The JSON-serializable representation. |
+
+##### Example
+
+```ts
+import { GraphQLInputObjectType, GraphQLString } from 'graphql/type';
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  fields: {
+    commentary: { type: GraphQLString },
+  },
+});
+
+ReviewInput.toJSON(); // => 'ReviewInput'
+JSON.stringify({ type: ReviewInput }); // => '{"type":"ReviewInput"}'
+```
+
+## Functions
+
+### isType()
+
+Returns true when the value is any GraphQL type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isType</span>(type: <span className="api-signature-keyword">unknown</span>): type is GraphQLType</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>type is GraphQLType</ApiType> | True when the value is any GraphQL type. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { GraphQLList, GraphQLString, isType } from 'graphql/type';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+isType(GraphQLString); // => true
+isType(new GraphQLList(GraphQLString)); // => true
+isType(schema.getType('Query')); // => true
+isType('String'); // => false
+```
+
+### assertType()
+
+Returns the value as a GraphQL type, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertType</span>(type: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqltype">GraphQLType</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqltype">GraphQLType</a></ApiType> | The value typed as a GraphQL type. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertType } from 'graphql/type';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const queryType = assertType(schema.getType('Query'));
+
+queryType.toString(); // => 'Query'
+assertType('Query'); // throws an error
+```
+
+### isScalarType()
+
+There are predicates for each kind of GraphQL type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isScalarType</span>(type: <span className="api-signature-keyword">unknown</span>): type is GraphQLScalarType&lt;unknown, unknown&gt;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>type is GraphQLScalarType&lt;unknown, unknown&gt;</ApiType> | True when the value is a GraphQLScalarType. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { isScalarType } from 'graphql/type';
+
+const schema = buildSchema(`
+  scalar DateTime
+
+  type Query {
+    createdAt: DateTime
+  }
+`);
+
+isScalarType(schema.getType('DateTime')); // => true
+isScalarType(schema.getType('Query')); // => false
+```
+
+### assertScalarType()
+
+Returns the value as a GraphQLScalarType, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertScalarType</span>(type: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqlscalartype">GraphQLScalarType</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlscalartype">GraphQLScalarType</a></ApiType> | The value typed as a GraphQLScalarType. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertScalarType } from 'graphql/type';
+
+const schema = buildSchema(`
+  scalar DateTime
+
+  type Query {
+    createdAt: DateTime
+  }
+`);
+
+const dateTimeType = assertScalarType(schema.getType('DateTime'));
+
+dateTimeType.name; // => 'DateTime'
+assertScalarType(schema.getType('Query')); // throws an error
+```
+
+### isObjectType()
+
+Returns true when the value is a GraphQLObjectType.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isObjectType</span>(type: <span className="api-signature-keyword">unknown</span>): type is GraphQLObjectType</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>type is GraphQLObjectType</ApiType> | True when the value is a GraphQLObjectType. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { isObjectType } from 'graphql/type';
+
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+  }
+
+  type User {
+    name: String
+  }
+
+  type Query {
+    user: User
+  }
+`);
+
+isObjectType(schema.getType('User')); // => true
+isObjectType(schema.getType('ReviewInput')); // => false
+```
+
+### assertObjectType()
+
+Returns the value as a GraphQLObjectType, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertObjectType</span>(type: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a></ApiType> | The value typed as a GraphQLObjectType. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertObjectType } from 'graphql/type';
+
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+  }
+
+  type User {
+    name: String
+  }
+
+  type Query {
+    user: User
+  }
+`);
+
+const userType = assertObjectType(schema.getType('User'));
+
+Object.keys(userType.getFields()); // => ['name']
+assertObjectType(schema.getType('ReviewInput')); // throws an error
+```
+
+### isField()
+
+Returns true when the value is a resolved GraphQL field definition.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isField</span>(field: <span className="api-signature-keyword">unknown</span>): field is GraphQLField</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| field | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Value to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>field is GraphQLField</ApiType> | True when the value is a GraphQLField. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { isField } from 'graphql/type';
+
+const schema = buildSchema('type Query { greeting: String }');
+const field = schema.getQueryType().getFields().greeting;
+
+isField(field); // => true
+isField(schema.getQueryType()); // => false
+```
+
+### assertField()
+
+Returns the value as a GraphQLField, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertField</span>(field: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqlfield">GraphQLField</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| field | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Value to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlfield">GraphQLField</a></ApiType> | The value typed as a GraphQLField. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertField } from 'graphql/type';
+
+const schema = buildSchema('type Query { greeting: String }');
+const field = assertField(schema.getQueryType().getFields().greeting);
+
+field.name; // => 'greeting'
+assertField(schema.getQueryType()); // throws an error
+```
+
+### isArgument()
+
+Returns true when the value is a resolved GraphQL argument definition.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isArgument</span>(arg: <span className="api-signature-keyword">unknown</span>): arg is GraphQLArgument</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| arg | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Value to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>arg is GraphQLArgument</ApiType> | True when the value is a GraphQLArgument. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { isArgument } from 'graphql/type';
+
+const schema = buildSchema('type Query { greeting(name: String): String }');
+const arg = schema.getQueryType().getFields().greeting.args[0];
+
+isArgument(arg); // => true
+isArgument(schema.getQueryType()); // => false
+```
+
+### assertArgument()
+
+Returns the value as a GraphQLArgument, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertArgument</span>(arg: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqlargument">GraphQLArgument</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| arg | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Value to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlargument">GraphQLArgument</a></ApiType> | The value typed as a GraphQLArgument. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertArgument } from 'graphql/type';
+
+const schema = buildSchema('type Query { greeting(name: String): String }');
+const arg = assertArgument(schema.getQueryType().getFields().greeting.args[0]);
+
+arg.name; // => 'name'
+assertArgument(schema.getQueryType()); // throws an error
+```
+
+### isInterfaceType()
+
+Returns true when the value is a GraphQLInterfaceType.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isInterfaceType</span>(type: <span className="api-signature-keyword">unknown</span>): type is GraphQLInterfaceType</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>type is GraphQLInterfaceType</ApiType> | True when the value is a GraphQLInterfaceType. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { isInterfaceType } from 'graphql/type';
+
+const schema = buildSchema(`
+  interface Node {
+    id: ID!
+  }
+
+  type User implements Node {
+    id: ID!
+  }
+
+  type Query {
+    node: Node
+  }
+`);
+
+isInterfaceType(schema.getType('Node')); // => true
+isInterfaceType(schema.getType('User')); // => false
+```
+
+### assertInterfaceType()
+
+Returns the value as a GraphQLInterfaceType, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertInterfaceType</span>(type: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a></ApiType> | The value typed as a GraphQLInterfaceType. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertInterfaceType } from 'graphql/type';
+
+const schema = buildSchema(`
+  interface Node {
+    id: ID!
+  }
+
+  type User implements Node {
+    id: ID!
+  }
+
+  type Query {
+    node: Node
+  }
+`);
+
+const nodeType = assertInterfaceType(schema.getType('Node'));
+
+nodeType.name; // => 'Node'
+assertInterfaceType(schema.getType('User')); // throws an error
+```
+
+### isUnionType()
+
+Returns true when the value is a GraphQLUnionType.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isUnionType</span>(type: <span className="api-signature-keyword">unknown</span>): type is GraphQLUnionType</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>type is GraphQLUnionType</ApiType> | True when the value is a GraphQLUnionType. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { isUnionType } from 'graphql/type';
+
+const schema = buildSchema(`
+  type Photo {
+    url: String!
+  }
+
+  type Video {
+    url: String!
+  }
+
+  union Media = Photo | Video
+
+  type Query {
+    media: [Media]
+  }
+`);
+
+isUnionType(schema.getType('Media')); // => true
+isUnionType(schema.getType('Photo')); // => false
+```
+
+### assertUnionType()
+
+Returns the value as a GraphQLUnionType, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertUnionType</span>(type: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqluniontype">GraphQLUnionType</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqluniontype">GraphQLUnionType</a></ApiType> | The value typed as a GraphQLUnionType. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertUnionType } from 'graphql/type';
+
+const schema = buildSchema(`
+  type Photo {
+    url: String!
+  }
+
+  type Video {
+    url: String!
+  }
+
+  union Media = Photo | Video
+
+  type Query {
+    media: [Media]
+  }
+`);
+
+const mediaType = assertUnionType(schema.getType('Media'));
+
+mediaType.getTypes().map((type) => type.name); // => ['Photo', 'Video']
+assertUnionType(schema.getType('Photo')); // throws an error
+```
+
+### isEnumType()
+
+Returns true when the value is a GraphQLEnumType.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isEnumType</span>(type: <span className="api-signature-keyword">unknown</span>): type is GraphQLEnumType</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>type is GraphQLEnumType</ApiType> | True when the value is a GraphQLEnumType. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { isEnumType } from 'graphql/type';
+
+const schema = buildSchema(`
+  enum Episode {
+    NEW_HOPE
+    EMPIRE
+  }
+
+  type Query {
+    favoriteEpisode: Episode
+  }
+`);
+
+isEnumType(schema.getType('Episode')); // => true
+isEnumType(schema.getType('Query')); // => false
+```
+
+### assertEnumType()
+
+Returns the value as a GraphQLEnumType, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertEnumType</span>(type: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqlenumtype">GraphQLEnumType</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlenumtype">GraphQLEnumType</a></ApiType> | The value typed as a GraphQLEnumType. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertEnumType } from 'graphql/type';
+
+const schema = buildSchema(`
+  enum Episode {
+    NEW_HOPE
+    EMPIRE
+  }
+
+  type Query {
+    favoriteEpisode: Episode
+  }
+`);
+
+const episodeType = assertEnumType(schema.getType('Episode'));
+
+episodeType.getValues().map((value) => value.name); // => ['NEW_HOPE', 'EMPIRE']
+assertEnumType(schema.getType('Query')); // throws an error
+```
+
+### isEnumValue()
+
+Returns true when the value is a resolved GraphQL enum value definition.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isEnumValue</span>(value: <span className="api-signature-keyword">unknown</span>): value is GraphQLEnumValue</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| value | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Value to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>value is GraphQLEnumValue</ApiType> | True when the value is a GraphQLEnumValue. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertEnumType, isEnumValue } from 'graphql/type';
+
+const schema = buildSchema('enum Episode { NEW_HOPE } type Query { episode: Episode }');
+const enumValue = assertEnumType(schema.getType('Episode')).getValues()[0];
+
+isEnumValue(enumValue); // => true
+isEnumValue(schema.getType('Episode')); // => false
+```
+
+### assertEnumValue()
+
+Returns the value as a GraphQLEnumValue, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertEnumValue</span>(value: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqlenumvalue">GraphQLEnumValue</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| value | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Value to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlenumvalue">GraphQLEnumValue</a></ApiType> | The value typed as a GraphQLEnumValue. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertEnumType, assertEnumValue } from 'graphql/type';
+
+const schema = buildSchema('enum Episode { NEW_HOPE } type Query { episode: Episode }');
+const enumValue = assertEnumValue(
+  assertEnumType(schema.getType('Episode')).getValues()[0],
+);
+
+enumValue.name; // => 'NEW_HOPE'
+assertEnumValue(schema.getType('Episode')); // throws an error
+```
+
+### isInputObjectType()
+
+Returns true when the value is a GraphQLInputObjectType.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isInputObjectType</span>(type: <span className="api-signature-keyword">unknown</span>): type is GraphQLInputObjectType</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>type is GraphQLInputObjectType</ApiType> | True when the value is a GraphQLInputObjectType. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { isInputObjectType } from 'graphql/type';
+
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+  }
+
+  type Review {
+    stars: Int!
+  }
+
+  type Query {
+    review(input: ReviewInput): Review
+  }
+`);
+
+isInputObjectType(schema.getType('ReviewInput')); // => true
+isInputObjectType(schema.getType('Review')); // => false
+```
+
+### assertInputObjectType()
+
+Returns the value as a GraphQLInputObjectType, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertInputObjectType</span>(type: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqlinputobjecttype">GraphQLInputObjectType</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlinputobjecttype">GraphQLInputObjectType</a></ApiType> | The value typed as a GraphQLInputObjectType. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertInputObjectType } from 'graphql/type';
+
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+  }
+
+  type Review {
+    stars: Int!
+  }
+
+  type Query {
+    review(input: ReviewInput): Review
+  }
+`);
+
+const inputType = assertInputObjectType(schema.getType('ReviewInput'));
+
+Object.keys(inputType.getFields()); // => ['stars']
+assertInputObjectType(schema.getType('Review')); // throws an error
+```
+
+### isInputField()
+
+Returns true when the value is a resolved GraphQL input field definition.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isInputField</span>(field: <span className="api-signature-keyword">unknown</span>): field is GraphQLInputField</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| field | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Value to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>field is GraphQLInputField</ApiType> | True when the value is a GraphQLInputField. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertInputObjectType, isInputField } from 'graphql/type';
+
+const schema = buildSchema('input ReviewInput { stars: Int } type Query { ok: Boolean }');
+const inputField = assertInputObjectType(schema.getType('ReviewInput')).getFields().stars;
+
+isInputField(inputField); // => true
+isInputField(schema.getQueryType()); // => false
+```
+
+### assertInputField()
+
+Returns the value as a GraphQLInputField, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertInputField</span>(field: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqlinputfield">GraphQLInputField</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| field | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Value to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlinputfield">GraphQLInputField</a></ApiType> | The value typed as a GraphQLInputField. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertInputField, assertInputObjectType } from 'graphql/type';
+
+const schema = buildSchema('input ReviewInput { stars: Int } type Query { ok: Boolean }');
+const inputField = assertInputField(
+  assertInputObjectType(schema.getType('ReviewInput')).getFields().stars,
+);
+
+inputField.name; // => 'stars'
+assertInputField(schema.getQueryType()); // throws an error
+```
+
+### assertListType()
+
+Returns the value as a GraphQLList, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertListType</span>(type: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqllist">GraphQLList</a>&lt;<a href="/api-v17/type/definitions#graphqltype">GraphQLType</a>&gt;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqllist">GraphQLList</a>&lt;<a href="/api-v17/type/definitions#graphqltype">GraphQLType</a>&gt;</ApiType> | The value typed as a GraphQLList. |
+
+#### Example
+
+```ts
+import { GraphQLList, GraphQLString, assertListType } from 'graphql/type';
+
+const listType = assertListType(new GraphQLList(GraphQLString));
+
+listType.ofType; // => GraphQLString
+assertListType(GraphQLString); // throws an error
+```
+
+### assertNonNullType()
+
+Returns the value as a GraphQLNonNull, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertNonNullType</span>(type: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqlnonnull">GraphQLNonNull</a>&lt;<a href="/api-v17/type/definitions#graphqlnullabletype">GraphQLNullableType</a>&gt;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlnonnull">GraphQLNonNull</a>&lt;<a href="/api-v17/type/definitions#graphqlnullabletype">GraphQLNullableType</a>&gt;</ApiType> | The value typed as a GraphQLNonNull. |
+
+#### Example
+
+```ts
+import { GraphQLNonNull, GraphQLString, assertNonNullType } from 'graphql/type';
+
+const nonNullType = assertNonNullType(new GraphQLNonNull(GraphQLString));
+
+nonNullType.ofType; // => GraphQLString
+assertNonNullType(GraphQLString); // throws an error
+```
+
+### isInputType()
+
+Returns true when the value can be used as a GraphQL input type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isInputType</span>(type: <span className="api-signature-keyword">unknown</span>): type is GraphQLInputType</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>type is GraphQLInputType</ApiType> | True when the value can be used as a GraphQL input type. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { isInputType } from 'graphql/type';
+
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+  }
+
+  type Review {
+    stars: Int!
+  }
+
+  type Query {
+    review(input: ReviewInput): Review
+  }
+`);
+
+isInputType(schema.getType('ReviewInput')); // => true
+isInputType(schema.getType('Review')); // => false
+```
+
+### assertInputType()
+
+Returns the value as a GraphQL input type, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertInputType</span>(type: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a></ApiType> | The value typed as a GraphQL input type. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertInputType } from 'graphql/type';
+
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+  }
+
+  type Review {
+    stars: Int!
+  }
+
+  type Query {
+    review(input: ReviewInput): Review
+  }
+`);
+
+const inputType = assertInputType(schema.getType('ReviewInput'));
+
+inputType.toString(); // => 'ReviewInput'
+assertInputType(schema.getType('Review')); // throws an error
+```
+
+### isOutputType()
+
+Returns true when the value can be used as a GraphQL output type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isOutputType</span>(type: <span className="api-signature-keyword">unknown</span>): type is GraphQLOutputType</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>type is GraphQLOutputType</ApiType> | True when the value can be used as a GraphQL output type. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { isOutputType } from 'graphql/type';
+
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+  }
+
+  type Review {
+    stars: Int!
+  }
+
+  type Query {
+    review(input: ReviewInput): Review
+  }
+`);
+
+isOutputType(schema.getType('Review')); // => true
+isOutputType(schema.getType('ReviewInput')); // => false
+```
+
+### assertOutputType()
+
+Returns the value as a GraphQL output type, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertOutputType</span>(type: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqloutputtype">GraphQLOutputType</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqloutputtype">GraphQLOutputType</a></ApiType> | The value typed as a GraphQL output type. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertOutputType } from 'graphql/type';
+
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+  }
+
+  type Review {
+    stars: Int!
+  }
+
+  type Query {
+    review(input: ReviewInput): Review
+  }
+`);
+
+const outputType = assertOutputType(schema.getType('Review'));
+
+outputType.toString(); // => 'Review'
+assertOutputType(schema.getType('ReviewInput')); // throws an error
+```
+
+### isLeafType()
+
+Returns true when the value is a GraphQL scalar or enum type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isLeafType</span>(type: <span className="api-signature-keyword">unknown</span>): type is GraphQLLeafType</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>type is GraphQLLeafType</ApiType> | True when the value is a GraphQL scalar or enum type. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { isLeafType } from 'graphql/type';
+
+const schema = buildSchema(`
+  enum Episode {
+    NEW_HOPE
+  }
+
+  type Review {
+    stars: Int!
+  }
+
+  type Query {
+    episode: Episode
+    review: Review
+  }
+`);
+
+isLeafType(schema.getType('Episode')); // => true
+isLeafType(schema.getType('String')); // => true
+isLeafType(schema.getType('Review')); // => false
+```
+
+### assertLeafType()
+
+Returns the value as a GraphQL leaf type, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertLeafType</span>(type: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqlleaftype">GraphQLLeafType</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlleaftype">GraphQLLeafType</a></ApiType> | The value typed as a GraphQL leaf type. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertLeafType } from 'graphql/type';
+
+const schema = buildSchema(`
+  enum Episode {
+    NEW_HOPE
+  }
+
+  type Review {
+    stars: Int!
+  }
+
+  type Query {
+    episode: Episode
+    review: Review
+  }
+`);
+
+const episodeType = assertLeafType(schema.getType('Episode'));
+
+episodeType.toString(); // => 'Episode'
+assertLeafType(schema.getType('Review')); // throws an error
+```
+
+### isCompositeType()
+
+Returns true when the value is a GraphQL object, interface, or union type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isCompositeType</span>(type: <span className="api-signature-keyword">unknown</span>): type is GraphQLCompositeType</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>type is GraphQLCompositeType</ApiType> | True when the value is a GraphQL object, interface, or union type. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { isCompositeType } from 'graphql/type';
+
+const schema = buildSchema(`
+  interface Node {
+    id: ID!
+  }
+
+  type User implements Node {
+    id: ID!
+  }
+
+  union SearchResult = User
+
+  type Query {
+    node: Node
+    search: [SearchResult]
+  }
+`);
+
+isCompositeType(schema.getType('User')); // => true
+isCompositeType(schema.getType('Node')); // => true
+isCompositeType(schema.getType('SearchResult')); // => true
+isCompositeType(schema.getType('String')); // => false
+```
+
+### assertCompositeType()
+
+Returns the value as a GraphQL composite type, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertCompositeType</span>(type: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqlcompositetype">GraphQLCompositeType</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlcompositetype">GraphQLCompositeType</a></ApiType> | The value typed as a GraphQL composite type. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertCompositeType } from 'graphql/type';
+
+const schema = buildSchema(`
+  interface Node {
+    id: ID!
+  }
+
+  type User implements Node {
+    id: ID!
+  }
+
+  type Query {
+    node: Node
+  }
+`);
+
+const userType = assertCompositeType(schema.getType('User'));
+
+userType.toString(); // => 'User'
+assertCompositeType(schema.getType('String')); // throws an error
+```
+
+### isAbstractType()
+
+Returns true when the value is a GraphQL interface or union type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isAbstractType</span>(type: <span className="api-signature-keyword">unknown</span>): type is GraphQLAbstractType</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>type is GraphQLAbstractType</ApiType> | True when the value is a GraphQL interface or union type. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { isAbstractType } from 'graphql/type';
+
+const schema = buildSchema(`
+  interface Node {
+    id: ID!
+  }
+
+  type User implements Node {
+    id: ID!
+  }
+
+  union SearchResult = User
+
+  type Query {
+    node: Node
+    search: [SearchResult]
+  }
+`);
+
+isAbstractType(schema.getType('Node')); // => true
+isAbstractType(schema.getType('SearchResult')); // => true
+isAbstractType(schema.getType('User')); // => false
+```
+
+### assertAbstractType()
+
+Returns the value as a GraphQL abstract type, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertAbstractType</span>(type: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqlabstracttype">GraphQLAbstractType</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlabstracttype">GraphQLAbstractType</a></ApiType> | The value typed as a GraphQL abstract type. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertAbstractType } from 'graphql/type';
+
+const schema = buildSchema(`
+  interface Node {
+    id: ID!
+  }
+
+  type User implements Node {
+    id: ID!
+  }
+
+  type Query {
+    node: Node
+  }
+`);
+
+const nodeType = assertAbstractType(schema.getType('Node'));
+
+nodeType.toString(); // => 'Node'
+assertAbstractType(schema.getType('User')); // throws an error
+```
+
+### isWrappingType()
+
+Returns true when the value is a GraphQL list or non-null wrapper type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isWrappingType</span>(type: <span className="api-signature-keyword">unknown</span>): type is GraphQLWrappingType</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>type is GraphQLWrappingType</ApiType> | True when the value is a GraphQL list or non-null wrapper type. |
+
+#### Example
+
+```ts
+import {
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLString,
+  isWrappingType,
+} from 'graphql/type';
+
+isWrappingType(new GraphQLList(GraphQLString)); // => true
+isWrappingType(new GraphQLNonNull(GraphQLString)); // => true
+isWrappingType(GraphQLString); // => false
+```
+
+### assertWrappingType()
+
+Returns the value as a GraphQL wrapping type, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertWrappingType</span>(type: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqlwrappingtype">GraphQLWrappingType</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlwrappingtype">GraphQLWrappingType</a></ApiType> | The value typed as a GraphQL wrapping type. |
+
+#### Example
+
+```ts
+import { GraphQLList, GraphQLString, assertWrappingType } from 'graphql/type';
+
+const wrappingType = assertWrappingType(new GraphQLList(GraphQLString));
+
+wrappingType.toString(); // => '[String]'
+assertWrappingType(GraphQLString); // throws an error
+```
+
+### isNullableType()
+
+Returns true when the value is a GraphQL type that can accept null.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isNullableType</span>(type: <span className="api-signature-keyword">unknown</span>): type is GraphQLNullableType</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>type is GraphQLNullableType</ApiType> | True when the value is a GraphQL type that can accept null. |
+
+#### Example
+
+```ts
+import { GraphQLNonNull, GraphQLString, isNullableType } from 'graphql/type';
+
+isNullableType(GraphQLString); // => true
+isNullableType(new GraphQLNonNull(GraphQLString)); // => false
+isNullableType(null); // => false
+```
+
+### assertNullableType()
+
+Returns the value as a nullable GraphQL type, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertNullableType</span>(type: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqlnullabletype">GraphQLNullableType</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlnullabletype">GraphQLNullableType</a></ApiType> | The value typed as a nullable GraphQL type. |
+
+#### Example
+
+```ts
+import {
+  GraphQLNonNull,
+  GraphQLString,
+  assertNullableType,
+} from 'graphql/type';
+
+const nullableType = assertNullableType(GraphQLString);
+
+nullableType; // => GraphQLString
+assertNullableType(new GraphQLNonNull(GraphQLString)); // throws an error
+```
+
+### isNamedType()
+
+Returns true when the value is a GraphQL named type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isNamedType</span>(type: <span className="api-signature-keyword">unknown</span>): type is GraphQLNamedType</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>type is GraphQLNamedType</ApiType> | True when the value is a GraphQL named type. |
+
+#### Example
+
+```ts
+import { GraphQLList, GraphQLString, isNamedType } from 'graphql/type';
+
+isNamedType(GraphQLString); // => true
+isNamedType(new GraphQLList(GraphQLString)); // => false
+isNamedType(null); // => false
+```
+
+### assertNamedType()
+
+Returns the value as a GraphQL named type, or throws if it is not one.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertNamedType</span>(type: <span className="api-signature-keyword">unknown</span>): <a href="/api-v17/type/definitions#graphqlnamedtype">GraphQLNamedType</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/definitions#graphqlnamedtype">GraphQLNamedType</a></ApiType> | The value typed as a GraphQL named type. |
+
+#### Example
+
+```ts
+import { GraphQLList, GraphQLString, assertNamedType } from 'graphql/type';
+
+const namedType = assertNamedType(GraphQLString);
+
+namedType.name; // => 'String'
+assertNamedType(new GraphQLList(GraphQLString)); // throws an error
+```
+
+### resolveReadonlyArrayThunk()
+
+Resolves a thunked readonly array.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| T |  |  | The element type resolved from the thunk or array. |
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">resolveReadonlyArrayThunk</span>&lt;<span className="api-signature-type">T</span>&gt;(thunk: <a href="/api-v17/type/definitions#thunkreadonlyarray">ThunkReadonlyArray</a>&lt;<span className="api-signature-type">T</span>&gt;): <span className="api-signature-keyword">readonly</span> <span className="api-signature-type">T</span>[]</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| thunk | <ApiType><a href="/api-v17/type/definitions#thunkreadonlyarray">ThunkReadonlyArray</a>&lt;<span className="api-signature-type">T</span>&gt;</ApiType> | The thunk or value to resolve. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">readonly</span> <span className="api-signature-type">T</span>[]</ApiType> | The resolved readonly array. |
+
+#### Example
+
+```ts
+import { GraphQLString, resolveReadonlyArrayThunk } from 'graphql/type';
+
+const lazyFields = resolveReadonlyArrayThunk(() => [GraphQLString]);
+const fields = resolveReadonlyArrayThunk([GraphQLString]);
+
+lazyFields; // => [GraphQLString]
+fields; // => [GraphQLString]
+```
+
+### resolveObjMapThunk()
+
+Resolves a thunked object map.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| T |  |  | The object-map value type resolved from the thunk or map. |
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">resolveObjMapThunk</span>&lt;<span className="api-signature-type">T</span>&gt;(thunk: <a href="/api-v17/type/definitions#thunkobjmap">ThunkObjMap</a>&lt;<span className="api-signature-type">T</span>&gt;): <span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-type">T</span>&gt;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| thunk | <ApiType><a href="/api-v17/type/definitions#thunkobjmap">ThunkObjMap</a>&lt;<span className="api-signature-type">T</span>&gt;</ApiType> | The thunk or value to resolve. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-type">T</span>&gt;</ApiType> | The resolved object map. |
+
+#### Example
+
+```ts
+import { GraphQLString, resolveObjMapThunk } from 'graphql/type';
+
+const lazyFields = resolveObjMapThunk(() => ({ name: GraphQLString }));
+const fields = resolveObjMapThunk({ name: GraphQLString });
+
+lazyFields.name; // => GraphQLString
+fields.name; // => GraphQLString
+```
+
+### isRequiredArgument()
+
+Returns true when the argument is non-null and has no default value.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isRequiredArgument</span>(arg: <a href="/api-v17/type/definitions#graphqlargument">GraphQLArgument</a> | <span className="api-signature-type">GraphQLVariableSignature</span>): <span className="api-signature-keyword">boolean</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| arg | <ApiType><a href="/api-v17/type/definitions#graphqlargument">GraphQLArgument</a> &#124; <span className="api-signature-type">GraphQLVariableSignature</span></ApiType> | The argument definition to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | True when the argument is non-null and has no default value. |
+
+#### Example
+
+```ts
+import {
+  GraphQLArgument,
+  GraphQLField,
+  GraphQLInt,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLString,
+  isRequiredArgument,
+} from 'graphql/type';
+
+const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
+const field = new GraphQLField(Query, 'reviews', { type: GraphQLString });
+const requiredArgument = new GraphQLArgument(field, 'id', {
+  type: new GraphQLNonNull(GraphQLInt),
+});
+const optionalArgument = new GraphQLArgument(field, 'name', {
+  type: GraphQLString,
+});
+const argumentWithDefault = new GraphQLArgument(field, 'limit', {
+  type: new GraphQLNonNull(GraphQLInt),
+  default: { value: 10 },
+});
+
+isRequiredArgument(requiredArgument); // => true
+isRequiredArgument(optionalArgument); // => false
+isRequiredArgument(argumentWithDefault); // => false
+```
+
+### isRequiredInputField()
+
+Returns true when the input field is non-null and has no default value.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isRequiredInputField</span>(field: <a href="/api-v17/type/definitions#graphqlinputfield">GraphQLInputField</a>): <span className="api-signature-keyword">boolean</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| field | <ApiType><a href="/api-v17/type/definitions#graphqlinputfield">GraphQLInputField</a></ApiType> | The input field definition to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | True when the input field is non-null and has no default value. |
+
+#### Example
+
+```ts
+import {
+  GraphQLInputField,
+  GraphQLInputObjectType,
+  GraphQLInt,
+  GraphQLNonNull,
+  GraphQLString,
+  isRequiredInputField,
+} from 'graphql/type';
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  fields: {},
+});
+const requiredField = new GraphQLInputField(ReviewInput, 'id', {
+  type: new GraphQLNonNull(GraphQLInt),
+});
+const optionalField = new GraphQLInputField(ReviewInput, 'name', {
+  type: GraphQLString,
+});
+const fieldWithDefault = new GraphQLInputField(ReviewInput, 'limit', {
+  type: new GraphQLNonNull(GraphQLInt),
+  default: { value: 10 },
+});
+
+isRequiredInputField(requiredField); // => true
+isRequiredInputField(optionalField); // => false
+isRequiredInputField(fieldWithDefault); // => false
+```
+
+## Types
+
+### GraphQLType
+
+**Type alias.** These are all of the possible kinds of types.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLType</span> = <a href="/api-v17/type/definitions#graphqlnamedtype">GraphQLNamedType</a> | <a href="/api-v17/type/definitions#graphqlwrappingtype">GraphQLWrappingType</a>;</ApiSignature>
+
+### GraphQLNullableInputType
+
+**Type alias.** These types may be used as input types for arguments and directives.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLNullableInputType</span> = <a href="/api-v17/type/definitions#graphqlnamedinputtype">GraphQLNamedInputType</a> | <a href="/api-v17/type/definitions#graphqllist">GraphQLList</a>&lt;<a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a>&gt;;</ApiSignature>
+
+### GraphQLInputType
+
+**Type alias.** These types may be used as input types for arguments and directives.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLInputType</span> = <a href="/api-v17/type/definitions#graphqlnullableinputtype">GraphQLNullableInputType</a> | <a href="/api-v17/type/definitions#graphqlnonnull">GraphQLNonNull</a>&lt;<a href="/api-v17/type/definitions#graphqlnullableinputtype">GraphQLNullableInputType</a>&gt;;</ApiSignature>
+
+### GraphQLNullableOutputType
+
+**Type alias.** These types may be used as output types as the result of fields.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLNullableOutputType</span> = <a href="/api-v17/type/definitions#graphqlnamedoutputtype">GraphQLNamedOutputType</a> | <a href="/api-v17/type/definitions#graphqllist">GraphQLList</a>&lt;<a href="/api-v17/type/definitions#graphqloutputtype">GraphQLOutputType</a>&gt;;</ApiSignature>
+
+### GraphQLOutputType
+
+**Type alias.** These types may be used as output types as the result of fields.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLOutputType</span> = <a href="/api-v17/type/definitions#graphqlnullableoutputtype">GraphQLNullableOutputType</a> | <a href="/api-v17/type/definitions#graphqlnonnull">GraphQLNonNull</a>&lt;<a href="/api-v17/type/definitions#graphqlnullableoutputtype">GraphQLNullableOutputType</a>&gt;;</ApiSignature>
+
+### GraphQLLeafType
+
+**Type alias.** These types may describe types which may be leaf values.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLLeafType</span> = <a href="/api-v17/type/definitions#graphqlscalartype">GraphQLScalarType</a> | <a href="/api-v17/type/definitions#graphqlenumtype">GraphQLEnumType</a>;</ApiSignature>
+
+### GraphQLCompositeType
+
+**Type alias.** These types may describe the parent context of a selection set.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLCompositeType</span> = <a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a> | <a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a> | <a href="/api-v17/type/definitions#graphqluniontype">GraphQLUnionType</a>;</ApiSignature>
+
+### GraphQLAbstractType
+
+**Type alias.** These types may describe the parent context of a selection set.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLAbstractType</span> = <a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a> | <a href="/api-v17/type/definitions#graphqluniontype">GraphQLUnionType</a>;</ApiSignature>
+
+### GraphQLWrappingType
+
+**Type alias.** These types wrap and modify other types
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLWrappingType</span> = <a href="/api-v17/type/definitions#graphqllist">GraphQLList</a>&lt;<a href="/api-v17/type/definitions#graphqltype">GraphQLType</a>&gt; | <a href="/api-v17/type/definitions#graphqlnonnull">GraphQLNonNull</a>&lt;<a href="/api-v17/type/definitions#graphqlnullabletype">GraphQLNullableType</a>&gt;;</ApiSignature>
+
+### GraphQLNullableType
+
+**Type alias.** These types can all accept null as a value.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLNullableType</span> = <a href="/api-v17/type/definitions#graphqlnamedtype">GraphQLNamedType</a> | <a href="/api-v17/type/definitions#graphqllist">GraphQLList</a>&lt;<a href="/api-v17/type/definitions#graphqltype">GraphQLType</a>&gt;;</ApiSignature>
+
+### GraphQLNamedType
+
+**Type alias.** These named types do not include modifiers like List or NonNull.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLNamedType</span> = <a href="/api-v17/type/definitions#graphqlnamedinputtype">GraphQLNamedInputType</a> | <a href="/api-v17/type/definitions#graphqlnamedoutputtype">GraphQLNamedOutputType</a>;</ApiSignature>
+
+### GraphQLNamedInputType
+
+**Type alias.** A named GraphQL type that can be used as an input type.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLNamedInputType</span> = <a href="/api-v17/type/definitions#graphqlscalartype">GraphQLScalarType</a> | <a href="/api-v17/type/definitions#graphqlenumtype">GraphQLEnumType</a> | <a href="/api-v17/type/definitions#graphqlinputobjecttype">GraphQLInputObjectType</a>;</ApiSignature>
+
+### GraphQLNamedOutputType
+
+**Type alias.** A named GraphQL type that can be used as an output type.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLNamedOutputType</span> = <a href="/api-v17/type/definitions#graphqlscalartype">GraphQLScalarType</a> | <a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a> | <a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a> | <a href="/api-v17/type/definitions#graphqluniontype">GraphQLUnionType</a> | <a href="/api-v17/type/definitions#graphqlenumtype">GraphQLEnumType</a>;</ApiSignature>
+
+### ThunkReadonlyArray
+
+**Type alias.** Used while defining GraphQL types to allow for circular references in
+otherwise immutable type definitions.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| T |  |  | The element type returned by the thunk or array. |
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">ThunkReadonlyArray</span>&lt;<span className="api-signature-type">T</span>&gt; = (): <span className="api-signature-type">ReadonlyArray</span>&lt;<span className="api-signature-type">T</span>&gt; | <span className="api-signature-type">ReadonlyArray</span>&lt;<span className="api-signature-type">T</span>&gt;;</ApiSignature>
+
+### ThunkObjMap
+
+**Type alias.** A thunk that resolves to an object map.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| T |  |  | Value type stored in the object map. |
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">ThunkObjMap</span>&lt;<span className="api-signature-type">T</span>&gt; = (): <span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-type">T</span>&gt; | <span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-type">T</span>&gt;;</ApiSignature>
+
+### GraphQLScalarTypeExtensions
+
+**Interface.** Custom extensions
+
+**Remarks:** Use a unique identifier name for your extension, for example the name of
+your library or project. Do not use a shortened identifier as this increases
+the risk of conflicts. We recommend you add at most one extension field,
+an object which can contain all the values you need.
+
+### GraphQLScalarSerializer
+
+**Type alias.** <ApiTag kind="deprecated" />
+
+Serializes a runtime value as a scalar output value.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TExternal |  |  | External representation accepted from or returned to callers. |
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLScalarSerializer</span>&lt;<span className="api-signature-type">TExternal</span>&gt; = (outputValue: <span className="api-signature-keyword">unknown</span>): <span className="api-signature-type">TExternal</span>;</ApiSignature>
+
+### GraphQLScalarOutputValueCoercer
+
+**Type alias.** Function used to coerce internal scalar values for response output.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TExternal |  |  | External representation accepted from or returned to callers. |
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLScalarOutputValueCoercer</span>&lt;<span className="api-signature-type">TExternal</span>&gt; = (outputValue: <span className="api-signature-keyword">unknown</span>): <span className="api-signature-type">TExternal</span>;</ApiSignature>
+
+### GraphQLScalarValueParser
+
+**Type alias.** <ApiTag kind="deprecated" />
+
+Parses a runtime input value as a scalar input value.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TInternal |  |  | Internal runtime representation for this scalar. |
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLScalarValueParser</span>&lt;<span className="api-signature-type">TInternal</span>&gt; = (inputValue: <span className="api-signature-keyword">unknown</span>): <span className="api-signature-type">TInternal</span>;</ApiSignature>
+
+### GraphQLScalarInputValueCoercer
+
+**Type alias.** Function used to coerce externally provided scalar input values.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TInternal |  |  | Internal runtime representation for this scalar. |
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLScalarInputValueCoercer</span>&lt;<span className="api-signature-type">TInternal</span>&gt; = (inputValue: <span className="api-signature-keyword">unknown</span>): <span className="api-signature-type">TInternal</span>;</ApiSignature>
+
+### GraphQLScalarLiteralParser
+
+**Type alias.** <ApiTag kind="deprecated" />
+
+Parses a GraphQL value literal as a scalar input value.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TInternal |  |  | Internal runtime representation for this scalar. |
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLScalarLiteralParser</span>&lt;<span className="api-signature-type">TInternal</span>&gt; = (valueNode: <a href="/api-v17/language/ast#valuenode">ValueNode</a>, variables: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">ObjMap</span>&lt;<span className="api-signature-keyword">unknown</span>&gt;&gt;): <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">TInternal</span>&gt;;</ApiSignature>
+
+### GraphQLScalarInputLiteralCoercer
+
+**Type alias.** Function used to coerce GraphQL scalar input literals.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TInternal |  |  | Internal runtime representation for this scalar. |
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLScalarInputLiteralCoercer</span>&lt;<span className="api-signature-type">TInternal</span>&gt; = (valueNode: <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>): <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">TInternal</span>&gt;;</ApiSignature>
+
+### GraphQLScalarTypeConfig
+
+**Interface.** Configuration used to construct a GraphQLScalarType.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TInternal |  |  | Internal runtime representation for this scalar. |
+| TExternal |  |  | External representation accepted from or returned to callers. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| specifiedByURL? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | URL identifying the behavior specified for this custom scalar. |
+| serialize? | <ApiType><a href="/api-v17/type/definitions#graphqlscalarserializer">GraphQLScalarSerializer</a>&lt;<span className="api-signature-type">TExternal</span>&gt;</ApiType> | Legacy serializer used to convert internal values for response output. |
+| parseValue? | <ApiType><a href="/api-v17/type/definitions#graphqlscalarvalueparser">GraphQLScalarValueParser</a>&lt;<span className="api-signature-type">TInternal</span>&gt;</ApiType> | Legacy parser used to convert externally provided input values. |
+| parseLiteral? | <ApiType><a href="/api-v17/type/definitions#graphqlscalarliteralparser">GraphQLScalarLiteralParser</a>&lt;<span className="api-signature-type">TInternal</span>&gt;</ApiType> | Legacy parser used to convert externally provided input literals. |
+| coerceOutputValue? | <ApiType><a href="/api-v17/type/definitions#graphqlscalaroutputvaluecoercer">GraphQLScalarOutputValueCoercer</a>&lt;<span className="api-signature-type">TExternal</span>&gt;</ApiType> | Coerces an internal value to include in a response. |
+| coerceInputValue? | <ApiType><a href="/api-v17/type/definitions#graphqlscalarinputvaluecoercer">GraphQLScalarInputValueCoercer</a>&lt;<span className="api-signature-type">TInternal</span>&gt;</ApiType> | Coerces an externally provided value to use as an input. |
+| coerceInputLiteral? | <ApiType><a href="/api-v17/type/definitions#graphqlscalarinputliteralcoercer">GraphQLScalarInputLiteralCoercer</a>&lt;<span className="api-signature-type">TInternal</span>&gt;</ApiType> | Coerces an externally provided const literal value to use as an input. |
+| valueToLiteral? | <ApiType>(inputValue: <span className="api-signature-keyword">unknown</span>) =&gt; <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a> &#124; <span className="api-signature-keyword">undefined</span></ApiType> | Translates an externally provided value to a literal (AST). |
+| extensions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlscalartypeextensions">GraphQLScalarTypeExtensions</a>&gt;&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#scalartypedefinitionnode">ScalarTypeDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+| extensionASTNodes? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#scalartypeextensionnode">ScalarTypeExtensionNode</a>[]&gt;</ApiType> | AST extension nodes applied to this schema element. |
+
+### GraphQLObjectTypeExtensions
+
+**Interface.** Custom extensions
+
+**Remarks:** Use a unique identifier name for your extension, for example the name of
+your library or project. Do not use a shortened identifier as this increases
+the risk of conflicts. We recommend you add at most one extension field,
+an object which can contain all the values you need.
+We've provided these template arguments because this is an open type and
+you may find them useful.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| _TSource |  | <ApiType><span className="api-signature-keyword">any</span></ApiType> | Reserved source type parameter for extension typing. |
+| _TContext |  | <ApiType><span className="api-signature-keyword">any</span></ApiType> | Reserved context type parameter for extension typing. |
+
+### GraphQLObjectTypeConfig
+
+**Interface.** Configuration used to construct a GraphQLObjectType.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TSource |  |  | Source object type passed to resolvers. |
+| TContext |  |  | Context object type passed to resolvers. |
+| TAbstract |  | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Runtime value type used for abstract type resolution. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| interfaces? | <ApiType><a href="/api-v17/type/definitions#thunkreadonlyarray">ThunkReadonlyArray</a>&lt;<a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a>&gt;</ApiType> | Interfaces implemented by this object or interface type. |
+| fields | <ApiType><a href="/api-v17/type/definitions#thunkobjmap">ThunkObjMap</a>&lt;<a href="/api-v17/type/definitions#graphqlfieldconfig">GraphQLFieldConfig</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;&gt;</ApiType> | Fields declared by this object, interface, input object, or literal. |
+| isTypeOf? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqlistypeoffn">GraphQLIsTypeOfFn</a>&lt;<span className="api-signature-type">TAbstract</span>, <span className="api-signature-type">TContext</span>&gt;&gt;</ApiType> | Predicate used to determine whether a runtime value belongs to this object type. |
+| extensions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlobjecttypeextensions">GraphQLObjectTypeExtensions</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;&gt;&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#objecttypedefinitionnode">ObjectTypeDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+| extensionASTNodes? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#objecttypeextensionnode">ObjectTypeExtensionNode</a>[]&gt;</ApiType> | AST extension nodes applied to this schema element. |
+
+### GraphQLTypeResolver
+
+**Type alias.** Resolves the concrete object type for an abstract GraphQL type.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TSource |  |  | Source object type passed to resolvers. |
+| TContext |  |  | Context object type passed to resolvers. |
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLTypeResolver</span>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt; = (value: <span className="api-signature-type">TSource</span>, context: <span className="api-signature-type">TContext</span>, info: <a href="/api-v17/type/definitions#graphqlresolveinfo">GraphQLResolveInfo</a>, abstractType: <a href="/api-v17/type/definitions#graphqlabstracttype">GraphQLAbstractType</a>): <span className="api-signature-type">PromiseOrValue</span>&lt;<span className="api-signature-keyword">string</span> | <span className="api-signature-keyword">undefined</span>&gt;;</ApiSignature>
+
+### GraphQLIsTypeOfFn
+
+**Type alias.** Checks whether a runtime value belongs to a GraphQL object type.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TAbstract |  |  | Runtime value type used for abstract type resolution. |
+| TContext |  |  | Context object type passed to resolvers. |
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLIsTypeOfFn</span>&lt;<span className="api-signature-type">TAbstract</span>, <span className="api-signature-type">TContext</span>&gt; = (value: <span className="api-signature-type">TAbstract</span>, context: <span className="api-signature-type">TContext</span>, info: <a href="/api-v17/type/definitions#graphqlresolveinfo">GraphQLResolveInfo</a>): <span className="api-signature-type">PromiseOrValue</span>&lt;<span className="api-signature-keyword">boolean</span>&gt;;</ApiSignature>
+
+### GraphQLFieldResolver
+
+**Type alias.** Resolves the runtime value for a GraphQL field.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TSource |  |  | Source object type passed to resolvers. |
+| TContext |  |  | Context object type passed to resolvers. |
+| TArgs |  | <ApiType><span className="api-signature-keyword">any</span></ApiType> | Argument object type passed to resolvers. |
+| TResult |  | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Result value type. |
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLFieldResolver</span>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>, <span className="api-signature-type">TArgs</span> = <span className="api-signature-keyword">any</span>, <span className="api-signature-type">TResult</span> = <span className="api-signature-keyword">unknown</span>&gt; = (source: <span className="api-signature-type">TSource</span>, args: <span className="api-signature-type">TArgs</span>, context: <span className="api-signature-type">TContext</span>, info: <a href="/api-v17/type/definitions#graphqlresolveinfo">GraphQLResolveInfo</a>): <span className="api-signature-type">TResult</span>;</ApiSignature>
+
+### GraphQLResolveInfoHelpers
+
+**Interface.** Utilities available from resolver info for tracking asynchronous work.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| promiseAll | <ApiType>(values: <span className="api-signature-keyword">readonly</span> (<span className="api-signature-type">T</span> &#124; <span className="api-signature-type">PromiseLike</span>&lt;<span className="api-signature-type">T</span>&gt;)[]): <span className="api-signature-type">Promise</span>&lt;<span className="api-signature-type">T</span>[]&gt;</ApiType> | Promise.all wrapper that allows rejected branches to be tracked<br />as execution async work.<br />Intended use: return or await this promise from resolver work.<br />Un-awaited async side effects are an anti-pattern:<br />  const &#123; promiseAll &#125; = info.getAsyncHelpers();<br />  promiseAll([someAsyncWork(), someOtherAsyncWork()]).catch(() => undefined);<br />In that anti-pattern, tracking starts only after rejection (on a<br />later microtask), so this work is not guaranteed to delay<br />`hooks.asyncWorkFinished`.<br />Use `track(...)` for un-awaited async side effects:<br />  const &#123; track &#125; = info.getAsyncHelpers();<br />  track([<br />    someAsyncWork().catch(() => undefined),<br />    someOtherAsyncWork().catch(() => undefined)<br />  ]); |
+| track | <ApiType>(maybePromises: <span className="api-signature-keyword">readonly</span> <span className="api-signature-keyword">unknown</span>[]): <span className="api-signature-keyword">void</span></ApiType> | Tracks asynchronous work that should delay execution completion hooks. |
+
+### GraphQLResolveInfo
+
+**Interface.** Information about the currently executing GraphQL field.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| fieldName | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The field name referenced by this schema coordinate. |
+| fieldNodes | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#fieldnode">FieldNode</a>[]</ApiType> | AST field nodes that contributed to the current field execution. |
+| returnType | <ApiType><a href="/api-v17/type/definitions#graphqloutputtype">GraphQLOutputType</a></ApiType> | GraphQL output type declared for the current field. |
+| parentType | <ApiType><a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a></ApiType> | Object type that owns the current field. |
+| path | <ApiType><a href="/api-v17/type/paths#responsepath">Path</a></ApiType> | Response path where this error occurred during execution. |
+| schema | <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | The schema used for validation or execution. |
+| fragments | <ApiType><span className="api-signature-type">ObjMap</span>&lt;<a href="/api-v17/language/ast#fragmentdefinitionnode">FragmentDefinitionNode</a>&gt;</ApiType> | Fragment definitions in the operation document keyed by fragment name. |
+| rootValue | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Initial root value passed to the operation. |
+| operation | <ApiType><a href="/api-v17/language/ast#operationdefinitionnode">OperationDefinitionNode</a></ApiType> | The operation selected for execution. |
+| variableValues | <ApiType><a href="/api-v17/execution/values#variablevalues">VariableValues</a></ApiType> | Coerced variable values and source metadata for this operation. Resolver<br />code that needs runtime variable values should read `variableValues.coerced`. |
+| getAbortSignal | <ApiType>(): <span className="api-signature-keyword">any</span></ApiType> | Returns the AbortSignal supplied for this execution, if any. |
+| getAsyncHelpers | <ApiType>(): <a href="/api-v17/type/definitions#graphqlresolveinfohelpers">GraphQLResolveInfoHelpers</a></ApiType> | Returns helper functions for tracking asynchronous resolver work. |
+
+### GraphQLFieldExtensions
+
+**Interface.** Custom extensions
+
+**Remarks:** Use a unique identifier name for your extension, for example the name of
+your library or project. Do not use a shortened identifier as this increases
+the risk of conflicts. We recommend you add at most one extension field,
+an object which can contain all the values you need.
+We've provided these template arguments because this is an open type and
+you may find them useful.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| _TSource |  |  | Reserved source type parameter for extension typing. |
+| _TContext |  |  | Reserved context type parameter for extension typing. |
+| _TArgs |  | <ApiType><span className="api-signature-keyword">any</span></ApiType> | Reserved argument type parameter for extension typing. |
+
+### GraphQLFieldConfig
+
+**Interface.** Configuration used to define a GraphQL field.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TSource |  |  | Source object type passed to resolvers. |
+| TContext |  |  | Context object type passed to resolvers. |
+| TArgs |  | <ApiType><span className="api-signature-keyword">any</span></ApiType> | Argument object type passed to resolvers. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| type | <ApiType><a href="/api-v17/type/definitions#graphqloutputtype">GraphQLOutputType</a></ApiType> | The GraphQL type reference or runtime type for this element. |
+| args? | <ApiType><a href="/api-v17/type/definitions#graphqlfieldconfigargumentmap">GraphQLFieldConfigArgumentMap</a></ApiType> | Arguments accepted by this field or directive. |
+| resolve? | <ApiType><a href="/api-v17/type/definitions#graphqlfieldresolver">GraphQLFieldResolver</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>, <span className="api-signature-type">TArgs</span>&gt;</ApiType> | Resolver function used to produce this field value. |
+| subscribe? | <ApiType><a href="/api-v17/type/definitions#graphqlfieldresolver">GraphQLFieldResolver</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>, <span className="api-signature-type">TArgs</span>&gt;</ApiType> | Resolver function used to create a subscription event stream for this field. |
+| deprecationReason? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Reason this element is deprecated, if one was provided. |
+| extensions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlfieldextensions">GraphQLFieldExtensions</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>, <span className="api-signature-type">TArgs</span>&gt;&gt;&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#fielddefinitionnode">FieldDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+
+### GraphQLFieldConfigArgumentMap
+
+**Type alias.** A map of argument names to argument configuration objects.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLFieldConfigArgumentMap</span> = <span className="api-signature-type">ObjMap</span>&lt;<a href="/api-v17/type/definitions#graphqlargumentconfig">GraphQLArgumentConfig</a>&gt;;</ApiSignature>
+
+### GraphQLArgumentExtensions
+
+**Interface.** Custom extensions
+
+**Remarks:** Use a unique identifier name for your extension, for example the name of
+your library or project. Do not use a shortened identifier as this increases
+the risk of conflicts. We recommend you add at most one extension field,
+an object which can contain all the values you need.
+
+### GraphQLArgumentConfig
+
+**Interface.** Configuration used to define a GraphQL argument.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| type | <ApiType><a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a></ApiType> | The GraphQL type reference or runtime type for this element. |
+| defaultValue? | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Legacy default value for this argument. |
+| default? | <ApiType><a href="/api-v17/type/definitions#graphqldefaultinput">GraphQLDefaultInput</a></ApiType> | Default value represented as either a runtime value or a GraphQL literal. |
+| deprecationReason? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Reason this element is deprecated, if one was provided. |
+| extensions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlargumentextensions">GraphQLArgumentExtensions</a>&gt;&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#inputvaluedefinitionnode">InputValueDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+
+### GraphQLFieldConfigMap
+
+**Type alias.** A map of field names to field configuration objects.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TSource |  |  | Source object type passed to resolvers. |
+| TContext |  |  | Context object type passed to resolvers. |
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLFieldConfigMap</span>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt; = <span className="api-signature-type">ObjMap</span>&lt;<a href="/api-v17/type/definitions#graphqlfieldconfig">GraphQLFieldConfig</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;&gt;;</ApiSignature>
+
+### GraphQLField
+
+**Interface.** A resolved GraphQL field definition.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TSource |  | <ApiType><span className="api-signature-keyword">any</span></ApiType> | Source object type passed to resolvers. |
+| TContext |  | <ApiType><span className="api-signature-keyword">any</span></ApiType> | Context object type passed to resolvers. |
+| TArgs |  | <ApiType><span className="api-signature-keyword">any</span></ApiType> | Argument object type passed to resolvers. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| __kind | <ApiType><span className="api-signature-keyword">symbol</span></ApiType> | Internal runtime marker used to identify GraphQLField instances. |
+| parentType | <ApiType><a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt; &#124; <a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt; &#124; <span className="api-signature-keyword">undefined</span></ApiType> | Object or interface type that owns this field, if known. |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| type | <ApiType><a href="/api-v17/type/definitions#graphqloutputtype">GraphQLOutputType</a></ApiType> | The GraphQL type reference or runtime type for this element. |
+| args | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/type/definitions#graphqlargument">GraphQLArgument</a>[]</ApiType> | Arguments accepted by this field or directive. |
+| resolve? | <ApiType><a href="/api-v17/type/definitions#graphqlfieldresolver">GraphQLFieldResolver</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>, <span className="api-signature-type">TArgs</span>&gt;</ApiType> | Resolver function used to produce this field value. |
+| subscribe? | <ApiType><a href="/api-v17/type/definitions#graphqlfieldresolver">GraphQLFieldResolver</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>, <span className="api-signature-type">TArgs</span>&gt;</ApiType> | Resolver function used to create a subscription event stream for this field. |
+| deprecationReason | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Reason this element is deprecated, if one was provided. |
+| extensions | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlfieldextensions">GraphQLFieldExtensions</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>, <span className="api-signature-type">TArgs</span>&gt;&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#fielddefinitionnode">FieldDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+
+#### toConfig()
+
+Returns a normalized configuration object for this field.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toConfig</span>(): &#123; args: <span className="api-signature-type">ObjMap</span>&lt;&#123; default: &#123; value: <span className="api-signature-keyword">unknown</span>; literal?: <span className="api-signature-keyword">never</span> &#125; | &#123; literal: <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>; value?: <span className="api-signature-keyword">never</span> &#125; | <span className="api-signature-keyword">undefined</span>; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;&gt;; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>&#123; args: <span className="api-signature-type">ObjMap</span>&lt;&#123; default: &#123; value: <span className="api-signature-keyword">unknown</span>; literal?: <span className="api-signature-keyword">never</span> &#125; &#124; &#123; literal: <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>; value?: <span className="api-signature-keyword">never</span> &#125; &#124; <span className="api-signature-keyword">undefined</span>; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;&gt;; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;</ApiType> | A configuration object that can be used to recreate this field. |
+
+##### Example
+
+```ts
+import { GraphQLField, GraphQLObjectType, GraphQLString } from 'graphql/type';
+
+const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
+const field = new GraphQLField(Query, 'greeting', {
+  type: GraphQLString,
+  extensions: { cacheSeconds: 60 },
+});
+
+field.toConfig().type; // => GraphQLString
+field.toConfig().extensions; // => { cacheSeconds: 60 }
+```
+
+#### toString()
+
+Returns this field as a schema coordinate string.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toString</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The field coordinate. |
+
+##### Example
+
+```ts
+import { GraphQLField, GraphQLObjectType, GraphQLString } from 'graphql/type';
+
+const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
+const field = new GraphQLField(Query, 'greeting', { type: GraphQLString });
+
+field.toString(); // => 'Query.greeting'
+```
+
+#### toJSON()
+
+Returns the JSON representation used when this object is serialized.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toJSON</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The field coordinate. |
+
+##### Example
+
+```ts
+import { GraphQLField, GraphQLObjectType, GraphQLString } from 'graphql/type';
+
+const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
+const field = new GraphQLField(Query, 'greeting', { type: GraphQLString });
+
+JSON.stringify(field); // => '"Query.greeting"'
+```
+
+### GraphQLArgument
+
+**Interface.** A resolved GraphQL argument definition.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| __kind | <ApiType><span className="api-signature-keyword">symbol</span></ApiType> | Internal runtime marker used to identify GraphQLArgument instances. |
+| parent | <ApiType><a href="/api-v17/type/directives#graphqldirective">GraphQLDirective</a> &#124; <a href="/api-v17/type/definitions#graphqlfield">GraphQLField</a></ApiType> | Field or directive that owns this argument. |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| type | <ApiType><a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a></ApiType> | The GraphQL type reference or runtime type for this element. |
+| defaultValue | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Legacy default value used when no explicit value is supplied. |
+| default | <ApiType><a href="/api-v17/type/definitions#graphqldefaultinput">GraphQLDefaultInput</a> &#124; <span className="api-signature-keyword">undefined</span></ApiType> | Default value represented as either a runtime value or a GraphQL literal. |
+| deprecationReason | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Reason this element is deprecated, if one was provided. |
+| extensions | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlargumentextensions">GraphQLArgumentExtensions</a>&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#inputvaluedefinitionnode">InputValueDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+
+#### toConfig()
+
+Returns a normalized configuration object for this argument.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toConfig</span>(): &#123; default: &#123; value: <span className="api-signature-keyword">unknown</span>; literal?: <span className="api-signature-keyword">never</span> &#125; | &#123; literal: <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>; value?: <span className="api-signature-keyword">never</span> &#125; | <span className="api-signature-keyword">undefined</span>; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>&#123; default: &#123; value: <span className="api-signature-keyword">unknown</span>; literal?: <span className="api-signature-keyword">never</span> &#125; &#124; &#123; literal: <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>; value?: <span className="api-signature-keyword">never</span> &#125; &#124; <span className="api-signature-keyword">undefined</span>; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;</ApiType> | A configuration object that can be used to recreate this argument. |
+
+##### Example
+
+```ts
+import {
+  GraphQLArgument,
+  GraphQLField,
+  GraphQLObjectType,
+  GraphQLString,
+} from 'graphql/type';
+
+const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
+const field = new GraphQLField(Query, 'greeting', { type: GraphQLString });
+const arg = new GraphQLArgument(field, 'name', {
+  type: GraphQLString,
+  default: { value: 'world' },
+});
+
+arg.toConfig().default.value; // => 'world'
+```
+
+#### toString()
+
+Returns this argument as a schema coordinate string.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toString</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The argument coordinate. |
+
+##### Example
+
+```ts
+import {
+  GraphQLArgument,
+  GraphQLField,
+  GraphQLObjectType,
+  GraphQLString,
+} from 'graphql/type';
+
+const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
+const field = new GraphQLField(Query, 'greeting', { type: GraphQLString });
+const arg = new GraphQLArgument(field, 'name', { type: GraphQLString });
+
+arg.toString(); // => 'Query.greeting(name:)'
+```
+
+#### toJSON()
+
+Returns the JSON representation used when this object is serialized.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toJSON</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The argument coordinate. |
+
+##### Example
+
+```ts
+import {
+  GraphQLArgument,
+  GraphQLField,
+  GraphQLObjectType,
+  GraphQLString,
+} from 'graphql/type';
+
+const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
+const field = new GraphQLField(Query, 'greeting', { type: GraphQLString });
+const arg = new GraphQLArgument(field, 'name', { type: GraphQLString });
+
+JSON.stringify(arg); // => '"Query.greeting(name:)"'
+```
+
+### GraphQLFieldMap
+
+**Type alias.** A map of field names to resolved field definitions.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TSource |  |  | Source object type passed to resolvers. |
+| TContext |  |  | Context object type passed to resolvers. |
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLFieldMap</span>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt; = <span className="api-signature-type">ObjMap</span>&lt;<a href="/api-v17/type/definitions#graphqlfield">GraphQLField</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;&gt;;</ApiSignature>
+
+### GraphQLDefaultInput
+
+**Type alias.** Default input represented as either a runtime value or a GraphQL literal.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLDefaultInput</span> = &#123; value: <span className="api-signature-keyword">unknown</span>; literal?: <span className="api-signature-keyword">never</span> &#125; | &#123; literal: <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>; value?: <span className="api-signature-keyword">never</span> &#125;;</ApiSignature>
+
+### GraphQLInterfaceTypeExtensions
+
+**Interface.** Custom extensions
+
+**Remarks:** Use a unique identifier name for your extension, for example the name of
+your library or project. Do not use a shortened identifier as this increases
+the risk of conflicts. We recommend you add at most one extension field,
+an object which can contain all the values you need.
+
+### GraphQLInterfaceTypeConfig
+
+**Interface.** Configuration used to construct a GraphQLInterfaceType.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TSource |  |  | Source object type passed to resolvers. |
+| TContext |  |  | Context object type passed to resolvers. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| interfaces? | <ApiType><a href="/api-v17/type/definitions#thunkreadonlyarray">ThunkReadonlyArray</a>&lt;<a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a>&gt;</ApiType> | Interfaces implemented by this object or interface type. |
+| fields | <ApiType><a href="/api-v17/type/definitions#thunkobjmap">ThunkObjMap</a>&lt;<a href="/api-v17/type/definitions#graphqlfieldconfig">GraphQLFieldConfig</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;&gt;</ApiType> | Fields declared by this object, interface, input object, or literal. |
+| resolveType? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqltyperesolver">GraphQLTypeResolver</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;&gt;</ApiType> | Optionally provide a custom type resolver function. If one is not provided,<br />the default implementation will call `isTypeOf` on each implementing<br />Object type. |
+| extensions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlinterfacetypeextensions">GraphQLInterfaceTypeExtensions</a>&gt;&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#interfacetypedefinitionnode">InterfaceTypeDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+| extensionASTNodes? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#interfacetypeextensionnode">InterfaceTypeExtensionNode</a>[]&gt;</ApiType> | AST extension nodes applied to this schema element. |
+
+### GraphQLUnionTypeExtensions
+
+**Interface.** Custom extensions
+
+**Remarks:** Use a unique identifier name for your extension, for example the name of
+your library or project. Do not use a shortened identifier as this increases
+the risk of conflicts. We recommend you add at most one extension field,
+an object which can contain all the values you need.
+
+### GraphQLUnionTypeConfig
+
+**Interface.** Configuration used to construct a GraphQLUnionType.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TSource |  |  | Source object type passed to resolvers. |
+| TContext |  |  | Context object type passed to resolvers. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| types | <ApiType><a href="/api-v17/type/definitions#thunkreadonlyarray">ThunkReadonlyArray</a>&lt;<a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a>&gt;</ApiType> | Object types that belong to this union type. |
+| resolveType? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/type/definitions#graphqltyperesolver">GraphQLTypeResolver</a>&lt;<span className="api-signature-type">TSource</span>, <span className="api-signature-type">TContext</span>&gt;&gt;</ApiType> | Optionally provide a custom type resolver function. If one is not provided,<br />the default implementation will call `isTypeOf` on each implementing<br />Object type. |
+| extensions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqluniontypeextensions">GraphQLUnionTypeExtensions</a>&gt;&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#uniontypedefinitionnode">UnionTypeDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+| extensionASTNodes? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#uniontypeextensionnode">UnionTypeExtensionNode</a>[]&gt;</ApiType> | AST extension nodes applied to this schema element. |
+
+### GraphQLEnumTypeExtensions
+
+**Interface.** Custom extensions
+
+**Remarks:** Use a unique identifier name for your extension, for example the name of
+your library or project. Do not use a shortened identifier as this increases
+the risk of conflicts. We recommend you add at most one extension field,
+an object which can contain all the values you need.
+
+### GraphQLEnumTypeConfig
+
+**Interface.** Configuration used to construct a GraphQLEnumType.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| values | <ApiType><a href="/api-v17/type/definitions#thunkobjmap">ThunkObjMap</a>&lt;<a href="/api-v17/type/definitions#graphqlenumvalueconfig">GraphQLEnumValueConfig</a>&gt;</ApiType> | Values contained in this enum, list, or input-object definition. |
+| extensions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlenumtypeextensions">GraphQLEnumTypeExtensions</a>&gt;&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#enumtypedefinitionnode">EnumTypeDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+| extensionASTNodes? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#enumtypeextensionnode">EnumTypeExtensionNode</a>[]&gt;</ApiType> | AST extension nodes applied to this schema element. |
+
+### GraphQLEnumValueConfigMap
+
+**Type alias.** A map of enum value names to enum value configuration objects.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLEnumValueConfigMap</span> = <span className="api-signature-type">ObjMap</span>&lt;<a href="/api-v17/type/definitions#graphqlenumvalueconfig">GraphQLEnumValueConfig</a>&gt;;</ApiSignature>
+
+### GraphQLEnumValueExtensions
+
+**Interface.** Custom extensions
+
+**Remarks:** Use a unique identifier name for your extension, for example the name of
+your library or project. Do not use a shortened identifier as this increases
+the risk of conflicts. We recommend you add at most one extension field,
+an object which can contain all the values you need.
+
+### GraphQLEnumValueConfig
+
+**Interface.** Configuration used to define a GraphQL enum value.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| value? | <ApiType><span className="api-signature-keyword">any</span></ApiType> | Parsed value represented by this node. |
+| deprecationReason? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Reason this element is deprecated, if one was provided. |
+| extensions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlenumvalueextensions">GraphQLEnumValueExtensions</a>&gt;&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#enumvaluedefinitionnode">EnumValueDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+
+### GraphQLEnumValue
+
+**Interface.** A resolved GraphQL enum value definition.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| __kind | <ApiType><span className="api-signature-keyword">symbol</span></ApiType> | Internal runtime marker used to identify GraphQLEnumValue instances. |
+| parentEnum | <ApiType><a href="/api-v17/type/definitions#graphqlenumtype">GraphQLEnumType</a></ApiType> | Enum type that owns this enum value. |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| value | <ApiType><span className="api-signature-keyword">any</span></ApiType> | Parsed value represented by this node. |
+| deprecationReason | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Reason this element is deprecated, if one was provided. |
+| extensions | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlenumvalueextensions">GraphQLEnumValueExtensions</a>&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#enumvaluedefinitionnode">EnumValueDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+
+#### toConfig()
+
+Returns a normalized configuration object for this enum value.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toConfig</span>(): &#123; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>&#123; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;</ApiType> | A configuration object that can be used to recreate this enum value. |
+
+##### Example
+
+```ts
+import { GraphQLEnumType, GraphQLEnumValue } from 'graphql/type';
+
+const Episode = new GraphQLEnumType({
+  name: 'Episode',
+  values: { NEW_HOPE: { value: 4 } },
+});
+const enumValue = new GraphQLEnumValue(Episode, 'EMPIRE', {
+  value: 5,
+  extensions: { trilogy: 'original' },
+});
+
+enumValue.toConfig(); // => { description: undefined, value: 5, deprecationReason: undefined, extensions: { trilogy: 'original' }, astNode: undefined }
+```
+
+#### toString()
+
+Returns this enum value as a schema coordinate string.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toString</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | Enum value coordinate. |
+
+##### Example
+
+```ts
+import { GraphQLEnumType, GraphQLEnumValue } from 'graphql/type';
+
+const Episode = new GraphQLEnumType({
+  name: 'Episode',
+  values: { NEW_HOPE: { value: 4 } },
+});
+const enumValue = new GraphQLEnumValue(Episode, 'EMPIRE', { value: 5 });
+
+enumValue.toString(); // => 'Episode.EMPIRE'
+```
+
+#### toJSON()
+
+Returns the JSON representation used when this object is serialized.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toJSON</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | Enum value coordinate. |
+
+##### Example
+
+```ts
+import { GraphQLEnumType, GraphQLEnumValue } from 'graphql/type';
+
+const Episode = new GraphQLEnumType({
+  name: 'Episode',
+  values: { NEW_HOPE: { value: 4 } },
+});
+const enumValue = new GraphQLEnumValue(Episode, 'EMPIRE', { value: 5 });
+
+JSON.stringify(enumValue); // => '"Episode.EMPIRE"'
+```
+
+### GraphQLInputObjectTypeExtensions
+
+**Interface.** Custom extensions
+
+**Remarks:** Use a unique identifier name for your extension, for example the name of
+your library or project. Do not use a shortened identifier as this increases
+the risk of conflicts. We recommend you add at most one extension field,
+an object which can contain all the values you need.
+
+### GraphQLInputObjectTypeConfig
+
+**Interface.** Configuration used to construct a GraphQLInputObjectType.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| fields | <ApiType><a href="/api-v17/type/definitions#thunkobjmap">ThunkObjMap</a>&lt;<a href="/api-v17/type/definitions#graphqlinputfieldconfig">GraphQLInputFieldConfig</a>&gt;</ApiType> | Fields declared by this object, interface, input object, or literal. |
+| extensions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlinputobjecttypeextensions">GraphQLInputObjectTypeExtensions</a>&gt;&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#inputobjecttypedefinitionnode">InputObjectTypeDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+| extensionASTNodes? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#inputobjecttypeextensionnode">InputObjectTypeExtensionNode</a>[]&gt;</ApiType> | AST extension nodes applied to this schema element. |
+| isOneOf? | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether this input object uses the experimental OneOf input object semantics. |
+
+### GraphQLInputFieldExtensions
+
+**Interface.** Custom extensions
+
+**Remarks:** Use a unique identifier name for your extension, for example the name of
+your library or project. Do not use a shortened identifier as this increases
+the risk of conflicts. We recommend you add at most one extension field,
+an object which can contain all the values you need.
+
+### GraphQLInputFieldConfig
+
+**Interface.** Configuration used to define a GraphQL input field.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| type | <ApiType><a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a></ApiType> | The GraphQL type reference or runtime type for this element. |
+| defaultValue? | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Legacy default value for this input field. |
+| default? | <ApiType><a href="/api-v17/type/definitions#graphqldefaultinput">GraphQLDefaultInput</a></ApiType> | Default value represented as either a runtime value or a GraphQL literal. |
+| deprecationReason? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Reason this element is deprecated, if one was provided. |
+| extensions? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlinputfieldextensions">GraphQLInputFieldExtensions</a>&gt;&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#inputvaluedefinitionnode">InputValueDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+
+### GraphQLInputFieldConfigMap
+
+**Type alias.** A map of input field names to input field configuration objects.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLInputFieldConfigMap</span> = <span className="api-signature-type">ObjMap</span>&lt;<a href="/api-v17/type/definitions#graphqlinputfieldconfig">GraphQLInputFieldConfig</a>&gt;;</ApiSignature>
+
+### GraphQLInputField
+
+**Interface.** A resolved GraphQL input field definition.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| __kind | <ApiType><span className="api-signature-keyword">symbol</span></ApiType> | Internal runtime marker used to identify GraphQLInputField instances. |
+| parentType | <ApiType><a href="/api-v17/type/definitions#graphqlinputobjecttype">GraphQLInputObjectType</a></ApiType> | Input object type that owns this input field. |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| type | <ApiType><a href="/api-v17/type/definitions#graphqlinputtype">GraphQLInputType</a></ApiType> | The GraphQL type reference or runtime type for this element. |
+| defaultValue | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Legacy default value used when no explicit value is supplied. |
+| default | <ApiType><a href="/api-v17/type/definitions#graphqldefaultinput">GraphQLDefaultInput</a> &#124; <span className="api-signature-keyword">undefined</span></ApiType> | Default value represented as either a runtime value or a GraphQL literal. |
+| deprecationReason | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Reason this element is deprecated, if one was provided. |
+| extensions | <ApiType><span className="api-signature-type">Readonly</span>&lt;<a href="/api-v17/type/definitions#graphqlinputfieldextensions">GraphQLInputFieldExtensions</a>&gt;</ApiType> | Extension fields to include in the formatted result. |
+| astNode | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#inputvaluedefinitionnode">InputValueDefinitionNode</a>&gt;</ApiType> | AST node from which this schema element was built, if available. |
+
+#### toConfig()
+
+Returns a normalized configuration object for this input field.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toConfig</span>(): &#123; default: &#123; value: <span className="api-signature-keyword">unknown</span>; literal?: <span className="api-signature-keyword">never</span> &#125; | &#123; literal: <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>; value?: <span className="api-signature-keyword">never</span> &#125; | <span className="api-signature-keyword">undefined</span>; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>&#123; default: &#123; value: <span className="api-signature-keyword">unknown</span>; literal?: <span className="api-signature-keyword">never</span> &#125; &#124; &#123; literal: <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>; value?: <span className="api-signature-keyword">never</span> &#125; &#124; <span className="api-signature-keyword">undefined</span>; extensions: <span className="api-signature-type">Readonly</span>&lt;<span className="api-signature-type">object</span>&gt; &#125;</ApiType> | A configuration object that can be used to recreate this input field. |
+
+##### Example
+
+```ts
+import { GraphQLInputField, GraphQLInputObjectType, GraphQLString } from 'graphql/type';
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  fields: {},
+});
+const field = new GraphQLInputField(ReviewInput, 'commentary', {
+  type: GraphQLString,
+  extensions: { form: 'review' },
+});
+
+field.toConfig().extensions; // => { form: 'review' }
+```
+
+#### toString()
+
+Returns this input field as a schema coordinate string.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toString</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The input field coordinate. |
+
+##### Example
+
+```ts
+import { GraphQLInputField, GraphQLInputObjectType, GraphQLString } from 'graphql/type';
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  fields: {},
+});
+const field = new GraphQLInputField(ReviewInput, 'commentary', {
+  type: GraphQLString,
+});
+
+field.toString(); // => 'ReviewInput.commentary'
+```
+
+#### toJSON()
+
+Returns the JSON representation used when this object is serialized.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toJSON</span>(): <span className="api-signature-keyword">string</span></ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The input field coordinate. |
+
+##### Example
+
+```ts
+import { GraphQLInputField, GraphQLInputObjectType, GraphQLString } from 'graphql/type';
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  fields: {},
+});
+const field = new GraphQLInputField(ReviewInput, 'commentary', {
+  type: GraphQLString,
+});
+
+JSON.stringify(field); // => '"ReviewInput.commentary"'
+```
+
+### GraphQLInputFieldMap
+
+**Type alias.** A map of input field names to resolved input field definitions.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLInputFieldMap</span> = <span className="api-signature-type">ObjMap</span>&lt;<a href="/api-v17/type/definitions#graphqlinputfield">GraphQLInputField</a>&gt;;</ApiSignature>

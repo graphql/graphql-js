@@ -1,0 +1,52 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/harness
+
+## Constants
+
+### defaultHarness
+
+Default harness backed by GraphQL.js parse, validate, execute, and subscribe
+implementations.
+
+<ApiType><a href="/api-v17/graphql/harness#graphqlharness">GraphQLHarness</a></ApiType>
+
+## Types
+
+### GraphQLParseFn
+
+**Type alias.** Function used by a GraphQL harness to parse GraphQL source text.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLParseFn</span> = (args: <span className="api-signature-type">Parameters</span>&lt;<span className="api-signature-keyword">typeof</span> <a href="/api-v17/language/parsing#parse">parse</a>&gt;): <span className="api-signature-type">PromiseOrValue</span>&lt;<span className="api-signature-type">ReturnType</span>&lt;<span className="api-signature-keyword">typeof</span> <a href="/api-v17/language/parsing#parse">parse</a>&gt;&gt;;</ApiSignature>
+
+### GraphQLValidateFn
+
+**Type alias.** Function used by a GraphQL harness to validate a parsed document.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLValidateFn</span> = (args: <span className="api-signature-type">Parameters</span>&lt;<span className="api-signature-keyword">typeof</span> <a href="/api-v17/validation/validation#validate">validate</a>&gt;): <span className="api-signature-type">PromiseOrValue</span>&lt;<span className="api-signature-type">ReturnType</span>&lt;<span className="api-signature-keyword">typeof</span> <a href="/api-v17/validation/validation#validate">validate</a>&gt;&gt;;</ApiSignature>
+
+### GraphQLExecuteFn
+
+**Type alias.** Function used by a GraphQL harness to execute a valid operation.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLExecuteFn</span> = (args: <span className="api-signature-type">Parameters</span>&lt;<span className="api-signature-keyword">typeof</span> <a href="/api-v17/execution/execution#execute">execute</a>&gt;): <span className="api-signature-type">ReturnType</span>&lt;<span className="api-signature-keyword">typeof</span> <a href="/api-v17/execution/execution#execute">execute</a>&gt;;</ApiSignature>
+
+### GraphQLSubscribeFn
+
+**Type alias.** Function used by a GraphQL harness to create a subscription response stream.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">GraphQLSubscribeFn</span> = (args: <span className="api-signature-type">Parameters</span>&lt;<span className="api-signature-keyword">typeof</span> <a href="/api-v17/execution/execution#subscribe">subscribe</a>&gt;): <span className="api-signature-type">ReturnType</span>&lt;<span className="api-signature-keyword">typeof</span> <a href="/api-v17/execution/execution#subscribe">subscribe</a>&gt;;</ApiSignature>
+
+### GraphQLHarness
+
+**Interface.** Overrides for the parse, validate, execute, and subscribe stages used by the
+high-level `graphql` and [`graphqlSync`](/api-v17/graphql/request-pipeline#graphqlsync) request pipeline.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| parse | <ApiType><a href="/api-v17/graphql/harness#graphqlparsefn">GraphQLParseFn</a></ApiType> | Parses GraphQL source text into a document AST. |
+| validate | <ApiType><a href="/api-v17/graphql/harness#graphqlvalidatefn">GraphQLValidateFn</a></ApiType> | Validates a document AST against a schema. |
+| execute | <ApiType><a href="/api-v17/graphql/harness#graphqlexecutefn">GraphQLExecuteFn</a></ApiType> | Executes a valid operation. |
+| subscribe | <ApiType><a href="/api-v17/graphql/harness#graphqlsubscribefn">GraphQLSubscribeFn</a></ApiType> | Creates a response stream for a subscription operation. |

@@ -17,10 +17,30 @@ const meta = {
     type: 'menu',
     title: 'API',
     items: {
+      v17: {
+        title: 'v17',
+        href: '/api-v17/graphql',
+      },
+      v16: {
+        title: 'v16',
+        href: '/api-v16/graphql',
+      },
       'graphql-http': {
         title: 'graphql-http',
         href: '/docs/graphql-http',
       },
+    },
+  },
+  'api-v16': {
+    title: 'v16 API',
+    theme: {
+      collapsed: true,
+    },
+  },
+  'api-v17': {
+    title: 'v17 API',
+    theme: {
+      collapsed: true,
     },
   },
 };

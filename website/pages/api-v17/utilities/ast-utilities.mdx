@@ -1,0 +1,177 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/utilities/ast-utilities
+
+## Functions
+
+### concatAST()
+
+Provided a collection of ASTs, presumably each from different files,
+concatenate the ASTs together into batched AST, useful for validating many
+GraphQL source files which together represent one conceptual application.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">concatAST</span>(documents: <span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#documentnode">DocumentNode</a>[]): <a href="/api-v17/language/ast#documentnode">DocumentNode</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| documents | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#documentnode">DocumentNode</a>[]</ApiType> | Document ASTs to concatenate. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/ast#documentnode">DocumentNode</a></ApiType> | A document AST containing all definitions from the provided documents. |
+
+#### Example
+
+```ts
+import { parse } from 'graphql/language';
+import { concatAST } from 'graphql/utilities';
+
+const document = concatAST([parse('type Query { a: String }'), parse('type User { id: ID }')]);
+
+document.definitions.length; // => 2
+```
+
+### separateOperations()
+
+separateOperations accepts a single AST document which may contain many
+operations and fragments and returns a collection of AST documents each of
+which contains a single operation as well the fragment definitions it
+refers to.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">separateOperations</span>(documentAST: <a href="/api-v17/language/ast#documentnode">DocumentNode</a>): <span className="api-signature-type">ObjMap</span>&lt;<a href="/api-v17/language/ast#documentnode">DocumentNode</a>&gt;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| documentAST | <ApiType><a href="/api-v17/language/ast#documentnode">DocumentNode</a></ApiType> | The parsed GraphQL document AST. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">ObjMap</span>&lt;<a href="/api-v17/language/ast#documentnode">DocumentNode</a>&gt;</ApiType> | A map of operation names to documents containing each operation and its referenced fragments. |
+
+#### Example
+
+```ts
+import { parse, print } from 'graphql/language';
+import { separateOperations } from 'graphql/utilities';
+
+const document = parse(`
+  query GetUser {
+    viewer {
+      ...UserFields
+    }
+  }
+
+  query GetStatus {
+    status
+  }
+
+  fragment UserFields on User {
+    id
+  }
+`);
+
+const separated = separateOperations(document);
+
+Object.keys(separated); // => ['GetUser', 'GetStatus']
+print(separated.GetUser); // matches /fragment UserFields/
+print(separated.GetStatus); // does not match /fragment UserFields/
+```
+
+### stripIgnoredCharacters()
+
+Strips characters that are not significant to the validity or execution
+of a GraphQL document:
+  - UnicodeBOM
+  - WhiteSpace
+  - LineTerminator
+  - Comment
+  - Comma
+  - BlockString indentation
+
+Note: It is required to have a delimiter character between neighboring
+non-punctuator tokens and this function always uses single space as delimiter.
+
+It is guaranteed that both input and output documents if parsed would result
+in the exact same AST except for nodes location.
+
+Warning: It is guaranteed that this function will always produce stable results.
+However, it's not guaranteed that it will stay the same between different
+releases due to bugfixes or changes in the GraphQL specification.
+
+Query example:
+
+```graphql
+query SomeQuery($foo: String!, $bar: String) {
+  someField(foo: $foo, bar: $bar) {
+    a
+    b {
+      c
+      d
+    }
+  }
+}
+```
+
+Becomes:
+
+```graphql
+query SomeQuery($foo:String!$bar:String){someField(foo:$foo bar:$bar){a b{c d}}}
+```
+
+SDL example:
+
+```graphql
+"""
+Type description
+"""
+type Foo {
+  """
+  Field description
+  """
+  bar: String
+}
+```
+
+Becomes:
+
+```graphql
+"""Type description""" type Foo{"""Field description""" bar:String}
+```
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">stripIgnoredCharacters</span>(source: <span className="api-signature-keyword">string</span> | <a href="/api-v17/language/source#source">Source</a>): <span className="api-signature-keyword">string</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| source | <ApiType><span className="api-signature-keyword">string</span> &#124; <a href="/api-v17/language/source#source">Source</a></ApiType> | The GraphQL source text or source object. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | A semantically equivalent GraphQL source string without ignored characters. |
+
+#### Example
+
+```ts
+import { stripIgnoredCharacters } from 'graphql/utilities';
+
+const source = stripIgnoredCharacters('query Example { name }');
+
+source; // => 'query Example{name}'
+```

@@ -1,0 +1,228 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/execution/values
+
+## Functions
+
+### getVariableValues()
+
+Prepares an object map of variableValues of the correct type based on the
+provided variable definitions and arbitrary input. If the input cannot be
+parsed to match the variable definitions, GraphQLError values are returned.
+
+Note: Returned value is a plain Object with a prototype, since it is
+exposed to user code. Care should be taken to not pull values from the
+Object prototype.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getVariableValues</span>(schema: <a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a>, varDefNodes: <span className="api-signature-keyword">readonly</span> <a href="/api-v16/language/ast#variabledefinitionnode">VariableDefinitionNode</a>[], inputs: <span className="api-signature-type">object</span>, options?: &#123; maxErrors?: <span className="api-signature-keyword">number</span> &#125;): &#123; errors: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v16/error/errors#graphqlerror">GraphQLError</a>&gt;; coerced?: <span className="api-signature-keyword">never</span> &#125; | &#123; coerced: <span className="api-signature-type">object</span>; errors?: <span className="api-signature-keyword">never</span> &#125;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | GraphQL schema to use. |
+| varDefNodes | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v16/language/ast#variabledefinitionnode">VariableDefinitionNode</a>[]</ApiType> | The variable definition AST nodes to coerce. |
+| inputs | <ApiType><span className="api-signature-type">object</span></ApiType> | The runtime variable values keyed by variable name. |
+| options? | <ApiType>&#123; maxErrors?: <span className="api-signature-keyword">number</span> &#125;</ApiType> | Optional variable coercion options, including error limits. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>&#123; errors: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v16/error/errors#graphqlerror">GraphQLError</a>&gt;; coerced?: <span className="api-signature-keyword">never</span> &#125; &#124; &#123; coerced: <span className="api-signature-type">object</span>; errors?: <span className="api-signature-keyword">never</span> &#125;</ApiType> | Coerced variable values, or request errors. |
+
+#### Example 1
+
+```ts
+// Coerce provided variables and apply operation defaults.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { getVariableValues } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    reviews(stars: Int!, limit: Int = 10): [String]
+  }
+`);
+const document = parse(`
+  query ($stars: Int!, $limit: Int = 10) {
+    reviews(stars: $stars, limit: $limit)
+  }
+`);
+const operation = document.definitions[0];
+
+const result = getVariableValues(
+  schema,
+  operation.variableDefinitions,
+  { stars: '5' },
+);
+
+result; // => { coerced: { stars: 5, limit: 10 } }
+```
+
+#### Example 2
+
+```ts
+// This variant uses maxErrors to cap reported coercion errors.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { getVariableValues } from 'graphql/execution';
+
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+  }
+
+  type Query {
+    review(input: ReviewInput!): String
+  }
+`);
+const document = parse(`
+  query ($first: ReviewInput!, $second: ReviewInput!) {
+    first: review(input: $first)
+    second: review(input: $second)
+  }
+`);
+const operation = document.definitions[0];
+
+const result = getVariableValues(
+  schema,
+  operation.variableDefinitions,
+  { first: { stars: 'bad' }, second: { stars: 'also bad' } },
+  { maxErrors: 1 },
+);
+
+result.errors.length; // => 2
+result.errors[1].message; // matches /error limit reached/
+```
+
+### getArgumentValues()
+
+Prepares an object map of argument values given a list of argument
+definitions and list of argument AST nodes.
+
+Note: Returned value is a plain Object with a prototype, since it is
+exposed to user code. Care should be taken to not pull values from the
+Object prototype.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getArgumentValues</span>(def: <a href="/api-v16/type/definitions#graphqlfield">GraphQLField</a>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">unknown</span>&gt; | <a href="/api-v16/type/directives#graphqldirective">GraphQLDirective</a>, node: <a href="/api-v16/language/ast#fieldnode">FieldNode</a> | <a href="/api-v16/language/ast#directivenode">DirectiveNode</a>, variableValues?: null | <span className="api-signature-keyword">undefined</span> | <span className="api-signature-type">object</span>): <span className="api-signature-type">object</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| def | <ApiType><a href="/api-v16/type/definitions#graphqlfield">GraphQLField</a>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">unknown</span>&gt; &#124; <a href="/api-v16/type/directives#graphqldirective">GraphQLDirective</a></ApiType> | The field or directive definition whose arguments should be coerced. |
+| node | <ApiType><a href="/api-v16/language/ast#fieldnode">FieldNode</a> &#124; <a href="/api-v16/language/ast#directivenode">DirectiveNode</a></ApiType> | The AST node to inspect. |
+| variableValues? | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <span className="api-signature-type">object</span></ApiType> | The runtime variable values keyed by variable name. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">object</span></ApiType> | Coerced argument values keyed by argument name. |
+
+#### Example 1
+
+```ts
+// Read literal argument values and defaults.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { getArgumentValues } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    reviews(stars: Int!, limit: Int = 10): [String]
+  }
+`);
+const fieldDef = schema.getQueryType().getFields().reviews;
+const document = parse('{ reviews(stars: 5) }');
+const fieldNode = document.definitions[0].selectionSet.selections[0];
+
+getArgumentValues(fieldDef, fieldNode); // => { stars: 5, limit: 10 }
+```
+
+#### Example 2
+
+```ts
+// This variant resolves argument values from operation variables.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { getArgumentValues } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    reviews(stars: Int!): [String]
+  }
+`);
+const fieldDef = schema.getQueryType().getFields().reviews;
+const document = parse('query ($stars: Int!) { reviews(stars: $stars) }');
+const fieldNode = document.definitions[0].selectionSet.selections[0];
+
+getArgumentValues(fieldDef, fieldNode, { stars: 5 }); // => { stars: 5 }
+getArgumentValues(fieldDef, fieldNode, {}); // throws an error
+```
+
+### getDirectiveValues()
+
+Prepares an object map of argument values given a directive definition
+and a AST node which may contain directives. Optionally also accepts a map
+of variable values.
+
+If the directive does not exist on the node, returns undefined.
+
+Note: Returned value is a plain Object with a prototype, since it is
+exposed to user code. Care should be taken to not pull values from the
+Object prototype.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getDirectiveValues</span>(directiveDef: <a href="/api-v16/type/directives#graphqldirective">GraphQLDirective</a>, node: &#123; directives?: <span className="api-signature-type">ReadonlyArray</span>&lt;&#123; kind: <a href="/api-v16/language/kinds#directive">Kind.DIRECTIVE</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; name: &#123; kind: <a href="/api-v16/language/kinds#name">Kind.NAME</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125;; arguments?: <span className="api-signature-type">ReadonlyArray</span>&lt;&#123; kind: <a href="/api-v16/language/kinds#argument">Kind.ARGUMENT</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; name: &#123; kind: <a href="/api-v16/language/kinds#name">Kind.NAME</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125;; value: &#123; kind: <a href="/api-v16/language/kinds#variable">Kind.VARIABLE</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; name: &#123; kind: <a href="/api-v16/language/kinds#name">Kind.NAME</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125; &#125; | &#123; kind: <a href="/api-v16/language/kinds#int">Kind.INT</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125; | &#123; kind: <a href="/api-v16/language/kinds#float">Kind.FLOAT</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125; | &#123; kind: <a href="/api-v16/language/kinds#string">Kind.STRING</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span>; block?: <span className="api-signature-keyword">boolean</span> &#125; | &#123; kind: <a href="/api-v16/language/kinds#boolean">Kind.BOOLEAN</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">boolean</span> &#125; | &#123; kind: <a href="/api-v16/language/kinds#null">Kind.NULL</a>; loc?: <a href="/api-v16/language/ast#location">Location</a> &#125; | &#123; kind: <a href="/api-v16/language/kinds#enum">Kind.ENUM</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125; | &#123; kind: <a href="/api-v16/language/kinds#list">Kind.LIST</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; values: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v16/language/ast#valuenode">ValueNode</a>&gt; &#125; | &#123; kind: <a href="/api-v16/language/kinds#object">Kind.OBJECT</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; fields: <span className="api-signature-type">ReadonlyArray</span>&lt;&#123; kind: <a href="/api-v16/language/kinds#object_field">Kind.OBJECT_FIELD</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; name: &#123; kind: <a href="/api-v16/language/kinds#name">Kind.NAME</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125;; value: <a href="/api-v16/language/ast#valuenode">ValueNode</a> &#125;&gt; &#125; &#125;&gt; &#125;&gt; &#125;, variableValues?: null | <span className="api-signature-keyword">undefined</span> | <span className="api-signature-type">object</span>): <span className="api-signature-type">object</span> | <span className="api-signature-keyword">undefined</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| directiveDef | <ApiType><a href="/api-v16/type/directives#graphqldirective">GraphQLDirective</a></ApiType> | The directive definition whose arguments should be coerced. |
+| node | <ApiType>&#123; directives?: <span className="api-signature-type">ReadonlyArray</span>&lt;&#123; kind: <a href="/api-v16/language/kinds#directive">Kind.DIRECTIVE</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; name: &#123; kind: <a href="/api-v16/language/kinds#name">Kind.NAME</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125;; arguments?: <span className="api-signature-type">ReadonlyArray</span>&lt;&#123; kind: <a href="/api-v16/language/kinds#argument">Kind.ARGUMENT</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; name: &#123; kind: <a href="/api-v16/language/kinds#name">Kind.NAME</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125;; value: &#123; kind: <a href="/api-v16/language/kinds#variable">Kind.VARIABLE</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; name: &#123; kind: <a href="/api-v16/language/kinds#name">Kind.NAME</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125; &#125; &#124; &#123; kind: <a href="/api-v16/language/kinds#int">Kind.INT</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125; &#124; &#123; kind: <a href="/api-v16/language/kinds#float">Kind.FLOAT</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125; &#124; &#123; kind: <a href="/api-v16/language/kinds#string">Kind.STRING</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span>; block?: <span className="api-signature-keyword">boolean</span> &#125; &#124; &#123; kind: <a href="/api-v16/language/kinds#boolean">Kind.BOOLEAN</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">boolean</span> &#125; &#124; &#123; kind: <a href="/api-v16/language/kinds#null">Kind.NULL</a>; loc?: <a href="/api-v16/language/ast#location">Location</a> &#125; &#124; &#123; kind: <a href="/api-v16/language/kinds#enum">Kind.ENUM</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125; &#124; &#123; kind: <a href="/api-v16/language/kinds#list">Kind.LIST</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; values: <span className="api-signature-type">ReadonlyArray</span>&lt;<a href="/api-v16/language/ast#valuenode">ValueNode</a>&gt; &#125; &#124; &#123; kind: <a href="/api-v16/language/kinds#object">Kind.OBJECT</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; fields: <span className="api-signature-type">ReadonlyArray</span>&lt;&#123; kind: <a href="/api-v16/language/kinds#object_field">Kind.OBJECT_FIELD</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; name: &#123; kind: <a href="/api-v16/language/kinds#name">Kind.NAME</a>; loc?: <a href="/api-v16/language/ast#location">Location</a>; value: <span className="api-signature-keyword">string</span> &#125;; value: <a href="/api-v16/language/ast#valuenode">ValueNode</a> &#125;&gt; &#125; &#125;&gt; &#125;&gt; &#125;</ApiType> | The AST node to inspect. |
+| variableValues? | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <span className="api-signature-type">object</span></ApiType> | The runtime variable values keyed by variable name. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">object</span> &#124; <span className="api-signature-keyword">undefined</span></ApiType> | Coerced directive argument values keyed by argument name. |
+
+#### Example 1
+
+```ts
+// Read literal directive arguments from a node.
+import { parse } from 'graphql/language';
+import { GraphQLSkipDirective } from 'graphql/type';
+import { getDirectiveValues } from 'graphql/execution';
+
+const document = parse('{ name @skip(if: true) }');
+const fieldNode = document.definitions[0].selectionSet.selections[0];
+
+getDirectiveValues(GraphQLSkipDirective, fieldNode); // => { if: true }
+```
+
+#### Example 2
+
+```ts
+// This variant resolves directive arguments from variables and handles absent directives.
+import { parse } from 'graphql/language';
+import { GraphQLIncludeDirective } from 'graphql/type';
+import { getDirectiveValues } from 'graphql/execution';
+
+const document = parse('query ($includeName: Boolean!) { name @include(if: $includeName) }');
+const fieldNode = document.definitions[0].selectionSet.selections[0];
+
+getDirectiveValues(GraphQLIncludeDirective, fieldNode, {
+  includeName: false,
+}); // => { if: false }
+getDirectiveValues(GraphQLIncludeDirective, { directives: [] }); // => undefined
+```

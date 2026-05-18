@@ -1,0 +1,118 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/utilities/schema-printing
+
+## Functions
+
+### printSchema()
+
+Prints the schema.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">printSchema</span>(schema: <a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a>): <span className="api-signature-keyword">string</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | GraphQL schema to use. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The printed string representation. |
+
+#### Example
+
+```ts
+import { buildSchema, printSchema } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  directive @upper on FIELD_DEFINITION
+
+  type Query {
+    greeting: String @upper
+  }
+`);
+
+printSchema(schema); // => ['directive @upper on FIELD_DEFINITION', '', 'type Query {', '  greeting: String', '}'].join('\n')
+```
+
+### printIntrospectionSchema()
+
+Prints the introspection schema.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">printIntrospectionSchema</span>(schema: <a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a>): <span className="api-signature-keyword">string</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | GraphQL schema to use. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The printed string representation. |
+
+#### Example
+
+```ts
+import { buildSchema, printIntrospectionSchema } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+
+const printed = printIntrospectionSchema(schema);
+
+printed; // matches /type __Schema/
+printed; // matches /enum __TypeKind/
+printed; // does not match /type Query/
+```
+
+### printType()
+
+Prints the type.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">printType</span>(type: <a href="/api-v16/type/definitions#graphqlnamedtype">GraphQLNamedType</a>): <span className="api-signature-keyword">string</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><a href="/api-v16/type/definitions#graphqlnamedtype">GraphQLNamedType</a></ApiType> | The GraphQL type to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The printed string representation. |
+
+#### Example
+
+```ts
+import { buildSchema, printType } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type User {
+    id: ID!
+    name: String
+  }
+
+  type Query {
+    viewer: User
+  }
+`);
+
+printType(schema.getType('User')); // => ['type User {', '  id: ID!', '  name: String', '}'].join('\n')
+```

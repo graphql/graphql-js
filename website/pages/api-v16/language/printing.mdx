@@ -1,0 +1,37 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/language/printing
+
+## Functions
+
+### print()
+
+Converts an AST into a string, using one set of reasonable
+formatting rules.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">print</span>(ast: <a href="/api-v16/language/ast#astnode">ASTNode</a>): <span className="api-signature-keyword">string</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| ast | <ApiType><a href="/api-v16/language/ast#astnode">ASTNode</a></ApiType> | The GraphQL AST node to print. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | A stable string representation of the AST. |
+
+#### Example
+
+```ts
+import { parse, print } from 'graphql';
+
+const ast = parse('{ hero { name } }');
+const text = print(ast);
+
+text; // => '{\n  hero {\n    name\n  }\n}'
+```

@@ -1,0 +1,63 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/type/names
+
+## Functions
+
+### assertName()
+
+Upholds the spec rules about naming.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertName</span>(name: <span className="api-signature-keyword">string</span>): <span className="api-signature-keyword">string</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name to validate. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The validated GraphQL name. |
+
+#### Example
+
+```ts
+import { assertName } from 'graphql/type';
+
+assertName('User'); // => 'User'
+assertName('123User'); // throws an error
+```
+
+### assertEnumValueName()
+
+Upholds the spec rules about naming enum values.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertEnumValueName</span>(name: <span className="api-signature-keyword">string</span>): <span className="api-signature-keyword">string</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name to validate. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The validated GraphQL name. |
+
+#### Example
+
+```ts
+import { assertEnumValueName } from 'graphql/type';
+
+assertEnumValueName('ACTIVE'); // => 'ACTIVE'
+assertEnumValueName('true'); // throws an error
+```

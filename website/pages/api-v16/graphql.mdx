@@ -1,0 +1,25 @@
+# graphql
+
+The root `graphql` package re-exports the public GraphQL.js API from its
+submodules and provides the high-level request pipeline helpers defined in
+this module.
+
+You can import public exports from GraphQL.js modules through the root
+`graphql` package or through their module-specific entry point. For example,
+these two references resolve to the same [`parse`](/api-v16/language/parsing#parse) function:
+
+```ts
+import { parse } from 'graphql';
+import { parse } from 'graphql/language';
+```
+
+Use the root package when you want a single import surface, or use submodules
+such as `graphql/language`, `graphql/type`, `graphql/execution`, and
+`graphql/utilities` when you want module-focused imports. This module also
+defines root-only APIs, such as request pipeline helpers and version
+metadata, that do not belong to a narrower submodule.
+
+## Categories
+
+- [Request Pipeline](/api-v16/graphql/request-pipeline)
+- [Version](/api-v16/graphql/version)

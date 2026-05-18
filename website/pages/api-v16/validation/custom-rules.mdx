@@ -1,0 +1,126 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/validation/custom-rules
+
+## Functions
+
+### NoDeprecatedCustomRule()
+
+No deprecated
+
+A GraphQL document is only valid if all selected fields and all used enum values have not been
+deprecated.
+
+Note: This rule is optional and is not part of the Validation section of the GraphQL
+Specification. The main purpose of this rule is detection of deprecated usages and not
+necessarily to forbid their use when querying a service.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">NoDeprecatedCustomRule</span>(context: <a href="/api-v16/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v16/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v16/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v16/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import {
+  GraphQLObjectType,
+  GraphQLSchema,
+  GraphQLString,
+  parse,
+  validate,
+} from 'graphql';
+import { NoDeprecatedCustomRule } from 'graphql/validation';
+
+const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      name: { type: GraphQLString },
+      oldName: {
+        type: GraphQLString,
+        deprecationReason: 'Use name instead.',
+      },
+    },
+  }),
+});
+
+const invalidDocument = parse(`
+  { oldName }
+`);
+const invalidErrors = validate(schema, invalidDocument, [NoDeprecatedCustomRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { name }
+`);
+const validErrors = validate(schema, validDocument, [NoDeprecatedCustomRule]);
+
+validErrors; // => []
+```
+
+### NoSchemaIntrospectionCustomRule()
+
+Prohibit introspection queries
+
+A GraphQL document is only valid if all fields selected are not fields that
+return an introspection type.
+
+Note: This rule is optional and is not part of the Validation section of the
+GraphQL Specification. This rule effectively disables introspection, which
+does not reflect best practices and should only be done if absolutely necessary.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">NoSchemaIntrospectionCustomRule</span>(context: <a href="/api-v16/validation/validation-context#validationcontext">ValidationContext</a>): <a href="/api-v16/language/visiting#astvisitor">ASTVisitor</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| context | <ApiType><a href="/api-v16/validation/validation-context#validationcontext">ValidationContext</a></ApiType> | The validation context used while checking the document. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v16/language/visiting#astvisitor">ASTVisitor</a></ApiType> | A visitor that reports validation errors for this rule. |
+
+#### Example
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { NoSchemaIntrospectionCustomRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  { __schema { queryType { name } } }
+`);
+const invalidErrors = validate(schema, invalidDocument, [NoSchemaIntrospectionCustomRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { name }
+`);
+const validErrors = validate(schema, validDocument, [NoSchemaIntrospectionCustomRule]);
+
+validErrors; // => []
+```

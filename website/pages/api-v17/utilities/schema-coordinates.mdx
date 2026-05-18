@@ -1,0 +1,111 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/utilities/schema-coordinates
+
+## Functions
+
+### resolveSchemaCoordinate()
+
+A schema coordinate is resolved in the context of a GraphQL schema to
+uniquely identify a schema element. It returns undefined if the schema
+coordinate does not resolve to a schema element, meta-field, or introspection
+schema element. It will throw if the containing schema element (if
+applicable) does not exist.
+
+https://spec.graphql.org/draft/#sec-Schema-Coordinates.Semantics
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">resolveSchemaCoordinate</span>(schema: <a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a>, schemaCoordinate: <span className="api-signature-keyword">string</span> | <a href="/api-v17/language/source#source">Source</a>): <a href="/api-v17/utilities/schema-coordinates#resolvedschemaelement">ResolvedSchemaElement</a> | <span className="api-signature-keyword">undefined</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | GraphQL schema to use. |
+| schemaCoordinate | <ApiType><span className="api-signature-keyword">string</span> &#124; <a href="/api-v17/language/source#source">Source</a></ApiType> | The schema coordinate to resolve. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/utilities/schema-coordinates#resolvedschemaelement">ResolvedSchemaElement</a> &#124; <span className="api-signature-keyword">undefined</span></ApiType> | The schema element identified by the coordinate, or undefined if none exists. |
+
+#### Example
+
+```ts
+import { buildSchema, resolveSchemaCoordinate } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  directive @tag(name: String!) on FIELD_DEFINITION
+
+  input ReviewInput {
+    stars: Int!
+  }
+
+  enum Episode {
+    NEW_HOPE
+  }
+
+  type Query {
+    reviews(input: ReviewInput): [String] @tag(name: "reviews")
+  }
+`);
+
+resolveSchemaCoordinate(schema, 'Query').kind; // => 'NamedType'
+resolveSchemaCoordinate(schema, 'Query.reviews').kind; // => 'Field'
+resolveSchemaCoordinate(schema, 'Query.reviews(input:)').kind; // => 'FieldArgument'
+resolveSchemaCoordinate(schema, 'ReviewInput.stars').kind; // => 'InputField'
+resolveSchemaCoordinate(schema, 'Episode.NEW_HOPE').kind; // => 'EnumValue'
+resolveSchemaCoordinate(schema, '@tag').kind; // => 'Directive'
+resolveSchemaCoordinate(schema, '@tag(name:)').kind; // => 'DirectiveArgument'
+resolveSchemaCoordinate(schema, 'Query.missing'); // => undefined
+```
+
+### resolveASTSchemaCoordinate()
+
+Resolves schema coordinate from a parsed SchemaCoordinate node.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">resolveASTSchemaCoordinate</span>(schema: <a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a>, schemaCoordinate: <a href="/api-v17/language/ast#schemacoordinatenode">SchemaCoordinateNode</a>): <a href="/api-v17/utilities/schema-coordinates#resolvedschemaelement">ResolvedSchemaElement</a> | <span className="api-signature-keyword">undefined</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | GraphQL schema to use. |
+| schemaCoordinate | <ApiType><a href="/api-v17/language/ast#schemacoordinatenode">SchemaCoordinateNode</a></ApiType> | The schema coordinate to resolve. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/utilities/schema-coordinates#resolvedschemaelement">ResolvedSchemaElement</a> &#124; <span className="api-signature-keyword">undefined</span></ApiType> | The schema element identified by the parsed coordinate, or undefined if none exists. |
+
+#### Example
+
+```ts
+import { parseSchemaCoordinate } from 'graphql/language';
+import { buildSchema, resolveASTSchemaCoordinate } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting(name: String): String
+  }
+`);
+const coordinate = parseSchemaCoordinate('Query.greeting(name:)');
+const resolved = resolveASTSchemaCoordinate(schema, coordinate);
+
+resolved.kind; // => 'FieldArgument'
+resolved.field.name; // => 'greeting'
+resolved.fieldArgument.name; // => 'name'
+```
+
+## Types
+
+### ResolvedSchemaElement
+
+**Type alias.** A schema element resolved from a schema coordinate.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">ResolvedSchemaElement</span> = &#123; kind: 'NamedType'; type: <a href="/api-v17/type/definitions#graphqlnamedtype">GraphQLNamedType</a> &#125; | &#123; kind: 'Field'; type: <a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a> | <a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a>; field: <a href="/api-v17/type/definitions#graphqlfield">GraphQLField</a>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">unknown</span>&gt; &#125; | &#123; kind: 'InputField'; type: <a href="/api-v17/type/definitions#graphqlinputobjecttype">GraphQLInputObjectType</a>; inputField: <a href="/api-v17/type/definitions#graphqlinputfield">GraphQLInputField</a> &#125; | &#123; kind: 'EnumValue'; type: <a href="/api-v17/type/definitions#graphqlenumtype">GraphQLEnumType</a>; enumValue: <a href="/api-v17/type/definitions#graphqlenumvalue">GraphQLEnumValue</a> &#125; | &#123; kind: 'FieldArgument'; type: <a href="/api-v17/type/definitions#graphqlobjecttype">GraphQLObjectType</a> | <a href="/api-v17/type/definitions#graphqlinterfacetype">GraphQLInterfaceType</a>; field: <a href="/api-v17/type/definitions#graphqlfield">GraphQLField</a>&lt;<span className="api-signature-keyword">unknown</span>, <span className="api-signature-keyword">unknown</span>&gt;; fieldArgument: <a href="/api-v17/type/definitions#graphqlargument">GraphQLArgument</a> &#125; | &#123; kind: 'Directive'; directive: <a href="/api-v17/type/directives#graphqldirective">GraphQLDirective</a> &#125; | &#123; kind: 'DirectiveArgument'; directive: <a href="/api-v17/type/directives#graphqldirective">GraphQLDirective</a>; directiveArgument: <a href="/api-v17/type/definitions#graphqlargument">GraphQLArgument</a> &#125;;</ApiSignature>

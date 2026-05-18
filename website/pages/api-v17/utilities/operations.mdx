@@ -1,0 +1,41 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/utilities/operations
+
+## Functions
+
+### getOperationAST()
+
+Returns an operation AST given a document AST and optionally an operation
+name. If a name is not provided, an operation is only returned if only one is
+provided in the document.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getOperationAST</span>(documentAST: <a href="/api-v17/language/ast#documentnode">DocumentNode</a>, operationName?: <span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;): <span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#operationdefinitionnode">OperationDefinitionNode</a>&gt;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| documentAST | <ApiType><a href="/api-v17/language/ast#documentnode">DocumentNode</a></ApiType> | The parsed GraphQL document AST. |
+| operationName? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | The optional operation name to select. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/language/ast#operationdefinitionnode">OperationDefinitionNode</a>&gt;</ApiType> | The resolved operation ast. |
+
+#### Example
+
+```ts
+import { parse } from 'graphql/language';
+import { getOperationAST } from 'graphql/utilities';
+
+const document = parse('query GetName { name }');
+const operation = getOperationAST(document, 'GetName');
+
+operation.name.value; // => 'GetName'
+getOperationAST(document, 'Missing'); // => undefined
+```

@@ -1,0 +1,460 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/utilities/introspection
+
+## Functions
+
+### buildClientSchema()
+
+Build a GraphQLSchema for use by client tools.
+
+Given the result of a client running the introspection query, creates and
+returns a GraphQLSchema instance which can be then used with all graphql-js
+tools, but cannot be used to execute a query, as introspection does not
+represent the "resolver", "parse" or "serialize" functions or any other
+server-internal mechanisms.
+
+This function expects a complete introspection result. Don't forget to check
+the "errors" field of a server response before calling this function.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">buildClientSchema</span>(introspection: <a href="/api-v17/utilities/introspection#introspectionquery">IntrospectionQuery</a>, options?: <span className="api-signature-type">GraphQLSchemaValidationOptions</span>): <a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| introspection | <ApiType><a href="/api-v17/utilities/introspection#introspectionquery">IntrospectionQuery</a></ApiType> | Introspection result data to build from. |
+| options? | <ApiType><span className="api-signature-type">GraphQLSchemaValidationOptions</span></ApiType> | Optional configuration for this operation. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | The client schema represented by the introspection result. |
+
+#### Example
+
+```ts
+import { buildClientSchema, introspectionFromSchema, buildSchema } from 'graphql/utilities';
+
+const schema = buildSchema('type Query { hello: String }');
+const clientSchema = buildClientSchema(introspectionFromSchema(schema), {
+  assumeValid: true,
+});
+
+clientSchema.getQueryType().name; // => 'Query'
+```
+
+### getIntrospectionQuery()
+
+Produce the GraphQL query recommended for a full schema introspection.
+Accepts optional IntrospectionOptions.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getIntrospectionQuery</span>(options?: <a href="/api-v17/utilities/introspection#introspectionoptions">IntrospectionOptions</a>): <span className="api-signature-keyword">string</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| options? | <ApiType><a href="/api-v17/utilities/introspection#introspectionoptions">IntrospectionOptions</a></ApiType> | Optional configuration for this operation. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The resolved introspection query. |
+
+#### Example 1
+
+```ts
+// Generate the default introspection query.
+import { getIntrospectionQuery } from 'graphql/utilities';
+
+const query = getIntrospectionQuery();
+
+query; // matches /__schema/
+query; // matches /description/
+query; // does not match /specifiedByURL/
+```
+
+#### Example 2
+
+```ts
+// This variant customizes optional introspection fields and nesting depth.
+import { getIntrospectionQuery } from 'graphql/utilities';
+
+const query = getIntrospectionQuery({
+  descriptions: false,
+  specifiedByUrl: true,
+  directiveIsRepeatable: true,
+  schemaDescription: true,
+  inputValueDeprecation: true,
+  experimentalDirectiveDeprecation: true,
+  oneOf: true,
+  typeDepth: 3,
+});
+
+query; // does not match /description/
+query; // matches /specifiedByURL/
+query; // matches /isRepeatable/
+query; // matches /includeDeprecated: true/
+query; // matches /isOneOf/
+(query.match(/ofType/g)?.length ?? 0) > 0; // => true
+```
+
+### introspectionFromSchema()
+
+Build an IntrospectionQuery from a GraphQLSchema
+
+IntrospectionQuery is useful for utilities that care about type and field
+relationships, but do not need to traverse through those relationships.
+
+This is the inverse of buildClientSchema. The primary use case is outside
+of the server context, for instance when doing schema comparisons.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">introspectionFromSchema</span>(schema: <a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a>, options?: <a href="/api-v17/utilities/introspection#introspectionoptions">IntrospectionOptions</a>): <a href="/api-v17/utilities/introspection#introspectionquery">IntrospectionQuery</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v17/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | GraphQL schema to use. |
+| options? | <ApiType><a href="/api-v17/utilities/introspection#introspectionoptions">IntrospectionOptions</a></ApiType> | Optional configuration for this operation. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/utilities/introspection#introspectionquery">IntrospectionQuery</a></ApiType> | Introspection result data for the schema. |
+
+#### Example 1
+
+```ts
+// Include schema metadata using the default introspection options.
+import { buildSchema, introspectionFromSchema } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  scalar Url @specifiedBy(url: "https://url.spec.whatwg.org/")
+
+  type Query {
+    homepage: Url
+  }
+`);
+
+const introspection = introspectionFromSchema(schema);
+const urlType = introspection.__schema.types.find((type) => type.name === 'Url');
+
+urlType.specifiedByURL; // => 'https://url.spec.whatwg.org/'
+```
+
+#### Example 2
+
+```ts
+// This variant disables optional introspection metadata.
+import { buildSchema, introspectionFromSchema } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  scalar Url @specifiedBy(url: "https://url.spec.whatwg.org/")
+
+  type Query {
+    homepage: Url
+  }
+`);
+
+const introspection = introspectionFromSchema(schema, {
+  descriptions: false,
+  specifiedByUrl: false,
+  directiveIsRepeatable: false,
+  schemaDescription: false,
+  inputValueDeprecation: false,
+  experimentalDirectiveDeprecation: false,
+  oneOf: false,
+});
+const urlType = introspection.__schema.types.find((type) => type.name === 'Url');
+const deprecatedDirective = introspection.__schema.directives.find(
+  (directive) => directive.name === 'deprecated',
+);
+
+urlType.specifiedByURL; // => undefined
+urlType.description; // => undefined
+introspection.__schema.description; // => undefined
+deprecatedDirective.isRepeatable; // => undefined
+```
+
+## Types
+
+### IntrospectionOptions
+
+**Interface.** Options controlling which fields are included in the introspection query.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| descriptions? | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether to include descriptions in the introspection result.<br />Default: true |
+| specifiedByUrl? | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether to include `specifiedByURL` in the introspection result.<br />Default: false |
+| directiveIsRepeatable? | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether to include `isRepeatable` flag on directives.<br />Default: false |
+| schemaDescription? | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether to include `description` field on schema.<br />Default: false |
+| inputValueDeprecation? | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether target GraphQL server support deprecation of input values.<br />Default: false |
+| experimentalDirectiveDeprecation? | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether target GraphQL server supports deprecation of directives.<br />Default: false |
+| oneOf? | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether target GraphQL server supports `@oneOf` input objects.<br />Default: false |
+| typeDepth? | <ApiType><span className="api-signature-keyword">number</span></ApiType> | How deep to recurse into nested types, larger values will result in more<br />accurate results, but have a higher load on the server.<br />Some servers might restrict the maximum query depth or complexity.<br />If that's the case, try decreasing this value.<br />Default: 9 |
+
+### IntrospectionQuery
+
+**Interface.** The result shape returned by a full introspection query.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| __schema | <ApiType><a href="/api-v17/utilities/introspection#introspectionschema">IntrospectionSchema</a></ApiType> | The  schema. |
+
+### IntrospectionSchema
+
+**Interface.** The introspection representation of a GraphQL schema.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| queryType | <ApiType><a href="/api-v17/utilities/introspection#introspectionnamedtyperef">IntrospectionNamedTypeRef</a>&lt;<a href="/api-v17/utilities/introspection#introspectionobjecttype">IntrospectionObjectType</a>&gt;</ApiType> | The root object type used for query operations. |
+| mutationType | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/utilities/introspection#introspectionnamedtyperef">IntrospectionNamedTypeRef</a>&lt;<a href="/api-v17/utilities/introspection#introspectionobjecttype">IntrospectionObjectType</a>&gt;&gt;</ApiType> | The root object type used for mutation operations, if supported. |
+| subscriptionType | <ApiType><span className="api-signature-type">Maybe</span>&lt;<a href="/api-v17/utilities/introspection#introspectionnamedtyperef">IntrospectionNamedTypeRef</a>&lt;<a href="/api-v17/utilities/introspection#introspectionobjecttype">IntrospectionObjectType</a>&gt;&gt;</ApiType> | The root object type used for subscription operations, if supported. |
+| types | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/utilities/introspection#introspectiontype">IntrospectionType</a>[]</ApiType> | Object types that belong to this union type. |
+| directives | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/utilities/introspection#introspectiondirective">IntrospectionDirective</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+
+### IntrospectionType
+
+**Type alias.** Any introspection representation of a GraphQL type.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">IntrospectionType</span> = <a href="/api-v17/utilities/introspection#introspectionscalartype">IntrospectionScalarType</a> | <a href="/api-v17/utilities/introspection#introspectionobjecttype">IntrospectionObjectType</a> | <a href="/api-v17/utilities/introspection#introspectioninterfacetype">IntrospectionInterfaceType</a> | <a href="/api-v17/utilities/introspection#introspectionuniontype">IntrospectionUnionType</a> | <a href="/api-v17/utilities/introspection#introspectionenumtype">IntrospectionEnumType</a> | <a href="/api-v17/utilities/introspection#introspectioninputobjecttype">IntrospectionInputObjectType</a>;</ApiSignature>
+
+### IntrospectionOutputType
+
+**Type alias.** An introspection type that can appear in output position.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">IntrospectionOutputType</span> = <a href="/api-v17/utilities/introspection#introspectionscalartype">IntrospectionScalarType</a> | <a href="/api-v17/utilities/introspection#introspectionobjecttype">IntrospectionObjectType</a> | <a href="/api-v17/utilities/introspection#introspectioninterfacetype">IntrospectionInterfaceType</a> | <a href="/api-v17/utilities/introspection#introspectionuniontype">IntrospectionUnionType</a> | <a href="/api-v17/utilities/introspection#introspectionenumtype">IntrospectionEnumType</a>;</ApiSignature>
+
+### IntrospectionInputType
+
+**Type alias.** An introspection type that can appear in input position.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">IntrospectionInputType</span> = <a href="/api-v17/utilities/introspection#introspectionscalartype">IntrospectionScalarType</a> | <a href="/api-v17/utilities/introspection#introspectionenumtype">IntrospectionEnumType</a> | <a href="/api-v17/utilities/introspection#introspectioninputobjecttype">IntrospectionInputObjectType</a>;</ApiSignature>
+
+### IntrospectionScalarType
+
+**Interface.** The introspection representation of a scalar type.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"SCALAR"</ApiType> | The introspection kind discriminator for this type reference or type. |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| specifiedByURL? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | URL identifying the behavior specified for this custom scalar. |
+
+### IntrospectionObjectType
+
+**Interface.** The introspection representation of an object type.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"OBJECT"</ApiType> | The introspection kind discriminator for this type reference or type. |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| fields | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/utilities/introspection#introspectionfield">IntrospectionField</a>[]</ApiType> | Fields declared by this object, interface, input object, or literal. |
+| interfaces | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/utilities/introspection#introspectionnamedtyperef">IntrospectionNamedTypeRef</a>&lt;<a href="/api-v17/utilities/introspection#introspectioninterfacetype">IntrospectionInterfaceType</a>&gt;[]</ApiType> | Interfaces implemented by this object or interface type. |
+
+### IntrospectionInterfaceType
+
+**Interface.** The introspection representation of an interface type.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"INTERFACE"</ApiType> | The introspection kind discriminator for this type reference or type. |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| fields | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/utilities/introspection#introspectionfield">IntrospectionField</a>[]</ApiType> | Fields declared by this object, interface, input object, or literal. |
+| interfaces | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/utilities/introspection#introspectionnamedtyperef">IntrospectionNamedTypeRef</a>&lt;<a href="/api-v17/utilities/introspection#introspectioninterfacetype">IntrospectionInterfaceType</a>&gt;[]</ApiType> | Interfaces implemented by this object or interface type. |
+| possibleTypes | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/utilities/introspection#introspectionnamedtyperef">IntrospectionNamedTypeRef</a>&lt;<a href="/api-v17/utilities/introspection#introspectionobjecttype">IntrospectionObjectType</a>&gt;[]</ApiType> | Object types that may be returned for this abstract type. |
+
+### IntrospectionUnionType
+
+**Interface.** The introspection representation of a union type.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"UNION"</ApiType> | The introspection kind discriminator for this type reference or type. |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| possibleTypes | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/utilities/introspection#introspectionnamedtyperef">IntrospectionNamedTypeRef</a>&lt;<a href="/api-v17/utilities/introspection#introspectionobjecttype">IntrospectionObjectType</a>&gt;[]</ApiType> | Object types that may be returned for this abstract type. |
+
+### IntrospectionEnumType
+
+**Interface.** The introspection representation of an enum type.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"ENUM"</ApiType> | The introspection kind discriminator for this type reference or type. |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| enumValues | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/utilities/introspection#introspectionenumvalue">IntrospectionEnumValue</a>[]</ApiType> | Values declared by this enum type. |
+
+### IntrospectionInputObjectType
+
+**Interface.** The introspection representation of an input object type.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"INPUT_OBJECT"</ApiType> | The introspection kind discriminator for this type reference or type. |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| inputFields | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/utilities/introspection#introspectioninputvalue">IntrospectionInputValue</a>[]</ApiType> | Input fields declared by this input object type. |
+| isOneOf | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether this input object uses the experimental OneOf input object semantics. |
+
+### IntrospectionListTypeRef
+
+**Interface.** The introspection representation of a list type reference.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| T | <ApiType><a href="/api-v17/utilities/introspection#introspectiontyperef">IntrospectionTypeRef</a></ApiType> | <ApiType><a href="/api-v17/utilities/introspection#introspectiontyperef">IntrospectionTypeRef</a></ApiType> | The introspection type reference wrapped by this list type reference. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"LIST"</ApiType> | The introspection kind discriminator for this type reference or type. |
+| ofType | <ApiType><span className="api-signature-type">T</span></ApiType> | The type wrapped by this list or non-null type. |
+
+### IntrospectionNonNullTypeRef
+
+**Interface.** The introspection representation of a non-null type reference.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| T | <ApiType><a href="/api-v17/utilities/introspection#introspectiontyperef">IntrospectionTypeRef</a></ApiType> | <ApiType><a href="/api-v17/utilities/introspection#introspectiontyperef">IntrospectionTypeRef</a></ApiType> | The introspection type reference wrapped by this non-null type reference. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"NON_NULL"</ApiType> | The introspection kind discriminator for this type reference or type. |
+| ofType | <ApiType><span className="api-signature-type">T</span></ApiType> | The type wrapped by this list or non-null type. |
+
+### IntrospectionTypeRef
+
+**Type alias.** Any introspection representation of a type reference.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">IntrospectionTypeRef</span> = <a href="/api-v17/utilities/introspection#introspectionnamedtyperef">IntrospectionNamedTypeRef</a> | <a href="/api-v17/utilities/introspection#introspectionlisttyperef">IntrospectionListTypeRef</a> | <a href="/api-v17/utilities/introspection#introspectionnonnulltyperef">IntrospectionNonNullTypeRef</a>&lt;<a href="/api-v17/utilities/introspection#introspectionnamedtyperef">IntrospectionNamedTypeRef</a> | <a href="/api-v17/utilities/introspection#introspectionlisttyperef">IntrospectionListTypeRef</a>&gt;;</ApiSignature>
+
+### IntrospectionOutputTypeRef
+
+**Type alias.** An introspection type reference that can appear in output position.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">IntrospectionOutputTypeRef</span> = <a href="/api-v17/utilities/introspection#introspectionnamedtyperef">IntrospectionNamedTypeRef</a>&lt;<a href="/api-v17/utilities/introspection#introspectionoutputtype">IntrospectionOutputType</a>&gt; | <a href="/api-v17/utilities/introspection#introspectionlisttyperef">IntrospectionListTypeRef</a>&lt;<a href="/api-v17/utilities/introspection#introspectionoutputtyperef">IntrospectionOutputTypeRef</a>&gt; | <a href="/api-v17/utilities/introspection#introspectionnonnulltyperef">IntrospectionNonNullTypeRef</a>&lt;<a href="/api-v17/utilities/introspection#introspectionnamedtyperef">IntrospectionNamedTypeRef</a>&lt;<a href="/api-v17/utilities/introspection#introspectionoutputtype">IntrospectionOutputType</a>&gt; | <a href="/api-v17/utilities/introspection#introspectionlisttyperef">IntrospectionListTypeRef</a>&lt;<a href="/api-v17/utilities/introspection#introspectionoutputtyperef">IntrospectionOutputTypeRef</a>&gt;&gt;;</ApiSignature>
+
+### IntrospectionInputTypeRef
+
+**Type alias.** An introspection type reference that can appear in input position.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">IntrospectionInputTypeRef</span> = <a href="/api-v17/utilities/introspection#introspectionnamedtyperef">IntrospectionNamedTypeRef</a>&lt;<a href="/api-v17/utilities/introspection#introspectioninputtype">IntrospectionInputType</a>&gt; | <a href="/api-v17/utilities/introspection#introspectionlisttyperef">IntrospectionListTypeRef</a>&lt;<a href="/api-v17/utilities/introspection#introspectioninputtyperef">IntrospectionInputTypeRef</a>&gt; | <a href="/api-v17/utilities/introspection#introspectionnonnulltyperef">IntrospectionNonNullTypeRef</a>&lt;<a href="/api-v17/utilities/introspection#introspectionnamedtyperef">IntrospectionNamedTypeRef</a>&lt;<a href="/api-v17/utilities/introspection#introspectioninputtype">IntrospectionInputType</a>&gt; | <a href="/api-v17/utilities/introspection#introspectionlisttyperef">IntrospectionListTypeRef</a>&lt;<a href="/api-v17/utilities/introspection#introspectioninputtyperef">IntrospectionInputTypeRef</a>&gt;&gt;;</ApiSignature>
+
+### IntrospectionNamedTypeRef
+
+**Interface.** The introspection representation of a named type reference.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| T | <ApiType><a href="/api-v17/utilities/introspection#introspectiontype">IntrospectionType</a></ApiType> | <ApiType><a href="/api-v17/utilities/introspection#introspectiontype">IntrospectionType</a></ApiType> | The introspection type represented by this named type reference. |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType><span className="api-signature-type">T</span>["kind"]</ApiType> | The introspection kind discriminator for this type reference or type. |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+
+### IntrospectionField
+
+**Interface.** The introspection representation of a field.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| args | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/utilities/introspection#introspectioninputvalue">IntrospectionInputValue</a>[]</ApiType> | Arguments accepted by this field or directive. |
+| type | <ApiType><a href="/api-v17/utilities/introspection#introspectionoutputtyperef">IntrospectionOutputTypeRef</a></ApiType> | The GraphQL type reference or runtime type for this element. |
+| isDeprecated | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether this field, argument, enum value, or input value is deprecated. |
+| deprecationReason | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Reason this element is deprecated, if one was provided. |
+
+### IntrospectionInputValue
+
+**Interface.** The introspection representation of an argument or input field.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| type | <ApiType><a href="/api-v17/utilities/introspection#introspectioninputtyperef">IntrospectionInputTypeRef</a></ApiType> | The GraphQL type reference or runtime type for this element. |
+| defaultValue | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Default value used when no explicit value is supplied. |
+| isDeprecated? | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether this field, argument, enum value, or input value is deprecated. |
+| deprecationReason? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Reason this element is deprecated, if one was provided. |
+
+### IntrospectionEnumValue
+
+**Interface.** The introspection representation of an enum value.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| isDeprecated | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether this field, argument, enum value, or input value is deprecated. |
+| deprecationReason | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Reason this element is deprecated, if one was provided. |
+
+### IntrospectionDirective
+
+**Interface.** The introspection representation of a directive.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name for this schema element. |
+| description? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Human-readable description for this schema element, if provided. |
+| isRepeatable? | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether this directive may appear more than once at the same location. |
+| isDeprecated? | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether this field, argument, enum value, or input value is deprecated. |
+| deprecationReason? | <ApiType><span className="api-signature-type">Maybe</span>&lt;<span className="api-signature-keyword">string</span>&gt;</ApiType> | Reason this element is deprecated, if one was provided. |
+| locations | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/kinds#directivelocation">DirectiveLocation</a>[]</ApiType> | Locations where this directive may be applied. |
+| args | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/utilities/introspection#introspectioninputvalue">IntrospectionInputValue</a>[]</ApiType> | Arguments accepted by this field or directive. |

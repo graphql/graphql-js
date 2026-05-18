@@ -1,0 +1,976 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/language/ast
+
+## Classes
+
+### Location
+
+Contains a range of UTF-8 character offsets and token references that
+identify the region of the source from which the AST derived.
+
+#### Constructor
+
+Creates a Location instance.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-keyword">new</span> <span className="api-signature-name">Location</span>(startToken: <a href="/api-v17/language/ast#token">Token</a>, endToken: <a href="/api-v17/language/ast#token">Token</a>, source: <a href="/api-v17/language/source#source">Source</a>)</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| startToken | <ApiType><a href="/api-v17/language/ast#token">Token</a></ApiType> | The start token. |
+| endToken | <ApiType><a href="/api-v17/language/ast#token">Token</a></ApiType> | The end token. |
+| source | <ApiType><a href="/api-v17/language/source#source">Source</a></ApiType> | Source document used to derive error locations. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> |  |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| start | <ApiType><span className="api-signature-keyword">number</span></ApiType> | The character offset at which this Node begins. |
+| end | <ApiType><span className="api-signature-keyword">number</span></ApiType> | The character offset at which this Node ends. |
+| startToken | <ApiType><a href="/api-v17/language/ast#token">Token</a></ApiType> | The Token at which this Node begins. |
+| endToken | <ApiType><a href="/api-v17/language/ast#token">Token</a></ApiType> | The Token at which this Node ends. |
+| source | <ApiType><a href="/api-v17/language/source#source">Source</a></ApiType> | The Source document the AST represents. |
+
+#### toJSON()
+
+Returns a JSON representation of this location.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toJSON</span>(): &#123; start: <span className="api-signature-keyword">number</span>; end: <span className="api-signature-keyword">number</span> &#125;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>&#123; start: <span className="api-signature-keyword">number</span>; end: <span className="api-signature-keyword">number</span> &#125;</ApiType> | The JSON-serializable representation. |
+
+##### Example
+
+```ts
+import { parse } from 'graphql/language';
+
+const document = parse('{ hello }');
+const location = document.loc?.toJSON();
+
+location; // => { start: 0, end: 9 }
+```
+
+### Token
+
+Represents a range of characters represented by a lexical token
+within a Source.
+
+#### Constructor
+
+Creates a Token instance.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-keyword">new</span> <span className="api-signature-name">Token</span>(kind: <a href="/api-v17/language/lexing#tokenkind">TokenKind</a>, start: <span className="api-signature-keyword">number</span>, end: <span className="api-signature-keyword">number</span>, line: <span className="api-signature-keyword">number</span>, column: <span className="api-signature-keyword">number</span>, value?: <span className="api-signature-keyword">string</span>)</ApiSignature>
+
+##### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType><a href="/api-v17/language/lexing#tokenkind">TokenKind</a></ApiType> | Token kind produced by lexical analysis. |
+| start | <ApiType><span className="api-signature-keyword">number</span></ApiType> | Character offset where this token begins. |
+| end | <ApiType><span className="api-signature-keyword">number</span></ApiType> | Character offset where this token ends. |
+| line | <ApiType><span className="api-signature-keyword">number</span></ApiType> | One-indexed line number where this token begins. |
+| column | <ApiType><span className="api-signature-keyword">number</span></ApiType> | One-indexed column number where this token begins. |
+| value? | <ApiType><span className="api-signature-keyword">string</span></ApiType> | Interpreted value for non-punctuation tokens. |
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v17/language/ast#token">Token</a></ApiType> |  |
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType><a href="/api-v17/language/lexing#tokenkind">TokenKind</a></ApiType> | The kind of Token. |
+| start | <ApiType><span className="api-signature-keyword">number</span></ApiType> | The character offset at which this Node begins. |
+| end | <ApiType><span className="api-signature-keyword">number</span></ApiType> | The character offset at which this Node ends. |
+| line | <ApiType><span className="api-signature-keyword">number</span></ApiType> | The 1-indexed line number on which this Token appears. |
+| column | <ApiType><span className="api-signature-keyword">number</span></ApiType> | The 1-indexed column number at which this Token begins. |
+| value | <ApiType><span className="api-signature-keyword">string</span></ApiType> | For non-punctuation tokens, represents the interpreted value of the token.<br />Note: is undefined for punctuation tokens, but typed as string for<br />convenience in the parser. |
+| prev | <ApiType><a href="/api-v17/language/ast#token">Token</a> &#124; null</ApiType> | Tokens exist as nodes in a double-linked-list amongst all tokens<br />including ignored tokens. &lt;SOF> is always the first node and &lt;EOF><br />the last. |
+| next | <ApiType><a href="/api-v17/language/ast#token">Token</a> &#124; null</ApiType> | Next token in the token stream, including ignored tokens. |
+
+#### toJSON()
+
+Returns a JSON representation of this token.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">toJSON</span>(): &#123; kind: <a href="/api-v17/language/lexing#tokenkind">TokenKind</a>; value?: <span className="api-signature-keyword">string</span>; line: <span className="api-signature-keyword">number</span>; column: <span className="api-signature-keyword">number</span> &#125;</ApiSignature>
+
+##### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>&#123; kind: <a href="/api-v17/language/lexing#tokenkind">TokenKind</a>; value?: <span className="api-signature-keyword">string</span>; line: <span className="api-signature-keyword">number</span>; column: <span className="api-signature-keyword">number</span> &#125;</ApiType> | The JSON-serializable representation. |
+
+##### Example
+
+```ts
+import { Lexer, Source } from 'graphql/language';
+
+const lexer = new Lexer(new Source('{ hello }'));
+const token = lexer.advance().toJSON();
+
+token; // => { kind: '{', value: undefined, line: 1, column: 1 }
+```
+
+## Types
+
+### ASTNode
+
+**Type alias.** The list of all possible AST node types.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">ASTNode</span> = <a href="/api-v17/language/ast#namenode">NameNode</a> | <a href="/api-v17/language/ast#documentnode">DocumentNode</a> | <a href="/api-v17/language/ast#operationdefinitionnode">OperationDefinitionNode</a> | <a href="/api-v17/language/ast#variabledefinitionnode">VariableDefinitionNode</a> | <a href="/api-v17/language/ast#variablenode">VariableNode</a> | <a href="/api-v17/language/ast#selectionsetnode">SelectionSetNode</a> | <a href="/api-v17/language/ast#fieldnode">FieldNode</a> | <a href="/api-v17/language/ast#argumentnode">ArgumentNode</a> | <a href="/api-v17/language/ast#fragmentargumentnode">FragmentArgumentNode</a> | <a href="/api-v17/language/ast#fragmentspreadnode">FragmentSpreadNode</a> | <a href="/api-v17/language/ast#inlinefragmentnode">InlineFragmentNode</a> | <a href="/api-v17/language/ast#fragmentdefinitionnode">FragmentDefinitionNode</a> | <a href="/api-v17/language/ast#intvaluenode">IntValueNode</a> | <a href="/api-v17/language/ast#floatvaluenode">FloatValueNode</a> | <a href="/api-v17/language/ast#stringvaluenode">StringValueNode</a> | <a href="/api-v17/language/ast#booleanvaluenode">BooleanValueNode</a> | <a href="/api-v17/language/ast#nullvaluenode">NullValueNode</a> | <a href="/api-v17/language/ast#enumvaluenode">EnumValueNode</a> | <a href="/api-v17/language/ast#listvaluenode">ListValueNode</a> | <a href="/api-v17/language/ast#objectvaluenode">ObjectValueNode</a> | <a href="/api-v17/language/ast#objectfieldnode">ObjectFieldNode</a> | <a href="/api-v17/language/ast#directivenode">DirectiveNode</a> | <a href="/api-v17/language/ast#namedtypenode">NamedTypeNode</a> | <a href="/api-v17/language/ast#listtypenode">ListTypeNode</a> | <a href="/api-v17/language/ast#nonnulltypenode">NonNullTypeNode</a> | <a href="/api-v17/language/ast#schemadefinitionnode">SchemaDefinitionNode</a> | <a href="/api-v17/language/ast#operationtypedefinitionnode">OperationTypeDefinitionNode</a> | <a href="/api-v17/language/ast#scalartypedefinitionnode">ScalarTypeDefinitionNode</a> | <a href="/api-v17/language/ast#objecttypedefinitionnode">ObjectTypeDefinitionNode</a> | <a href="/api-v17/language/ast#fielddefinitionnode">FieldDefinitionNode</a> | <a href="/api-v17/language/ast#inputvaluedefinitionnode">InputValueDefinitionNode</a> | <a href="/api-v17/language/ast#interfacetypedefinitionnode">InterfaceTypeDefinitionNode</a> | <a href="/api-v17/language/ast#uniontypedefinitionnode">UnionTypeDefinitionNode</a> | <a href="/api-v17/language/ast#enumtypedefinitionnode">EnumTypeDefinitionNode</a> | <a href="/api-v17/language/ast#enumvaluedefinitionnode">EnumValueDefinitionNode</a> | <a href="/api-v17/language/ast#inputobjecttypedefinitionnode">InputObjectTypeDefinitionNode</a> | <a href="/api-v17/language/ast#directivedefinitionnode">DirectiveDefinitionNode</a> | <a href="/api-v17/language/ast#schemaextensionnode">SchemaExtensionNode</a> | <a href="/api-v17/language/ast#scalartypeextensionnode">ScalarTypeExtensionNode</a> | <a href="/api-v17/language/ast#objecttypeextensionnode">ObjectTypeExtensionNode</a> | <a href="/api-v17/language/ast#interfacetypeextensionnode">InterfaceTypeExtensionNode</a> | <a href="/api-v17/language/ast#uniontypeextensionnode">UnionTypeExtensionNode</a> | <a href="/api-v17/language/ast#enumtypeextensionnode">EnumTypeExtensionNode</a> | <a href="/api-v17/language/ast#inputobjecttypeextensionnode">InputObjectTypeExtensionNode</a> | <a href="/api-v17/language/ast#directiveextensionnode">DirectiveExtensionNode</a> | <a href="/api-v17/language/ast#typecoordinatenode">TypeCoordinateNode</a> | <a href="/api-v17/language/ast#membercoordinatenode">MemberCoordinateNode</a> | <a href="/api-v17/language/ast#argumentcoordinatenode">ArgumentCoordinateNode</a> | <a href="/api-v17/language/ast#directivecoordinatenode">DirectiveCoordinateNode</a> | <a href="/api-v17/language/ast#directiveargumentcoordinatenode">DirectiveArgumentCoordinateNode</a>;</ApiSignature>
+
+### ASTKindToNode
+
+**Type alias.** Utility type listing all nodes indexed by their kind.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">ASTKindToNode</span> = <span className="api-signature-type">mapped object</span>;</ApiSignature>
+
+### NameNode
+
+**Interface.** An identifier in a GraphQL document.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"Name"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| value | <ApiType><span className="api-signature-keyword">string</span></ApiType> | Parsed value represented by this node. |
+
+### DocumentNode
+
+**Interface.** The root AST node for a parsed GraphQL document.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"Document"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| definitions | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#definitionnode">DefinitionNode</a>[]</ApiType> | Top-level executable and type-system definitions in this document. |
+| tokenCount? | <ApiType><span className="api-signature-keyword">number</span></ApiType> | The number of lexical tokens parsed for this document, if token counting was enabled. |
+
+### DefinitionNode
+
+**Type alias.** Any top-level definition that may appear in a GraphQL document.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">DefinitionNode</span> = <a href="/api-v17/language/ast#executabledefinitionnode">ExecutableDefinitionNode</a> | <a href="/api-v17/language/ast#typesystemdefinitionnode">TypeSystemDefinitionNode</a> | <a href="/api-v17/language/ast#typesystemextensionnode">TypeSystemExtensionNode</a>;</ApiSignature>
+
+### ExecutableDefinitionNode
+
+**Type alias.** Any executable definition that may appear in an operation document.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">ExecutableDefinitionNode</span> = <a href="/api-v17/language/ast#operationdefinitionnode">OperationDefinitionNode</a> | <a href="/api-v17/language/ast#fragmentdefinitionnode">FragmentDefinitionNode</a>;</ApiSignature>
+
+### OperationDefinitionNode
+
+**Interface.** A query, mutation, or subscription operation definition.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"OperationDefinition"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| description? | <ApiType><a href="/api-v17/language/ast#stringvaluenode">StringValueNode</a></ApiType> | The optional GraphQL description associated with this definition. |
+| operation | <ApiType><a href="/api-v17/language/kinds#operationtypenode">OperationTypeNode</a></ApiType> | The operation selected for execution. |
+| name? | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| variableDefinitions? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#variabledefinitionnode">VariableDefinitionNode</a>[]</ApiType> | Variable definitions declared by this operation or fragment. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#directivenode">DirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+| selectionSet | <ApiType><a href="/api-v17/language/ast#selectionsetnode">SelectionSetNode</a></ApiType> | Selections made by this operation, field, or fragment. |
+
+### SubscriptionOperationDefinitionNode
+
+**Interface.** A narrowed OperationDefinitionNode for subscription operations.
+Subscription operations go through a distinct execution pipeline
+(source event stream + per-event execution), so narrowing the operation
+type allows functions in that pipeline to accept only valid input.
+
+<ApiSignature><span className="api-signature-keyword">interface</span> <span className="api-signature-name">SubscriptionOperationDefinitionNode</span> extends <a href="/api-v17/language/ast#operationdefinitionnode">OperationDefinitionNode</a></ApiSignature>
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| operation | <ApiType>"subscription"</ApiType> | Subscription operation kind for this definition. |
+
+### VariableDefinitionNode
+
+**Interface.** A variable declaration in an operation or experimental fragment definition.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"VariableDefinition"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| description? | <ApiType><a href="/api-v17/language/ast#stringvaluenode">StringValueNode</a></ApiType> | The optional GraphQL description associated with this definition. |
+| variable | <ApiType><a href="/api-v17/language/ast#variablenode">VariableNode</a></ApiType> | The variable being defined or referenced. |
+| type | <ApiType><a href="/api-v17/language/ast#typenode">TypeNode</a></ApiType> | The GraphQL type reference or runtime type for this element. |
+| defaultValue? | <ApiType><a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a></ApiType> | Default value used when no explicit value is supplied. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+
+### VariableNode
+
+**Interface.** A variable reference, such as `$id`.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"Variable"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+
+### SelectionSetNode
+
+**Interface.** A set of fields and fragments selected from an object, interface, or union.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"SelectionSet"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| selections | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#selectionnode">SelectionNode</a>[]</ApiType> | Fields and fragments contained in this selection set. |
+
+### SelectionNode
+
+**Type alias.** Any selection that may appear inside a selection set.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">SelectionNode</span> = <a href="/api-v17/language/ast#fieldnode">FieldNode</a> | <a href="/api-v17/language/ast#fragmentspreadnode">FragmentSpreadNode</a> | <a href="/api-v17/language/ast#inlinefragmentnode">InlineFragmentNode</a>;</ApiSignature>
+
+### FieldNode
+
+**Interface.** A field selected in an executable GraphQL document.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"Field"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| alias? | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | The response-key alias for this field, if one was supplied. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| arguments? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#argumentnode">ArgumentNode</a>[]</ApiType> | Arguments supplied to this field, directive, or coordinate. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#directivenode">DirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+| selectionSet? | <ApiType><a href="/api-v17/language/ast#selectionsetnode">SelectionSetNode</a></ApiType> | Selections made by this operation, field, or fragment. |
+
+### ArgumentNode
+
+**Interface.** An argument supplied to a field or directive.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"Argument"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| value | <ApiType><a href="/api-v17/language/ast#valuenode">ValueNode</a></ApiType> | Parsed value represented by this node. |
+
+### ConstArgumentNode
+
+**Interface.** An argument node whose value is guaranteed to be constant.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"Argument"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| value | <ApiType><a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a></ApiType> | Parsed value represented by this node. |
+
+### FragmentArgumentNode
+
+**Interface.** Variable definition declared by a fragment argument.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"FragmentArgument"</ApiType> | AST node kind for a fragment argument. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | Source location for this fragment argument. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Variable name declared by this fragment argument. |
+| value | <ApiType><a href="/api-v17/language/ast#valuenode">ValueNode</a></ApiType> | Default value literal for this fragment argument, if provided. |
+
+### FragmentSpreadNode
+
+**Interface.** A named fragment spread, such as `...userFields`.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"FragmentSpread"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| arguments? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#fragmentargumentnode">FragmentArgumentNode</a>[]</ApiType> | Argument values supplied to the referenced fragment. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#directivenode">DirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+
+### InlineFragmentNode
+
+**Interface.** An inline fragment spread with an optional type condition.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"InlineFragment"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| typeCondition? | <ApiType><a href="/api-v17/language/ast#namedtypenode">NamedTypeNode</a></ApiType> | The type condition that limits where this fragment applies. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#directivenode">DirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+| selectionSet | <ApiType><a href="/api-v17/language/ast#selectionsetnode">SelectionSetNode</a></ApiType> | Selections made by this operation, field, or fragment. |
+
+### FragmentDefinitionNode
+
+**Interface.** A reusable fragment definition declared in an executable document.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"FragmentDefinition"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| description? | <ApiType><a href="/api-v17/language/ast#stringvaluenode">StringValueNode</a></ApiType> | The optional GraphQL description associated with this definition. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| variableDefinitions? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#variabledefinitionnode">VariableDefinitionNode</a>[]</ApiType> | Experimental variable definitions declared by this fragment definition. |
+| typeCondition | <ApiType><a href="/api-v17/language/ast#namedtypenode">NamedTypeNode</a></ApiType> | The type condition that limits where this fragment applies. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#directivenode">DirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+| selectionSet | <ApiType><a href="/api-v17/language/ast#selectionsetnode">SelectionSetNode</a></ApiType> | Selections made by this operation, field, or fragment. |
+
+### ValueNode
+
+**Type alias.** Any value literal that may appear in an executable GraphQL document.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">ValueNode</span> = <a href="/api-v17/language/ast#variablenode">VariableNode</a> | <a href="/api-v17/language/ast#intvaluenode">IntValueNode</a> | <a href="/api-v17/language/ast#floatvaluenode">FloatValueNode</a> | <a href="/api-v17/language/ast#stringvaluenode">StringValueNode</a> | <a href="/api-v17/language/ast#booleanvaluenode">BooleanValueNode</a> | <a href="/api-v17/language/ast#nullvaluenode">NullValueNode</a> | <a href="/api-v17/language/ast#enumvaluenode">EnumValueNode</a> | <a href="/api-v17/language/ast#listvaluenode">ListValueNode</a> | <a href="/api-v17/language/ast#objectvaluenode">ObjectValueNode</a>;</ApiSignature>
+
+### ConstValueNode
+
+**Type alias.** Any value literal that is guaranteed not to contain a variable reference.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">ConstValueNode</span> = <a href="/api-v17/language/ast#intvaluenode">IntValueNode</a> | <a href="/api-v17/language/ast#floatvaluenode">FloatValueNode</a> | <a href="/api-v17/language/ast#stringvaluenode">StringValueNode</a> | <a href="/api-v17/language/ast#booleanvaluenode">BooleanValueNode</a> | <a href="/api-v17/language/ast#nullvaluenode">NullValueNode</a> | <a href="/api-v17/language/ast#enumvaluenode">EnumValueNode</a> | <a href="/api-v17/language/ast#constlistvaluenode">ConstListValueNode</a> | <a href="/api-v17/language/ast#constobjectvaluenode">ConstObjectValueNode</a>;</ApiSignature>
+
+### IntValueNode
+
+**Interface.** An integer value literal.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"IntValue"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| value | <ApiType><span className="api-signature-keyword">string</span></ApiType> | Parsed value represented by this node. |
+
+### FloatValueNode
+
+**Interface.** A floating-point value literal.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"FloatValue"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| value | <ApiType><span className="api-signature-keyword">string</span></ApiType> | Parsed value represented by this node. |
+
+### StringValueNode
+
+**Interface.** A string value literal.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"StringValue"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| value | <ApiType><span className="api-signature-keyword">string</span></ApiType> | Parsed value represented by this node. |
+| block? | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether this string was parsed from block string syntax. |
+
+### BooleanValueNode
+
+**Interface.** A boolean value literal.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"BooleanValue"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| value | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Parsed value represented by this node. |
+
+### NullValueNode
+
+**Interface.** A null value literal.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"NullValue"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+
+### EnumValueNode
+
+**Interface.** An enum value literal.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"EnumValue"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| value | <ApiType><span className="api-signature-keyword">string</span></ApiType> | Parsed value represented by this node. |
+
+### ListValueNode
+
+**Interface.** A list value literal.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"ListValue"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| values | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#valuenode">ValueNode</a>[]</ApiType> | Values contained in this enum, list, or input-object definition. |
+
+### ConstListValueNode
+
+**Interface.** A list value literal whose elements are all constant values.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"ListValue"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| values | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a>[]</ApiType> | Values contained in this enum, list, or input-object definition. |
+
+### ObjectValueNode
+
+**Interface.** An input object value literal.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"ObjectValue"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| fields | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#objectfieldnode">ObjectFieldNode</a>[]</ApiType> | Fields declared by this object, interface, input object, or literal. |
+
+### ConstObjectValueNode
+
+**Interface.** An input object value literal whose fields are all constant values.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"ObjectValue"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| fields | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constobjectfieldnode">ConstObjectFieldNode</a>[]</ApiType> | Fields declared by this object, interface, input object, or literal. |
+
+### ObjectFieldNode
+
+**Interface.** A field inside an input object value literal.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"ObjectField"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| value | <ApiType><a href="/api-v17/language/ast#valuenode">ValueNode</a></ApiType> | Parsed value represented by this node. |
+
+### ConstObjectFieldNode
+
+**Interface.** A field inside a constant input object value literal.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"ObjectField"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| value | <ApiType><a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a></ApiType> | Parsed value represented by this node. |
+
+### DirectiveNode
+
+**Interface.** A directive applied to an executable or type-system location.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"Directive"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| arguments? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#argumentnode">ArgumentNode</a>[]</ApiType> | Arguments supplied to this field, directive, or coordinate. |
+
+### ConstDirectiveNode
+
+**Interface.** A directive whose arguments are all constant values.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"Directive"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| arguments? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constargumentnode">ConstArgumentNode</a>[]</ApiType> | Arguments supplied to this field, directive, or coordinate. |
+
+### TypeNode
+
+**Type alias.** Any GraphQL type reference AST node.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">TypeNode</span> = <a href="/api-v17/language/ast#namedtypenode">NamedTypeNode</a> | <a href="/api-v17/language/ast#listtypenode">ListTypeNode</a> | <a href="/api-v17/language/ast#nonnulltypenode">NonNullTypeNode</a>;</ApiSignature>
+
+### NamedTypeNode
+
+**Interface.** A named type reference.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"NamedType"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+
+### ListTypeNode
+
+**Interface.** A list type reference.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"ListType"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| type | <ApiType><a href="/api-v17/language/ast#typenode">TypeNode</a></ApiType> | The GraphQL type reference or runtime type for this element. |
+
+### NonNullTypeNode
+
+**Interface.** A non-null type reference.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"NonNullType"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| type | <ApiType><a href="/api-v17/language/ast#namedtypenode">NamedTypeNode</a> &#124; <a href="/api-v17/language/ast#listtypenode">ListTypeNode</a></ApiType> | The GraphQL type reference or runtime type for this element. |
+
+### TypeSystemDefinitionNode
+
+**Type alias.** Any type-system definition that may appear in a schema document.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">TypeSystemDefinitionNode</span> = <a href="/api-v17/language/ast#schemadefinitionnode">SchemaDefinitionNode</a> | <a href="/api-v17/language/ast#typedefinitionnode">TypeDefinitionNode</a> | <a href="/api-v17/language/ast#directivedefinitionnode">DirectiveDefinitionNode</a>;</ApiSignature>
+
+### SchemaDefinitionNode
+
+**Interface.** A schema definition in a type-system document.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"SchemaDefinition"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| description? | <ApiType><a href="/api-v17/language/ast#stringvaluenode">StringValueNode</a></ApiType> | The optional GraphQL description associated with this definition. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+| operationTypes | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#operationtypedefinitionnode">OperationTypeDefinitionNode</a>[]</ApiType> | Root operation types declared by this schema definition or extension. |
+
+### OperationTypeDefinitionNode
+
+**Interface.** A root operation type declaration inside a schema definition or extension.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"OperationTypeDefinition"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| operation | <ApiType><a href="/api-v17/language/kinds#operationtypenode">OperationTypeNode</a></ApiType> | The operation selected for execution. |
+| type | <ApiType><a href="/api-v17/language/ast#namedtypenode">NamedTypeNode</a></ApiType> | The GraphQL type reference or runtime type for this element. |
+
+### TypeDefinitionNode
+
+**Type alias.** Any named type definition that may appear in a schema document.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">TypeDefinitionNode</span> = <a href="/api-v17/language/ast#scalartypedefinitionnode">ScalarTypeDefinitionNode</a> | <a href="/api-v17/language/ast#objecttypedefinitionnode">ObjectTypeDefinitionNode</a> | <a href="/api-v17/language/ast#interfacetypedefinitionnode">InterfaceTypeDefinitionNode</a> | <a href="/api-v17/language/ast#uniontypedefinitionnode">UnionTypeDefinitionNode</a> | <a href="/api-v17/language/ast#enumtypedefinitionnode">EnumTypeDefinitionNode</a> | <a href="/api-v17/language/ast#inputobjecttypedefinitionnode">InputObjectTypeDefinitionNode</a>;</ApiSignature>
+
+### ScalarTypeDefinitionNode
+
+**Interface.** A scalar type definition in a type-system document.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"ScalarTypeDefinition"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| description? | <ApiType><a href="/api-v17/language/ast#stringvaluenode">StringValueNode</a></ApiType> | The optional GraphQL description associated with this definition. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+
+### ObjectTypeDefinitionNode
+
+**Interface.** An object type definition in a type-system document.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"ObjectTypeDefinition"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| description? | <ApiType><a href="/api-v17/language/ast#stringvaluenode">StringValueNode</a></ApiType> | The optional GraphQL description associated with this definition. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| interfaces? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#namedtypenode">NamedTypeNode</a>[]</ApiType> | Interfaces implemented by this object or interface type. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+| fields? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#fielddefinitionnode">FieldDefinitionNode</a>[]</ApiType> | Fields declared by this object, interface, input object, or literal. |
+
+### FieldDefinitionNode
+
+**Interface.** A field definition declared by an object or interface type.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"FieldDefinition"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| description? | <ApiType><a href="/api-v17/language/ast#stringvaluenode">StringValueNode</a></ApiType> | The optional GraphQL description associated with this definition. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| arguments? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#inputvaluedefinitionnode">InputValueDefinitionNode</a>[]</ApiType> | Arguments supplied to this field, directive, or coordinate. |
+| type | <ApiType><a href="/api-v17/language/ast#typenode">TypeNode</a></ApiType> | The GraphQL type reference or runtime type for this element. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+
+### InputValueDefinitionNode
+
+**Interface.** An argument or input-field definition.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"InputValueDefinition"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| description? | <ApiType><a href="/api-v17/language/ast#stringvaluenode">StringValueNode</a></ApiType> | The optional GraphQL description associated with this definition. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| type | <ApiType><a href="/api-v17/language/ast#typenode">TypeNode</a></ApiType> | The GraphQL type reference or runtime type for this element. |
+| defaultValue? | <ApiType><a href="/api-v17/language/ast#constvaluenode">ConstValueNode</a></ApiType> | Default value used when no explicit value is supplied. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+
+### InterfaceTypeDefinitionNode
+
+**Interface.** An interface type definition in a type-system document.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"InterfaceTypeDefinition"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| description? | <ApiType><a href="/api-v17/language/ast#stringvaluenode">StringValueNode</a></ApiType> | The optional GraphQL description associated with this definition. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| interfaces? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#namedtypenode">NamedTypeNode</a>[]</ApiType> | Interfaces implemented by this object or interface type. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+| fields? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#fielddefinitionnode">FieldDefinitionNode</a>[]</ApiType> | Fields declared by this object, interface, input object, or literal. |
+
+### UnionTypeDefinitionNode
+
+**Interface.** A union type definition in a type-system document.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"UnionTypeDefinition"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| description? | <ApiType><a href="/api-v17/language/ast#stringvaluenode">StringValueNode</a></ApiType> | The optional GraphQL description associated with this definition. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+| types? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#namedtypenode">NamedTypeNode</a>[]</ApiType> | Object types that belong to this union type. |
+
+### EnumTypeDefinitionNode
+
+**Interface.** An enum type definition in a type-system document.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"EnumTypeDefinition"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| description? | <ApiType><a href="/api-v17/language/ast#stringvaluenode">StringValueNode</a></ApiType> | The optional GraphQL description associated with this definition. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+| values? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#enumvaluedefinitionnode">EnumValueDefinitionNode</a>[]</ApiType> | Values contained in this enum, list, or input-object definition. |
+
+### EnumValueDefinitionNode
+
+**Interface.** An enum value definition.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"EnumValueDefinition"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| description? | <ApiType><a href="/api-v17/language/ast#stringvaluenode">StringValueNode</a></ApiType> | The optional GraphQL description associated with this definition. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+
+### InputObjectTypeDefinitionNode
+
+**Interface.** An input object type definition in a type-system document.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"InputObjectTypeDefinition"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| description? | <ApiType><a href="/api-v17/language/ast#stringvaluenode">StringValueNode</a></ApiType> | The optional GraphQL description associated with this definition. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+| fields? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#inputvaluedefinitionnode">InputValueDefinitionNode</a>[]</ApiType> | Fields declared by this object, interface, input object, or literal. |
+
+### DirectiveDefinitionNode
+
+**Interface.** A directive definition in a type-system document.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"DirectiveDefinition"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| description? | <ApiType><a href="/api-v17/language/ast#stringvaluenode">StringValueNode</a></ApiType> | The optional GraphQL description associated with this definition. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| arguments? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#inputvaluedefinitionnode">InputValueDefinitionNode</a>[]</ApiType> | Arguments supplied to this field, directive, or coordinate. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+| repeatable | <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | Whether this directive may appear more than once at the same location. |
+| locations | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#namenode">NameNode</a>[]</ApiType> | Locations where this directive may be applied. |
+
+### TypeSystemExtensionNode
+
+**Type alias.** Any type-system extension that may appear in a schema extension document.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">TypeSystemExtensionNode</span> = <a href="/api-v17/language/ast#schemaextensionnode">SchemaExtensionNode</a> | <a href="/api-v17/language/ast#typeextensionnode">TypeExtensionNode</a> | <a href="/api-v17/language/ast#directiveextensionnode">DirectiveExtensionNode</a>;</ApiSignature>
+
+### SchemaExtensionNode
+
+**Interface.** A schema extension in a type-system document.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"SchemaExtension"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+| operationTypes? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#operationtypedefinitionnode">OperationTypeDefinitionNode</a>[]</ApiType> | Root operation types declared by this schema definition or extension. |
+
+### TypeExtensionNode
+
+**Type alias.** Any named type extension that may appear in a schema extension document.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">TypeExtensionNode</span> = <a href="/api-v17/language/ast#scalartypeextensionnode">ScalarTypeExtensionNode</a> | <a href="/api-v17/language/ast#objecttypeextensionnode">ObjectTypeExtensionNode</a> | <a href="/api-v17/language/ast#interfacetypeextensionnode">InterfaceTypeExtensionNode</a> | <a href="/api-v17/language/ast#uniontypeextensionnode">UnionTypeExtensionNode</a> | <a href="/api-v17/language/ast#enumtypeextensionnode">EnumTypeExtensionNode</a> | <a href="/api-v17/language/ast#inputobjecttypeextensionnode">InputObjectTypeExtensionNode</a>;</ApiSignature>
+
+### ScalarTypeExtensionNode
+
+**Interface.** A scalar type extension.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"ScalarTypeExtension"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+
+### ObjectTypeExtensionNode
+
+**Interface.** An object type extension.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"ObjectTypeExtension"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| interfaces? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#namedtypenode">NamedTypeNode</a>[]</ApiType> | Interfaces implemented by this object or interface type. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+| fields? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#fielddefinitionnode">FieldDefinitionNode</a>[]</ApiType> | Fields declared by this object, interface, input object, or literal. |
+
+### InterfaceTypeExtensionNode
+
+**Interface.** An interface type extension.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"InterfaceTypeExtension"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| interfaces? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#namedtypenode">NamedTypeNode</a>[]</ApiType> | Interfaces implemented by this object or interface type. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+| fields? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#fielddefinitionnode">FieldDefinitionNode</a>[]</ApiType> | Fields declared by this object, interface, input object, or literal. |
+
+### UnionTypeExtensionNode
+
+**Interface.** A union type extension.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"UnionTypeExtension"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+| types? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#namedtypenode">NamedTypeNode</a>[]</ApiType> | Object types that belong to this union type. |
+
+### EnumTypeExtensionNode
+
+**Interface.** An enum type extension.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"EnumTypeExtension"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+| values? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#enumvaluedefinitionnode">EnumValueDefinitionNode</a>[]</ApiType> | Values contained in this enum, list, or input-object definition. |
+
+### InputObjectTypeExtensionNode
+
+**Interface.** An input object type extension.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"InputObjectTypeExtension"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+| fields? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#inputvaluedefinitionnode">InputValueDefinitionNode</a>[]</ApiType> | Fields declared by this object, interface, input object, or literal. |
+
+### DirectiveExtensionNode
+
+**Interface.** A directive extension.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"DirectiveExtension"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| directives? | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v17/language/ast#constdirectivenode">ConstDirectiveNode</a>[]</ApiType> | Directives available in this schema or applied to this AST node. |
+
+### SchemaCoordinateNode
+
+**Type alias.** Any AST node representing a GraphQL schema coordinate.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">SchemaCoordinateNode</span> = <a href="/api-v17/language/ast#typecoordinatenode">TypeCoordinateNode</a> | <a href="/api-v17/language/ast#membercoordinatenode">MemberCoordinateNode</a> | <a href="/api-v17/language/ast#argumentcoordinatenode">ArgumentCoordinateNode</a> | <a href="/api-v17/language/ast#directivecoordinatenode">DirectiveCoordinateNode</a> | <a href="/api-v17/language/ast#directiveargumentcoordinatenode">DirectiveArgumentCoordinateNode</a>;</ApiSignature>
+
+### TypeCoordinateNode
+
+**Interface.** A schema coordinate that refers to a named type.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"TypeCoordinate"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+
+### MemberCoordinateNode
+
+**Interface.** A schema coordinate that refers to a member of a named type.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"MemberCoordinate"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| memberName | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | The member name referenced by this schema coordinate. |
+
+### ArgumentCoordinateNode
+
+**Interface.** A schema coordinate that refers to a field or directive argument.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"ArgumentCoordinate"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| fieldName | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | The field name referenced by this schema coordinate. |
+| argumentName | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | The argument name referenced by this schema coordinate. |
+
+### DirectiveCoordinateNode
+
+**Interface.** A schema coordinate that refers to a directive.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"DirectiveCoordinate"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+
+### DirectiveArgumentCoordinateNode
+
+**Interface.** A schema coordinate that refers to a directive argument.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| kind | <ApiType>"DirectiveArgumentCoordinate"</ApiType> | The discriminator identifying the concrete AST or introspection kind. |
+| loc? | <ApiType><a href="/api-v17/language/ast#location">Location</a></ApiType> | The source location for this AST node, if location tracking was enabled. |
+| name | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | Name node identifying this AST node. |
+| argumentName | <ApiType><a href="/api-v17/language/ast#namenode">NameNode</a></ApiType> | The argument name referenced by this schema coordinate. |

@@ -1,0 +1,25 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/utilities/typed-documents
+
+## Types
+
+### TypedQueryDocumentNode
+
+**Interface.** Wrapper type that contains DocumentNode and types that can be deduced from it.
+
+#### Type Parameters
+
+| Name | Constraint | Default | Description |
+| --- | --- | --- | --- |
+| TResponseData |  | <ApiType><span className="api-signature-type">object</span></ApiType> | Typed GraphQL response data shape. |
+| TRequestVariables |  | <ApiType><span className="api-signature-type">object</span></ApiType> | Typed GraphQL request variables shape. |
+
+<ApiSignature><span className="api-signature-keyword">interface</span> <span className="api-signature-name">TypedQueryDocumentNode</span>&lt;<span className="api-signature-type">TResponseData</span> = <span className="api-signature-type">object</span>, <span className="api-signature-type">TRequestVariables</span> = <span className="api-signature-type">object</span>&gt; extends <a href="/api-v16/language/ast#documentnode">DocumentNode</a></ApiSignature>
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| definitions | <ApiType><span className="api-signature-keyword">readonly</span> <a href="/api-v16/language/ast#executabledefinitionnode">ExecutableDefinitionNode</a>[]</ApiType> | Top-level executable and type-system definitions in this document. |
+| __ensureTypesOfVariablesAndResultMatching? | <ApiType>(variables: <span className="api-signature-type">TRequestVariables</span>): <span className="api-signature-type">TResponseData</span></ApiType> | This type is used to ensure that the variables you pass in to the query are assignable to Variables<br />and that the Result is assignable to whatever you pass your result to. The method is never actually<br />implemented, but the type is valid because we list it as optional |

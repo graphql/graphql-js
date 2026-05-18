@@ -1,0 +1,177 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/utilities/schema-changes
+
+## Functions
+
+### findBreakingChanges()
+
+Given two schemas, returns an Array containing descriptions of all the types
+of breaking changes covered by the other functions down below.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">findBreakingChanges</span>(oldSchema: <a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a>, newSchema: <a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a>): <a href="/api-v16/utilities/schema-changes#breakingchange">BreakingChange</a>[]</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| oldSchema | <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | Schema before the change. |
+| newSchema | <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | Schema after the change. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v16/utilities/schema-changes#breakingchange">BreakingChange</a>[]</ApiType> | Breaking changes between the two schemas. |
+
+#### Example
+
+```ts
+import { buildSchema, findBreakingChanges } from 'graphql/utilities';
+
+const oldSchema = buildSchema(`
+  type User {
+    id: ID!
+    name: String
+  }
+
+  type Query {
+    viewer: User
+  }
+`);
+const newSchema = buildSchema(`
+  type User {
+    id: ID!
+  }
+
+  type Query {
+    viewer: User
+  }
+`);
+
+const changes = findBreakingChanges(oldSchema, newSchema);
+
+changes[0].type; // => 'FIELD_REMOVED'
+changes[0].description; // matches /User.name was removed/
+```
+
+### findDangerousChanges()
+
+Given two schemas, returns an Array containing descriptions of all the types
+of potentially dangerous changes covered by the other functions down below.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">findDangerousChanges</span>(oldSchema: <a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a>, newSchema: <a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a>): <a href="/api-v16/utilities/schema-changes#dangerouschange">DangerousChange</a>[]</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| oldSchema | <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | Schema before the change. |
+| newSchema | <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | Schema after the change. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v16/utilities/schema-changes#dangerouschange">DangerousChange</a>[]</ApiType> | Dangerous changes between the two schemas. |
+
+#### Example
+
+```ts
+import { buildSchema, findDangerousChanges } from 'graphql/utilities';
+
+const oldSchema = buildSchema(`
+  enum Episode {
+    NEW_HOPE
+  }
+
+  type Query {
+    episode: Episode
+  }
+`);
+const newSchema = buildSchema(`
+  enum Episode {
+    NEW_HOPE
+    EMPIRE
+  }
+
+  type Query {
+    episode: Episode
+  }
+`);
+
+const changes = findDangerousChanges(oldSchema, newSchema);
+
+changes[0].type; // => 'VALUE_ADDED_TO_ENUM'
+changes[0].description; // matches /EMPIRE was added/
+```
+
+## Enumerations
+
+### BreakingChangeType
+
+**Enumeration.** Categories of schema changes that may break existing operations.
+
+#### Members
+
+| Name | Value | Description |
+| --- | --- | --- |
+| `TYPE_REMOVED` | `"TYPE_REMOVED"` | Breaking change code for type removed. |
+| `TYPE_CHANGED_KIND` | `"TYPE_CHANGED_KIND"` | Breaking change code for type changed kind. |
+| `TYPE_REMOVED_FROM_UNION` | `"TYPE_REMOVED_FROM_UNION"` | Breaking change code for type removed from union. |
+| `VALUE_REMOVED_FROM_ENUM` | `"VALUE_REMOVED_FROM_ENUM"` | Breaking change code for value removed from enum. |
+| `REQUIRED_INPUT_FIELD_ADDED` | `"REQUIRED_INPUT_FIELD_ADDED"` | Breaking change code for required input field added. |
+| `IMPLEMENTED_INTERFACE_REMOVED` | `"IMPLEMENTED_INTERFACE_REMOVED"` | Breaking change code for implemented interface removed. |
+| `FIELD_REMOVED` | `"FIELD_REMOVED"` | Breaking change code for field removed. |
+| `FIELD_CHANGED_KIND` | `"FIELD_CHANGED_KIND"` | Breaking change code for field changed kind. |
+| `REQUIRED_ARG_ADDED` | `"REQUIRED_ARG_ADDED"` | Breaking change code for required arg added. |
+| `ARG_REMOVED` | `"ARG_REMOVED"` | Breaking change code for arg removed. |
+| `ARG_CHANGED_KIND` | `"ARG_CHANGED_KIND"` | Breaking change code for arg changed kind. |
+| `DIRECTIVE_REMOVED` | `"DIRECTIVE_REMOVED"` | Breaking change code for directive removed. |
+| `DIRECTIVE_ARG_REMOVED` | `"DIRECTIVE_ARG_REMOVED"` | Breaking change code for directive arg removed. |
+| `REQUIRED_DIRECTIVE_ARG_ADDED` | `"REQUIRED_DIRECTIVE_ARG_ADDED"` | Breaking change code for required directive arg added. |
+| `DIRECTIVE_REPEATABLE_REMOVED` | `"DIRECTIVE_REPEATABLE_REMOVED"` | Breaking change code for directive repeatable removed. |
+| `DIRECTIVE_LOCATION_REMOVED` | `"DIRECTIVE_LOCATION_REMOVED"` | Breaking change code for directive location removed. |
+
+### DangerousChangeType
+
+**Enumeration.** Categories of schema changes that may be dangerous for existing operations.
+
+#### Members
+
+| Name | Value | Description |
+| --- | --- | --- |
+| `VALUE_ADDED_TO_ENUM` | `"VALUE_ADDED_TO_ENUM"` | Dangerous change code for value added to enum. |
+| `TYPE_ADDED_TO_UNION` | `"TYPE_ADDED_TO_UNION"` | Dangerous change code for type added to union. |
+| `OPTIONAL_INPUT_FIELD_ADDED` | `"OPTIONAL_INPUT_FIELD_ADDED"` | Dangerous change code for optional input field added. |
+| `OPTIONAL_ARG_ADDED` | `"OPTIONAL_ARG_ADDED"` | Dangerous change code for optional arg added. |
+| `IMPLEMENTED_INTERFACE_ADDED` | `"IMPLEMENTED_INTERFACE_ADDED"` | Dangerous change code for implemented interface added. |
+| `ARG_DEFAULT_VALUE_CHANGE` | `"ARG_DEFAULT_VALUE_CHANGE"` | Dangerous change code for arg default value change. |
+
+## Types
+
+### BreakingChange
+
+**Interface.** Description of a schema change that may break existing operations.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><a href="/api-v16/utilities/schema-changes#breakingchangetype">BreakingChangeType</a></ApiType> | Specific kind of breaking schema change. |
+| description | <ApiType><span className="api-signature-keyword">string</span></ApiType> | Human-readable description of the breaking schema change. |
+
+### DangerousChange
+
+**Interface.** Description of a schema change that may be dangerous for existing operations.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| type | <ApiType><a href="/api-v16/utilities/schema-changes#dangerouschangetype">DangerousChangeType</a></ApiType> | Specific kind of dangerous schema change. |
+| description | <ApiType><span className="api-signature-keyword">string</span></ApiType> | Human-readable description of the dangerous schema change. |

@@ -1,0 +1,126 @@
+import { ApiSignature, ApiTag } from '../../../components/ApiTags';
+
+# graphql/language/kinds
+
+## Enumerations
+
+### OperationTypeNode
+
+**Enumeration.** The operation types supported by GraphQL executable definitions.
+
+#### Members
+
+| Name | Value | Description |
+| --- | --- | --- |
+| `QUERY` | `"query"` | A query operation. |
+| `MUTATION` | `"mutation"` | A mutation operation. |
+| `SUBSCRIPTION` | `"subscription"` | A subscription operation. |
+
+### DirectiveLocation
+
+**Enumeration.** The set of allowed directive location values.
+
+#### Members
+
+| Name | Value | Description |
+| --- | --- | --- |
+| `QUERY` | `"QUERY"` | Directive location for query operations. |
+| `MUTATION` | `"MUTATION"` | Directive location for mutation operations. |
+| `SUBSCRIPTION` | `"SUBSCRIPTION"` | Directive location for subscription operations. |
+| `FIELD` | `"FIELD"` | Directive location for field selections. |
+| `FRAGMENT_DEFINITION` | `"FRAGMENT_DEFINITION"` | Directive location for fragment definitions. |
+| `FRAGMENT_SPREAD` | `"FRAGMENT_SPREAD"` | Directive location for fragment spreads. |
+| `INLINE_FRAGMENT` | `"INLINE_FRAGMENT"` | Directive location for inline fragments. |
+| `VARIABLE_DEFINITION` | `"VARIABLE_DEFINITION"` | Directive location for variable definitions. |
+| `SCHEMA` | `"SCHEMA"` | Directive location for schema definitions and extensions. |
+| `SCALAR` | `"SCALAR"` | Directive location for scalar type definitions and extensions. |
+| `OBJECT` | `"OBJECT"` | Directive location for object type definitions and extensions. |
+| `FIELD_DEFINITION` | `"FIELD_DEFINITION"` | Directive location for field definitions. |
+| `ARGUMENT_DEFINITION` | `"ARGUMENT_DEFINITION"` | Directive location for argument definitions. |
+| `INTERFACE` | `"INTERFACE"` | Directive location for interface type definitions and extensions. |
+| `UNION` | `"UNION"` | Directive location for union type definitions and extensions. |
+| `ENUM` | `"ENUM"` | Directive location for enum type definitions and extensions. |
+| `ENUM_VALUE` | `"ENUM_VALUE"` | Directive location for enum value definitions. |
+| `INPUT_OBJECT` | `"INPUT_OBJECT"` | Directive location for input object type definitions and extensions. |
+| `INPUT_FIELD_DEFINITION` | `"INPUT_FIELD_DEFINITION"` | Directive location for input object field definitions. |
+| `DIRECTIVE_DEFINITION` | `"DIRECTIVE_DEFINITION"` | Directive location for directive definitions and extensions. |
+
+### Kind
+
+**Enumeration.** The set of allowed kind values for AST nodes.
+
+#### Members
+
+| Name | Value | Description |
+| --- | --- | --- |
+| `NAME` | `"Name"` | AST kind for name nodes. |
+| `DOCUMENT` | `"Document"` | AST kind for document nodes. |
+| `OPERATION_DEFINITION` | `"OperationDefinition"` | AST kind for operation definition nodes. |
+| `VARIABLE_DEFINITION` | `"VariableDefinition"` | AST kind for variable definition nodes. |
+| `SELECTION_SET` | `"SelectionSet"` | AST kind for selection set nodes. |
+| `FIELD` | `"Field"` | AST kind for field selection nodes. |
+| `ARGUMENT` | `"Argument"` | AST kind for argument nodes. |
+| `FRAGMENT_SPREAD` | `"FragmentSpread"` | AST kind for fragment spread nodes. |
+| `INLINE_FRAGMENT` | `"InlineFragment"` | AST kind for inline fragment nodes. |
+| `FRAGMENT_DEFINITION` | `"FragmentDefinition"` | AST kind for fragment definition nodes. |
+| `VARIABLE` | `"Variable"` | AST kind for variable reference nodes. |
+| `INT` | `"IntValue"` | AST kind for integer value nodes. |
+| `FLOAT` | `"FloatValue"` | AST kind for floating-point value nodes. |
+| `STRING` | `"StringValue"` | AST kind for string value nodes. |
+| `BOOLEAN` | `"BooleanValue"` | AST kind for boolean value nodes. |
+| `NULL` | `"NullValue"` | AST kind for null value nodes. |
+| `ENUM` | `"EnumValue"` | AST kind for enum value nodes. |
+| `LIST` | `"ListValue"` | AST kind for list value nodes. |
+| `OBJECT` | `"ObjectValue"` | AST kind for object value nodes. |
+| `OBJECT_FIELD` | `"ObjectField"` | AST kind for object field nodes. |
+| `DIRECTIVE` | `"Directive"` | AST kind for directive nodes. |
+| `NAMED_TYPE` | `"NamedType"` | AST kind for named type reference nodes. |
+| `LIST_TYPE` | `"ListType"` | AST kind for list type reference nodes. |
+| `NON_NULL_TYPE` | `"NonNullType"` | AST kind for non-null type reference nodes. |
+| `SCHEMA_DEFINITION` | `"SchemaDefinition"` | AST kind for schema definition nodes. |
+| `OPERATION_TYPE_DEFINITION` | `"OperationTypeDefinition"` | AST kind for operation type definition nodes. |
+| `SCALAR_TYPE_DEFINITION` | `"ScalarTypeDefinition"` | AST kind for scalar type definition nodes. |
+| `OBJECT_TYPE_DEFINITION` | `"ObjectTypeDefinition"` | AST kind for object type definition nodes. |
+| `FIELD_DEFINITION` | `"FieldDefinition"` | AST kind for field definition nodes. |
+| `INPUT_VALUE_DEFINITION` | `"InputValueDefinition"` | AST kind for input value definition nodes. |
+| `INTERFACE_TYPE_DEFINITION` | `"InterfaceTypeDefinition"` | AST kind for interface type definition nodes. |
+| `UNION_TYPE_DEFINITION` | `"UnionTypeDefinition"` | AST kind for union type definition nodes. |
+| `ENUM_TYPE_DEFINITION` | `"EnumTypeDefinition"` | AST kind for enum type definition nodes. |
+| `ENUM_VALUE_DEFINITION` | `"EnumValueDefinition"` | AST kind for enum value definition nodes. |
+| `INPUT_OBJECT_TYPE_DEFINITION` | `"InputObjectTypeDefinition"` | AST kind for input object type definition nodes. |
+| `DIRECTIVE_DEFINITION` | `"DirectiveDefinition"` | AST kind for directive definition nodes. |
+| `SCHEMA_EXTENSION` | `"SchemaExtension"` | AST kind for schema extension nodes. |
+| `DIRECTIVE_EXTENSION` | `"DirectiveExtension"` | AST kind for directive extension nodes. |
+| `SCALAR_TYPE_EXTENSION` | `"ScalarTypeExtension"` | AST kind for scalar type extension nodes. |
+| `OBJECT_TYPE_EXTENSION` | `"ObjectTypeExtension"` | AST kind for object type extension nodes. |
+| `INTERFACE_TYPE_EXTENSION` | `"InterfaceTypeExtension"` | AST kind for interface type extension nodes. |
+| `UNION_TYPE_EXTENSION` | `"UnionTypeExtension"` | AST kind for union type extension nodes. |
+| `ENUM_TYPE_EXTENSION` | `"EnumTypeExtension"` | AST kind for enum type extension nodes. |
+| `INPUT_OBJECT_TYPE_EXTENSION` | `"InputObjectTypeExtension"` | AST kind for input object type extension nodes. |
+| `TYPE_COORDINATE` | `"TypeCoordinate"` | AST kind for type coordinate nodes. |
+| `MEMBER_COORDINATE` | `"MemberCoordinate"` | AST kind for member coordinate nodes. |
+| `ARGUMENT_COORDINATE` | `"ArgumentCoordinate"` | AST kind for argument coordinate nodes. |
+| `DIRECTIVE_COORDINATE` | `"DirectiveCoordinate"` | AST kind for directive coordinate nodes. |
+| `DIRECTIVE_ARGUMENT_COORDINATE` | `"DirectiveArgumentCoordinate"` | AST kind for directive argument coordinate nodes. |
+
+## Types
+
+### DirectiveLocationEnum
+
+**Type alias.** <ApiTag kind="deprecated" />
+
+Legacy alias for the enum type representing directive location values. This
+is retained for backwards compatibility; use [`DirectiveLocation`](/api-v16/language/kinds#directivelocation) instead
+because DirectiveLocationEnum will be removed in v17.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">DirectiveLocationEnum</span> = <span className="api-signature-keyword">typeof</span> <a href="/api-v16/language/kinds#directivelocation">DirectiveLocation</a>;</ApiSignature>
+
+### KindEnum
+
+**Type alias.** <ApiTag kind="deprecated" />
+
+Legacy alias for the enum type representing the possible kind values of AST
+nodes. This is retained for backwards compatibility; use [`Kind`](/api-v16/language/kinds#kind) instead
+because KindEnum will be removed in v17.
+
+<ApiSignature><span className="api-signature-keyword">type</span> <span className="api-signature-name">KindEnum</span> = <span className="api-signature-keyword">typeof</span> <a href="/api-v16/language/kinds#kind">Kind</a>;</ApiSignature>

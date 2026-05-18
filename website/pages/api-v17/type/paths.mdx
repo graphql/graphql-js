@@ -1,0 +1,17 @@
+import { ApiType } from '../../../components/ApiTags';
+
+# graphql/type/paths
+
+## Types
+
+### ResponsePath
+
+**Interface.** Represents a linked response path from a field back to the root response.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| prev | <ApiType><a href="/api-v17/type/paths#responsepath">Path</a> &#124; <span className="api-signature-keyword">undefined</span></ApiType> | The previous segment in the linked response path, or undefined at the root. |
+| key | <ApiType><span className="api-signature-keyword">string</span> &#124; <span className="api-signature-keyword">number</span></ApiType> | The field name or list index for this response path segment. |
+| typename | <ApiType><span className="api-signature-keyword">string</span> &#124; <span className="api-signature-keyword">undefined</span></ApiType> | The runtime object type name associated with this path segment, if known. |

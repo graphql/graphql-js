@@ -1,0 +1,190 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/request-pipeline
+
+## Functions
+
+### graphql()
+
+Parses, validates, and executes a GraphQL document against a schema.
+
+This is the primary entry point for fulfilling GraphQL operations. Use this
+when you want a single-call request lifecycle that returns a promise in all
+cases.
+
+More sophisticated GraphQL servers, such as those which persist queries, may
+wish to separate the validation and execution phases to a static-time tooling
+step and a server runtime step.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">graphql</span>(args: <a href="/api-v16/graphql/request-pipeline#graphqlargs">GraphQLArgs</a>): <span className="api-signature-type">Promise</span>&lt;<a href="/api-v16/execution/execution#executionresult">ExecutionResult</a>&gt;</ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| args | <ApiType><a href="/api-v16/graphql/request-pipeline#graphqlargs">GraphQLArgs</a></ApiType> | Request execution arguments, including schema and source. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-type">Promise</span>&lt;<a href="/api-v16/execution/execution#executionresult">ExecutionResult</a>&gt;</ApiType> | A promise that resolves to an execution result or validation errors. |
+
+#### Example 1
+
+```ts
+// Execute a complete asynchronous request with variables.
+import { graphql, buildSchema } from 'graphql';
+
+const schema = buildSchema(`
+  type Query {
+    greeting(name: String!): String
+  }
+`);
+
+const result = await graphql({
+  schema,
+  source: 'query SayHello($name: String!) { greeting(name: $name) }',
+  rootValue: {
+    greeting: ({ name }) => `Hello, ${name}!`,
+  },
+  variableValues: { name: 'Ada' },
+  operationName: 'SayHello',
+});
+
+result; // => { data: { greeting: 'Hello, Ada!' } }
+```
+
+#### Example 2
+
+```ts
+// This variant supplies context plus custom field and type resolvers.
+import { graphql, buildSchema } from 'graphql';
+
+const schema = buildSchema(`
+  interface Named {
+    name: String!
+  }
+
+  type User implements Named {
+    name: String!
+  }
+
+  type Query {
+    viewer: Named
+  }
+`);
+
+const result = await graphql({
+  schema,
+  source: '{ viewer { __typename name } }',
+  rootValue: { viewer: { kind: 'user', name: 'Ada' } },
+  contextValue: { locale: 'en' },
+  fieldResolver: (source, _args, context, info) => {
+    context.locale; // => 'en'
+    return source[info.fieldName];
+  },
+  typeResolver: (value) => {
+    return value.kind === 'user' ? 'User' : undefined;
+  },
+});
+
+result; // => { data: { viewer: { __typename: 'User', name: 'Ada' } } }
+```
+
+### graphqlSync()
+
+Parses, validates, and executes a GraphQL document synchronously.
+
+This function guarantees that execution completes synchronously, or throws an
+error, assuming that all field resolvers are also synchronous. It throws when
+any resolver returns a promise.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">graphqlSync</span>(args: <a href="/api-v16/graphql/request-pipeline#graphqlargs">GraphQLArgs</a>): <a href="/api-v16/execution/execution#executionresult">ExecutionResult</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| args | <ApiType><a href="/api-v16/graphql/request-pipeline#graphqlargs">GraphQLArgs</a></ApiType> | Request execution arguments, including schema and source. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v16/execution/execution#executionresult">ExecutionResult</a></ApiType> | Completed execution output, or request errors if parsing or<br />validation fails. |
+
+#### Example 1
+
+```ts
+// Execute a complete synchronous request with variables.
+import { graphqlSync, buildSchema } from 'graphql';
+
+const schema = buildSchema(`
+  type Query {
+    greeting(name: String!): String
+  }
+`);
+
+const result = graphqlSync({
+  schema,
+  source: 'query SayHello($name: String!) { greeting(name: $name) }',
+  rootValue: {
+    greeting: ({ name }) => `Hello, ${name}!`,
+  },
+  variableValues: { name: 'Ada' },
+  operationName: 'SayHello',
+});
+
+result; // => { data: { greeting: 'Hello, Ada!' } }
+```
+
+#### Example 2
+
+```ts
+// This variant uses a synchronous custom field resolver and context.
+import { graphqlSync, buildSchema } from 'graphql';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+
+const result = graphqlSync({
+  schema,
+  source: '{ greeting }',
+  fieldResolver: (_source, _args, contextValue) => {
+    return contextValue.defaultGreeting;
+  },
+  contextValue: { defaultGreeting: 'Hello' },
+});
+
+result; // => { data: { greeting: 'Hello' } }
+```
+
+## Types
+
+### GraphQLArgs
+
+**Interface.** Describes the input object accepted by `graphql` and [`graphqlSync`](/api-v16/graphql/request-pipeline#graphqlsync).
+
+These arguments describe the full parse, validate, and execute lifecycle for
+a GraphQL request.
+
+#### Members
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | The GraphQL type system to use when validating and executing a query. |
+| source | <ApiType><span className="api-signature-keyword">string</span> &#124; <a href="/api-v16/language/source#source">Source</a></ApiType> | A GraphQL language-formatted string or source object representing the<br />requested operation. |
+| rootValue? | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | The value provided as the first argument to resolver functions on the top<br />level type, such as the query object type. |
+| contextValue? | <ApiType><span className="api-signature-keyword">unknown</span></ApiType> | Application context value passed to every resolver.<br />Use this for shared request data such as the currently logged in user and<br />connections to databases or other services. |
+| variableValues? | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <span className="api-signature-type">object</span></ApiType> | A mapping of variable name to runtime value for variables defined by the operation. |
+| operationName? | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <span className="api-signature-keyword">string</span></ApiType> | The operation to execute when the source contains multiple possible<br />operations. This can be omitted when the source contains only one operation. |
+| fieldResolver? | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <a href="/api-v16/type/definitions#graphqlfieldresolver">GraphQLFieldResolver</a>&lt;<span className="api-signature-keyword">any</span>, <span className="api-signature-keyword">any</span>&gt;</ApiType> | A resolver function to use when one is not provided by the schema.<br />If not provided, the default field resolver is used, which looks for a value<br />or method on the source value with the field's name. |
+| typeResolver? | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <a href="/api-v16/type/definitions#graphqltyperesolver">GraphQLTypeResolver</a>&lt;<span className="api-signature-keyword">any</span>, <span className="api-signature-keyword">any</span>&gt;</ApiType> | A type resolver function to use when none is provided by the schema.<br />If not provided, the default type resolver is used, which looks for a<br />`__typename` field or alternatively calls the `isTypeOf` method. |

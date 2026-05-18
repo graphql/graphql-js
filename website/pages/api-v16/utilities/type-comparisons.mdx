@@ -1,0 +1,155 @@
+import { ApiSignature, ApiType } from '../../../components/ApiTags';
+
+# graphql/utilities/type-comparisons
+
+## Functions
+
+### isEqualType()
+
+Provided two types, return true if the types are equal (invariant).
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isEqualType</span>(typeA: <a href="/api-v16/type/definitions#graphqltype">GraphQLType</a>, typeB: <a href="/api-v16/type/definitions#graphqltype">GraphQLType</a>): <span className="api-signature-keyword">boolean</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| typeA | <ApiType><a href="/api-v16/type/definitions#graphqltype">GraphQLType</a></ApiType> | The first GraphQL type to compare. |
+| typeB | <ApiType><a href="/api-v16/type/definitions#graphqltype">GraphQLType</a></ApiType> | The second GraphQL type to compare. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | True when both types are equal. |
+
+#### Example
+
+```ts
+import {
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLString,
+} from 'graphql/type';
+import { isEqualType } from 'graphql/utilities';
+
+isEqualType(GraphQLString, GraphQLString); // => true
+isEqualType(new GraphQLList(GraphQLString), new GraphQLList(GraphQLString)); // => true
+isEqualType(new GraphQLNonNull(GraphQLString), GraphQLString); // => false
+```
+
+### isTypeSubTypeOf()
+
+Provided a type and a super type, return true if the first type is either
+equal or a subset of the second super type (covariant).
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isTypeSubTypeOf</span>(schema: <a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a>, maybeSubType: <a href="/api-v16/type/definitions#graphqltype">GraphQLType</a>, superType: <a href="/api-v16/type/definitions#graphqltype">GraphQLType</a>): <span className="api-signature-keyword">boolean</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | GraphQL schema to use. |
+| maybeSubType | <ApiType><a href="/api-v16/type/definitions#graphqltype">GraphQLType</a></ApiType> | The possible subtype to compare. |
+| superType | <ApiType><a href="/api-v16/type/definitions#graphqltype">GraphQLType</a></ApiType> | The possible supertype to compare. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | True when `maybeSubType` is equal to or a subtype of `superType`. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import {
+  GraphQLNonNull,
+  assertInterfaceType,
+  assertObjectType,
+} from 'graphql/type';
+import { isTypeSubTypeOf } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  interface Node {
+    id: ID!
+  }
+
+  type User implements Node {
+    id: ID!
+  }
+
+  type Query {
+    node: Node
+  }
+`);
+const Node = assertInterfaceType(schema.getType('Node'));
+const User = assertObjectType(schema.getType('User'));
+
+isTypeSubTypeOf(schema, User, Node); // => true
+isTypeSubTypeOf(schema, new GraphQLNonNull(User), Node); // => true
+isTypeSubTypeOf(schema, Node, User); // => false
+```
+
+### doTypesOverlap()
+
+Provided two composite types, determine if they "overlap". Two composite
+types overlap when the Sets of possible concrete types for each intersect.
+
+This is often used to determine if a fragment of a given type could possibly
+be visited in a context of another type.
+
+This function is commutative.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">doTypesOverlap</span>(schema: <a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a>, typeA: <a href="/api-v16/type/definitions#graphqlcompositetype">GraphQLCompositeType</a>, typeB: <a href="/api-v16/type/definitions#graphqlcompositetype">GraphQLCompositeType</a>): <span className="api-signature-keyword">boolean</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | GraphQL schema to use. |
+| typeA | <ApiType><a href="/api-v16/type/definitions#graphqlcompositetype">GraphQLCompositeType</a></ApiType> | The first GraphQL type to compare. |
+| typeB | <ApiType><a href="/api-v16/type/definitions#graphqlcompositetype">GraphQLCompositeType</a></ApiType> | The second GraphQL type to compare. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">boolean</span></ApiType> | True when the two composite types can apply to at least one common object type. |
+
+#### Example
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { assertObjectType, assertUnionType } from 'graphql/type';
+import { doTypesOverlap } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Photo {
+    url: String!
+  }
+
+  type Video {
+    url: String!
+  }
+
+  union Media = Photo | Video
+  union StillImage = Photo
+
+  type Query {
+    media: [Media]
+  }
+`);
+const Media = assertUnionType(schema.getType('Media'));
+const StillImage = assertUnionType(schema.getType('StillImage'));
+const Video = assertObjectType(schema.getType('Video'));
+
+doTypesOverlap(schema, Media, StillImage); // => true
+doTypesOverlap(schema, StillImage, Video); // => false
+```

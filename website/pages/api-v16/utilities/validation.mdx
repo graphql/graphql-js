@@ -1,0 +1,73 @@
+import { ApiSignature, ApiType, ApiTag } from '../../../components/ApiTags';
+
+# graphql/utilities/validation
+
+## Functions
+
+### assertValidName()
+
+<ApiTag kind="deprecated" />
+
+Upholds the spec rules about naming. This helper is retained for backwards
+compatibility; call [`assertName`](/api-v16/type/names#assertname) instead because assertValidName will be
+removed in v17.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">assertValidName</span>(name: <span className="api-signature-keyword">string</span>): <span className="api-signature-keyword">string</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name to validate. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><span className="api-signature-keyword">string</span></ApiType> | The validated GraphQL name. |
+
+#### Example
+
+```ts
+import { assertValidName } from 'graphql/utilities';
+
+assertValidName('User'); // => 'User'
+assertValidName('__typename'); // throws an error
+```
+
+### isValidNameError()
+
+<ApiTag kind="deprecated" />
+
+Returns an Error if a name is invalid. This helper is retained for backwards
+compatibility; call [`assertName`](/api-v16/type/names#assertname) and catch the thrown GraphQLError instead
+because isValidNameError will be removed in v17.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">isValidNameError</span>(name: <span className="api-signature-keyword">string</span>): <a href="/api-v16/error/errors#graphqlerror">GraphQLError</a> | <span className="api-signature-keyword">undefined</span></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| name | <ApiType><span className="api-signature-keyword">string</span></ApiType> | The GraphQL name to validate. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v16/error/errors#graphqlerror">GraphQLError</a> &#124; <span className="api-signature-keyword">undefined</span></ApiType> | A GraphQLError if the name is invalid; otherwise undefined. |
+
+#### Example
+
+```ts
+import { isValidNameError } from 'graphql/utilities';
+
+isValidNameError('User'); // => undefined
+
+const error = isValidNameError('__typename');
+error.message; // => 'Name "__typename" must not begin with "__", which is reserved by GraphQL introspection.'
+```

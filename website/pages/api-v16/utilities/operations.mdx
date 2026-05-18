@@ -1,0 +1,79 @@
+import { ApiSignature, ApiType, ApiTag } from '../../../components/ApiTags';
+
+# graphql/utilities/operations
+
+## Functions
+
+### getOperationAST()
+
+Returns an operation AST given a document AST and optionally an operation
+name. If a name is not provided, an operation is only returned if only one is
+provided in the document.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getOperationAST</span>(documentAST: <a href="/api-v16/language/ast#documentnode">DocumentNode</a>, operationName?: null | <span className="api-signature-keyword">undefined</span> | <span className="api-signature-keyword">string</span>): null | <span className="api-signature-keyword">undefined</span> | <a href="/api-v16/language/ast#operationdefinitionnode">OperationDefinitionNode</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| documentAST | <ApiType><a href="/api-v16/language/ast#documentnode">DocumentNode</a></ApiType> | The parsed GraphQL document AST. |
+| operationName? | <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <span className="api-signature-keyword">string</span></ApiType> | The optional operation name to select. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType>null &#124; <span className="api-signature-keyword">undefined</span> &#124; <a href="/api-v16/language/ast#operationdefinitionnode">OperationDefinitionNode</a></ApiType> | The resolved operation ast. |
+
+#### Example
+
+```ts
+import { parse } from 'graphql/language';
+import { getOperationAST } from 'graphql/utilities';
+
+const document = parse('query GetName { name }');
+const operation = getOperationAST(document, 'GetName');
+
+operation.name.value; // => 'GetName'
+getOperationAST(document, 'Missing'); // => undefined
+```
+
+### getOperationRootType()
+
+<ApiTag kind="deprecated" />
+
+Extracts the root type of the operation from the schema. This helper is
+retained for backwards compatibility; call [`GraphQLSchema.getRootType`](/api-v16/type/schema#getroottype) instead
+because getOperationRootType will be removed in v17.
+
+**Signature:**
+
+<ApiSignature><span className="api-signature-name">getOperationRootType</span>(schema: <a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a>, operation: <a href="/api-v16/language/ast#operationdefinitionnode">OperationDefinitionNode</a> | <a href="/api-v16/language/ast#operationtypedefinitionnode">OperationTypeDefinitionNode</a>): <a href="/api-v16/type/definitions#graphqlobjecttype">GraphQLObjectType</a></ApiSignature>
+
+#### Arguments
+
+| Name | Type | Description |
+| --- | --- | --- |
+| schema | <ApiType><a href="/api-v16/type/schema#graphqlschema">GraphQLSchema</a></ApiType> | GraphQL schema to use. |
+| operation | <ApiType><a href="/api-v16/language/ast#operationdefinitionnode">OperationDefinitionNode</a> &#124; <a href="/api-v16/language/ast#operationtypedefinitionnode">OperationTypeDefinitionNode</a></ApiType> | The operation definition to inspect. |
+
+#### Returns
+
+| Type | Description |
+| --- | --- |
+| <ApiType><a href="/api-v16/type/definitions#graphqlobjecttype">GraphQLObjectType</a></ApiType> | The resolved operation root type. |
+
+#### Example
+
+```ts
+import { buildSchema, getOperationRootType } from 'graphql/utilities';
+import { parse } from 'graphql/language';
+
+const schema = buildSchema('type Query { name: String }');
+const operation = parse('{ name }').definitions[0];
+const rootType = getOperationRootType(schema, operation);
+
+rootType.name; // => 'Query'
+```

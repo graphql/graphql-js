@@ -124,6 +124,7 @@ words:
   - getenterleaveforkind
   - getroottype
   - assertname
+  - experimentalexecuteincrementally
   - isinputtype
   - isoutputtype
   - isleaftype
@@ -131,6 +132,7 @@ words:
   - isabstracttype
   - getnullabletype
   - getnamedtype
+  - initialincrementalexecutionresult
   - introspectionquery
   - buildclientschema
   - buildschema
@@ -140,8 +142,11 @@ words:
   - typefromast
   - astfromvalue
   - typeinfo
+  - validateinputvalue
+  - valuetoliteral
   - isvalidjsvalue
   - isvalidliteralvalue
+  - specifieddirectives
   - specifiedrules
   - Wordmark
   - codeofconduct
