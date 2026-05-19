@@ -3192,6 +3192,11 @@ export class GraphQLArgument implements GraphQLSchemaElement {
   defaultValue: unknown;
   /** Default value represented as either a runtime value or a GraphQL literal. */
   default: GraphQLDefaultInput | undefined;
+  /**
+   * Cached coerced default value.
+   * @private
+   */
+  _memoizedCoercedDefaultValue: unknown;
   /** Reason this element is deprecated, if one was provided. */
   deprecationReason: Maybe<string>;
   /** Extension fields to include in the formatted result. */
@@ -3237,6 +3242,7 @@ export class GraphQLArgument implements GraphQLSchemaElement {
     this.type = config.type;
     this.defaultValue = config.defaultValue;
     this.default = config.default;
+    this._memoizedCoercedDefaultValue = undefined;
     this.deprecationReason = config.deprecationReason;
     this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
@@ -5150,6 +5156,11 @@ export class GraphQLInputField implements GraphQLSchemaElement {
   defaultValue: unknown;
   /** Default value represented as either a runtime value or a GraphQL literal. */
   default: GraphQLDefaultInput | undefined;
+  /**
+   * Cached coerced default value.
+   * @private
+   */
+  _memoizedCoercedDefaultValue: unknown;
   /** Reason this element is deprecated, if one was provided. */
   deprecationReason: Maybe<string>;
   /** Extension fields to include in the formatted result. */
@@ -5197,6 +5208,7 @@ export class GraphQLInputField implements GraphQLSchemaElement {
     this.type = config.type;
     this.defaultValue = config.defaultValue;
     this.default = config.default;
+    this._memoizedCoercedDefaultValue = undefined;
     this.deprecationReason = config.deprecationReason;
     this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;

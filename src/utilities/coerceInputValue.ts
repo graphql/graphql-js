@@ -405,6 +405,8 @@ interface InputValue {
   type: GraphQLInputType;
   default?: GraphQLDefaultInput | undefined;
   defaultValue?: unknown;
+  /** @private */
+  _memoizedCoercedDefaultValue?: unknown;
 }
 
 /**
@@ -417,7 +419,7 @@ interface InputValue {
  */
 export function coerceDefaultValue(inputValue: InputValue): unknown {
   // Memoize the result of coercing the default value in a hidden field.
-  let coercedDefaultValue = (inputValue as any)._memoizedCoercedDefaultValue;
+  let coercedDefaultValue = inputValue._memoizedCoercedDefaultValue;
   if (coercedDefaultValue !== undefined) {
     return coercedDefaultValue;
   }
@@ -433,13 +435,13 @@ export function coerceDefaultValue(inputValue: InputValue): unknown {
         defaultInput.literal ?? defaultInput.value,
       )}.`,
     );
-    (inputValue as any)._memoizedCoercedDefaultValue = coercedDefaultValue;
+    inputValue._memoizedCoercedDefaultValue = coercedDefaultValue;
     return coercedDefaultValue;
   }
 
   const defaultValue = inputValue.defaultValue;
   if (defaultValue !== undefined) {
-    (inputValue as any)._memoizedCoercedDefaultValue = defaultValue;
+    inputValue._memoizedCoercedDefaultValue = defaultValue;
   }
   return defaultValue;
 }

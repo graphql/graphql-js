@@ -207,7 +207,10 @@ export class GraphQLSchema {
 
   /** Whether this schema instance skips validation checks. */
   assumeValid: boolean;
-  /** Cached schema validation errors, if validation has already run. */
+  /**
+   * Cached schema validation errors, if validation has already run.
+   * @private
+   */
   __validationErrors: Maybe<ReadonlyArray<GraphQLError>>;
 
   private _queryType: Maybe<GraphQLObjectType>;
@@ -316,7 +319,6 @@ export class GraphQLSchema {
    * schema.getType('AuditEvent'); // => AuditEvent
    * schema.getDirective('auth'); // => authDirective
    * schema.extensions; // => { owner: 'platform' }
-   * schema.__validationErrors; // => []
    * ```
    */
   constructor(config: Readonly<GraphQLSchemaConfig>) {
