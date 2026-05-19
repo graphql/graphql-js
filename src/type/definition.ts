@@ -2815,6 +2815,25 @@ export type GraphQLFieldResolver<
   info: GraphQLResolveInfo,
 ) => TResult;
 
+/**
+ * Experimental resolver for a batch of GraphQL field executions.
+ * @typeParam TSource - Source object type passed to resolvers.
+ * @typeParam TContext - Context object type passed to resolvers.
+ * @typeParam TArgs - Argument object type passed to resolvers.
+ * @typeParam TResult - Result value type for each source object.
+ */
+export type GraphQLFieldBatchResolver<
+  TSource,
+  TContext,
+  TArgs = any,
+  TResult = unknown,
+> = (
+  sources: ReadonlyArray<TSource>,
+  args: TArgs,
+  context: TContext,
+  info: GraphQLBatchedResolveInfo,
+) => PromiseOrValue<ReadonlyArray<TResult>>;
+
 /** Utilities available from resolver info for tracking asynchronous work. */
 export interface GraphQLResolveInfoHelpers {
   /**
@@ -2877,6 +2896,15 @@ export interface GraphQLResolveInfo {
   readonly getAsyncHelpers: () => GraphQLResolveInfoHelpers;
 }
 
+/** Information about a batch of currently executing GraphQL fields. */
+export interface GraphQLBatchedResolveInfo extends Omit<
+  GraphQLResolveInfo,
+  'path'
+> {
+  /** Response paths for each source value in the batch. */
+  readonly paths: ReadonlyArray<Path>;
+}
+
 /**
  * Custom extensions
  * @remarks
@@ -2909,6 +2937,10 @@ export interface GraphQLFieldConfig<TSource, TContext, TArgs = any> {
   args?: GraphQLFieldConfigArgumentMap | undefined;
   /** Resolver function used to produce this field value. */
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs> | undefined;
+  /** Experimental resolver used to produce this field value for multiple sources. */
+  experimentalBatchResolve?:
+    | GraphQLFieldBatchResolver<TSource, TContext, TArgs>
+    | undefined;
   /** Resolver function used to create a subscription event stream for this field. */
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs> | undefined;
   /** Reason this element is deprecated, if one was provided. */
@@ -3022,6 +3054,10 @@ export class GraphQLField<
   args: ReadonlyArray<GraphQLArgument>;
   /** Resolver function used to produce this field value. */
   resolve?: GraphQLFieldResolver<TSource, TContext, TArgs> | undefined;
+  /** Experimental resolver used to produce this field value for multiple sources. */
+  experimentalBatchResolve?:
+    | GraphQLFieldBatchResolver<TSource, TContext, TArgs>
+    | undefined;
   /** Resolver function used to create a subscription event stream for this field. */
   subscribe?: GraphQLFieldResolver<TSource, TContext, TArgs> | undefined;
   /** Reason this element is deprecated, if one was provided. */
@@ -3090,6 +3126,7 @@ export class GraphQLField<
       : [];
 
     this.resolve = config.resolve;
+    this.experimentalBatchResolve = config.experimentalBatchResolve;
     this.subscribe = config.subscribe;
     this.deprecationReason = config.deprecationReason;
     this.extensions = toObjMapWithSymbols(config.extensions);
@@ -3131,6 +3168,7 @@ export class GraphQLField<
         (arg) => arg.toConfig(),
       ),
       resolve: this.resolve,
+      experimentalBatchResolve: this.experimentalBatchResolve,
       subscribe: this.subscribe,
       deprecationReason: this.deprecationReason,
       extensions: this.extensions,

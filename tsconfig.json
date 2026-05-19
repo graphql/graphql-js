@@ -3,7 +3,7 @@
     "src/**/*",
     "integrationTests/*",
     "resources/**/*",
-    "benchmark/benchmark.ts"
+    "benchmark/**/*.ts"
   ],
   "compilerOptions": {
     "lib": ["es2024"],

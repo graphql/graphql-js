@@ -35,6 +35,7 @@
     "release:prepare": "node --experimental-strip-types resources/release-prepare.ts",
     "release:metadata": "node --experimental-strip-types resources/release-metadata.ts",
     "benchmark": "node --experimental-strip-types resources/benchmark.ts",
+    "benchmark:batch-resolution": "node --experimental-strip-types --expose-gc benchmark/batch-resolution-list-fields.ts",
     "test": "npm run lint && npm run check && npm run testonly:cover && npm run prettier:check && npm run prettier:examples:check && npm run check:spelling && npm run check:integrations",
     "lint": "eslint --cache --max-warnings 0 .",
     "check": "npm run check:ts && npm run check:deno",
