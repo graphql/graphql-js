@@ -1,0 +1,704 @@
+import { ApiSignature, ApiType } from '../../components/ApiCode';
+
+Create, format, and locate GraphQL errors.
+
+These exports are also available from the root `graphql` package.
+
+<div className="api-category-toc">
+  <p>
+    <strong>Classes:</strong><br />
+    <a href="/api-v16/error#graphqlerror">GraphQLError</a>
+  </p>
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v16/error#printerror">printError()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/error#formaterror">formatError()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/error#locatederror">locatedError()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/error#syntaxerror">syntaxError()</a>
+  </p>
+  <p>
+    <strong>Types:</strong><br />
+    <a href="/api-v16/error#graphqlerrorextensions">GraphQLErrorExtensions</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/error#graphqlformattederrorextensions">GraphQLFormattedErrorExtensions</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/error#graphqlerroroptions">GraphQLErrorOptions</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/error#graphqlformattederror">GraphQLFormattedError</a>
+  </p>
+</div>
+
+## Classes
+
+### GraphQLError
+
+A GraphQLError describes an Error found during the parse, validate, or
+execute phases of performing a GraphQL operation. In addition to a message
+and stack trace, it also includes information about the locations in a
+GraphQL document and/or execution result that correspond to the Error.
+
+<hr className="api-subsection-divider" />
+
+#### Constructor
+
+Creates a GraphQLError instance.
+
+**Signature:**
+
+<ApiSignature parts={[["keyword", "new"], " ", ["name", "GraphQLError"], "(\n  ", ["parameter", "message"], ": ", ["keyword", "string"], ",\n  ", ["parameter", "options"], "?: ", ["link", "GraphQLErrorOptions", "/api-v16/error#graphqlerroroptions"], ",\n);"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>message</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Human-readable error message.</td>
+    </tr>
+    <tr>
+      <td>options?</td>
+      <td><ApiType parts={[["link", "GraphQLErrorOptions", "/api-v16/error#graphqlerroroptions"]]} /></td>
+      <td>Error metadata such as source locations, response path, original error, and extensions.<br />
+This positional-arguments constructor overload is deprecated. Use the<br />
+<code>{"GraphQLError(message, options)"}</code> overload instead.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+#### Constructor <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+
+Creates a GraphQLError instance using the legacy positional constructor.
+This deprecated overload will be removed in v17. Prefer the
+[`GraphQLErrorOptions`](/api-v16/error#graphqlerroroptions) object overload, which keeps optional error metadata
+in a single options bag.
+
+**Signature:**
+
+<ApiSignature parts={[["keyword", "new"], " ", ["name", "GraphQLError"], "(\n  ", ["parameter", "message"], ": ", ["keyword", "string"], ",\n  ", ["parameter", "nodes"], "?:\n    \u007c ", ["link", "ASTNode", "/api-v16/language#astnode"], "\n    \u007c ", ["keyword", "readonly"], " ", ["link", "ASTNode", "/api-v16/language#astnode"], "[]\n    \u007c ", ["keyword", "null"], ",\n  ", ["parameter", "source"], "?: ", ["type", "Maybe"], "\u003c", ["link", "Source", "/api-v16/language#source"], "\u003e,\n  ", ["parameter", "positions"], "?: ", ["type", "Maybe"], "\u003c", ["keyword", "readonly"], " ", ["keyword", "number"], "[]\u003e,\n  ", ["parameter", "path"], "?: ", ["type", "Maybe"], "\u003c", ["keyword", "readonly"], " (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[]\u003e,\n  ", ["parameter", "originalError"], "?: ", ["type", "Maybe"], "\u003c\n    ", ["type", "Error"], " & \u007b ", ["property", "extensions"], "?: ", ["keyword", "unknown"], " \u007d\n  \u003e,\n  ", ["parameter", "extensions"], "?: ", ["type", "Maybe"], "\u003c", ["link", "GraphQLErrorExtensions", "/api-v16/error#graphqlerrorextensions"], "\u003e,\n);"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>message</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Human-readable error message.</td>
+    </tr>
+    <tr>
+      <td>nodes?</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v16/language#astnode"], " \u007c ", ["keyword", "readonly"], " ", ["link", "ASTNode", "/api-v16/language#astnode"], "[] \u007c ", ["keyword", "null"]]} /></td>
+      <td>AST node or nodes associated with this error.</td>
+    </tr>
+    <tr>
+      <td>source?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "Source", "/api-v16/language#source"], "\u003e"]} /></td>
+      <td>Source document used to derive error locations.</td>
+    </tr>
+    <tr>
+      <td>positions?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "readonly"], " ", ["keyword", "number"], "[]\u003e"]} /></td>
+      <td>Character offsets in the source document associated with<br />
+this error.</td>
+    </tr>
+    <tr>
+      <td>path?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "readonly"], " (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[]\u003e"]} /></td>
+      <td>Response path where this error occurred during execution.</td>
+    </tr>
+    <tr>
+      <td>originalError?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c\n  ", ["type", "Error"], " & \u007b ", ["property", "extensions"], "?: ", ["keyword", "unknown"], " \u007d\n\u003e"]} /></td>
+      <td>Original error that caused this GraphQLError, if one<br />
+exists.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLErrorExtensions", "/api-v16/error#graphqlerrorextensions"], "\u003e"]} /></td>
+      <td>Extension fields to include in the formatted error.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+#### Members
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>locations</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "SourceLocation", "/api-v16/language#sourcelocation"], "[] \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>An array of <code>{"{ line, column }"}</code> locations within the source GraphQL document<br />
+which correspond to this error.<br />
+Errors during validation often contain multiple locations, for example to<br />
+point out two things with the same name. Errors during execution include a<br />
+single location, the field which produced the error.<br />
+Enumerable, and appears in the result of JSON.stringify().</td>
+    </tr>
+    <tr>
+      <td>path</td>
+      <td><ApiType parts={[["keyword", "readonly"], " (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[] \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>An array describing the JSON-path into the execution response which<br />
+corresponds to this error. Only included for errors during execution.<br />
+Enumerable, and appears in the result of JSON.stringify().</td>
+    </tr>
+    <tr>
+      <td>nodes</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ASTNode", "/api-v16/language#astnode"], "[] \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>An array of GraphQL AST Nodes corresponding to this error.</td>
+    </tr>
+    <tr>
+      <td>source</td>
+      <td><ApiType parts={[["link", "Source", "/api-v16/language#source"], " \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>The source GraphQL document for the first location of this error.<br />
+Note that if this Error represents more than one node, the source may not<br />
+represent nodes after the first node.</td>
+    </tr>
+    <tr>
+      <td>positions</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["keyword", "number"], "[] \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>An array of character offsets within the source GraphQL document<br />
+which correspond to this error.</td>
+    </tr>
+    <tr>
+      <td>originalError</td>
+      <td><ApiType parts={[["type", "Error"], " \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>Original error that caused this GraphQLError, if one exists.</td>
+    </tr>
+    <tr>
+      <td>extensions</td>
+      <td><ApiType parts={[["link", "GraphQLErrorExtensions", "/api-v16/error#graphqlerrorextensions"]]} /></td>
+      <td>Extension fields to add to the formatted error.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+#### toString()
+
+Returns this error as a human-readable message with source locations.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "toString"], "(): ", ["keyword", "string"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>The formatted error string.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { Source } from 'graphql/language';
+import { GraphQLError } from 'graphql/error';
+
+const error = new GraphQLError('Cannot query field "name".', {
+  source: new Source('{ name }'),
+  positions: [2],
+});
+
+error.toString(); // => 'Cannot query field "name".\n\nGraphQL request:1:3\n1 | { name }\n  |   ^'
+```
+
+<hr className="api-subsection-divider" />
+
+#### toJSON()
+
+Returns the JSON representation used when this object is serialized.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "toJSON"], "(): ", ["link", "GraphQLFormattedError", "/api-v16/error#graphqlformattederror"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "GraphQLFormattedError", "/api-v16/error#graphqlformattederror"]]} /></td>
+      <td>The JSON-serializable representation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { GraphQLError } from 'graphql/error';
+
+const error = new GraphQLError('Resolver failed.', {
+  path: ['viewer', 'name'],
+  extensions: { code: 'INTERNAL' },
+});
+
+error.toJSON(); // => { message: 'Resolver failed.', path: ['viewer', 'name'], extensions: { code: 'INTERNAL' } }
+```
+
+## Functions
+
+### printError() <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+
+Prints a GraphQLError to a string, representing useful location information
+about the error's position in the source. This deprecated helper is retained
+for backwards compatibility; call `error.toString()` instead because
+printError will be removed in v17.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "printError"], "(", ["parameter", "error"], ": ", ["link", "GraphQLError", "/api-v16/error#graphqlerror"], "): ", ["keyword", "string"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>error</td>
+      <td><ApiType parts={[["link", "GraphQLError", "/api-v16/error#graphqlerror"]]} /></td>
+      <td>The error to format.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>The printed string representation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { GraphQLError, printError } from 'graphql/error';
+
+const message = printError(new GraphQLError('Example error'));
+
+message; // => 'Example error'
+```
+
+<hr className="api-item-divider" />
+
+### formatError() <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+
+Given a GraphQLError, format it according to the rules described by the
+Response Format, Errors section of the GraphQL Specification. This deprecated
+helper is retained for backwards compatibility; call `error.toJSON()`
+instead because formatError will be removed in v17.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "formatError"], "(\n  ", ["parameter", "error"], ": ", ["link", "GraphQLError", "/api-v16/error#graphqlerror"], ",\n): ", ["link", "GraphQLFormattedError", "/api-v16/error#graphqlformattederror"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>error</td>
+      <td><ApiType parts={[["link", "GraphQLError", "/api-v16/error#graphqlerror"]]} /></td>
+      <td>The error to format.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "GraphQLFormattedError", "/api-v16/error#graphqlformattederror"]]} /></td>
+      <td>The JSON-serializable formatted error.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { GraphQLError, formatError } from 'graphql/error';
+
+const formatted = formatError(new GraphQLError('Example error'));
+
+formatted; // => { message: 'Example error' }
+```
+
+<hr className="api-item-divider" />
+
+### locatedError()
+
+Given an arbitrary value, presumably thrown while attempting to execute a
+GraphQL operation, produce a new GraphQLError aware of the location in the
+document responsible for the original Error.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "locatedError"], "(\n  ", ["parameter", "rawOriginalError"], ": ", ["keyword", "unknown"], ",\n  ", ["parameter", "nodes"], ":\n    \u007c ", ["link", "ASTNode", "/api-v16/language#astnode"], "\n    \u007c ", ["keyword", "readonly"], " ", ["link", "ASTNode", "/api-v16/language#astnode"], "[]\n    \u007c ", ["keyword", "null"], "\n    \u007c ", ["keyword", "undefined"], ",\n  ", ["parameter", "path"], "?: ", ["type", "Maybe"], "\u003c", ["keyword", "readonly"], " (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[]\u003e,\n): ", ["link", "GraphQLError", "/api-v16/error#graphqlerror"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>rawOriginalError</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>The original error value to wrap.</td>
+    </tr>
+    <tr>
+      <td>nodes</td>
+      <td><ApiType parts={["\u007c ", ["link", "ASTNode", "/api-v16/language#astnode"], "\n\u007c ", ["keyword", "readonly"], " ", ["link", "ASTNode", "/api-v16/language#astnode"], "[]\n\u007c ", ["keyword", "null"], "\n\u007c ", ["keyword", "undefined"]]} /></td>
+      <td>The AST nodes associated with the error.</td>
+    </tr>
+    <tr>
+      <td>path?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "readonly"], " (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[]\u003e"]} /></td>
+      <td>The response path associated with the error.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "GraphQLError", "/api-v16/error#graphqlerror"]]} /></td>
+      <td>The GraphQL error.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse } from 'graphql/language';
+import { locatedError } from 'graphql/error';
+
+const document = parse('{ viewer { name } }');
+const fieldNode = document.definitions[0].selectionSet.selections[0];
+const error = locatedError(new Error('Resolver failed'), fieldNode, [
+  'viewer',
+]);
+
+error.message; // => 'Resolver failed'
+error.locations; // => [{ line: 1, column: 3 }]
+error.path; // => ['viewer']
+```
+
+<hr className="api-item-divider" />
+
+### syntaxError()
+
+Produces a GraphQLError representing a syntax error, containing useful
+descriptive information about the syntax error's position in the source.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "syntaxError"], "(\n  ", ["parameter", "source"], ": ", ["link", "Source", "/api-v16/language#source"], ",\n  ", ["parameter", "position"], ": ", ["keyword", "number"], ",\n  ", ["parameter", "description"], ": ", ["keyword", "string"], ",\n): ", ["link", "GraphQLError", "/api-v16/error#graphqlerror"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>source</td>
+      <td><ApiType parts={[["link", "Source", "/api-v16/language#source"]]} /></td>
+      <td>The GraphQL source containing the syntax error.</td>
+    </tr>
+    <tr>
+      <td>position</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>Character offset where the syntax error was encountered.</td>
+    </tr>
+    <tr>
+      <td>description</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Human-readable description of the syntax error.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "GraphQLError", "/api-v16/error#graphqlerror"]]} /></td>
+      <td>A GraphQLError located at the syntax error position.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { Source } from 'graphql/language';
+import { syntaxError } from 'graphql/error';
+
+const error = syntaxError(new Source('query {'), 7, 'Expected Name');
+
+error.message; // => 'Syntax Error: Expected Name'
+error.locations; // => [{ line: 1, column: 8 }]
+```
+
+## Types
+
+### GraphQLErrorExtensions
+
+**Interface.** Custom extensions
+
+**Remarks:** Use a unique identifier name for your extension, for example the name of
+your library or project. Do not use a shortened identifier as this increases
+the risk of conflicts. We recommend you add at most one extension field,
+an object which can contain all the values you need.
+
+<hr className="api-item-divider" />
+
+### GraphQLFormattedErrorExtensions
+
+**Interface.** Custom formatted extensions
+
+**Remarks:** Use a unique identifier name for your extension, for example the name of
+your library or project. Do not use a shortened identifier as this increases
+the risk of conflicts. We recommend you add at most one extension field,
+an object which can contain all the values you need.
+
+<hr className="api-item-divider" />
+
+### GraphQLErrorOptions
+
+**Interface.** Options used to construct a GraphQLError.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>nodes?</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v16/language#astnode"], " \u007c ", ["keyword", "readonly"], " ", ["link", "ASTNode", "/api-v16/language#astnode"], "[] \u007c ", ["keyword", "null"]]} /></td>
+      <td>AST node or nodes associated with this error.</td>
+    </tr>
+    <tr>
+      <td>source?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "Source", "/api-v16/language#source"], "\u003e"]} /></td>
+      <td>Source document used to derive error locations.</td>
+    </tr>
+    <tr>
+      <td>positions?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "readonly"], " ", ["keyword", "number"], "[]\u003e"]} /></td>
+      <td>Character offsets in the source document associated with this error.</td>
+    </tr>
+    <tr>
+      <td>path?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "readonly"], " (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[]\u003e"]} /></td>
+      <td>Response path where this error occurred during execution.</td>
+    </tr>
+    <tr>
+      <td>originalError?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c\n  ", ["type", "Error"], " & \u007b ", ["property", "extensions"], "?: ", ["keyword", "unknown"], " \u007d\n\u003e"]} /></td>
+      <td>Original error that caused this GraphQLError, if one exists.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLErrorExtensions", "/api-v16/error#graphqlerrorextensions"], "\u003e"]} /></td>
+      <td>Extension fields to include in the formatted result.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+### GraphQLFormattedError
+
+**Interface.** See: https://spec.graphql.org/draft/#sec-Errors
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>message</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>A short, human-readable summary of the problem that **SHOULD NOT** change<br />
+from occurrence to occurrence of the problem, except for purposes of<br />
+localization.</td>
+    </tr>
+    <tr>
+      <td>locations?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "SourceLocation", "/api-v16/language#sourcelocation"], "[]"]} /></td>
+      <td>If an error can be associated to a particular point in the requested<br />
+GraphQL document, it should contain a list of locations.</td>
+    </tr>
+    <tr>
+      <td>path?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[]"]} /></td>
+      <td>If an error can be associated to a particular field in the GraphQL result,<br />
+it _must_ contain an entry with the key <code>{"path"}</code> that details the path of<br />
+the response field which experienced the error. This allows clients to<br />
+identify whether a null result is intentional or caused by a runtime error.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["link", "GraphQLFormattedErrorExtensions", "/api-v16/error#graphqlformattederrorextensions"]]} /></td>
+      <td>Reserved for implementors to extend the protocol however they see fit,<br />
+and hence there are no additional restrictions on its contents.</td>
+    </tr>
+  </tbody>
+</table>

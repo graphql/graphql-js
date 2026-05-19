@@ -1,0 +1,596 @@
+import { ApiSignature, ApiType } from '../../components/ApiCode';
+
+The root `graphql` package re-exports the public GraphQL.js API from its
+submodules and provides the high-level request pipeline helpers defined in
+this module.
+
+You can import public exports from GraphQL.js modules through the root
+`graphql` package or through their module-specific entry point. For example,
+these two references resolve to the same [`parse`](/api-v17/language#parse) function:
+
+```ts
+import { parse } from 'graphql';
+import { parse } from 'graphql/language';
+```
+
+Use the root package when you want a single import surface, or use submodules
+such as `graphql/language`, `graphql/type`, `graphql/execution`, and
+`graphql/utilities` when you want module-focused imports. This module also
+defines root-only APIs, such as request pipeline helpers and version
+metadata, that do not belong to a narrower submodule.
+
+For documentation purposes, these exports are grouped into the following categories:
+
+- [Development Mode](/api-v17/graphql#category-development-mode)
+- [Request Pipeline](/api-v17/graphql#category-request-pipeline)
+- [Harness](/api-v17/graphql#category-harness)
+- [Version](/api-v17/graphql#category-version)
+
+## Category: Development Mode
+
+<div className="api-category-toc">
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v17/graphql#enabledevmode">enableDevMode()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/graphql#isdevmodeenabled">isDevModeEnabled()</a>
+  </p>
+</div>
+
+### Functions
+
+#### enableDevMode()
+
+Enables GraphQL.js development mode checks for this module instance.
+
+Production entry points leave development mode disabled by default. Call this
+before constructing schemas or executing requests when additional development
+diagnostics should run.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "enableDevMode"], "(): ", ["keyword", "void"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { enableDevMode, isDevModeEnabled } from 'graphql/devMode';
+
+isDevModeEnabled(); // => false
+enableDevMode();
+isDevModeEnabled(); // => true
+```
+
+<hr className="api-item-divider" />
+
+#### isDevModeEnabled()
+
+Returns whether GraphQL.js development mode has been enabled for this module
+instance.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "isDevModeEnabled"], "(): ", ["keyword", "boolean"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
+      <td>True when development mode is enabled.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { enableDevMode, isDevModeEnabled } from 'graphql/devMode';
+
+enableDevMode();
+
+isDevModeEnabled(); // => true
+```
+
+## Category: Request Pipeline
+
+<div className="api-category-toc">
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v17/graphql#graphql">graphql()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/graphql#graphqlsync">graphqlSync()</a>
+  </p>
+  <p>
+    <strong>Types:</strong><br />
+    <a href="/api-v17/graphql#graphqlargs">GraphQLArgs</a>
+  </p>
+</div>
+
+### Functions
+
+#### graphql()
+
+Parses, validates, and executes a GraphQL document against a schema.
+
+This is the primary entry point for fulfilling GraphQL operations. Use this
+when you want a single-call request lifecycle that returns a promise in all
+cases.
+
+More sophisticated GraphQL servers, such as those which persist queries, may
+wish to separate the validation and execution phases to a static-time tooling
+step and a server runtime step.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "graphql"], "(\n  ", ["parameter", "args"], ": ", ["link", "GraphQLArgs", "/api-v17/graphql#graphqlargs"], ",\n): ", ["type", "Promise"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>args</td>
+      <td><ApiType parts={[["link", "GraphQLArgs", "/api-v17/graphql#graphqlargs"]]} /></td>
+      <td>Request execution arguments, including schema and source.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "Promise"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], "\u003e"]} /></td>
+      <td>A promise that resolves to an execution result or validation errors.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Execute a complete asynchronous request with variables.
+import { graphql, buildSchema } from 'graphql';
+
+const schema = buildSchema(`
+  type Query {
+    greeting(name: String!): String
+  }
+`);
+
+const result = await graphql({
+  schema,
+  source: 'query SayHello($name: String!) { greeting(name: $name) }',
+  rootValue: {
+    greeting: ({ name }) => `Hello, ${name}!`,
+  },
+  variableValues: { name: 'Ada' },
+  operationName: 'SayHello',
+});
+
+result; // => { data: { greeting: 'Hello, Ada!' } }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant supplies context plus custom field and type resolvers.
+import { graphql, buildSchema } from 'graphql';
+
+const schema = buildSchema(`
+  interface Named {
+    name: String!
+  }
+
+  type User implements Named {
+    name: String!
+  }
+
+  type Query {
+    viewer: Named
+  }
+`);
+
+const result = await graphql({
+  schema,
+  source: '{ viewer { __typename name } }',
+  rootValue: { viewer: { kind: 'user', name: 'Ada' } },
+  contextValue: { locale: 'en' },
+  fieldResolver: (source, _args, context, info) => {
+    context.locale; // => 'en'
+    return source[info.fieldName];
+  },
+  typeResolver: (value) => {
+    return value.kind === 'user' ? 'User' : undefined;
+  },
+});
+
+result; // => { data: { viewer: { __typename: 'User', name: 'Ada' } } }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 3</div>
+
+```ts
+// This variant customizes the request pipeline with a harness.
+import { buildSchema, defaultHarness, graphql } from 'graphql';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const stages = [];
+const abortController = new AbortController();
+const harness = {
+  parse: (...args) => {
+    stages.push('parse');
+    return defaultHarness.parse(...args);
+  },
+  validate: (...args) => {
+    stages.push('validate');
+    return defaultHarness.validate(...args);
+  },
+  execute: (...args) => {
+    stages.push('execute');
+    return defaultHarness.execute(...args);
+  },
+  subscribe: (...args) => {
+    stages.push('subscribe');
+    return defaultHarness.subscribe(...args);
+  },
+};
+
+const result = await graphql({
+  schema,
+  source: '{ greeting }',
+  rootValue: { greeting: 'Hello' },
+  rules: [],
+  maxErrors: 25,
+  hideSuggestions: true,
+  noLocation: true,
+  abortSignal: abortController.signal,
+  harness,
+});
+
+result; // => { data: { greeting: 'Hello' } }
+stages; // => ['parse', 'validate', 'execute']
+```
+
+<hr className="api-item-divider" />
+
+#### graphqlSync()
+
+Parses, validates, and executes a GraphQL document synchronously.
+
+This function guarantees that execution completes synchronously, or throws an
+error, assuming that all field resolvers are also synchronous. It throws when
+any resolver returns a promise.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "graphqlSync"], "(\n  ", ["parameter", "args"], ": ", ["link", "GraphQLArgs", "/api-v17/graphql#graphqlargs"], ",\n): ", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>args</td>
+      <td><ApiType parts={[["link", "GraphQLArgs", "/api-v17/graphql#graphqlargs"]]} /></td>
+      <td>Request execution arguments, including schema and source.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ExecutionResult", "/api-v17/execution#executionresult"]]} /></td>
+      <td>Completed execution output, or request errors if parsing or<br />
+validation fails.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Execute a complete synchronous request with variables.
+import { graphqlSync, buildSchema } from 'graphql';
+
+const schema = buildSchema(`
+  type Query {
+    greeting(name: String!): String
+  }
+`);
+
+const result = graphqlSync({
+  schema,
+  source: 'query SayHello($name: String!) { greeting(name: $name) }',
+  rootValue: {
+    greeting: ({ name }) => `Hello, ${name}!`,
+  },
+  variableValues: { name: 'Ada' },
+  operationName: 'SayHello',
+});
+
+result; // => { data: { greeting: 'Hello, Ada!' } }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant uses a synchronous custom field resolver and context.
+import { graphqlSync, buildSchema } from 'graphql';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+
+const result = graphqlSync({
+  schema,
+  source: '{ greeting }',
+  fieldResolver: (_source, _args, contextValue) => {
+    return contextValue.defaultGreeting;
+  },
+  contextValue: { defaultGreeting: 'Hello' },
+});
+
+result; // => { data: { greeting: 'Hello' } }
+```
+
+### Types
+
+#### GraphQLArgs
+
+**Interface.** Describes the input object accepted by `graphql` and [`graphqlSync`](/api-v17/graphql#graphqlsync).
+
+These arguments describe the full parse, validate, and execute lifecycle for
+a GraphQL request. They include parser options, validation options, execution
+options, and an optional harness for replacing pipeline stages.
+
+`graphql` and [`graphqlSync`](/api-v17/graphql#graphqlsync) do not support incremental delivery (`@defer` and
+`@stream`); use [`experimentalExecuteIncrementally`](/api-v17/execution#experimentalexecuteincrementally) after parsing and
+validating when incremental delivery is required.
+
+<ApiSignature parts={[["keyword", "interface"], " ", ["name", "GraphQLArgs"], "\n  ", ["keyword", "extends"], " ", ["link", "ParseOptions", "/api-v17/language#parseoptions"], ",\n    ", ["link", "ValidationOptions", "/api-v17/validation#validationoptions"]]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>harness?</td>
+      <td><ApiType parts={[["link", "GraphQLHarness", "/api-v17/graphql#graphqlharness"]]} /></td>
+      <td>Custom parse, validate, execute, and subscribe functions for this request<br />
+pipeline.</td>
+    </tr>
+    <tr>
+      <td>source</td>
+      <td><ApiType parts={[["keyword", "string"], " \u007c ", ["link", "Source", "/api-v17/language#source"]]} /></td>
+      <td>A GraphQL language-formatted string or source object representing the<br />
+requested operation.</td>
+    </tr>
+    <tr>
+      <td>rules?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ValidationRule", "/api-v17/validation#validationrule"], "[]"]} /></td>
+      <td>Validation rules to use instead of the specified rules.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Category: Harness
+
+<div className="api-category-toc">
+  <p>
+    <strong>Constants:</strong><br />
+    <a href="/api-v17/graphql#defaultharness">defaultHarness</a>
+  </p>
+  <p>
+    <strong>Types:</strong><br />
+    <a href="/api-v17/graphql#graphqlparsefn">GraphQLParseFn</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/graphql#graphqlvalidatefn">GraphQLValidateFn</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/graphql#graphqlexecutefn">GraphQLExecuteFn</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/graphql#graphqlsubscribefn">GraphQLSubscribeFn</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/graphql#graphqlharness">GraphQLHarness</a>
+  </p>
+</div>
+
+### Constants
+
+#### defaultHarness
+
+Default harness backed by GraphQL.js parse, validate, execute, and subscribe
+implementations.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type</div>
+
+<ApiType parts={[["link", "GraphQLHarness", "/api-v17/graphql#graphqlharness"]]} />
+
+### Types
+
+#### GraphQLParseFn
+
+**Type alias.** Function used by a GraphQL harness to parse GraphQL source text.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "GraphQLParseFn"], " = (\n  ", ["parameter", "args"], ": ", ["type", "Parameters"], "\u003c", ["keyword", "typeof"], " ", ["link", "parse", "/api-v17/language#parse"], "\u003e,\n) =\u003e ", ["type", "PromiseOrValue"], "\u003c", ["type", "ReturnType"], "\u003c", ["keyword", "typeof"], " ", ["link", "parse", "/api-v17/language#parse"], "\u003e\u003e;"]} />
+
+<hr className="api-item-divider" />
+
+#### GraphQLValidateFn
+
+**Type alias.** Function used by a GraphQL harness to validate a parsed document.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "GraphQLValidateFn"], " = (\n  ", ["parameter", "args"], ": ", ["type", "Parameters"], "\u003c", ["keyword", "typeof"], " ", ["link", "validate", "/api-v17/validation#validate"], "\u003e,\n) =\u003e ", ["type", "PromiseOrValue"], "\u003c", ["type", "ReturnType"], "\u003c", ["keyword", "typeof"], " ", ["link", "validate", "/api-v17/validation#validate"], "\u003e\u003e;"]} />
+
+<hr className="api-item-divider" />
+
+#### GraphQLExecuteFn
+
+**Type alias.** Function used by a GraphQL harness to execute a valid operation.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "GraphQLExecuteFn"], " = (\n  ", ["parameter", "args"], ": ", ["type", "Parameters"], "\u003c", ["keyword", "typeof"], " ", ["link", "execute", "/api-v17/execution#execute"], "\u003e,\n) =\u003e ", ["type", "ReturnType"], "\u003c", ["keyword", "typeof"], " ", ["link", "execute", "/api-v17/execution#execute"], "\u003e;"]} />
+
+<hr className="api-item-divider" />
+
+#### GraphQLSubscribeFn
+
+**Type alias.** Function used by a GraphQL harness to create a subscription response stream.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "GraphQLSubscribeFn"], " = (\n  ", ["parameter", "args"], ": ", ["type", "Parameters"], "\u003c", ["keyword", "typeof"], " ", ["link", "subscribe", "/api-v17/execution#subscribe"], "\u003e,\n) =\u003e ", ["type", "ReturnType"], "\u003c", ["keyword", "typeof"], " ", ["link", "subscribe", "/api-v17/execution#subscribe"], "\u003e;"]} />
+
+<hr className="api-item-divider" />
+
+#### GraphQLHarness
+
+**Interface.** Overrides for the parse, validate, execute, and subscribe stages used by the
+high-level `graphql` and [`graphqlSync`](/api-v17/graphql#graphqlsync) request pipeline.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>parse</td>
+      <td><ApiType parts={[["link", "GraphQLParseFn", "/api-v17/graphql#graphqlparsefn"]]} /></td>
+      <td>Parses GraphQL source text into a document AST.</td>
+    </tr>
+    <tr>
+      <td>validate</td>
+      <td><ApiType parts={[["link", "GraphQLValidateFn", "/api-v17/graphql#graphqlvalidatefn"]]} /></td>
+      <td>Validates a document AST against a schema.</td>
+    </tr>
+    <tr>
+      <td>execute</td>
+      <td><ApiType parts={[["link", "GraphQLExecuteFn", "/api-v17/graphql#graphqlexecutefn"]]} /></td>
+      <td>Executes a valid operation.</td>
+    </tr>
+    <tr>
+      <td>subscribe</td>
+      <td><ApiType parts={[["link", "GraphQLSubscribeFn", "/api-v17/graphql#graphqlsubscribefn"]]} /></td>
+      <td>Creates a response stream for a subscription operation.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Category: Version
+
+<div className="api-category-toc">
+  <p>
+    <strong>Constants:</strong><br />
+    <a href="/api-v17/graphql#version">version</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/graphql#versioninfo">versionInfo</a>
+  </p>
+</div>
+
+### Constants
+
+#### version
+
+A string containing the version of the GraphQL.js library
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type</div>
+
+<ApiType parts={[["keyword", "string"]]} />
+
+<hr className="api-item-divider" />
+
+#### versionInfo
+
+An object containing the components of the GraphQL.js version string
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type</div>
+
+<ApiType parts={[["type", "Readonly"], "\u003c\u007b\n  ", ["property", "major"], ": ", ["keyword", "number"], ";\n  ", ["property", "minor"], ": ", ["keyword", "number"], ";\n  ", ["property", "patch"], ": ", ["keyword", "number"], ";\n  ", ["property", "preReleaseTag"], ": ", ["keyword", "string"], " \u007c ", ["keyword", "null"], ";\n\u007d\u003e"]} />

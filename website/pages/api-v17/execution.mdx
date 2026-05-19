@@ -1,0 +1,4174 @@
+import { ApiSignature, ApiType } from '../../components/ApiCode';
+
+Execute GraphQL operations and produce GraphQL execution results.
+
+These exports are also available from the root `graphql` package.
+
+For documentation purposes, these exports are grouped into the following categories:
+
+- [Execution](/api-v17/execution#category-execution)
+- [Incremental Execution](/api-v17/execution#category-incremental-execution)
+- [Legacy Incremental Execution](/api-v17/execution#category-legacy-incremental-execution)
+- [Values](/api-v17/execution#category-values)
+- [Paths](/api-v17/execution#category-paths)
+
+## Category: Execution
+
+<div className="api-category-toc">
+  <p>
+    <strong>Classes:</strong><br />
+    <a href="/api-v17/execution#abortedgraphqlexecutionerror">AbortedGraphQLExecutionError</a>
+  </p>
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v17/execution#execute">execute()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#executerootselectionset">executeRootSelectionSet()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#executesync">executeSync()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#executesubscriptionevent">executeSubscriptionEvent()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#subscribe">subscribe()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#createsourceeventstream">createSourceEventStream()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#validateexecutionargs">validateExecutionArgs()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#validatesubscriptionargs">validateSubscriptionArgs()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#mapsourcetoresponseevent">mapSourceToResponseEvent()</a>
+  </p>
+  <p>
+    <strong>Constants:</strong><br />
+    <a href="/api-v17/execution#defaulttyperesolver">defaultTypeResolver</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#defaultfieldresolver">defaultFieldResolver</a>
+  </p>
+  <p>
+    <strong>Types:</strong><br />
+    <a href="/api-v17/execution#validatedexecutionargs">ValidatedExecutionArgs</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#validatedsubscriptionargs">ValidatedSubscriptionArgs</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#executionresult">ExecutionResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#formattedexecutionresult">FormattedExecutionResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#rootselectionsetexecutor">RootSelectionSetExecutor</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#executionargs">ExecutionArgs</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#asyncworkfinishedinfo">AsyncWorkFinishedInfo</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#executionhooks">ExecutionHooks</a>
+  </p>
+</div>
+
+### Classes
+
+#### AbortedGraphQLExecutionError
+
+Error thrown when GraphQL execution is aborted.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TResult</td>
+      <td></td>
+      <td></td>
+      <td>Result value type.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+##### Constructor
+
+Creates an error for an aborted GraphQL execution.
+
+**Signature:**
+
+<ApiSignature parts={[["keyword", "new"], " ", ["name", "AbortedGraphQLExecutionError"], "(\n  ", ["parameter", "reason"], ": ", ["keyword", "unknown"], ",\n  ", ["parameter", "result"], ": ", ["type", "PromiseOrValue"], "\u003c", ["type", "TResult"], "\u003e,\n);"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>reason</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Abort reason used as the error cause.</td>
+    </tr>
+    <tr>
+      <td>result</td>
+      <td><ApiType parts={[["type", "PromiseOrValue"], "\u003c", ["type", "TResult"], "\u003e"]} /></td>
+      <td>Partial execution result available when execution stopped.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+##### Members
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>abortedResult</td>
+      <td><ApiType parts={[["type", "PromiseOrValue"], "\u003c", ["type", "TResult"], "\u003e"]} /></td>
+      <td>Partial execution result available when execution was aborted.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Functions
+
+#### execute()
+
+Implements the "Executing requests" section of the GraphQL specification.
+
+Returns either a synchronous ExecutionResult (if all encountered resolvers
+are synchronous), or a Promise of an ExecutionResult that will eventually be
+resolved and never rejected.
+
+If the arguments to this function do not result in a legal execution context,
+a GraphQLError will be thrown immediately explaining the invalid input.
+
+Field errors are collected into the response instead of rejecting the
+returned promise. Only the field that produced the error and its descendants
+are omitted; sibling fields continue to execute. Errors from fields of
+non-null type may propagate to the nearest nullable parent, which can be the
+entire response data.
+
+This function does not support incremental delivery (`@defer` and `@stream`).
+Use [`experimentalExecuteIncrementally`](/api-v17/execution#experimentalexecuteincrementally) to execute operations with
+incremental delivery enabled.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "execute"], "(\n  ", ["parameter", "args"], ": ", ["link", "ExecutionArgs", "/api-v17/execution#executionargs"], ",\n): ", ["type", "PromiseOrValue"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>args</td>
+      <td><ApiType parts={[["link", "ExecutionArgs", "/api-v17/execution#executionargs"]]} /></td>
+      <td>The arguments used to perform the operation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "PromiseOrValue"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], "\u003e"]} /></td>
+      <td>A completed execution result, or a promise resolving to one when execution is asynchronous.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { execute } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    greeting(name: String!): String
+  }
+`);
+
+const result = await execute({
+  schema,
+  document: parse('query ($name: String!) { greeting(name: $name) }'),
+  rootValue: {
+    greeting: ({ name }) => `Hello, ${name}!`,
+  },
+  variableValues: { name: 'Ada' },
+});
+
+result; // => { data: { greeting: 'Hello, Ada!' } }
+```
+
+<hr className="api-item-divider" />
+
+#### executeRootSelectionSet()
+
+Implements the "Executing operations" section of the spec.
+
+Returns a Promise that will eventually resolve to the data described by
+The "Response" section of the GraphQL specification.
+
+If errors are encountered while executing a GraphQL field, only that
+field and its descendants will be omitted, and sibling fields will still
+be executed. An execution which encounters errors will still result in a
+resolved Promise.
+
+Errors from sub-fields of a NonNull type may propagate to the top level,
+at which point we still log the error and null the parent field, which
+in this case is the entire response.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "executeRootSelectionSet"], "(\n  ", ["parameter", "validatedExecutionArgs"], ": ", ["link", "ValidatedExecutionArgs", "/api-v17/execution#validatedexecutionargs"], ",\n): ", ["type", "PromiseOrValue"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>validatedExecutionArgs</td>
+      <td><ApiType parts={[["link", "ValidatedExecutionArgs", "/api-v17/execution#validatedexecutionargs"]]} /></td>
+      <td>Validated execution arguments.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "PromiseOrValue"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], "\u003e"]} /></td>
+      <td>Execution result for the operation root selection set.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { executeRootSelectionSet, validateExecutionArgs } from 'graphql/execution';
+
+const schema = buildSchema('type Query { greeting: String }');
+const validatedArgs = validateExecutionArgs({
+  schema,
+  document: parse('{ greeting }'),
+  rootValue: { greeting: 'Hello' },
+});
+
+assert('schema' in validatedArgs);
+
+const result = await executeRootSelectionSet(validatedArgs);
+result; // => { data: { greeting: 'Hello' } }
+```
+
+<hr className="api-item-divider" />
+
+#### executeSync()
+
+Also implements the "Executing requests" section of the GraphQL specification.
+However, it guarantees to complete synchronously (or throw an error) assuming
+that all field resolvers are also synchronous.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "executeSync"], "(\n  ", ["parameter", "args"], ": ", ["link", "ExecutionArgs", "/api-v17/execution#executionargs"], ",\n): ", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>args</td>
+      <td><ApiType parts={[["link", "ExecutionArgs", "/api-v17/execution#executionargs"]]} /></td>
+      <td>The arguments used to perform the operation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ExecutionResult", "/api-v17/execution#executionresult"]]} /></td>
+      <td>Completed execution output for a synchronous operation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { executeSync } from 'graphql/execution';
+
+const schema = buildSchema('type Query { greeting: String }');
+
+const result = executeSync({
+  schema,
+  document: parse('{ greeting }'),
+  rootValue: { greeting: 'Hello' },
+});
+
+result; // => { data: { greeting: 'Hello' } }
+```
+
+<hr className="api-item-divider" />
+
+#### executeSubscriptionEvent()
+
+Executes a subscription operation once for a single source event.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "executeSubscriptionEvent"], "(\n  ", ["parameter", "validatedExecutionArgs"], ": ", ["link", "ValidatedSubscriptionArgs", "/api-v17/execution#validatedsubscriptionargs"], ",\n): ", ["type", "PromiseOrValue"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>validatedExecutionArgs</td>
+      <td><ApiType parts={[["link", "ValidatedSubscriptionArgs", "/api-v17/execution#validatedsubscriptionargs"]]} /></td>
+      <td>Validated subscription execution arguments.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "PromiseOrValue"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], "\u003e"]} /></td>
+      <td>Execution result for the subscription event.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { executeSubscriptionEvent, validateSubscriptionArgs } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+
+  type Subscription {
+    greeting: String
+  }
+`);
+const validatedArgs = validateSubscriptionArgs({
+  schema,
+  document: parse('subscription { greeting }'),
+  rootValue: { greeting: 'Hello' },
+});
+
+assert('schema' in validatedArgs);
+
+const result = await executeSubscriptionEvent(validatedArgs);
+result; // => { data: { greeting: 'Hello' } }
+```
+
+<hr className="api-item-divider" />
+
+#### subscribe()
+
+Implements the "Subscribe" algorithm described in the GraphQL specification.
+
+Returns a Promise that resolves to either an AsyncIterator (if successful)
+or an ExecutionResult (error). The promise will be rejected if the schema or
+other arguments to this function are invalid, or if the resolved event stream
+is not an async iterable.
+
+If the client-provided arguments to this function do not result in a
+compliant subscription, a GraphQL Response (ExecutionResult) with descriptive
+errors and no data will be returned.
+
+If the source stream could not be created due to faulty subscription resolver
+logic or underlying systems, the promise will resolve to a single
+ExecutionResult containing `errors` and no `data`.
+
+If the operation succeeded, the promise resolves to an AsyncIterator, which
+yields a stream of ExecutionResults representing the response stream.
+
+This function does not support incremental delivery (`@defer` and `@stream`).
+If an operation which would defer or stream data is executed with this
+function, a field error will be raised at the location of the `@defer` or
+`@stream` directive.
+
+Accepts an object with named arguments.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "subscribe"], "(\n  ", ["parameter", "args"], ": ", ["link", "ExecutionArgs", "/api-v17/execution#executionargs"], ",\n): ", ["type", "PromiseOrValue"], "\u003c\n  ", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], " \u007c ", ["type", "AsyncGenerator"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], ", ", ["keyword", "void"], ", ", ["keyword", "void"], "\u003e\n\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>args</td>
+      <td><ApiType parts={[["link", "ExecutionArgs", "/api-v17/execution#executionargs"]]} /></td>
+      <td>Execution arguments for the subscription operation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "PromiseOrValue"], "\u003c\n  ", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], " \u007c ", ["type", "AsyncGenerator"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], ", ", ["keyword", "void"], ", ", ["keyword", "void"], "\u003e\n\u003e"]} /></td>
+      <td>A response stream for a valid subscription, or an execution result containing errors.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Use a same-named rootValue function to provide the source event stream.
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { subscribe } from 'graphql/execution';
+
+async function* greetings() {
+  yield { greeting: 'Hello' };
+  yield { greeting: 'Bonjour' };
+}
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+
+  type Subscription {
+    greeting: String
+  }
+`);
+
+const result = await subscribe({
+  schema,
+  document: parse('subscription { greeting }'),
+  rootValue: { greeting: () => greetings() },
+});
+
+assert('next' in result);
+
+const firstPayload = await result.next();
+firstPayload.value; // => { data: { greeting: 'Hello' } }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant supplies events through a custom subscribeFieldResolver.
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { subscribe } from 'graphql/execution';
+
+async function* defaultGreetings() {
+  yield { greeting: 'Hello' };
+}
+
+async function* frenchGreetings() {
+  yield { greeting: 'Bonjour' };
+}
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+
+  type Subscription {
+    greeting(locale: String): String
+  }
+`);
+
+const result = await subscribe({
+  schema,
+  document: parse(
+    'subscription Greeting($locale: String) { greeting(locale: $locale) }',
+  ),
+  rootValue: {
+    greeting: (args, contextValue) => {
+      const locale = args.locale ?? contextValue.defaultLocale;
+      return locale === 'fr' ? frenchGreetings() : defaultGreetings();
+    },
+  },
+  contextValue: { defaultLocale: 'fr' },
+  variableValues: { locale: 'fr' },
+  operationName: 'Greeting',
+  subscribeFieldResolver: (rootValue, args, contextValue, info) => {
+    args.locale; // => 'fr'
+    return rootValue[info.fieldName](args, contextValue);
+  },
+});
+
+assert('next' in result);
+
+const firstPayload = await result.next();
+firstPayload.value; // => { data: { greeting: 'Bonjour' } }
+```
+
+<hr className="api-item-divider" />
+
+#### createSourceEventStream()
+
+Implements the "CreateSourceEventStream" algorithm described in the
+GraphQL specification, resolving the subscription source event stream for a
+previously validated subscription request.
+
+Returns a Promise that resolves to either an AsyncIterable (if successful)
+or an ExecutionResult (error). The promise will be rejected if the validated
+execution arguments are invalid, or if the resolved event stream is not an
+async iterable.
+
+If the client-provided arguments to this function do not result in a
+compliant subscription, a GraphQL Response (ExecutionResult) with
+descriptive errors and no data will be returned.
+
+If the source stream could not be created due to faulty subscription
+resolver logic or underlying systems, the promise will resolve to a single
+ExecutionResult containing `errors` and no `data`.
+
+If the operation succeeded, the promise resolves to the AsyncIterable for the
+event stream returned by the resolver.
+
+A Source Event Stream represents a sequence of events, each of which triggers
+a GraphQL execution for that event.
+
+This may be useful when hosting the stateful subscription service in a
+different process or machine than the stateless GraphQL execution engine,
+or otherwise separating these two steps. For more on this, see the
+"Supporting Subscriptions at Scale" information in the GraphQL specification.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "createSourceEventStream"], "(\n  ", ["parameter", "validatedExecutionArgs"], ": ", ["link", "ValidatedSubscriptionArgs", "/api-v17/execution#validatedsubscriptionargs"], ",\n): ", ["type", "PromiseOrValue"], "\u003c\n  ", ["type", "AsyncIterable"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e \u007c ", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], "\n\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>validatedExecutionArgs</td>
+      <td><ApiType parts={[["link", "ValidatedSubscriptionArgs", "/api-v17/execution#validatedsubscriptionargs"]]} /></td>
+      <td>Validated subscription execution arguments.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "PromiseOrValue"], "\u003c\n  ", ["type", "AsyncIterable"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e \u007c ", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], "\n\u003e"]} /></td>
+      <td>A source event stream, or an execution result containing errors.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { createSourceEventStream, validateSubscriptionArgs } from 'graphql/execution';
+
+async function* greetings() {
+  yield { greeting: 'Hello' };
+}
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+
+  type Subscription {
+    greeting: String
+  }
+`);
+const validatedArgs = validateSubscriptionArgs({
+  schema,
+  document: parse('subscription { greeting }'),
+  rootValue: { greeting: () => greetings() },
+});
+
+assert('schema' in validatedArgs);
+
+const stream = await createSourceEventStream(validatedArgs);
+Symbol.asyncIterator in stream; // => true
+```
+
+<hr className="api-item-divider" />
+
+#### validateExecutionArgs()
+
+Constructs a ExecutionContext object from the arguments passed to
+execute, which we will pass throughout the other execution methods.
+
+Throws a GraphQLError if a valid execution context cannot be created.
+
+TODO: consider no longer exporting this function
+
+**Signature:**
+
+<ApiSignature parts={[["name", "validateExecutionArgs"], "(\n  ", ["parameter", "args"], ": ", ["link", "ExecutionArgs", "/api-v17/execution#executionargs"], ",\n): ", ["link", "ValidatedExecutionArgs", "/api-v17/execution#validatedexecutionargs"], " \u007c ", ["keyword", "readonly"], " ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], "[];"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>args</td>
+      <td><ApiType parts={[["link", "ExecutionArgs", "/api-v17/execution#executionargs"]]} /></td>
+      <td>Execution arguments to validate.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ValidatedExecutionArgs", "/api-v17/execution#validatedexecutionargs"], " \u007c ", ["keyword", "readonly"], " ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], "[]"]} /></td>
+      <td>Validated execution arguments, or validation errors.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { validateExecutionArgs } from 'graphql/execution';
+
+const schema = buildSchema(`
+  interface Named {
+    name: String!
+  }
+
+  type User implements Named {
+    name: String!
+  }
+
+  type Query {
+    viewer: Named
+  }
+`);
+const abortController = new AbortController();
+const validatedArgs = validateExecutionArgs({
+  schema,
+  document: parse('query Viewer { viewer { __typename name } }'),
+  rootValue: { viewer: { kind: 'user', name: 'Ada' } },
+  contextValue: { locale: 'en' },
+  operationName: 'Viewer',
+  fieldResolver: (source, _args, contextValue, info) => {
+    contextValue.locale; // => 'en'
+    return source[info.fieldName];
+  },
+  typeResolver: (value) => {
+    return value.kind === 'user' ? 'User' : undefined;
+  },
+  hideSuggestions: true,
+  abortSignal: abortController.signal,
+  enableEarlyExecution: true,
+  hooks: {
+    asyncWorkFinished: () => {},
+  },
+  options: { maxCoercionErrors: 1 },
+});
+
+assert('operation' in validatedArgs);
+
+validatedArgs.operation.name?.value; // => 'Viewer'
+validatedArgs.hideSuggestions; // => true
+```
+
+<hr className="api-item-divider" />
+
+#### validateSubscriptionArgs()
+
+Validates execution arguments for a subscription operation.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "validateSubscriptionArgs"], "(\n  ", ["parameter", "args"], ": ", ["link", "ExecutionArgs", "/api-v17/execution#executionargs"], ",\n): ", ["link", "ValidatedSubscriptionArgs", "/api-v17/execution#validatedsubscriptionargs"], " \u007c ", ["keyword", "readonly"], " ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], "[];"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>args</td>
+      <td><ApiType parts={[["link", "ExecutionArgs", "/api-v17/execution#executionargs"]]} /></td>
+      <td>Execution arguments to validate.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ValidatedSubscriptionArgs", "/api-v17/execution#validatedsubscriptionargs"], " \u007c ", ["keyword", "readonly"], " ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], "[]"]} /></td>
+      <td>Validated subscription execution arguments, or validation errors.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { validateSubscriptionArgs } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+
+  type Subscription {
+    greeting: String
+  }
+`);
+const validatedArgs = validateSubscriptionArgs({
+  schema,
+  document: parse('subscription { greeting }'),
+});
+
+assert('operation' in validatedArgs);
+
+validatedArgs.operation.operation; // => 'subscription'
+```
+
+<hr className="api-item-divider" />
+
+#### mapSourceToResponseEvent()
+
+Implements the "MapSourceToResponseEvent" algorithm described in the
+GraphQL specification, mapping each event from a subscription source event
+stream to an ExecutionResult in the response stream.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "mapSourceToResponseEvent"], "(\n  ", ["parameter", "validatedExecutionArgs"], ": ", ["link", "ValidatedSubscriptionArgs", "/api-v17/execution#validatedsubscriptionargs"], ",\n  ", ["parameter", "sourceEventStream"], ": ", ["type", "AsyncIterable"], "\u003c", ["keyword", "unknown"], "\u003e,\n  ", ["parameter", "rootSelectionSetExecutor"], ": ", ["link", "RootSelectionSetExecutor", "/api-v17/execution#rootselectionsetexecutor"], " = executeSubscriptionEvent,\n): ", ["type", "AsyncGenerator"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], ", ", ["keyword", "void"], ", ", ["keyword", "void"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>validatedExecutionArgs</td>
+      <td><ApiType parts={[["link", "ValidatedSubscriptionArgs", "/api-v17/execution#validatedsubscriptionargs"]]} /></td>
+      <td></td>
+      <td>Validated subscription execution arguments.</td>
+    </tr>
+    <tr>
+      <td>sourceEventStream</td>
+      <td><ApiType parts={[["type", "AsyncIterable"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td></td>
+      <td>Source event stream returned by the subscription resolver.</td>
+    </tr>
+    <tr>
+      <td>rootSelectionSetExecutor</td>
+      <td><ApiType parts={[["link", "RootSelectionSetExecutor", "/api-v17/execution#rootselectionsetexecutor"]]} /></td>
+      <td><ApiType parts={["executeSubscriptionEvent"]} /></td>
+      <td>Function used to execute each source event.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "AsyncGenerator"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], ", ", ["keyword", "void"], ", ", ["keyword", "void"], "\u003e"]} /></td>
+      <td>A response stream of execution results.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { mapSourceToResponseEvent, validateSubscriptionArgs } from 'graphql/execution';
+
+async function* events() {
+  yield { greeting: 'Hello' };
+}
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+
+  type Subscription {
+    greeting: String
+  }
+`);
+const validatedArgs = validateSubscriptionArgs({
+  schema,
+  document: parse('subscription { greeting }'),
+});
+
+assert('schema' in validatedArgs);
+
+const responseStream = mapSourceToResponseEvent(validatedArgs, events());
+const firstPayload = await responseStream.next();
+
+firstPayload.value; // => { data: { greeting: 'Hello' } }
+```
+
+### Constants
+
+#### defaultTypeResolver
+
+If a resolveType function is not given, then a default resolve behavior is
+used which attempts two strategies:
+
+First, See if the provided value has a `__typename` field defined, if so, use
+that value as name of the resolved type.
+
+Otherwise, test each possible type for the abstract type by calling
+isTypeOf for the object being coerced, returning the first type that matches.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type</div>
+
+<ApiType parts={[["link", "GraphQLTypeResolver", "/api-v17/type#graphqltyperesolver"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e"]} />
+
+<hr className="api-item-divider" />
+
+#### defaultFieldResolver
+
+If a resolve function is not given, then a default resolve behavior is used
+which takes the property of the source object of the same name as the field
+and returns it as the result, or if it's a function, returns the result
+of calling that function while passing along args and context value.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type</div>
+
+<ApiType parts={[["link", "GraphQLFieldResolver", "/api-v17/type#graphqlfieldresolver"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e"]} />
+
+### Types
+
+#### ValidatedExecutionArgs
+
+**Interface.** Data that must be available at all points during query execution.
+
+Namely, schema of the type system that is currently executing,
+and the fragments defined in the query document
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
+      <td>Schema used for execution.</td>
+    </tr>
+    <tr>
+      <td>fragmentDefinitions</td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["link", "FragmentDefinitionNode", "/api-v17/language#fragmentdefinitionnode"], "\u003e"]} /></td>
+      <td>Fragment definitions keyed by fragment name.</td>
+    </tr>
+    <tr>
+      <td>fragments</td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["type", "FragmentDetails"], "\u003e"]} /></td>
+      <td>Fragment details keyed by fragment name.</td>
+    </tr>
+    <tr>
+      <td>rootValue</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Root value passed to the operation.</td>
+    </tr>
+    <tr>
+      <td>contextValue</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Application context value passed to every resolver.</td>
+    </tr>
+    <tr>
+      <td>operation</td>
+      <td><ApiType parts={[["link", "OperationDefinitionNode", "/api-v17/language#operationdefinitionnode"]]} /></td>
+      <td>Operation definition selected for execution.</td>
+    </tr>
+    <tr>
+      <td>variableValues</td>
+      <td><ApiType parts={[["link", "VariableValues", "/api-v17/execution#variablevalues"]]} /></td>
+      <td>Operation variable values with source metadata and coerced runtime values.</td>
+    </tr>
+    <tr>
+      <td>fieldResolver</td>
+      <td><ApiType parts={[["link", "GraphQLFieldResolver", "/api-v17/type#graphqlfieldresolver"], "\u003c", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e"]} /></td>
+      <td>Resolver used for fields without an explicit resolver.</td>
+    </tr>
+    <tr>
+      <td>typeResolver</td>
+      <td><ApiType parts={[["link", "GraphQLTypeResolver", "/api-v17/type#graphqltyperesolver"], "\u003c", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e"]} /></td>
+      <td>Resolver used for abstract types without an explicit type resolver.</td>
+    </tr>
+    <tr>
+      <td>subscribeFieldResolver</td>
+      <td><ApiType parts={[["link", "GraphQLFieldResolver", "/api-v17/type#graphqlfieldresolver"], "\u003c", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e"]} /></td>
+      <td>Resolver used for subscription fields without an explicit subscribe resolver.</td>
+    </tr>
+    <tr>
+      <td>hideSuggestions</td>
+      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
+      <td>Whether suggestion text should be omitted from execution errors.</td>
+    </tr>
+    <tr>
+      <td>errorPropagation</td>
+      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
+      <td>Whether execution should use error propagation.</td>
+    </tr>
+    <tr>
+      <td>externalAbortSignal</td>
+      <td><ApiType parts={[["keyword", "any"]]} /></td>
+      <td>External signal that may abort execution.</td>
+    </tr>
+    <tr>
+      <td>enableEarlyExecution</td>
+      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
+      <td>Whether incremental execution may begin eligible work early.</td>
+    </tr>
+    <tr>
+      <td>hooks</td>
+      <td><ApiType parts={[["link", "ExecutionHooks", "/api-v17/execution#executionhooks"], " \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>Execution hooks supplied by the caller.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ValidatedSubscriptionArgs
+
+**Interface.** Validated execution arguments for a subscription operation.
+
+<ApiSignature parts={[["keyword", "interface"], " ", ["name", "ValidatedSubscriptionArgs"], " ", ["keyword", "extends"], " ", ["link", "ValidatedExecutionArgs", "/api-v17/execution#validatedexecutionargs"]]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>operation</td>
+      <td><ApiType parts={[["link", "SubscriptionOperationDefinitionNode", "/api-v17/language#subscriptionoperationdefinitionnode"]]} /></td>
+      <td>Subscription operation definition selected for execution.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ExecutionResult
+
+**Interface.** Represents the response produced by executing a GraphQL operation.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the execution data payload.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the extensions payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>errors?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], "[]"]} /></td>
+      <td>Errors raised while parsing, validating, or executing the operation.</td>
+    </tr>
+    <tr>
+      <td>data?</td>
+      <td><ApiType parts={[["type", "TData"], " \u007c ", ["keyword", "null"]]} /></td>
+      <td>Data returned by execution, or null when execution could not produce data.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "TExtensions"]]} /></td>
+      <td>Additional non-standard metadata included in the execution result.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### FormattedExecutionResult
+
+**Interface.** A JSON-serializable GraphQL execution result.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the formatted data payload.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the formatted extensions payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>errors?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "GraphQLFormattedError", "/api-v17/error#graphqlformattederror"], "[]"]} /></td>
+      <td>Errors raised while parsing, validating, or executing the operation.</td>
+    </tr>
+    <tr>
+      <td>data?</td>
+      <td><ApiType parts={[["type", "TData"], " \u007c ", ["keyword", "null"]]} /></td>
+      <td>Data returned by execution, or null when execution could not produce data.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "TExtensions"]]} /></td>
+      <td>Additional non-standard metadata included in the formatted result.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### RootSelectionSetExecutor
+
+**Type alias.** Function used to execute a validated root selection set for a subscription event.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "RootSelectionSetExecutor"], " = (\n  ", ["parameter", "validatedExecutionArgs"], ": ", ["link", "ValidatedSubscriptionArgs", "/api-v17/execution#validatedsubscriptionargs"], ",\n) =\u003e ", ["type", "PromiseOrValue"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], "\u003e;"]} />
+
+<hr className="api-item-divider" />
+
+#### ExecutionArgs
+
+**Interface.** Arguments accepted by execute and executeSync.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
+      <td>The schema used for validation or execution.</td>
+    </tr>
+    <tr>
+      <td>document</td>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v17/language#documentnode"]]} /></td>
+      <td>The parsed GraphQL document to execute.</td>
+    </tr>
+    <tr>
+      <td>rootValue?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Initial root value passed to the operation.</td>
+    </tr>
+    <tr>
+      <td>contextValue?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Application context value passed to every resolver.</td>
+    </tr>
+    <tr>
+      <td>variableValues?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c\u007b\n  ", ["keyword", "readonly"], " [", ["parameter", "variable"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], ";\n\u007d\u003e"]} /></td>
+      <td>Runtime variable values keyed by variable name.</td>
+    </tr>
+    <tr>
+      <td>operationName?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "string"], "\u003e"]} /></td>
+      <td>Name of the operation to execute when the document contains multiple operations.</td>
+    </tr>
+    <tr>
+      <td>fieldResolver?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLFieldResolver", "/api-v17/type#graphqlfieldresolver"], "\u003c", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\u003e"]} /></td>
+      <td>Resolver used when a field does not define its own resolver.</td>
+    </tr>
+    <tr>
+      <td>typeResolver?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLTypeResolver", "/api-v17/type#graphqltyperesolver"], "\u003c", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\u003e"]} /></td>
+      <td>Resolver used when an abstract type does not define its own resolver.</td>
+    </tr>
+    <tr>
+      <td>subscribeFieldResolver?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLFieldResolver", "/api-v17/type#graphqlfieldresolver"], "\u003c", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\u003e"]} /></td>
+      <td>Resolver used for the root subscription field.</td>
+    </tr>
+    <tr>
+      <td>hideSuggestions?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e"]} /></td>
+      <td>Whether suggestion text should be omitted from request errors.</td>
+    </tr>
+    <tr>
+      <td>abortSignal?</td>
+      <td><ApiType parts={[["keyword", "any"]]} /></td>
+      <td>AbortSignal used to cancel execution.</td>
+    </tr>
+    <tr>
+      <td>enableEarlyExecution?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e"]} /></td>
+      <td>Whether incremental execution may begin eligible work early.</td>
+    </tr>
+    <tr>
+      <td>hooks?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "ExecutionHooks", "/api-v17/execution#executionhooks"], "\u003e"]} /></td>
+      <td>Execution hooks invoked during this operation.</td>
+    </tr>
+    <tr>
+      <td>options?</td>
+      <td><ApiType parts={[["type", "object"]]} /></td>
+      <td>Additional execution options.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### AsyncWorkFinishedInfo
+
+**Interface.** Information passed to hooks after asynchronous execution work has finished.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>validatedExecutionArgs</td>
+      <td><ApiType parts={[["link", "ValidatedExecutionArgs", "/api-v17/execution#validatedexecutionargs"]]} /></td>
+      <td>Validated execution arguments for the operation that finished async work.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ExecutionHooks
+
+**Interface.** Optional hooks invoked during GraphQL execution.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>asyncWorkFinished?</td>
+      <td><ApiType parts={["(", ["parameter", "info"], ": ", ["link", "AsyncWorkFinishedInfo", "/api-v17/execution#asyncworkfinishedinfo"], ") =\u003e ", ["keyword", "void"]]} /></td>
+      <td>Called after all tracked asynchronous execution work has settled.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Category: Incremental Execution
+
+<div className="api-category-toc">
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v17/execution#experimentalexecuteincrementally">experimentalExecuteIncrementally()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#experimentalexecuterootselectionset">experimentalExecuteRootSelectionSet()</a>
+  </p>
+  <p>
+    <strong>Types:</strong><br />
+    <a href="/api-v17/execution#experimentalincrementalexecutionresults">ExperimentalIncrementalExecutionResults</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#formattedexperimentalincrementalexecutionresults">FormattedExperimentalIncrementalExecutionResults</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#initialincrementalexecutionresult">InitialIncrementalExecutionResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#formattedinitialincrementalexecutionresult">FormattedInitialIncrementalExecutionResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#subsequentincrementalexecutionresult">SubsequentIncrementalExecutionResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#formattedsubsequentincrementalexecutionresult">FormattedSubsequentIncrementalExecutionResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#incrementaldeferresult">IncrementalDeferResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#formattedincrementaldeferresult">FormattedIncrementalDeferResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#incrementalstreamresult">IncrementalStreamResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#formattedincrementalstreamresult">FormattedIncrementalStreamResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#incrementalresult">IncrementalResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#formattedincrementalresult">FormattedIncrementalResult</a>
+  </p>
+</div>
+
+### Functions
+
+#### experimentalExecuteIncrementally()
+
+Implements the "Executing requests" section of the GraphQL specification,
+including `@defer` and `@stream` as proposed in
+https://github.com/graphql/graphql-spec/pull/742
+
+This function returns either a single ExecutionResult, or an
+ExperimentalIncrementalExecutionResults object containing an `initialResult`
+and a stream of `subsequentResults`.
+
+If the arguments to this function do not result in a legal execution context,
+a GraphQLError will be thrown immediately explaining the invalid input.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "experimentalExecuteIncrementally"], "(\n  ", ["parameter", "args"], ": ", ["link", "ExecutionArgs", "/api-v17/execution#executionargs"], ",\n): ", ["type", "PromiseOrValue"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], " \u007c ", ["link", "ExperimentalIncrementalExecutionResults", "/api-v17/execution#experimentalincrementalexecutionresults"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>args</td>
+      <td><ApiType parts={[["link", "ExecutionArgs", "/api-v17/execution#executionargs"]]} /></td>
+      <td>Execution arguments for the GraphQL operation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "PromiseOrValue"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], " \u007c ", ["link", "ExperimentalIncrementalExecutionResults", "/api-v17/execution#experimentalincrementalexecutionresults"], "\u003e"]} /></td>
+      <td>A single execution result or incremental execution results.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { experimentalExecuteIncrementally } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+
+const result = await experimentalExecuteIncrementally({
+  schema,
+  document: parse('{ greeting }'),
+  rootValue: { greeting: 'Hello' },
+});
+
+result; // => { data: { greeting: 'Hello' } }
+```
+
+<hr className="api-item-divider" />
+
+#### experimentalExecuteRootSelectionSet()
+
+Executes the operation root selection set with incremental delivery enabled.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "experimentalExecuteRootSelectionSet"], "(\n  ", ["parameter", "validatedExecutionArgs"], ": ", ["link", "ValidatedExecutionArgs", "/api-v17/execution#validatedexecutionargs"], ",\n): ", ["type", "PromiseOrValue"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], " \u007c ", ["link", "ExperimentalIncrementalExecutionResults", "/api-v17/execution#experimentalincrementalexecutionresults"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>validatedExecutionArgs</td>
+      <td><ApiType parts={[["link", "ValidatedExecutionArgs", "/api-v17/execution#validatedexecutionargs"]]} /></td>
+      <td>Validated execution arguments.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "PromiseOrValue"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], " \u007c ", ["link", "ExperimentalIncrementalExecutionResults", "/api-v17/execution#experimentalincrementalexecutionresults"], "\u003e"]} /></td>
+      <td>A single execution result or incremental execution results.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import {
+  experimentalExecuteRootSelectionSet,
+  validateExecutionArgs,
+} from 'graphql/execution';
+
+const schema = buildSchema('type Query { greeting: String }');
+const validatedArgs = validateExecutionArgs({
+  schema,
+  document: parse('{ greeting }'),
+  rootValue: { greeting: 'Hello' },
+});
+
+assert('schema' in validatedArgs);
+
+const result = await experimentalExecuteRootSelectionSet(validatedArgs);
+result; // => { data: { greeting: 'Hello' } }
+```
+
+### Types
+
+#### ExperimentalIncrementalExecutionResults
+
+**Interface.** Results for an operation that produced incremental payloads.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TInitialData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the initial result data payload.</td>
+    </tr>
+    <tr>
+      <td>TDeferredData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of deferred fragment data payloads.</td>
+    </tr>
+    <tr>
+      <td>TStreamItem</td>
+      <td></td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Shape of streamed list items.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of extensions payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>initialResult</td>
+      <td><ApiType parts={[["link", "InitialIncrementalExecutionResult", "/api-v17/execution#initialincrementalexecutionresult"], "\u003c", ["type", "TInitialData"], ", ", ["type", "TExtensions"], "\u003e"]} /></td>
+      <td>Initial execution result delivered before subsequent incremental payloads.</td>
+    </tr>
+    <tr>
+      <td>subsequentResults</td>
+      <td><ApiType parts={[["type", "AsyncGenerator"], "\u003c\n  ", ["link", "SubsequentIncrementalExecutionResult", "/api-v17/execution#subsequentincrementalexecutionresult"], "\u003c\n    ", ["type", "TDeferredData"], ",\n    ", ["type", "TStreamItem"], ",\n    ", ["type", "TExtensions"], "\n  \u003e,\n  ", ["keyword", "void"], ",\n  ", ["keyword", "void"], "\n\u003e"]} /></td>
+      <td>Async stream of incremental payloads delivered after the initial result.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### FormattedExperimentalIncrementalExecutionResults
+
+**Interface.** JSON-serializable form of incremental execution results.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TInitial</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the formatted initial result data payload.</td>
+    </tr>
+    <tr>
+      <td>TDeferredData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of formatted deferred fragment data payloads.</td>
+    </tr>
+    <tr>
+      <td>TStreamItem</td>
+      <td></td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Shape of formatted streamed list items.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of formatted extensions payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>initialResult</td>
+      <td><ApiType parts={[["link", "FormattedInitialIncrementalExecutionResult", "/api-v17/execution#formattedinitialincrementalexecutionresult"], "\u003c", ["type", "TInitial"], ", ", ["type", "TExtensions"], "\u003e"]} /></td>
+      <td>Formatted initial execution result.</td>
+    </tr>
+    <tr>
+      <td>subsequentResults</td>
+      <td><ApiType parts={[["type", "AsyncGenerator"], "\u003c\n  ", ["link", "FormattedSubsequentIncrementalExecutionResult", "/api-v17/execution#formattedsubsequentincrementalexecutionresult"], "\u003c\n    ", ["type", "TDeferredData"], ",\n    ", ["type", "TStreamItem"], ",\n    ", ["type", "TExtensions"], "\n  \u003e,\n  ", ["keyword", "void"], ",\n  ", ["keyword", "void"], "\n\u003e"]} /></td>
+      <td>Async stream of formatted incremental payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### InitialIncrementalExecutionResult
+
+**Interface.** Initial execution result for an operation that produced incremental payloads.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the initial data payload.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the extensions payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+<ApiSignature parts={[["keyword", "interface"], " ", ["name", "InitialIncrementalExecutionResult"], "\u003c\n  ", ["type", "TData"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n  ", ["type", "TExtensions"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n\u003e ", ["keyword", "extends"], " ", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], "\u003c", ["type", "TData"], ", ", ["type", "TExtensions"], "\u003e"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>data</td>
+      <td><ApiType parts={[["type", "TData"]]} /></td>
+      <td>Data produced by the initial execution payload.</td>
+    </tr>
+    <tr>
+      <td>pending</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["type", "PendingResult"], "[]"]} /></td>
+      <td>Incremental payloads that are still pending after the initial result.</td>
+    </tr>
+    <tr>
+      <td>hasNext</td>
+      <td><ApiType parts={[["keyword", "true"]]} /></td>
+      <td>Indicates that subsequent incremental payloads will follow.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "TExtensions"]]} /></td>
+      <td>Additional non-standard metadata included in the initial result.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### FormattedInitialIncrementalExecutionResult
+
+**Interface.** JSON-serializable form of an initial incremental execution result.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TInitialData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the formatted initial data payload.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the formatted extensions payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+<ApiSignature parts={[["keyword", "interface"], " ", ["name", "FormattedInitialIncrementalExecutionResult"], "\u003c\n  ", ["type", "TInitialData"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n  ", ["type", "TExtensions"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n\u003e ", ["keyword", "extends"], " ", ["link", "FormattedExecutionResult", "/api-v17/execution#formattedexecutionresult"], "\u003c", ["type", "TInitialData"], ", ", ["type", "TExtensions"], "\u003e"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>data</td>
+      <td><ApiType parts={[["type", "TInitialData"]]} /></td>
+      <td>Formatted data produced by the initial execution payload.</td>
+    </tr>
+    <tr>
+      <td>pending</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["type", "PendingResult"], "[]"]} /></td>
+      <td>Formatted list of incremental payloads still pending after the initial result.</td>
+    </tr>
+    <tr>
+      <td>hasNext</td>
+      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
+      <td>Indicates whether subsequent incremental payloads will follow.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "TExtensions"]]} /></td>
+      <td>Additional non-standard metadata included in the formatted initial result.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### SubsequentIncrementalExecutionResult
+
+**Interface.** Subsequent payload produced by incremental execution.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TDeferredData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of deferred fragment data payloads.</td>
+    </tr>
+    <tr>
+      <td>TStreamItem</td>
+      <td></td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Shape of streamed list items.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the extensions payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>pending?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["type", "PendingResult"], "[]"]} /></td>
+      <td>Incremental payloads that became pending with this response.</td>
+    </tr>
+    <tr>
+      <td>incremental?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IncrementalResult", "/api-v17/execution#incrementalresult"], "\u003c\n  ", ["type", "TDeferredData"], ",\n  ", ["type", "TStreamItem"], ",\n  ", ["type", "TExtensions"], "\n\u003e[]"]} /></td>
+      <td>Deferred or streamed payloads delivered by this response.</td>
+    </tr>
+    <tr>
+      <td>completed?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["type", "CompletedResult"], "[]"]} /></td>
+      <td>Incremental payloads that completed with this response.</td>
+    </tr>
+    <tr>
+      <td>hasNext</td>
+      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
+      <td>Indicates whether more incremental payloads will follow.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "TExtensions"]]} /></td>
+      <td>Additional non-standard metadata included in this payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### FormattedSubsequentIncrementalExecutionResult
+
+**Interface.** JSON-serializable form of a subsequent incremental execution payload.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TDeferredData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of formatted deferred fragment data payloads.</td>
+    </tr>
+    <tr>
+      <td>TStreamItem</td>
+      <td></td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Shape of formatted streamed list items.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of formatted extensions payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>hasNext</td>
+      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
+      <td>Indicates whether more incremental payloads will follow.</td>
+    </tr>
+    <tr>
+      <td>pending?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["type", "PendingResult"], "[]"]} /></td>
+      <td>Formatted incremental payloads that became pending with this response.</td>
+    </tr>
+    <tr>
+      <td>incremental?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "FormattedIncrementalResult", "/api-v17/execution#formattedincrementalresult"], "\u003c\n  ", ["type", "TDeferredData"], ",\n  ", ["type", "TStreamItem"], ",\n  ", ["type", "TExtensions"], "\n\u003e[]"]} /></td>
+      <td>Formatted deferred or streamed payloads delivered by this response.</td>
+    </tr>
+    <tr>
+      <td>completed?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["type", "FormattedCompletedResult"], "[]"]} /></td>
+      <td>Formatted incremental payloads that completed with this response.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "TExtensions"]]} /></td>
+      <td>Additional non-standard metadata included in this formatted payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### IncrementalDeferResult
+
+**Interface.** Incremental payload produced by a deferred fragment.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TDeferredData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of deferred fragment data.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of extensions payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>id</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Identifier matching this payload to a pending deferred fragment.</td>
+    </tr>
+    <tr>
+      <td>subPath?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[]"]} /></td>
+      <td>Path from the deferred fragment location to this payload.</td>
+    </tr>
+    <tr>
+      <td>errors?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], "[]"]} /></td>
+      <td>Errors raised while executing the deferred fragment.</td>
+    </tr>
+    <tr>
+      <td>data</td>
+      <td><ApiType parts={[["type", "TDeferredData"]]} /></td>
+      <td>Data produced by the deferred fragment.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "TExtensions"]]} /></td>
+      <td>Additional non-standard metadata included in this payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### FormattedIncrementalDeferResult
+
+**Interface.** JSON-serializable form of a deferred fragment payload.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TDeferredData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of formatted deferred fragment data.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of formatted extensions payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>errors?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "GraphQLFormattedError", "/api-v17/error#graphqlformattederror"], "[]"]} /></td>
+      <td>Formatted errors raised while executing the deferred fragment.</td>
+    </tr>
+    <tr>
+      <td>data</td>
+      <td><ApiType parts={[["type", "TDeferredData"]]} /></td>
+      <td>Formatted data produced by the deferred fragment.</td>
+    </tr>
+    <tr>
+      <td>id</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Identifier matching this payload to a pending deferred fragment.</td>
+    </tr>
+    <tr>
+      <td>subPath?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[]"]} /></td>
+      <td>Path from the deferred fragment location to this payload.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "TExtensions"]]} /></td>
+      <td>Additional non-standard metadata included in this formatted payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### IncrementalStreamResult
+
+**Interface.** Incremental payload produced by a streamed list field.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TStreamItem</td>
+      <td></td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Shape of streamed list items.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of extensions payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>id</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Identifier matching this payload to a pending stream.</td>
+    </tr>
+    <tr>
+      <td>subPath?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[]"]} /></td>
+      <td>Path from the streamed field location to these items.</td>
+    </tr>
+    <tr>
+      <td>errors?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], "[]"]} /></td>
+      <td>Errors raised while producing streamed items.</td>
+    </tr>
+    <tr>
+      <td>items</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["type", "TStreamItem"], "[]"]} /></td>
+      <td>Streamed list items delivered by this payload.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "TExtensions"]]} /></td>
+      <td>Additional non-standard metadata included in this payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### FormattedIncrementalStreamResult
+
+**Interface.** JSON-serializable form of a streamed list payload.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TStreamItem</td>
+      <td></td>
+      <td><ApiType parts={[["keyword", "unknown"], "[]"]} /></td>
+      <td>Shape of formatted streamed list items.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of formatted extensions payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>errors?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "GraphQLFormattedError", "/api-v17/error#graphqlformattederror"], "[]"]} /></td>
+      <td>Formatted errors raised while producing streamed items.</td>
+    </tr>
+    <tr>
+      <td>items</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["type", "TStreamItem"], "[]"]} /></td>
+      <td>Formatted streamed list items delivered by this payload.</td>
+    </tr>
+    <tr>
+      <td>id</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Identifier matching this payload to a pending stream.</td>
+    </tr>
+    <tr>
+      <td>subPath?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[]"]} /></td>
+      <td>Path from the streamed field location to these items.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "TExtensions"]]} /></td>
+      <td>Additional non-standard metadata included in this formatted payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### IncrementalResult
+
+**Type alias.** Deferred fragment or streamed list payload produced by incremental execution.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TDeferredData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of deferred fragment data.</td>
+    </tr>
+    <tr>
+      <td>TStreamItem</td>
+      <td></td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Shape of streamed list items.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of extensions payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "IncrementalResult"], "\u003c\n  ", ["type", "TDeferredData"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n  ", ["type", "TStreamItem"], " = ", ["keyword", "unknown"], ",\n  ", ["type", "TExtensions"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n\u003e =\n  \u007c ", ["link", "IncrementalDeferResult", "/api-v17/execution#incrementaldeferresult"], "\u003c", ["type", "TDeferredData"], ", ", ["type", "TExtensions"], "\u003e\n  \u007c ", ["link", "IncrementalStreamResult", "/api-v17/execution#incrementalstreamresult"], "\u003c", ["type", "TStreamItem"], ", ", ["type", "TExtensions"], "\u003e;"]} />
+
+<hr className="api-item-divider" />
+
+#### FormattedIncrementalResult
+
+**Type alias.** JSON-serializable deferred fragment or streamed list payload.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TDeferredData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of formatted deferred fragment data.</td>
+    </tr>
+    <tr>
+      <td>TStreamItem</td>
+      <td></td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Shape of formatted streamed list items.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of formatted extensions payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "FormattedIncrementalResult"], "\u003c\n  ", ["type", "TDeferredData"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n  ", ["type", "TStreamItem"], " = ", ["keyword", "unknown"], ",\n  ", ["type", "TExtensions"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n\u003e =\n  \u007c ", ["link", "FormattedIncrementalDeferResult", "/api-v17/execution#formattedincrementaldeferresult"], "\u003c", ["type", "TDeferredData"], ", ", ["type", "TExtensions"], "\u003e\n  \u007c ", ["link", "FormattedIncrementalStreamResult", "/api-v17/execution#formattedincrementalstreamresult"], "\u003c", ["type", "TStreamItem"], ", ", ["type", "TExtensions"], "\u003e;"]} />
+
+## Category: Legacy Incremental Execution
+
+<div className="api-category-toc">
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v17/execution#legacyexecuteincrementally">legacyExecuteIncrementally()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#legacyexecuterootselectionset">legacyExecuteRootSelectionSet()</a>
+  </p>
+  <p>
+    <strong>Types:</strong><br />
+    <a href="/api-v17/execution#legacyexperimentalincrementalexecutionresults">LegacyExperimentalIncrementalExecutionResults</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#legacyinitialincrementalexecutionresult">LegacyInitialIncrementalExecutionResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#legacysubsequentincrementalexecutionresult">LegacySubsequentIncrementalExecutionResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#legacyincrementalresult">LegacyIncrementalResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#legacyincrementaldeferresult">LegacyIncrementalDeferResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#legacyincrementalstreamresult">LegacyIncrementalStreamResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#formattedlegacyexperimentalincrementalexecutionresults">FormattedLegacyExperimentalIncrementalExecutionResults</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#formattedlegacyinitialincrementalexecutionresult">FormattedLegacyInitialIncrementalExecutionResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#formattedlegacysubsequentincrementalexecutionresult">FormattedLegacySubsequentIncrementalExecutionResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#formattedlegacyincrementalresult">FormattedLegacyIncrementalResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#formattedlegacyincrementaldeferresult">FormattedLegacyIncrementalDeferResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#formattedlegacyincrementalstreamresult">FormattedLegacyIncrementalStreamResult</a>
+  </p>
+</div>
+
+### Functions
+
+#### legacyExecuteIncrementally()
+
+Executes a GraphQL operation with support for `@defer` and `@stream` using
+the legacy incremental delivery payload format.
+
+Prefer [`experimentalExecuteIncrementally`](/api-v17/execution#experimentalexecuteincrementally) for the current incremental
+delivery format. In the legacy format, each subsequent incremental payload
+identifies its location with `path` and optional `label` fields. The current
+format instead tracks pending work by `id` and reports completion through
+`completed` entries.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "legacyExecuteIncrementally"], "(\n  ", ["parameter", "args"], ": ", ["link", "ExecutionArgs", "/api-v17/execution#executionargs"], ",\n): ", ["type", "PromiseOrValue"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], " \u007c ", ["link", "LegacyExperimentalIncrementalExecutionResults", "/api-v17/execution#legacyexperimentalincrementalexecutionresults"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>args</td>
+      <td><ApiType parts={[["link", "ExecutionArgs", "/api-v17/execution#executionargs"]]} /></td>
+      <td>Execution arguments for the GraphQL operation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "PromiseOrValue"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], " \u007c ", ["link", "LegacyExperimentalIncrementalExecutionResults", "/api-v17/execution#legacyexperimentalincrementalexecutionresults"], "\u003e"]} /></td>
+      <td>A single execution result or legacy incremental execution results.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { legacyExecuteIncrementally } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    hero: Hero
+  }
+
+  type Hero {
+    id: ID!
+    name: String!
+  }
+`);
+
+const result = await legacyExecuteIncrementally({
+  schema,
+  document: parse('{ hero { id ... @defer(label: "HeroName") { name } } }'),
+  rootValue: { hero: { id: '1', name: 'Luke' } },
+});
+
+assert('initialResult' in result);
+
+result.initialResult; // => { data: { hero: { id: '1' } }, hasNext: true }
+
+const deferred = await result.subsequentResults.next();
+deferred.value; // => { incremental: [ { data: { name: 'Luke' }, path: ['hero'], label: 'HeroName' } ], hasNext: false }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+Compare the legacy payload format with the current incremental delivery
+format returned by `experimentalExecuteIncrementally`.
+```ts
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import {
+  experimentalExecuteIncrementally,
+  legacyExecuteIncrementally,
+} from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    hero: Hero
+  }
+
+  type Hero {
+    id: ID!
+    name: String!
+  }
+`);
+const document = parse('{ hero { id ... @defer { name } } }');
+const rootValue = { hero: { id: '1', name: 'Luke' } };
+
+const experimental = await experimentalExecuteIncrementally({
+  schema,
+  document,
+  rootValue,
+});
+const legacy = await legacyExecuteIncrementally({
+  schema,
+  document,
+  rootValue,
+});
+
+assert('initialResult' in experimental);
+assert('initialResult' in legacy);
+
+experimental.initialResult; // => { data: { hero: { id: '1' } }, pending: [ { id: '0', path: ['hero'] } ], hasNext: true }
+legacy.initialResult; // => { data: { hero: { id: '1' } }, hasNext: true }
+
+const experimentalDeferred = await experimental.subsequentResults.next();
+experimentalDeferred.value; // => { incremental: [{ data: { name: 'Luke' }, id: '0' }], completed: [{ id: '0' }], hasNext: false }
+
+const legacyDeferred = await legacy.subsequentResults.next();
+legacyDeferred.value; // => { incremental: [ { data: { name: 'Luke' }, path: ['hero'] } ], hasNext: false }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 3</div>
+
+Compare streamed list payloads in the legacy and current incremental
+delivery formats.
+```ts
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import {
+  experimentalExecuteIncrementally,
+  legacyExecuteIncrementally,
+} from 'graphql/execution';
+
+const schema = buildSchema('type Query { colors: [String] }');
+const document = parse('{ colors @stream(initialCount: 1) }');
+const rootValue = { colors: ['red', 'green', 'blue'] };
+
+const experimental = await experimentalExecuteIncrementally({
+  schema,
+  document,
+  rootValue,
+});
+const legacy = await legacyExecuteIncrementally({
+  schema,
+  document,
+  rootValue,
+});
+
+assert('initialResult' in experimental);
+assert('initialResult' in legacy);
+
+experimental.initialResult; // => { data: { colors: ['red'] }, pending: [ { id: '0', path: ['colors'] } ], hasNext: true }
+legacy.initialResult; // => { data: { colors: ['red'] }, hasNext: true }
+
+const experimentalStream = await experimental.subsequentResults.next();
+experimentalStream.value; // => { incremental: [ { items: ['green', 'blue'], id: '0' } ], completed: [{ id: '0' }], hasNext: false }
+
+const legacyStream = await legacy.subsequentResults.next();
+legacyStream.value; // => { incremental: [ { items: ['green', 'blue'], path: ['colors', 1] } ], hasNext: false }
+```
+
+<hr className="api-item-divider" />
+
+#### legacyExecuteRootSelectionSet()
+
+Executes a validated operation root selection set with support for `@defer`
+and `@stream` using the legacy incremental delivery payload format.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "legacyExecuteRootSelectionSet"], "(\n  ", ["parameter", "validatedExecutionArgs"], ": ", ["link", "ValidatedExecutionArgs", "/api-v17/execution#validatedexecutionargs"], ",\n): ", ["type", "PromiseOrValue"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], " \u007c ", ["link", "LegacyExperimentalIncrementalExecutionResults", "/api-v17/execution#legacyexperimentalincrementalexecutionresults"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>validatedExecutionArgs</td>
+      <td><ApiType parts={[["link", "ValidatedExecutionArgs", "/api-v17/execution#validatedexecutionargs"]]} /></td>
+      <td>Validated execution arguments.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "PromiseOrValue"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], " \u007c ", ["link", "LegacyExperimentalIncrementalExecutionResults", "/api-v17/execution#legacyexperimentalincrementalexecutionresults"], "\u003e"]} /></td>
+      <td>A single execution result or legacy incremental execution results.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import {
+  legacyExecuteRootSelectionSet,
+  validateExecutionArgs,
+} from 'graphql/execution';
+
+const schema = buildSchema('type Query { greeting: String }');
+const validatedArgs = validateExecutionArgs({
+  schema,
+  document: parse('{ greeting }'),
+  rootValue: { greeting: 'Hello' },
+});
+
+assert('schema' in validatedArgs);
+
+const result = await legacyExecuteRootSelectionSet(validatedArgs);
+result; // => { data: { greeting: 'Hello' } }
+```
+
+### Types
+
+#### LegacyExperimentalIncrementalExecutionResults
+
+**Interface.** Results for an operation that produced legacy incremental payloads.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TInitialData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the initial result data payload.</td>
+    </tr>
+    <tr>
+      <td>TDeferredData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of deferred fragment data payloads.</td>
+    </tr>
+    <tr>
+      <td>TStreamItem</td>
+      <td></td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Shape of streamed list items.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of extensions payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>initialResult</td>
+      <td><ApiType parts={[["link", "LegacyInitialIncrementalExecutionResult", "/api-v17/execution#legacyinitialincrementalexecutionresult"], "\u003c", ["type", "TInitialData"], ", ", ["type", "TExtensions"], "\u003e"]} /></td>
+      <td>Initial execution result delivered before subsequent legacy incremental payloads.</td>
+    </tr>
+    <tr>
+      <td>subsequentResults</td>
+      <td><ApiType parts={[["type", "AsyncGenerator"], "\u003c\n  ", ["link", "LegacySubsequentIncrementalExecutionResult", "/api-v17/execution#legacysubsequentincrementalexecutionresult"], "\u003c\n    ", ["type", "TDeferredData"], ",\n    ", ["type", "TStreamItem"], ",\n    ", ["type", "TExtensions"], "\n  \u003e,\n  ", ["keyword", "void"], ",\n  ", ["keyword", "void"], "\n\u003e"]} /></td>
+      <td>Async stream of legacy incremental payloads delivered after the initial result.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### LegacyInitialIncrementalExecutionResult
+
+**Interface.** Initial execution result for an operation that produced legacy incremental payloads.
+
+Unlike [`InitialIncrementalExecutionResult`](/api-v17/execution#initialincrementalexecutionresult), the legacy initial result does
+not include a `pending` list. Subsequent payloads identify their location
+directly with `path` and optional `label` fields.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TInitialData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the initial data payload.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the extensions payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+<ApiSignature parts={[["keyword", "interface"], " ", ["name", "LegacyInitialIncrementalExecutionResult"], "\u003c\n  ", ["type", "TInitialData"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n  ", ["type", "TExtensions"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n\u003e ", ["keyword", "extends"], " ", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], "\u003c", ["type", "TInitialData"], ", ", ["type", "TExtensions"], "\u003e"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>data</td>
+      <td><ApiType parts={[["type", "TInitialData"]]} /></td>
+      <td>Data produced by the initial execution payload.</td>
+    </tr>
+    <tr>
+      <td>hasNext</td>
+      <td><ApiType parts={[["keyword", "true"]]} /></td>
+      <td>Indicates that subsequent legacy incremental payloads will follow.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "TExtensions"]]} /></td>
+      <td>Additional non-standard metadata included in the initial result.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### LegacySubsequentIncrementalExecutionResult
+
+**Interface.** Subsequent payload produced by legacy incremental execution.
+
+Legacy subsequent payloads may contain deferred fragment data, streamed list
+items, or only `hasNext: false` to complete the response stream.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TDeferredData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of deferred fragment data payloads.</td>
+    </tr>
+    <tr>
+      <td>TStreamItem</td>
+      <td></td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Shape of streamed list items.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the extensions payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>incremental?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "LegacyIncrementalResult", "/api-v17/execution#legacyincrementalresult"], "\u003c\n  ", ["type", "TDeferredData"], ",\n  ", ["type", "TStreamItem"], ",\n  ", ["type", "TExtensions"], "\n\u003e[]"]} /></td>
+      <td>Deferred or streamed payloads delivered by this response.</td>
+    </tr>
+    <tr>
+      <td>hasNext</td>
+      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
+      <td>Indicates whether more legacy incremental payloads will follow.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "TExtensions"]]} /></td>
+      <td>Additional non-standard metadata included in this payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### LegacyIncrementalResult
+
+**Type alias.** Deferred fragment or streamed list payload produced by legacy incremental execution.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TDeferredData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of deferred fragment data.</td>
+    </tr>
+    <tr>
+      <td>TStreamItem</td>
+      <td></td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Shape of streamed list items.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of extensions payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "LegacyIncrementalResult"], "\u003c\n  ", ["type", "TDeferredData"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n  ", ["type", "TStreamItem"], " = ", ["keyword", "unknown"], ",\n  ", ["type", "TExtensions"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n\u003e =\n  \u007c ", ["link", "LegacyIncrementalDeferResult", "/api-v17/execution#legacyincrementaldeferresult"], "\u003c", ["type", "TDeferredData"], ", ", ["type", "TExtensions"], "\u003e\n  \u007c ", ["link", "LegacyIncrementalStreamResult", "/api-v17/execution#legacyincrementalstreamresult"], "\u003c", ["type", "TStreamItem"], ", ", ["type", "TExtensions"], "\u003e;"]} />
+
+<hr className="api-item-divider" />
+
+#### LegacyIncrementalDeferResult
+
+**Interface.** Legacy incremental payload produced by a deferred fragment.
+
+The payload location is identified directly by `path` and optional `label`
+instead of by an `id` from a pending entry.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TDeferredData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of deferred fragment data.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of extensions payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<ApiSignature parts={[["keyword", "interface"], " ", ["name", "LegacyIncrementalDeferResult"], "\u003c\n  ", ["type", "TDeferredData"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n  ", ["type", "TExtensions"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n\u003e ", ["keyword", "extends"], " ", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], "\u003c", ["type", "TDeferredData"], ", ", ["type", "TExtensions"], "\u003e"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>path</td>
+      <td><ApiType parts={[["keyword", "readonly"], " (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[]"]} /></td>
+      <td>Response path to the deferred fragment payload.</td>
+    </tr>
+    <tr>
+      <td>label?</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Label from the <code>{"@defer"}</code> directive.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### LegacyIncrementalStreamResult
+
+**Interface.** Legacy incremental payload produced by a streamed list field.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TStreamItem</td>
+      <td></td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Shape of streamed list items.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of extensions payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>errors?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], "[]"]} /></td>
+      <td>Errors raised while producing streamed items.</td>
+    </tr>
+    <tr>
+      <td>items</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["type", "TStreamItem"], "[] \u007c ", ["keyword", "null"]]} /></td>
+      <td>Streamed list items delivered by this payload.</td>
+    </tr>
+    <tr>
+      <td>path</td>
+      <td><ApiType parts={[["keyword", "readonly"], " (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[]"]} /></td>
+      <td>Response path to the first streamed list item in this payload.</td>
+    </tr>
+    <tr>
+      <td>label?</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Label from the <code>{"@stream"}</code> directive.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "TExtensions"]]} /></td>
+      <td>Additional non-standard metadata included in this payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### FormattedLegacyExperimentalIncrementalExecutionResults
+
+**Interface.** JSON-serializable form of legacy incremental execution results.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TInitialData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the formatted initial result data payload.</td>
+    </tr>
+    <tr>
+      <td>TDeferredData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of formatted deferred fragment data payloads.</td>
+    </tr>
+    <tr>
+      <td>TStreamItem</td>
+      <td></td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Shape of formatted streamed list items.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of formatted extensions payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>initialResult</td>
+      <td><ApiType parts={[["link", "FormattedLegacyInitialIncrementalExecutionResult", "/api-v17/execution#formattedlegacyinitialincrementalexecutionresult"], "\u003c", ["type", "TInitialData"], ", ", ["type", "TExtensions"], "\u003e"]} /></td>
+      <td>Formatted initial execution result.</td>
+    </tr>
+    <tr>
+      <td>subsequentResults</td>
+      <td><ApiType parts={[["type", "AsyncGenerator"], "\u003c\n  ", ["link", "FormattedLegacySubsequentIncrementalExecutionResult", "/api-v17/execution#formattedlegacysubsequentincrementalexecutionresult"], "\u003c\n    ", ["type", "TDeferredData"], ",\n    ", ["type", "TStreamItem"], ",\n    ", ["type", "TExtensions"], "\n  \u003e,\n  ", ["keyword", "void"], ",\n  ", ["keyword", "void"], "\n\u003e"]} /></td>
+      <td>Async stream of formatted legacy incremental payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### FormattedLegacyInitialIncrementalExecutionResult
+
+**Interface.** JSON-serializable form of a legacy initial incremental execution result.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TInitialData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the formatted initial data payload.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the formatted extensions payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+<ApiSignature parts={[["keyword", "interface"], " ", ["name", "FormattedLegacyInitialIncrementalExecutionResult"], "\u003c\n  ", ["type", "TInitialData"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n  ", ["type", "TExtensions"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n\u003e ", ["keyword", "extends"], " ", ["link", "FormattedExecutionResult", "/api-v17/execution#formattedexecutionresult"], "\u003c", ["type", "TInitialData"], ", ", ["type", "TExtensions"], "\u003e"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>data</td>
+      <td><ApiType parts={[["type", "TInitialData"]]} /></td>
+      <td>Formatted data produced by the initial execution payload.</td>
+    </tr>
+    <tr>
+      <td>hasNext</td>
+      <td><ApiType parts={[["keyword", "true"]]} /></td>
+      <td>Indicates that subsequent legacy incremental payloads will follow.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "TExtensions"]]} /></td>
+      <td>Additional non-standard metadata included in the formatted initial result.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### FormattedLegacySubsequentIncrementalExecutionResult
+
+**Interface.** JSON-serializable form of a legacy subsequent incremental execution payload.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TDeferredData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of formatted deferred fragment data payloads.</td>
+    </tr>
+    <tr>
+      <td>TStreamItem</td>
+      <td></td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Shape of formatted streamed list items.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of formatted extensions payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>incremental?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "FormattedLegacyIncrementalResult", "/api-v17/execution#formattedlegacyincrementalresult"], "\u003c\n  ", ["type", "TDeferredData"], ",\n  ", ["type", "TStreamItem"], ",\n  ", ["type", "TExtensions"], "\n\u003e[]"]} /></td>
+      <td>Formatted deferred or streamed payloads delivered by this response.</td>
+    </tr>
+    <tr>
+      <td>hasNext</td>
+      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
+      <td>Indicates whether more legacy incremental payloads will follow.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "TExtensions"]]} /></td>
+      <td>Additional non-standard metadata included in this formatted payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### FormattedLegacyIncrementalResult
+
+**Type alias.** JSON-serializable deferred fragment or streamed list payload produced by
+legacy incremental execution.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TDeferredData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of formatted deferred fragment data.</td>
+    </tr>
+    <tr>
+      <td>TStreamItem</td>
+      <td></td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Shape of formatted streamed list items.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of formatted extensions payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "FormattedLegacyIncrementalResult"], "\u003c\n  ", ["type", "TDeferredData"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n  ", ["type", "TStreamItem"], " = ", ["keyword", "unknown"], ",\n  ", ["type", "TExtensions"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n\u003e =\n  \u007c ", ["link", "FormattedLegacyIncrementalDeferResult", "/api-v17/execution#formattedlegacyincrementaldeferresult"], "\u003c", ["type", "TDeferredData"], ", ", ["type", "TExtensions"], "\u003e\n  \u007c ", ["link", "FormattedLegacyIncrementalStreamResult", "/api-v17/execution#formattedlegacyincrementalstreamresult"], "\u003c", ["type", "TStreamItem"], ", ", ["type", "TExtensions"], "\u003e;"]} />
+
+<hr className="api-item-divider" />
+
+#### FormattedLegacyIncrementalDeferResult
+
+**Interface.** JSON-serializable form of a legacy deferred fragment payload.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TDeferredData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of formatted deferred fragment data.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of formatted extensions payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<ApiSignature parts={[["keyword", "interface"], " ", ["name", "FormattedLegacyIncrementalDeferResult"], "\u003c\n  ", ["type", "TDeferredData"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n  ", ["type", "TExtensions"], " = ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e,\n\u003e ", ["keyword", "extends"], " ", ["link", "FormattedExecutionResult", "/api-v17/execution#formattedexecutionresult"], "\u003c", ["type", "TDeferredData"], ", ", ["type", "TExtensions"], "\u003e"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>path</td>
+      <td><ApiType parts={[["keyword", "readonly"], " (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[]"]} /></td>
+      <td>Response path to the formatted deferred fragment payload.</td>
+    </tr>
+    <tr>
+      <td>label?</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Label from the <code>{"@defer"}</code> directive.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### FormattedLegacyIncrementalStreamResult
+
+**Interface.** JSON-serializable form of a legacy streamed list payload.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TStreamItem</td>
+      <td></td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Shape of formatted streamed list items.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of formatted extensions payloads.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>errors?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "GraphQLFormattedError", "/api-v17/error#graphqlformattederror"], "[]"]} /></td>
+      <td>Formatted errors raised while producing streamed items.</td>
+    </tr>
+    <tr>
+      <td>items</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["type", "TStreamItem"], "[] \u007c ", ["keyword", "null"]]} /></td>
+      <td>Formatted streamed list items delivered by this payload.</td>
+    </tr>
+    <tr>
+      <td>path</td>
+      <td><ApiType parts={[["keyword", "readonly"], " (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[]"]} /></td>
+      <td>Response path to the first streamed list item in this formatted payload.</td>
+    </tr>
+    <tr>
+      <td>label?</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Label from the <code>{"@stream"}</code> directive.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "TExtensions"]]} /></td>
+      <td>Additional non-standard metadata included in this formatted payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Category: Values
+
+<div className="api-category-toc">
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v17/execution#getvariablevalues">getVariableValues()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#getargumentvalues">getArgumentValues()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#getdirectivevalues">getDirectiveValues()</a>
+  </p>
+  <p>
+    <strong>Types:</strong><br />
+    <a href="/api-v17/execution#variablevalues">VariableValues</a>
+  </p>
+</div>
+
+### Functions
+
+#### getVariableValues()
+
+Prepares an object map of variableValues of the correct type based on the
+provided variable definitions and arbitrary input. If the input cannot be
+parsed to match the variable definitions, GraphQLError values are returned.
+
+Note: Returned maps use null prototypes to avoid collisions with
+Object prototype properties.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getVariableValues"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n  ", ["parameter", "varDefNodes"], ": ", ["keyword", "readonly"], " ", ["link", "VariableDefinitionNode", "/api-v17/language#variabledefinitionnode"], "[],\n  ", ["parameter", "inputs"], ": \u007b ", ["keyword", "readonly"], " [", ["parameter", "variable"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], " \u007d,\n  ", ["parameter", "options"], "?: \u007b\n    ", ["property", "maxErrors"], "?: ", ["keyword", "number"], ";\n    ", ["property", "hideSuggestions"], "?: ", ["keyword", "boolean"], ";\n  \u007d,\n):\n  \u007c \u007b\n      ", ["property", "variableValues"], ": ", ["link", "VariableValues", "/api-v17/execution#variablevalues"], ";\n      ", ["property", "errors"], "?: ", ["keyword", "never"], ";\n    \u007d\n  \u007c \u007b\n      ", ["property", "errors"], ": ", ["type", "ReadonlyArray"], "\u003c", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], "\u003e;\n      ", ["property", "variableValues"], "?: ", ["keyword", "never"], ";\n    \u007d;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
+      <td>GraphQL schema to use.</td>
+    </tr>
+    <tr>
+      <td>varDefNodes</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "VariableDefinitionNode", "/api-v17/language#variabledefinitionnode"], "[]"]} /></td>
+      <td>The variable definition AST nodes to coerce.</td>
+    </tr>
+    <tr>
+      <td>inputs</td>
+      <td><ApiType parts={["\u007b ", ["keyword", "readonly"], " [", ["parameter", "variable"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], " \u007d"]} /></td>
+      <td>The runtime variable values keyed by variable name.</td>
+    </tr>
+    <tr>
+      <td>options?</td>
+      <td><ApiType parts={["\u007b ", ["property", "maxErrors"], "?: ", ["keyword", "number"], "; ", ["property", "hideSuggestions"], "?: ", ["keyword", "boolean"], " \u007d"]} /></td>
+      <td>Optional configuration for this operation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={["\u007c \u007b ", ["property", "variableValues"], ": ", ["link", "VariableValues", "/api-v17/execution#variablevalues"], "; ", ["property", "errors"], "?: ", ["keyword", "never"], " \u007d\n\u007c \u007b\n      ", ["property", "errors"], ": ", ["type", "ReadonlyArray"], "\u003c", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], "\u003e;\n      ", ["property", "variableValues"], "?: ", ["keyword", "never"], ";\n    \u007d"]} /></td>
+      <td>Coerced variable values with source metadata, or request errors.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Coerce provided variables and apply operation defaults.
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { getVariableValues } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    reviews(stars: Int!, limit: Int = 10): [String]
+  }
+`);
+const document = parse(`
+  query ($stars: Int!, $limit: Int = 10) {
+    reviews(stars: $stars, limit: $limit)
+  }
+`);
+const operation = document.definitions[0];
+
+const result = getVariableValues(
+  schema,
+  operation.variableDefinitions,
+  { stars: '5' },
+);
+
+assert('variableValues' in result);
+
+result.variableValues.coerced; // => { stars: 5, limit: 10 }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant uses maxErrors to cap reported coercion errors.
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { getVariableValues } from 'graphql/execution';
+
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+  }
+
+  type Query {
+    review(input: ReviewInput!): String
+  }
+`);
+const document = parse(`
+  query ($first: ReviewInput!, $second: ReviewInput!) {
+    first: review(input: $first)
+    second: review(input: $second)
+  }
+`);
+const operation = document.definitions[0];
+
+const result = getVariableValues(
+  schema,
+  operation.variableDefinitions,
+  { first: { stars: 'bad' }, second: { stars: 'also bad' } },
+  { maxErrors: 1 },
+);
+
+assert('errors' in result);
+
+result.errors.length; // => 2
+result.errors[1].message; // matches /error limit reached/
+```
+
+<hr className="api-item-divider" />
+
+#### getArgumentValues()
+
+Prepares an object map of argument values given a list of argument
+definitions and list of argument AST nodes.
+
+Note: Returned value uses a null prototype to avoid collisions with
+JavaScript's own property names.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getArgumentValues"], "(\n  ", ["parameter", "def"], ":\n    \u007c ", ["link", "GraphQLField", "/api-v17/type#graphqlfield"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e\n    \u007c ", ["link", "GraphQLDirective", "/api-v17/type#graphqldirective"], ",\n  ", ["parameter", "node"], ": ", ["link", "FieldNode", "/api-v17/language#fieldnode"], " \u007c ", ["link", "DirectiveNode", "/api-v17/language#directivenode"], ",\n  ", ["parameter", "variableValues"], "?: ", ["type", "Maybe"], "\u003c", ["link", "VariableValues", "/api-v17/execution#variablevalues"], "\u003e,\n  ", ["parameter", "fragmentVariableValues"], "?: ", ["type", "Maybe"], "\u003c", ["type", "FragmentVariableValues"], "\u003e,\n  ", ["parameter", "hideSuggestions"], "?: ", ["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e,\n): ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>def</td>
+      <td><ApiType parts={[["link", "GraphQLField", "/api-v17/type#graphqlfield"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e \u007c ", ["link", "GraphQLDirective", "/api-v17/type#graphqldirective"]]} /></td>
+      <td>Field or directive definition that declares the arguments.</td>
+    </tr>
+    <tr>
+      <td>node</td>
+      <td><ApiType parts={[["link", "FieldNode", "/api-v17/language#fieldnode"], " \u007c ", ["link", "DirectiveNode", "/api-v17/language#directivenode"]]} /></td>
+      <td>Field or directive AST node supplying argument literals.</td>
+    </tr>
+    <tr>
+      <td>variableValues?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "VariableValues", "/api-v17/execution#variablevalues"], "\u003e"]} /></td>
+      <td>Operation variable values returned by getVariableValues.</td>
+    </tr>
+    <tr>
+      <td>fragmentVariableValues?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["type", "FragmentVariableValues"], "\u003e"]} /></td>
+      <td>Fragment variable values for the current fragment scope.</td>
+    </tr>
+    <tr>
+      <td>hideSuggestions?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e"]} /></td>
+      <td>Whether suggestion text should be omitted from errors.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>A map of coerced argument values.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Read literal argument values and defaults.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { getArgumentValues } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    reviews(stars: Int!, limit: Int = 10): [String]
+  }
+`);
+const fieldDef = schema.getQueryType().getFields().reviews;
+const document = parse('{ reviews(stars: 5) }');
+const fieldNode = document.definitions[0].selectionSet.selections[0];
+
+getArgumentValues(fieldDef, fieldNode); // => { stars: 5, limit: 10 }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant resolves argument values from operation variables.
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { getArgumentValues, getVariableValues } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    reviews(stars: Int!): [String]
+  }
+`);
+const fieldDef = schema.getQueryType().getFields().reviews;
+const document = parse('query ($stars: Int!) { reviews(stars: $stars) }');
+const operation = document.definitions[0];
+const fieldNode = document.definitions[0].selectionSet.selections[0];
+const variables = getVariableValues(
+  schema,
+  operation.variableDefinitions,
+  { stars: '5' },
+);
+
+assert('variableValues' in variables);
+
+getArgumentValues(fieldDef, fieldNode, variables.variableValues); // => { stars: 5 }
+getArgumentValues(fieldDef, fieldNode); // throws an error
+```
+
+<hr className="api-item-divider" />
+
+#### getDirectiveValues()
+
+Prepares an object map of argument values given a directive definition
+and a AST node which may contain directives. Optionally also accepts a map
+of variable values.
+
+If the directive does not exist on the node, returns undefined.
+
+Note: Returned value uses a null prototype to avoid collisions with
+JavaScript's own property names.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getDirectiveValues"], "(\n  ", ["parameter", "directiveDef"], ": ", ["link", "GraphQLDirective", "/api-v17/type#graphqldirective"], ",\n  ", ["parameter", "node"], ": \u007b\n    ", ["property", "directives"], "?: ", ["keyword", "readonly"], " ", ["link", "DirectiveNode", "/api-v17/language#directivenode"], "[];\n  \u007d,\n  ", ["parameter", "variableValues"], "?: ", ["type", "Maybe"], "\u003c", ["link", "VariableValues", "/api-v17/execution#variablevalues"], "\u003e,\n  ", ["parameter", "fragmentVariableValues"], "?: ", ["type", "Maybe"], "\u003c", ["type", "FragmentVariableValues"], "\u003e,\n  ", ["parameter", "hideSuggestions"], "?: ", ["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e,\n): ", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e \u007c ", ["keyword", "undefined"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>directiveDef</td>
+      <td><ApiType parts={[["link", "GraphQLDirective", "/api-v17/type#graphqldirective"]]} /></td>
+      <td>Directive definition to read argument definitions from.</td>
+    </tr>
+    <tr>
+      <td>node</td>
+      <td><ApiType parts={["\u007b ", ["property", "directives"], "?: ", ["keyword", "readonly"], " ", ["link", "DirectiveNode", "/api-v17/language#directivenode"], "[] \u007d"]} /></td>
+      <td>AST node that may contain directives.</td>
+    </tr>
+    <tr>
+      <td>variableValues?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "VariableValues", "/api-v17/execution#variablevalues"], "\u003e"]} /></td>
+      <td>Operation variable values returned by getVariableValues.</td>
+    </tr>
+    <tr>
+      <td>fragmentVariableValues?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["type", "FragmentVariableValues"], "\u003e"]} /></td>
+      <td>Fragment variable values for the current fragment scope.</td>
+    </tr>
+    <tr>
+      <td>hideSuggestions?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e"]} /></td>
+      <td>Whether suggestion text should be omitted from errors.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>A map of coerced directive argument values, or undefined when absent.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Read literal directive arguments from a node.
+import { parse } from 'graphql/language';
+import { GraphQLSkipDirective } from 'graphql/type';
+import { getDirectiveValues } from 'graphql/execution';
+
+const document = parse('{ name @skip(if: true) }');
+const fieldNode = document.definitions[0].selectionSet.selections[0];
+
+getDirectiveValues(GraphQLSkipDirective, fieldNode); // => { if: true }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant resolves directive arguments from variables and handles absent directives.
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { GraphQLIncludeDirective } from 'graphql/type';
+import { buildSchema } from 'graphql/utilities';
+import { getDirectiveValues, getVariableValues } from 'graphql/execution';
+
+const schema = buildSchema('type Query { name: String }');
+const document = parse('query ($includeName: Boolean!) { name @include(if: $includeName) }');
+const operation = document.definitions[0];
+const fieldNode = document.definitions[0].selectionSet.selections[0];
+const variables = getVariableValues(
+  schema,
+  operation.variableDefinitions,
+  { includeName: false },
+);
+
+assert('variableValues' in variables);
+
+getDirectiveValues(GraphQLIncludeDirective, fieldNode, variables.variableValues); // => { if: false }
+getDirectiveValues(GraphQLIncludeDirective, { directives: [] }); // => undefined
+```
+
+### Types
+
+#### VariableValues
+
+**Interface.** Coerced variable values prepared for execution.
+
+The `coerced` map contains runtime values keyed by variable name. The
+`sources` map records whether each value came from request input, an operation
+default, or a fragment-variable default so utilities can preserve defaults
+when replacing variables in literals.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>sources</td>
+      <td><ApiType parts={[["type", "ReadOnlyObjMap"], "\u003c\u007b\n  ", ["property", "signature"], ": ", ["type", "GraphQLVariableSignature"], ";\n  ", ["property", "value"], "?: ", ["keyword", "unknown"], ";\n\u007d\u003e"]} /></td>
+      <td>Source metadata for each variable value keyed by variable name.</td>
+    </tr>
+    <tr>
+      <td>coerced</td>
+      <td><ApiType parts={[["type", "ReadOnlyObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Coerced runtime variable values keyed by variable name.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Category: Paths
+
+<div className="api-category-toc">
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v17/execution#responsepathasarray">responsePathAsArray()</a>
+  </p>
+</div>
+
+### Functions
+
+#### responsePathAsArray()
+
+Given a Path, return an Array of the path keys.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "responsePathAsArray"], "(\n  ", ["parameter", "path"], ": ", ["type", "Maybe"], "\u003c\n    ", ["type", "Readonly"], "\u003c", ["link", "Path", "/api-v17/type#responsepath"], "\u003e\n  \u003e,\n): (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[];"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>path</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["type", "Readonly"], "\u003c", ["link", "Path", "/api-v17/type#responsepath"], "\u003e\u003e"]} /></td>
+      <td>The linked response path to flatten.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={["(", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[]"]} /></td>
+      <td>An array of response path keys from root to leaf.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { pathToArray } from 'graphql/jsutils/Path';
+
+const path = {
+  prev: {
+    prev: {
+      prev: undefined,
+      key: 'viewer',
+      typename: 'Query',
+    },
+    key: 'friends',
+    typename: 'User',
+  },
+  key: 0,
+  typename: undefined,
+};
+
+pathToArray(path); // => ['viewer', 'friends', 0]
+pathToArray(undefined); // => []
+```
