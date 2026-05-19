@@ -2018,17 +2018,20 @@ export class GraphQLScalarType<
   /** URL identifying the behavior specified for this custom scalar. */
   specifiedByURL: Maybe<string>;
   /**
-   * Legacy serializer used to convert internal values for response output.
+   * Deprecated legacy serializer used to convert internal values for response
+   * output. Use `coerceOutputValue()` instead.
    * @deprecated use `coerceOutputValue()` instead, `serialize()` will be removed in v18
    */
   serialize: GraphQLScalarSerializer<TExternal>;
   /**
-   * Legacy parser used to convert externally provided input values.
+   * Deprecated legacy parser used to convert externally provided input values.
+   * Use `coerceInputValue()` instead.
    * @deprecated use `coerceInputValue()` instead, `parseValue()` will be removed in v18
    */
   parseValue: GraphQLScalarValueParser<TInternal>;
   /**
-   * Legacy parser used to convert externally provided input literals.
+   * Deprecated legacy parser used to convert externally provided input
+   * literals. Use `replaceVariables()` and `coerceInputLiteral()` instead.
    * @deprecated use `replaceVariables()` and `coerceInputLiteral()` instead, `parseLiteral()` will be removed in v18
    */
   parseLiteral: GraphQLScalarLiteralParser<TInternal>;
@@ -2228,7 +2231,8 @@ export class GraphQLScalarType<
 }
 
 /**
- * Serializes a runtime value as a scalar output value.
+ * Deprecated function type that serializes a runtime value as a scalar output
+ * value. Use `GraphQLScalarOutputValueCoercer` instead.
  * @typeParam TExternal - External representation accepted from or returned to callers.
  * @deprecated Use GraphQLScalarOutputValueCoercer instead. Will be removed in v18.
  */
@@ -2245,7 +2249,8 @@ export type GraphQLScalarOutputValueCoercer<TExternal> = (
 ) => TExternal;
 
 /**
- * Parses a runtime input value as a scalar input value.
+ * Deprecated function type that parses a runtime input value as a scalar input
+ * value. Use `GraphQLScalarInputValueCoercer` instead.
  * @typeParam TInternal - Internal runtime representation for this scalar.
  * @deprecated Use GraphQLScalarInputValueCoercer instead. Will be removed in v18.
  */
@@ -2262,7 +2267,8 @@ export type GraphQLScalarInputValueCoercer<TInternal> = (
 ) => TInternal;
 
 /**
- * Parses a GraphQL value literal as a scalar input value.
+ * Deprecated function type that parses a GraphQL value literal as a scalar
+ * input value. Use `GraphQLScalarInputLiteralCoercer` instead.
  * @typeParam TInternal - Internal runtime representation for this scalar.
  * @deprecated Use GraphQLScalarInputLiteralCoercer instead. Will be removed in v18.
  */
@@ -2297,17 +2303,20 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   /** URL identifying the behavior specified for this custom scalar. */
   specifiedByURL?: Maybe<string>;
   /**
-   * Legacy serializer used to convert internal values for response output.
+   * Deprecated legacy serializer used to convert internal values for response
+   * output. Use `coerceOutputValue()` instead.
    * @deprecated use `coerceOutputValue()` instead, `serialize()` will be removed in v18
    */
   serialize?: GraphQLScalarSerializer<TExternal> | undefined;
   /**
-   * Legacy parser used to convert externally provided input values.
+   * Deprecated legacy parser used to convert externally provided input values.
+   * Use `coerceInputValue()` instead.
    * @deprecated use `coerceInputValue()` instead, `parseValue()` will be removed in v18
    */
   parseValue?: GraphQLScalarValueParser<TInternal> | undefined;
   /**
-   * Legacy parser used to convert externally provided input literals.
+   * Deprecated legacy parser used to convert externally provided input
+   * literals. Use `replaceVariables()` and `coerceInputLiteral()` instead.
    * @deprecated use `replaceVariables()` and `coerceInputLiteral()` instead, `parseLiteral()` will be removed in v18
    */
   parseLiteral?: GraphQLScalarLiteralParser<TInternal> | undefined;
@@ -2944,7 +2953,7 @@ export interface GraphQLArgumentConfig {
   /** The GraphQL type reference or runtime type for this element. */
   type: GraphQLInputType;
   /**
-   * Legacy default value for this argument.
+   * Deprecated legacy default value for this argument. Use `default` instead.
    * @deprecated use `default` instead, `defaultValue` will be removed in v18
    */
   defaultValue?: unknown;
@@ -3176,7 +3185,8 @@ export class GraphQLArgument implements GraphQLSchemaElement {
   /** The GraphQL type reference or runtime type for this element. */
   type: GraphQLInputType;
   /**
-   * Legacy default value used when no explicit value is supplied.
+   * Deprecated legacy default value used when no explicit value is supplied.
+   * Use `default` instead.
    * @deprecated use `default` instead, `defaultValue` will be removed in v18
    */
   defaultValue: unknown;
@@ -4219,6 +4229,9 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
    * Serializes a runtime enum value as a GraphQL enum name.
    * @param outputValue - Runtime enum value to serialize.
    * @returns The GraphQL enum name for the runtime value.
+   *
+   * This deprecated method delegates to `coerceOutputValue()`; call
+   * `coerceOutputValue()` directly instead.
    * @example
    * ```ts
    * import { GraphQLEnumType } from 'graphql/type';
@@ -4276,7 +4289,8 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
   }
 
   /**
-   * Legacy enum parser for externally provided input values.
+   * Deprecated legacy enum parser for externally provided input values. Use
+   * `coerceInputValue()` instead.
    * @param inputValue - External enum name to parse.
    * @param hideSuggestions - Whether suggestion text should be omitted from errors.
    * @returns The internal runtime value for the enum name.
@@ -4351,7 +4365,8 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
   }
 
   /**
-   * Legacy enum parser for externally provided input literals.
+   * Deprecated legacy enum parser for externally provided input literals. Use
+   * `coerceInputLiteral()` instead.
    * @param valueNode - Enum value AST node to parse.
    * @param _variables - Deprecated variable values parameter that is no longer used.
    * @param hideSuggestions - Whether suggestion text should be omitted from errors.
@@ -5089,7 +5104,8 @@ export interface GraphQLInputFieldConfig {
   /** The GraphQL type reference or runtime type for this element. */
   type: GraphQLInputType;
   /**
-   * Legacy default value for this input field.
+   * Deprecated legacy default value for this input field. Use `default`
+   * instead.
    * @deprecated use `default` instead, `defaultValue` will be removed in v18
    */
   defaultValue?: unknown;
@@ -5132,7 +5148,8 @@ export class GraphQLInputField implements GraphQLSchemaElement {
   /** The GraphQL type reference or runtime type for this element. */
   type: GraphQLInputType;
   /**
-   * Legacy default value used when no explicit value is supplied.
+   * Deprecated legacy default value used when no explicit value is supplied.
+   * Use `default` instead.
    * @deprecated use `default` instead, `defaultValue` will be removed in v18
    */
   defaultValue: unknown;

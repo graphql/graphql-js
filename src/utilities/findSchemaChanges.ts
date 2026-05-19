@@ -127,7 +127,9 @@ export type SchemaChange = SafeChange | DangerousChange | BreakingChange;
 
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
- * of breaking changes covered by the other functions down below.
+ * of breaking changes covered by the other functions down below. This
+ * deprecated wrapper will be removed in v18; use `findSchemaChanges()` instead
+ * and filter for breaking changes.
  * @param oldSchema - Schema before the change.
  * @param newSchema - Schema after the change.
  * @returns Breaking changes between the two schemas.
@@ -165,6 +167,8 @@ export function findBreakingChanges(
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
  * of potentially dangerous changes covered by the other functions down below.
+ * This deprecated wrapper will be removed in v18; use `findSchemaChanges()`
+ * instead and filter for dangerous changes.
  * @param oldSchema - Schema before the change.
  * @param newSchema - Schema after the change.
  * @returns Dangerous changes between the two schemas.

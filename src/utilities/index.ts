@@ -66,7 +66,11 @@ export { typeFromAST } from './typeFromAST.ts';
 
 // Create a JavaScript value from a GraphQL language AST with a type.
 export {
-  /** @deprecated use `coerceInputLiteral()` instead - will be removed in v18 */
+  /**
+   * Deprecated export retained for compatibility. Use `coerceInputLiteral()`
+   * instead.
+   * @deprecated use `coerceInputLiteral()` instead - will be removed in v18
+   */
   valueFromAST,
 } from './valueFromAST.ts';
 
@@ -75,7 +79,11 @@ export { valueFromASTUntyped } from './valueFromASTUntyped.ts';
 
 // Create a GraphQL language AST from a JavaScript value.
 export {
-  /** @deprecated use `valueToLiteral()` instead with care to operate on external values - `astFromValue()` will be removed in v18 */
+  /**
+   * Deprecated export retained for compatibility. Use `valueToLiteral()`
+   * instead, and take care to operate on external values.
+   * @deprecated use `valueToLiteral()` instead with care to operate on external values - `astFromValue()` will be removed in v18
+   */
   astFromValue,
 } from './astFromValue.ts';
 

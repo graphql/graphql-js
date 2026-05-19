@@ -25,6 +25,9 @@ import {
  * Returns `undefined` when the value could not be validly coerced according to
  * the provided type.
  *
+ * This deprecated function will be removed in v18. Use `coerceInputLiteral()`
+ * instead.
+ *
  * | GraphQL Value        | JSON Value    |
  * | -------------------- | ------------- |
  * | Input Object         | Object        |

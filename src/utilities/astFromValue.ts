@@ -27,6 +27,9 @@ import { GraphQLID } from '../type/scalars.ts';
  * A GraphQL type must be provided, which will be used to interpret different
  * JavaScript values.
  *
+ * This deprecated function will be removed in v18. Use `valueToLiteral()`
+ * instead, and take care to operate on external values.
+ *
  * | JSON Value    | GraphQL Value        |
  * | ------------- | -------------------- |
  * | Object        | Input Object         |

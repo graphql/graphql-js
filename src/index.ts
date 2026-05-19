@@ -508,12 +508,20 @@ export {
   // Create a GraphQLType from a GraphQL language AST.
   typeFromAST,
   // Create a JavaScript value from a GraphQL language AST with a Type.
-  /** @deprecated use `coerceInputLiteral()` instead - will be removed in v18 */
+  /**
+   * Deprecated export retained for compatibility. Use `coerceInputLiteral()`
+   * instead.
+   * @deprecated use `coerceInputLiteral()` instead - will be removed in v18
+   */
   valueFromAST,
   // Create a JavaScript value from a GraphQL language AST without a Type.
   valueFromASTUntyped,
   // Create a GraphQL language AST from a JavaScript value.
-  /** @deprecated use `valueToLiteral()` instead with care to operate on external values - `astFromValue()` will be removed in v18 */
+  /**
+   * Deprecated export retained for compatibility. Use `valueToLiteral()`
+   * instead, and take care to operate on external values.
+   * @deprecated use `valueToLiteral()` instead with care to operate on external values - `astFromValue()` will be removed in v18
+   */
   astFromValue,
   // A helper to use within recursive-descent visitors which need to be aware of the GraphQL type system.
   TypeInfo,
