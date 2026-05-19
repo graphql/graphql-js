@@ -11,7 +11,8 @@ ignorePaths:
   - benchmark/github-schema.json
   - website/icons
   - website/css
-  - website/pages/api-v16-new
+  - website/pages/api-v16
+  - website/pages/api-v17
 overrides:
   - filename: 'website/**'
     dictionaries:
@@ -60,7 +61,11 @@ words:
   - sublinks
   - thunked
   - tsdoc
+  - worktree
+  - worktrees
   - instanceof
+  - apos
+  - middot
 
   # Different names used inside tests
   - Skywalker

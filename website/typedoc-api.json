@@ -1,0 +1,20 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "name": "GraphQL.js API",
+  "entryPoints": [],
+  "entryPointStrategy": "resolve",
+  "json": "",
+  "readme": "none",
+  "disableSources": true,
+  "githubPages": false,
+  "skipErrorChecking": true,
+  "treatValidationWarningsAsErrors": true,
+  "excludeInternal": true,
+  "excludePrivate": true,
+  "validation": {
+    "notExported": false
+  },
+  "categorizeByGroup": true,
+  "sort": ["source-order"],
+  "tsconfig": ""
+}
