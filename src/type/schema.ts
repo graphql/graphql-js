@@ -109,9 +109,7 @@ const schemaSymbol: unique symbol = Symbol('Schema');
  * A Schema is created by supplying the root types of each type of operation,
  * query and mutation (optional). A schema definition is then supplied to the
  * validator and executor.
- *
- * Example:
- *
+ * @example
  * ```ts
  * const MyAppQueryRootType = new GraphQLObjectType({
  *   name: 'Query',
@@ -132,12 +130,10 @@ const schemaSymbol: unique symbol = Symbol('Schema');
  *   mutation: MyAppMutationRootType,
  * });
  * ```
- *
- * Note: When the schema is constructed, by default only the types that are
- * reachable by traversing the root types are included, other types must be
- * explicitly referenced.
- *
- * Example:
+ * @example
+ * When the schema is constructed, by default only the types that are reachable
+ * by traversing the root types are included, other types must be explicitly
+ * referenced.
  *
  * ```ts
  * const characterInterface = new GraphQLInterfaceType({
@@ -176,12 +172,12 @@ const schemaSymbol: unique symbol = Symbol('Schema');
  *   types: [humanType, droidType],
  * });
  * ```
- *
- * Note: If an array of `directives` are provided to GraphQLSchema, that will be
- * the exact list of directives represented and allowed. If `directives` is not
+ * @example
+ * If an array of `directives` are provided to GraphQLSchema, that will be the
+ * exact list of directives represented and allowed. If `directives` is not
  * provided then a default set of the specified directives (e.g. `@include` and
- * `@skip`) will be used. If you wish to provide *additional* directives to these
- * specified directives, you must explicitly declare them. Example:
+ * `@skip`) will be used. If you wish to provide *additional* directives to
+ * these specified directives, you must explicitly declare them.
  *
  * ```ts
  * const MyAppSchema = new GraphQLSchema({

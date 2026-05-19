@@ -1313,9 +1313,8 @@ export function assertAbstractType(type: unknown): GraphQLAbstractType {
  * A list is a wrapping type which points to another type.
  * Lists are often created within the context of defining the fields of
  * an object type.
- *
- * Example:
- *
+ * @typeParam T - The GraphQL type wrapped by this list type.
+ * @example
  * ```ts
  * const PersonType = new GraphQLObjectType({
  *   name: 'Person',
@@ -1325,7 +1324,6 @@ export function assertAbstractType(type: unknown): GraphQLAbstractType {
  *   })
  * })
  * ```
- * @typeParam T - The GraphQL type wrapped by this list type.
  */
 export class GraphQLList<
   T extends GraphQLType,
@@ -1410,9 +1408,8 @@ export class GraphQLList<
  * an error is raised if this ever occurs during a request. It is useful for
  * fields which you can make a strong guarantee on non-nullability, for example
  * usually the id field of a database row will never be null.
- *
- * Example:
- *
+ * @typeParam T - The nullable GraphQL type wrapped by this non-null type.
+ * @example
  * ```ts
  * const RowType = new GraphQLObjectType({
  *   name: 'Row',
@@ -1421,8 +1418,8 @@ export class GraphQLList<
  *   })
  * })
  * ```
+ *
  * Note: the enforcement of non-nullability occurs within the executor.
- * @typeParam T - The nullable GraphQL type wrapped by this non-null type.
  */
 export class GraphQLNonNull<
   T extends GraphQLNullableType,
@@ -1939,40 +1936,6 @@ export interface GraphQLScalarTypeExtensions {
  * `null` value will be returned in the response. Prefer validating inputs
  * before execution so clients receive input diagnostics before result coercion
  * fails.
- *
- * Example:
- *
- * ```ts
- * import { GraphQLScalarType, Kind } from 'graphql';
- *
- * const ensureOdd = (value) => {
- *   if (!Number.isFinite(value)) {
- *     throw new Error(
- *       `Scalar "Odd" cannot represent "${value}" since it is not a finite number.`,
- *     );
- *   }
- *
- *   if (value % 2 === 0) {
- *     throw new Error(`Scalar "Odd" cannot represent "${value}" since it is even.`);
- *   }
- *
- *   return value;
- * };
- *
- * const OddType = new GraphQLScalarType({
- *   name: 'Odd',
- *   coerceOutputValue: (value) => {
- *     return ensureOdd(value);
- *   },
- *   coerceInputValue: (value) => {
- *     return ensureOdd(value);
- *   },
- *   valueToLiteral: (value) => {
- *     return { kind: Kind.INT, value: String(ensureOdd(value)) };
- *   }
- * });
- * ```
- *
  * Custom scalar behavior is defined via the following functions:
  *
  *  - coerceOutputValue(value): Implements "Result Coercion". Given an internal value,
@@ -2007,6 +1970,37 @@ export interface GraphQLScalarTypeExtensions {
  *    `coerceInputLiteral()` method.
  * @typeParam TInternal - Internal runtime representation for this scalar.
  * @typeParam TExternal - External representation accepted from or returned to callers.
+ * @example
+ * ```ts
+ * import { GraphQLScalarType, Kind } from 'graphql';
+ *
+ * const ensureOdd = (value) => {
+ *   if (!Number.isFinite(value)) {
+ *     throw new Error(
+ *       `Scalar "Odd" cannot represent "${value}" since it is not a finite number.`,
+ *     );
+ *   }
+ *
+ *   if (value % 2 === 0) {
+ *     throw new Error(`Scalar "Odd" cannot represent "${value}" since it is even.`);
+ *   }
+ *
+ *   return value;
+ * };
+ *
+ * const OddType = new GraphQLScalarType({
+ *   name: 'Odd',
+ *   coerceOutputValue: (value) => {
+ *     return ensureOdd(value);
+ *   },
+ *   coerceInputValue: (value) => {
+ *     return ensureOdd(value);
+ *   },
+ *   valueToLiteral: (value) => {
+ *     return { kind: Kind.INT, value: String(ensureOdd(value)) };
+ *   }
+ * });
+ * ```
  */
 export class GraphQLScalarType<
   TInternal = unknown,
@@ -2369,9 +2363,10 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  *
  * Almost all of the GraphQL types you define will be object types. Object types
  * have a name, but most importantly describe their fields.
- *
- * Example:
- *
+ * @typeParam TSource - Source object type passed to resolvers.
+ * @typeParam TContext - Context object type passed to resolvers.
+ * @typeParam TAbstract - Runtime value type used for abstract type resolution.
+ * @example
  * ```ts
  * const AddressType = new GraphQLObjectType({
  *   name: 'Address',
@@ -2387,12 +2382,10 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  *   }
  * });
  * ```
- *
+ * @example
  * When two types need to refer to each other, or a type needs to refer to
  * itself in a field, you can use a function expression (aka a closure or a
  * thunk) to supply the fields lazily.
- *
- * Example:
  *
  * ```ts
  * const PersonType = new GraphQLObjectType({
@@ -2403,9 +2396,6 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  *   })
  * });
  * ```
- * @typeParam TSource - Source object type passed to resolvers.
- * @typeParam TContext - Context object type passed to resolvers.
- * @typeParam TAbstract - Runtime value type used for abstract type resolution.
  */
 export class GraphQLObjectType<
   TSource = any,
@@ -3424,9 +3414,9 @@ export interface GraphQLInterfaceTypeExtensions {
  * is used to describe what types are possible, what fields are in common across
  * all types, as well as a function to determine which type is actually used
  * when the field is resolved.
- *
- * Example:
- *
+ * @typeParam TSource - Source object type passed to resolvers.
+ * @typeParam TContext - Context object type passed to resolvers.
+ * @example
  * ```ts
  * const EntityType = new GraphQLInterfaceType({
  *   name: 'Entity',
@@ -3435,8 +3425,6 @@ export interface GraphQLInterfaceTypeExtensions {
  *   }
  * });
  * ```
- * @typeParam TSource - Source object type passed to resolvers.
- * @typeParam TContext - Context object type passed to resolvers.
  */
 export class GraphQLInterfaceType<
   TSource = any,
@@ -3758,9 +3746,9 @@ export interface GraphQLUnionTypeExtensions {
  * When a field can return one of a heterogeneous set of types, a Union type
  * is used to describe what types are possible as well as providing a function
  * to determine which type is actually used when the field is resolved.
- *
- * Example:
- *
+ * @typeParam TSource - Source object type passed to resolvers.
+ * @typeParam TContext - Context object type passed to resolvers.
+ * @example
  * ```ts
  * const PetType = new GraphQLUnionType({
  *   name: 'Pet',
@@ -3775,8 +3763,6 @@ export interface GraphQLUnionTypeExtensions {
  *   }
  * });
  * ```
- * @typeParam TSource - Source object type passed to resolvers.
- * @typeParam TContext - Context object type passed to resolvers.
  */
 export class GraphQLUnionType<
   TSource = any,
@@ -4052,9 +4038,7 @@ export interface GraphQLEnumTypeExtensions {
  * Enum types define leaf values whose serialized form is one of a fixed set
  * of GraphQL enum names. Internally, enum values can map to any runtime value,
  * often integers.
- *
- * Example:
- *
+ * @example
  * ```ts
  * import { GraphQLEnumType } from 'graphql/type';
  *
@@ -4808,9 +4792,7 @@ export interface GraphQLInputObjectTypeExtensions {
  * supplied to a field argument.
  *
  * Using `NonNull` will ensure that a value must be provided by the query
- *
- * Example:
- *
+ * @example
  * ```ts
  * const GeoPoint = new GraphQLInputObjectType({
  *   name: 'GeoPoint',

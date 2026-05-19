@@ -104,9 +104,7 @@ export interface ParseOptions {
    * and arguments on fragment spreads. Fragment variable definitions will be represented
    * in the `variableDefinitions` field of the FragmentDefinitionNode.
    * Fragment spread arguments will be represented in the `arguments` field of FragmentSpreadNode.
-   *
-   * For example:
-   *
+   * @example
    * ```graphql
    * {
    *   t { ...A(var: true) }
@@ -123,7 +121,7 @@ export interface ParseOptions {
    *
    * If enabled, the parser will parse directives on directive definitions.
    * This syntax is not part of the GraphQL specification and may change.
-   *
+   * @example
    * ```graphql
    * directive @foo @bar on FIELD
    * ```
