@@ -1,8 +1,8 @@
 ---
-title: OneOf input objects
+title: OneOf Input Objects
 ---
 
-# OneOf input objects
+# OneOf Input Objects
 
 import { Tabs } from 'nextra/components';
 
@@ -55,11 +55,10 @@ const Product = new GraphQLObjectType({
 
 const ProductLocation = new GraphQLInputObjectType({
   name: 'ProductLocation',
-  isOneOf: true,
   fields: {
-    aisleNumber: { type: GraphQLInt },
-    shelfNumber: { type: GraphQLInt },
-    positionOnShelf: { type: GraphQLInt },
+    aisleNumber: { type: new GraphQLNonNull(GraphQLInt) },
+    shelfNumber: { type: new GraphQLNonNull(GraphQLInt) },
+    positionOnShelf: { type: new GraphQLNonNull(GraphQLInt) },
   },
 });
 
@@ -79,7 +78,7 @@ const schema = new GraphQLSchema({
     fields: {
       product: {
         type: Product,
-        args: { by: { type: ProductSpecifier } },
+        args: { by: { type: new GraphQLNonNull(ProductSpecifier) } },
       },
     },
   }),
@@ -91,3 +90,12 @@ const schema = new GraphQLSchema({
 It doesn't matter whether you have 2 or more inputs here, all that matters is
 that your user will have to specify one, and only one, for this input to be valid.
 The values are not limited to scalars, lists and other input object types are also allowed.
+
+OneOf fields themselves must be nullable and must not define defaults. Nested
+input object types can still have their own required fields, as shown by
+`ProductLocation`.
+
+In GraphQL.js v17, OneOf coercion is stricter around defaults, unknown fields,
+`undefined`, and values that are present before coercion but invalid after
+coercion. Schemas that accidentally rely on ambiguous OneOf inputs should fail
+earlier and with clearer errors.

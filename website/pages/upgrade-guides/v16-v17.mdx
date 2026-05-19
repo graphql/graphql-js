@@ -1,221 +1,552 @@
 ---
-title: Upgrading from v16 to v17
+title: What changed in GraphQL.js v17
 sidebarTitle: v16 to v17
 ---
 
-import { Tabs } from 'nextra/components';
-import { Callout } from 'nextra/components'
- 
-<Callout type="info" emoji="ℹ️">
-  Currently GraphQL v17 is in alpha, this guide is based on the alpha release and is subject to change.
+import { Callout } from 'nextra/components';
+
+# What Changed in GraphQL.js v17
+
+<Callout type="info">
+  GraphQL.js v17 is currently available as `17.0.0-beta.1`. This guide
+  describes migration-impacting changes from the v16 stable line to the v17
+  beta line.
 </Callout>
 
-# Breaking changes
+GraphQL.js v17 keeps the core programming model: build a schema, parse a
+document, validate it, and execute it. Most changes make boundaries more
+explicit. Stable single-result execution is separate from experimental
+incremental delivery, input coercion is split from diagnostic validation, and
+development checks are opt-in. Host integration features such as harnesses,
+abort signals, and execution hooks are explicit GraphQL.js runtime APIs.
 
-## Required Node.js versions
+## Reading the Labels
 
-The v17 release drops support for end-of-life versions of Node.JS, retaining support for versions 20, 22, and 24 or above.
+Migration items below use these labels:
 
-## ESM and conditional exports
+- **Breaking change:** v16 code may need to change before it runs on v17.
+- **Behavioral tightening:** v17 validates or reports a case more precisely.
+- **Deprecation:** the v16 API still works in v17, but should be migrated
+  before v18.
+- **New stable API:** a new public API that can be adopted independently.
+- **Experimental or opt-in:** available in v17, but proposal-backed or outside
+  the default execution path.
 
-Earlier versions of GraphQL.js shipped dual builds for CommonJS and ESM, with ESM ".mjs" files sitting alongside CommonJS ".js" files.
-The ESM build was accessible via tooling recognizing the `module` field in `package.json`, while the CommonJS build was accessible via
-the `main` field. Unless configured carefully, this could sometimes lead to multiple copies of GraphQL.js being loaded in the same
-process, i.e. the dual-package hazard.
+## Platform and Package Shape
 
-v17 enables access to the ESM build via the `exports` field in `package.json` in a scheme designed to avoid the dual-package hazard as
-best as possible, relying on the ability of bun and newer versions of Node.js to consistently load ESM modules via `require` by
-indicating support for specific conditions. __ESM will now be served by default__, unless the requesting environment tooling __both__
-(A) supports the `node` or `require` conditions __and__ (B) does NOT support `bun`, `module`, `module-sync`. In that scenario, the
-CommonJS build will be served instead.
+### Node.js and TypeScript
 
-Note: ESM is not served to deno even though it supports require(esm) because deno not yet support the `module-sync` condition, nor
-does it seem to provide the `deno` condition when calling `require`, see https://github.com/denoland/deno/issues/29970.
+**Breaking change.** GraphQL.js v17 requires Node.js 22, 24, 25, or 26 and
+later:
 
-Deno users can access a Typescript build for deno via git://github.com/graphql/graphql-js.git#deno as well as by specifically loading
-the index.mjs file, i.e. `import { graphql } from 'graphql/index.mjs'`, although this does not protect against the dual-package hazard.
-
-## Development mode no longer enabled by default and no longer dependent on NODE_ENV value
-
-GraphQl.js development mode in v17 is disabled by default and can be enabled by the `development` condition on supporting platforms or
-by explicitly enabling it within user code by calling `enableDevMode()`. Development mode may trigger permanent de-optimizations and
-therefore cannot be disabled once enabled. The new `isDevModeEnabled()` function can be used to check whether development mode has
-been enabled.
-
-GraphQL.js development mode no longer depends on the `NODE_ENV` environment variable; build tools other than Node.js no longer need
-to replace this Node.js specific code. See [Development Mode](./development-mode) for further details regarding how to enable these
-checks in v17.
-
-## Default values
-
-GraphQL schemas allow default values for input fields and arguments. Historically, GraphQL.js did not rigorously validate or coerce these
-defaults during schema construction, leading to potential runtime errors or inconsistencies. For example:
-
-- A default value of "5" (string) for an Int-type argument would pass schema validation but fail at runtime.
-- Internal serialization methods like astFromValue could produce invalid ASTs if inputs were not properly coerced.
-
-With the new changes default values will be validated and coerced during schema construction.
-
-```graphql
-input ExampleInput {
-  value: Int = "invalid"  # Now triggers a validation error
+```json
+{
+  "engines": {
+    "node": "^22.0.0 || ^24.0.0 || ^25.0.0 || >=26.0.0"
+  }
 }
 ```
 
-This goes hand-in-hand with the deprecation of `astFromValue` in favor of `valueToLiteral` or `default: { value: <externalValue> }`.
+Upgrade Node.js before upgrading GraphQL.js. This separates runtime and
+package-manager errors from GraphQL.js migration errors.
 
-```ts
-// Before (deprecated)
-const defaultValue = astFromValue(internalValue, type);
-// After
-const defaultValue = valueToLiteral(externalValue, type);
-```
+**Breaking change.** The published type definitions target TypeScript 4.4 and
+newer.
 
-If you want to continue using the old behavior, you can use `defaultValue` in your schema definitions. The new
-behavior will be exposed as `default: { literal: <literal> }`.
+### Conditional exports
 
-## GraphQLError constructor arguments
+**Breaking change.** v17 uses package `exports` and modern package conditions
+to select the right build. Use public entry points such as `graphql`,
+`graphql/execution`, `graphql/language`, `graphql/type`, `graphql/utilities`,
+and `graphql/validation`.
 
-The `GraphQLError` constructor now only accepts a message and options object as arguments. Previously, it also accepted positional arguments.
+Deep imports into GraphQL.js internals may still work in some environments, but
+they are not officially supported. Prefer the public entry points above for
+application and library code.
 
-```diff
-- new GraphQLError('message', nodes, source, positions, path, originalError, extensions);
-+ new GraphQLError('message', { nodes, source, positions, path, originalError, extensions });
-```
-
-## `createSourceEventStream` arguments
-
-The `createSourceEventStream` function now only accepts an object as an argument. Previously, it also accepted positional arguments.
+**Breaking change.** The deprecated `graphql/subscription` compatibility
+subpath is gone. Import subscription APIs from `graphql` or
+`graphql/execution`.
 
 ```diff
-- createSourceEventStream(schema, document, rootValue, contextValue, variableValues, operationName);
-+ createSourceEventStream({ schema, document, rootValue, contextValue, variableValues, operationName });
+- import { subscribe } from 'graphql/subscription';
++ import { subscribe } from 'graphql/execution';
 ```
 
-## `execute` will error for incremental delivery
+### Development mode
 
-The `execute` function will now throw an error if it sees a `@defer` or `@stream` directive. Use `experimentalExecuteIncrementally` instead.
-If you know you are dealing with incremental delivery requests, you can replace the import.
+**Breaking change.** Development mode is disabled by default and no longer
+depends on `NODE_ENV`. Enable it with the `development` package condition or by
+calling `enableDevMode()` during application startup.
+
+```js
+import { enableDevMode, isDevModeEnabled } from 'graphql';
+
+if (process.env.NODE_ENV === 'development') {
+  enableDevMode();
+}
+
+console.log(isDevModeEnabled());
+```
+
+Development mode currently helps diagnose accidental use of multiple GraphQL.js
+module instances. See [Development Mode](/docs/development-mode) for runtime
+and bundler setup.
+
+## Request Pipeline and Harnesses
+
+### `graphql()` and `graphqlSync()`
+
+**New stable API.** The high-level `graphql()` and `graphqlSync()` APIs still
+use the object-argument form from v16. In v17, that object can also carry
+parser options, validation options, execution options, `hideSuggestions`,
+`abortSignal`, hooks, and a custom harness.
+
+```js
+const result = await graphql({
+  schema,
+  source,
+  variableValues,
+  operationName: 'Viewer',
+  hideSuggestions: true,
+  abortSignal,
+});
+```
+
+This does not make `graphql()` a framework. It remains the convenience API for
+a single-result "parse, validate, execute" request. The new arguments let
+simple hosts use common v17 options without rebuilding the whole pipeline.
+
+### GraphQL Harness
+
+**New stable API.** `GraphQLHarness` lets hosts replace the parse, validate,
+execute, and subscribe phases used by `graphql()` and `graphqlSync()`.
+
+The harness is modeled after Envelop-style plugin pipelines. It brings the
+broader phase types used by that ecosystem closer to the reference
+implementation, so frameworks can accept a custom harness and plugin systems
+can interoperate around a shared request-pipeline shape.
+
+For example, `GraphQLParseFn` can return either a parsed `DocumentNode` or a
+promise for one, even though the built-in `parse()` function is synchronous.
+The harness `execute` function follows `execute()` and does not include the
+experimental incremental delivery return type.
+
+Use [GraphQL Harness](/docs/graphql-harness) for examples, and call
+`experimentalExecuteIncrementally()` directly when an operation may use
+`@defer` or `@stream`.
+
+## Execution and Incremental Delivery
+
+### Single-result execution
+
+**Breaking change.** `execute()` is now the stable single-result executor. It
+does not support incremental delivery. If a schema or operation opts into
+`@defer` or `@stream`, execute it with `experimentalExecuteIncrementally()`
+instead.
 
 ```diff
 - import { execute } from 'graphql';
-+ import { experimentalExecuteIncrementally as execute } from 'graphql';
++ import { experimentalExecuteIncrementally } from 'graphql';
 ```
 
-## Remove incremental delivery support from `subscribe`
+This keeps the `execute()` contract simple: callers receive one
+`ExecutionResult`, or a promise for one.
 
-In case you have fragments that you use with `defer/stream` that end up in a subscription,
-use the `if` argument of the directive to disable it in your subscription operation
+**Breaking change.** Incremental execution no longer uses the old
+`singleResult` discriminator. Remove branches that check for `singleResult`.
 
-## `subscribe` return type
+### Incremental delivery
 
-The `subscribe` function can now also return a non-Promise value, previously this was only a Promise.
-This shouldn't change a lot as `await value` will still work as expected. This could lead to
-some typing inconsistencies though.
+**Experimental or opt-in.** `experimentalExecuteIncrementally()` returns either
+a normal `ExecutionResult` or an object with `initialResult` and an async
+iterator of `subsequentResults`.
 
-## Remove `singleResult` from incremental results
+```js
+const result = await experimentalExecuteIncrementally({ schema, document });
 
-You can remove branches that check for `singleResult` in your code, as it is no longer used.
+if ('initialResult' in result) {
+  send(result.initialResult);
 
-## Node support
+  for await (const subsequentResult of result.subsequentResults) {
+    send(subsequentResult);
+  }
+} else {
+  send(result);
+}
+```
 
-Dropped support for Node 14 (subject to change)
+**Experimental or opt-in.** `legacyExecuteIncrementally()` remains available
+for hosts that still need the older incremental delivery payload shape. The
+legacy shape identifies deferred and streamed payloads with fields such as
+`path` and optional `label`, and can duplicate field data across payloads. The
+current experimental shape registers pending work by `id` and reports
+completion with `completed` entries.
 
-## Removed `TokenKindEnum`, `KindEnum` and `DirectiveLocationEnum` types
+Schema setup, directive validation, result shapes, and transport guidance are
+covered in [Defer and Stream](/docs/defer-stream).
 
-We have removed the `TokenKindEnum`, `KindEnum` and `DirectiveLocationEnum` types,
-use `Kind`, `TokenKind` and `DirectiveLocation` instead. https://github.com/graphql/graphql-js/pull/3579
+### Resolver return values
 
-## Removed `graphql/subscription` module
+**New stable API.** List fields can resolve to async iterables. This is useful
+for values that naturally arrive over time and is especially relevant when a
+host opts into `@stream`.
 
-use `graphql/execution` instead for subscriptions, all execution related exports have been
-unified there.
+### Custom execution helpers
 
-## Removed `GraphQLInterfaceTypeNormalizedConfig` export
+**New stable API.** v17 exposes the helper boundary used by `execute()` itself.
+`validateExecutionArgs()` validates and normalizes `ExecutionArgs`, including
+schema checks, operation selection, variable coercion, fragment information,
+default resolvers, and execution options. It returns either
+`ValidatedExecutionArgs` or a list of `GraphQLError` values.
 
-Use `ReturnType<GraphQLInterfaceType['toConfig']>` if you really need this
+Then use the root selection set helper that matches the executor you are
+building:
 
-## Empty AST collections will be undefined
+- `executeRootSelectionSet()` for stable single-result execution.
+- `experimentalExecuteRootSelectionSet()` for current incremental delivery.
+- `legacyExecuteRootSelectionSet()` for the legacy incremental payload shape.
 
-Empty AST collections will be presented by `undefined` rather than an empty array.
+These helpers do not replace operation validation with `validate()`. They are
+for hosts that already parsed and validated a document and need a custom
+execution function.
 
-## `Info.variableValues`
+The native `execute()` and `subscribe()` functions preserve synchronous
+results when execution completes synchronously; they do not wrap every result
+in a promise. Custom wrappers that want the same behavior need to handle both
+sync and async paths. See
+[Advanced Execution Pipelines](/docs/advanced-execution-pipelines) for complete
+examples.
 
-The shape of `Info.variableValues` has changed to be an object containing
-`sources` and `coerced` as keys.
+## Subscriptions and Source Event Streams
 
-A Source contains the `signature` and provided `value` pre-coercion for the
-variable. A `signature` is an object containing the `name`, `input-type` and
-`defaultValue` for the variable.
+### Subscription return type
 
-## Stream directive can't be on multiple instances of the same field
+**Breaking change.** `subscribe()` returns a `PromiseOrValue` in v17 instead
+of always returning a promise. Existing `await subscribe(args)` code continues
+to work, but TypeScript code that assumed a promise return type must be updated
+to handle the synchronous path.
 
-The `@stream` directive can't be on multiple instances of the same field,
-this won't pass `validate` anymore.
+**Breaking change.** `subscribe()` does not support incremental delivery. If a
+fragment is shared between queries and subscriptions, use the `if` argument on
+`@defer` or `@stream` to disable incremental behavior in subscription
+operations.
 
-See https://github.com/graphql/graphql-js/pull/4342
+### Lower-level subscription helpers
 
-## Stream initialCount becomes non-nullable
+**Breaking change.** `createSourceEventStream()` now accepts only
+`ValidatedSubscriptionArgs`. If you call it directly, call
+`validateSubscriptionArgs()` first and handle validation errors before passing
+the result onward. Use `subscribe()` when you want GraphQL.js to run the full
+subscription pipeline.
 
-The `initialCount` argument of the `@stream` directive is now non-nullable.
+`validateSubscriptionArgs()` builds on `validateExecutionArgs()` and additionally
+asserts that the selected operation is a subscription.
 
-See https://github.com/graphql/graphql-js/pull/4322
+**New stable API.** `mapSourceToResponseEvent()` maps a subscription source
+stream to execution results. Its third argument is a `RootSelectionSetExecutor`,
+which customizes how each source event is executed after the source stream has
+already been created. If you omit it, GraphQL.js uses the default
+subscription-event executor.
 
-## GraphQLSchemas converted to configuration may no longer be assumed valid
+See [Advanced Execution Pipelines](/docs/advanced-execution-pipelines) for
+complete helper examples.
 
-The `assumeValid` config property exported by the `GraphQLSchema.toConfig()` method now passes through the original
-flag passed on creation of the `GraphQLSchema`.
-Previously, the `assumeValid` property would be to `true` if validation had been run, potentially concealing the original intent.
+## Abort Signals
 
-See https://github.com/graphql/graphql-js/pull/4244 and https://github.com/graphql/graphql-js/issues/3448
+**Experimental or opt-in.** GraphQL.js v17 adds `AbortSignal` support as its
+JavaScript runtime API for cancellation.
 
-## `coerceInputValue` returns `undefined` on error
+The GraphQL specification discusses cancellation in narrower execution cases.
+During non-null error propagation, sibling response positions that have not
+executed or yielded a value
+[may be cancelled](https://spec.graphql.org/draft/#sec-Errors-and-Non-Null-Types)
+to avoid unnecessary work; in the specification's
+[normative sections](https://spec.graphql.org/draft/#sec-Appendix-Conformance),
+lowercase `may` has RFC 2119 `MAY` force. The subscription algorithms also
+describe cancelling response and source streams. The specification does not
+define a user or host cancelling an already issued query or mutation request.
 
-`coerceInputValue` now aborts early when an error occurs, to optimize execution speed on the happy path.
-Use the `validateInputValue` helper to retrieve the actual errors.
+GraphQL.js also accepts an external `abortSignal` on `graphql()`, `execute()`,
+`subscribe()`, and `experimentalExecuteIncrementally()`. Resolvers read the
+resolver-scoped signal with `info.getAbortSignal()` and pass it to downstream
+APIs that support cancellation.
 
-## Removals
+At this time, GraphQL.js does not expose fine-grained per-field cancellation.
+Resolvers in an operation share one signal. For internally cancelled portions
+of an operation, GraphQL.js aborts that shared resolver signal when the result
+that will actually be returned has finished, notifying still-pending resolver
+work together. This may change in future versions.
 
-- Removed deprecated `getOperationType` function, use `getRootType` on the `GraphQLSchema` instance instead
-- Removed deprecated `getVisitFn` function, use `getEnterLeaveForKind` instead
-- Removed deprecated `printError` and `formatError` utilities, you can use `toString` or `toJSON` on the error as a replacement
-- Removed deprecated `assertValidName` and `isValidNameError` utilities, use `assertName` instead
-- Removed deprecated `assertValidExecutionArguments` function, use `assertValidSchema` instead
-- Removed deprecated `getFieldDefFn` from `TypeInfo`
-- Removed deprecated `TypeInfo` from `validate` https://github.com/graphql/graphql-js/pull/4187
+See [Abort Signals](/docs/abort-signals) for resolver examples, HTTP request
+lifecycle wiring, and aborted execution handling.
 
-## Deprecations
+## Execution Hooks
 
-- Deprecated  `astFromValue` use `valueToLiteral` instead, when leveraging `valueToLiteral` ensure
-  that you are working with externally provided values i.e. the SDL provided defaultValue to a variable.
-- Deprecated `valueFromAST` use `coerceInputLiteral` instead
-- Deprecated `findBreakingChanges()` and `findDangerousChanges()`. Use `findSchemaChanges()` instead, which can also be used to find safe changes.
-- Deprecated `serialize`. `parseValue`, and `parseLiteral` properties on scalar type configuration. Use `coerceOutputValue`, `coerceInputValue`, and `coerceInputLiteral` instead.
+**Experimental or opt-in.** Execution hooks are separate from abort signals.
+They let a host observe execution lifecycle boundaries; they do not force
+JavaScript work to stop.
 
-## Experimental Features
+The first hook is `asyncWorkFinished`. It fires after GraphQL.js has stopped
+producing payloads and all tracked async execution work has settled. This is
+useful for cleanup, logging, telemetry, tests that need a strong lifecycle
+boundary, or hosts that choose to delay returning a result until tracked async
+work is finished.
 
-### Experimental Support for Incremental Delivery
+Resolvers can use `info.getAsyncHelpers()` to make additional work visible to
+that tracking. See [Execution Hooks](/docs/execution-hooks) for examples.
 
-- [Spec PR](https://github.com/graphql/graphql-spec/pull/1110) / [RFC](https://github.com/graphql/graphql-wg/blob/main/rfcs/DeferStream.md)
-- enabled only when using `experimentalExecuteIncrementally()`, use of a schema or operation with `@defer`/`@stream` directives within `execute()` will now throw.
-- enable early execution with the new `enableEarlyExecution` configuration option for `experimentalExecuteIncrementally()`.
+## Input Coercion, Defaults, and Custom Scalars
 
-### Experimental Support for Fragment Arguments
+### Default values
 
-- [Spec PR](https://github.com/graphql/graphql-spec/pull/1081)
-- enable with the new `experimentalFragmentArguments` configuration option for `parse()`.
-- new experimental `Kind.FRAGMENT_ARGUMENT` for visiting
-- new experimental `TypeInfo` methods and options for handling fragment arguments.
-- coerce AST via new function `coerceInputLiteral()` with experimental fragment variables argument (as opposed to deprecated `valueFromAST()` function).
+**Behavioral tightening.** Argument, input-field, and directive-argument
+defaults are now validated as part of schema validation performed by
+`validateSchema()`. Invalid defaults that v16 could leave latent now make the
+schema invalid with a targeted validation error.
 
-## Features
+**Deprecation.** `defaultValue` is the legacy programmatic default format. It
+represents an already-coerced JavaScript value and remains available as a
+migration bridge.
 
-- Added `hideSuggestions` option to `execute`/`validate`/`subscribe`/... to hide schema-suggestions in error messages
-- Added `abortSignal` option to `graphql()`, `execute()`, and `subscribe()` allows cancellation of these methods;
-  `info.abortSignal` can also be used in field resolvers to cancel asynchronous work that they initiate.
-- `extensions` support `symbol` keys, in addition to the normal string keys.
-- Added ability for resolver functions to return async iterables.
-- Added `perEventExecutor` execution option to allows specifying a custom executor for subscription source stream events, which can be useful for preparing a per event execution context argument.
-- Added `validateInputValue` and `validateInputLiteral` helpers to validate input values and literals, respectively.
-- Added `replaceVariableValues` helper to replace variables within complex scalars uses as inputs. Internally, this allows variables embedded within complex scalars to finally use the correct default values.
-- Added new `printDirective` helper.
+**New stable API.** Prefer the new `default` model for programmatic schemas.
+Use `default: { value }` when you have the raw JavaScript input value before
+coercion. Use `default: { literal }` when you have the GraphQL literal. When
+GraphQL.js builds a schema from SDL, it now uses the literal form internally.
+
+```js
+const field = {
+  type: GraphQLString,
+  args: {
+    format: {
+      type: GraphQLString,
+      default: { value: 'short' },
+    },
+  },
+};
+```
+
+This fixes subtle cases where introspection could report default values
+incorrectly from an already-coerced internal value.
+
+See [Passing Arguments](/docs/passing-arguments) and
+[Mutations and Input Types](/docs/mutations-and-input-types).
+
+### Coercion and validation helpers
+
+**Behavioral change.** `coerceInputValue()` and `coerceInputLiteral()` now
+return `undefined` when coercion fails. They are optimized for callers that
+want either a coerced value or failure.
+
+**New stable API.** Use `validateInputValue()` and `validateInputLiteral()` when
+you need diagnostic errors. Use `valueToLiteral()` when converting an external
+JavaScript input value into a GraphQL literal.
+
+**New stable API.** `replaceVariables()` replaces variables inside complex
+scalar literals. GraphQL.js calls it automatically during execution. If you use
+literal coercion helpers directly outside execution, call `replaceVariables()`
+yourself before coercing literals that may contain variables.
+
+### Custom scalar method names
+
+**Deprecation.** v17 introduces scalar method names that match the GraphQL
+coercion model:
+
+| v16 name | v17 name | Purpose |
+| --- | --- | --- |
+| `serialize` | `coerceOutputValue` | Convert resolver values into response values. |
+| `parseValue` | `coerceInputValue` | Convert variable values into internal values. |
+| `parseLiteral` | `coerceInputLiteral` | Convert GraphQL literals into internal values. |
+| `astFromValue()` | `valueToLiteral()` | Convert external input values into GraphQL literals. |
+
+The v16 scalar method names still work in v17 and are deprecated for removal in
+v18. See [Advanced Custom Scalars](/docs/advanced-custom-scalars).
+
+## Variable Values and Resolver Info
+
+**Breaking change.** `getVariableValues()` now returns `{ variableValues }` on
+success. That value contains source information and coerced runtime values.
+
+```diff
+- const { coerced } = getVariableValues(schema, variableDefinitions, inputs);
++ const { variableValues } = getVariableValues(schema, variableDefinitions, inputs);
++ const coerced = variableValues.coerced;
+```
+
+This matters because v17 supports fragment-local variables and more precise
+default handling. Passing only the coerced object loses information about where
+values came from.
+
+**Breaking change.** `info.variableValues` follows the same model. Use
+`info.variableValues.coerced` for runtime values inside resolvers.
+
+**Behavioral change.** Resolver argument maps and variable maps may use
+null-prototype objects. Use `Object.hasOwn(obj, key)` or direct property access
+instead of methods inherited from `Object.prototype`.
+
+**New stable API.** `GraphQLResolveInfo` adds `getAbortSignal()` and
+`getAsyncHelpers()` for the abort-signal and execution-hook APIs.
+
+## Schema, Type System, Directives, and Introspection
+
+### Schema validation
+
+**Behavioral tightening.** `GraphQLSchema.toConfig().assumeValid` now preserves
+the original `assumeValid` setting instead of changing after schema validation
+has run.
+
+**Behavioral tightening.** Schema validation reports duplicate use of the same
+object type for more than one operation root.
+
+**Behavioral tightening.** Directive argument defaults are validated as part of
+schema validation.
+
+**Behavioral tightening.** The built-in `@deprecated(reason:)` argument is now
+non-null. In v16 the argument type was nullable `String`, so a directive use
+could explicitly pass `reason: null`. In v17, omit `reason` to use the default
+deprecation reason; explicit `null` is no longer valid.
+
+### Programmatic schema APIs
+
+**New stable API.** v17 exposes public schema element types and assertions for
+programmatic schema work, including `GraphQLField`, `GraphQLArgument`,
+`GraphQLInputField`, `GraphQLEnumValue`, `assertField()`, `assertArgument()`,
+`assertInputField()`, and `assertEnumValue()`.
+
+**New stable API.** `GraphQLSchema.getField(parentType, fieldName)` resolves
+ordinary fields and GraphQL meta fields such as `__typename`, `__schema`, and
+`__type`.
+
+**New stable API.** Custom `extensions` maps on schema elements support symbol
+keys as well as string keys.
+
+**New stable API.** `printDirective()` prints a directive definition without
+printing an entire schema.
+
+**Breaking change.** If you imported `GraphQLInterfaceTypeNormalizedConfig`
+from a public entry point, replace that import with
+`ReturnType<GraphQLInterfaceType['toConfig']>`.
+
+## Language, AST, Parser, Printer, and Visitor APIs
+
+### AST constants and visitors
+
+**Breaking change.** The v16 alias types `KindEnum`, `TokenKindEnum`, and
+`DirectiveLocationEnum` are gone. Use `Kind`, `TokenKind`, and
+`DirectiveLocation`, which are const objects with matching union types.
+
+```diff
+- import type { KindEnum } from 'graphql';
++ import type { Kind } from 'graphql';
+```
+
+**Breaking change.** `getVisitFn()` is gone. Use
+`getEnterLeaveForKind()` instead.
+
+```js
+const { enter, leave } = getEnterLeaveForKind(visitor, Kind.FIELD);
+```
+
+**Behavioral change.** Empty AST collections may be omitted as `undefined`.
+Code that reads properties such as `arguments`, `directives`,
+`variableDefinitions`, `interfaces`, `fields`, `types`, or `operationTypes`
+should treat them as optional.
+
+**New stable API.** `isSubscriptionOperationDefinitionNode()` narrows
+subscription operation nodes.
+
+### Fragment arguments
+
+**Experimental or opt-in.** v17 adds proposal-backed fragment arguments behind
+the `experimentalFragmentArguments` parser option. Older GraphQL.js versions
+had an experimental `allowLegacyFragmentVariables` option, but that was
+parser-only and did not work at runtime.
+
+When enabled, fragment definitions can declare variables and fragment spreads
+can pass arguments. See [Fragment Arguments](/docs/fragment-arguments).
+
+## Validation
+
+**Breaking change.** Passing a custom `TypeInfo` instance as a fifth argument
+to `validate()` was removed. If you need a custom traversal with custom type
+tracking, compose your visitor with `visitWithTypeInfo()`.
+
+```diff
+- const errors = validate(schema, document, rules, options, customTypeInfo);
++ const errors = validate(schema, document, rules, options);
+```
+
+**New stable API.** `hideSuggestions` removes "Did you mean ..." suggestion
+text from diagnostics. This is useful for public APIs that do not want to leak
+schema shape through error messages.
+
+**New stable API.** `KnownOperationTypesRule` validates that an operation's
+root type exists in the schema. For example, a `mutation` operation is invalid
+when the schema has no mutation root type.
+
+The defer/stream validation rules are documented with the experimental
+incremental delivery feature rather than repeated here. See
+[Defer and Stream](/docs/defer-stream).
+
+## Utilities and Error Handling
+
+### Schema Change utilities
+
+**Deprecation.** `findBreakingChanges()` and `findDangerousChanges()` still
+exist in v17 and are deprecated for removal in v18. Use
+`findSchemaChanges()` for new schema registry and CI tooling.
+
+**New stable API.** `findSchemaChanges()` reports breaking, dangerous, and safe
+changes from one call. Code that switches to it should handle all three
+categories; safe changes use the `SafeChangeType` and `SafeChange` shapes.
+
+See [Schema Evolution](/docs/schema-evolution) for schema comparison examples.
+
+### Removed helpers
+
+**Breaking change.** The following deprecated helpers were removed:
+
+- `assertValidName()` and `isValidNameError()`; use `assertName()`.
+- `assertValidExecutionArguments()`; use `assertValidSchema()` for schema
+  validation and `validateExecutionArgs()` for execution argument validation.
+- `getOperationRootType()`; use `schema.getRootType(operation)`.
+- `getFieldDefFn` from `TypeInfo`.
+- `printError()` and `formatError()`; use `error.toString()` or
+  `error.toJSON()`.
+
+### `GraphQLError`
+
+**Breaking change.** The positional `GraphQLError` constructor was removed.
+Pass a message and an options object.
+
+```diff
+- new GraphQLError(message, nodes, source, positions, path, originalError);
++ new GraphQLError(message, {
++   nodes,
++   source,
++   positions,
++   path,
++   originalError,
++   extensions,
++ });
+```
+
+## Practical Migration Order
+
+1. Update Node.js, TypeScript, and package-entry imports.
+2. Compile and replace removed helpers, removed alias types, and positional
+   `GraphQLError` calls.
+3. Run `validateSchema()` and migrate invalid or ambiguous defaults to the new
+   `default` model.
+4. Update execution hosts: `execute()` versus
+   `experimentalExecuteIncrementally()`, `createSourceEventStream()` validation,
+   and subscription return types.
+5. Migrate custom scalars to the v17 coercion method names while keeping the
+   v16 names if you still support v16.
+6. Adopt optional host features such as development mode, harnesses, abort
+   signals, execution hooks, and fragment arguments only where they match your
+   server design.
+
+Run schema validation, operation validation, execution tests, and TypeScript
+checks after each group. The upgrade is easiest to review when mechanical
+changes are separated from behavior changes.

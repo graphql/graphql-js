@@ -1,0 +1,177 @@
+---
+title: Schema Evolution
+sidebarTitle: Schema Evolution
+---
+
+# Schema Evolution
+
+GraphQL schemas tend to evolve continuously. Fields are added, arguments are
+introduced, enum values are deprecated, and object types move through product
+life cycles. GraphQL.js provides schema comparison helpers so teams can make
+those changes intentionally.
+
+Use these helpers in CI, release tooling, schema registries, or local migration
+scripts. They compare two `GraphQLSchema` instances, not two SDL strings, so
+you can build the schemas however your project normally does.
+
+## Comparing schemas in v16
+
+GraphQL.js v16 exports two comparison helpers:
+
+```js
+import {
+  buildSchema,
+  findBreakingChanges,
+  findDangerousChanges,
+} from 'graphql';
+
+const oldSchema = buildSchema(`
+  type Query {
+    product(id: ID!): Product
+  }
+
+  type Product {
+    id: ID!
+    name: String
+  }
+`);
+
+const newSchema = buildSchema(`
+  type Query {
+    product(id: ID!): Product
+  }
+
+  type Product {
+    id: ID!
+    title: String
+  }
+`);
+
+const breaking = findBreakingChanges(oldSchema, newSchema);
+const dangerous = findDangerousChanges(oldSchema, newSchema);
+```
+
+`findBreakingChanges()` reports changes that can make existing operations fail,
+such as removing a field, removing a type, removing an enum value, or adding a
+required argument.
+
+`findDangerousChanges()` reports changes that are not always breaking but can
+change client behavior, such as adding an enum value or adding an optional
+argument.
+
+## Comparing schemas in v17
+
+GraphQL.js v17 adds `findSchemaChanges()`.
+
+```js
+import { findSchemaChanges } from 'graphql';
+
+const changes = findSchemaChanges(oldSchema, newSchema);
+
+for (const change of changes) {
+  console.log(change.type, change.description);
+}
+```
+
+`findSchemaChanges()` returns breaking, dangerous, and safe changes from one
+call. The older `findBreakingChanges()` and `findDangerousChanges()` helpers
+remain in v17, but they are deprecated for removal in v18.
+
+## Change Categories
+
+Breaking changes are changes that can make a previously valid operation invalid
+or change the response shape in a way clients cannot safely ignore. Examples
+include:
+
+- Removing a type, field, directive, argument, enum value, or union member.
+- Adding a required argument or required input field.
+- Changing a field or argument to an incompatible type.
+- Removing an implemented interface from an object or interface.
+
+Dangerous changes may be safe for many clients, but they deserve review because
+some clients can observe them. Examples include:
+
+- Adding an enum value.
+- Adding a member to a union.
+- Adding an optional argument or input field.
+- Changing or removing a default value.
+
+Safe changes are additions or metadata changes that should not break existing
+operations. In v17, `findSchemaChanges()` can report examples such as:
+
+- Adding a type, field, or directive.
+- Adding an optional directive argument.
+- Adding a directive location.
+- Changing a description.
+- Widening an argument or field type in a safe direction.
+
+## CI Gate Example
+
+This example fails a build on breaking changes and prints dangerous changes for
+review.
+
+```js
+import {
+  BreakingChangeType,
+  buildSchema,
+  findSchemaChanges,
+} from 'graphql';
+import { readFile } from 'node:fs/promises';
+
+const oldSchema = buildSchema(await readFile('schema-old.graphql', 'utf8'));
+const newSchema = buildSchema(await readFile('schema-new.graphql', 'utf8'));
+
+const changes = findSchemaChanges(oldSchema, newSchema);
+const breakingTypes = new Set(Object.values(BreakingChangeType));
+const breaking = changes.filter((change) => breakingTypes.has(change.type));
+
+for (const change of changes) {
+  console.log(`${change.type}: ${change.description}`);
+}
+
+if (breaking.length > 0) {
+  process.exitCode = 1;
+}
+```
+
+In production tooling, prefer checking the exported change type objects instead
+of matching strings. That lets TypeScript track the known set of change
+categories.
+
+## Deprecate Before Removing
+
+The safest way to remove a field, enum value, argument, input field, or
+directive is to deprecate it first, publish that deprecation, and wait until
+usage is gone.
+
+```graphql
+type Product {
+  name: String @deprecated(reason: "Use title.")
+  title: String
+}
+```
+
+You can combine GraphQL.js schema comparison with operation analytics or a
+schema registry:
+
+1. Add the replacement API.
+2. Mark the old API as deprecated with a useful reason.
+3. Monitor whether operations still use the deprecated API.
+4. Remove the old API only after clients have migrated.
+5. Let `findBreakingChanges()` or `findSchemaChanges()` confirm the removal is
+   intentional.
+
+## Working With Printed Schemas
+
+Schema comparison is most useful when the schemas are deterministic. If your
+schema is constructed programmatically, print and sort it before storing a
+baseline.
+
+```js
+import { lexicographicSortSchema, printSchema } from 'graphql';
+
+const sdl = printSchema(lexicographicSortSchema(schema));
+```
+
+Use the sorted printed schema for human review, and use the actual
+`GraphQLSchema` objects for `findBreakingChanges()` or `findSchemaChanges()`.

@@ -16,8 +16,9 @@ GraphQL.js implements the subscription execution algorithm, but it's up to you t
 
 ## How execution works
 
-The core of subscription execution in GraphQL.js is the `subscribe` function. It works similarly to `graphql()`, but returns an `AsyncIterable` of execution results
-instead of a single response:
+The core of subscription execution in GraphQL.js is the `subscribe` function.
+It starts the subscription and, when successful, returns an async iterable of
+execution results instead of a single response:
 
 ```js
 import { subscribe, parse } from 'graphql';
@@ -29,14 +30,40 @@ const document = parse(`
   }
 `);
 
-const iterator = await subscribe({ schema, document });
+const result = await subscribe({ schema, document });
 
-for await (const result of iterator) {
-  console.log(result);
+if (isAsyncIterableObject(result)) {
+  for await (const payload of result) {
+    console.log(payload);
+  }
+} else {
+  console.error(result.errors);
+}
+
+function isAsyncIterableObject(value) {
+  return value != null && typeof value[Symbol.asyncIterator] === 'function';
 }
 ```
 
-Each time your application publishes a new `messageSent` event, the iterator emits a new result. It's up to your transport layer to manage the connection and forward these updates to the client.
+Each time your application publishes a new `messageSent` event, the iterator
+emits a new result. It is up to your transport layer to manage the connection
+and forward these updates to the client.
+
+## Why `subscribe()` is separate from `execute()`
+
+GraphQL.js keeps `execute()` and `subscribe()` as separate entry points for
+historical and behavioral reasons. `execute()` is the older API for running one
+execution and producing a single result. Subscriptions were added as a separate
+GraphQL algorithm because starting a subscription has to resolve a source event
+stream before executing the selection set for each event.
+
+The return type reflects that split. `execute()` returns one `ExecutionResult`,
+or a promise for one. `subscribe()` returns an `ExecutionResult` when the
+subscription cannot start, or an async stream of `ExecutionResult` values when
+it can. In GraphQL.js v17, that return is a `PromiseOrValue`. It contains
+either an `ExecutionResult` or an
+`AsyncGenerator<ExecutionResult, void, void>`, and `await subscribe(args)` still
+works whether the implementation completes synchronously or asynchronously.
 
 ## When to use subscriptions
 

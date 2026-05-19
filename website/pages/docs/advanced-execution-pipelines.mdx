@@ -1,0 +1,186 @@
+---
+title: Advanced Execution Pipelines
+sidebarTitle: Advanced Execution Pipelines
+---
+
+import { Callout } from 'nextra/components';
+
+# Advanced Execution Pipelines
+
+<Callout type="info">
+  The APIs on this page are low-level GraphQL.js v17 execution APIs. Most
+  servers should call `execute()`, `subscribe()`, or a framework abstraction.
+</Callout>
+
+GraphQL.js v17 exposes validated execution argument objects so hosts can split
+the execution step without rebuilding GraphQL.js internals. These helpers are
+for code that already has a parsed document and has decided to execute it. A
+complete request pipeline still needs to parse, validate, authorize, execute,
+and serialize results in the places that make sense for the host.
+
+The central types are `ValidatedExecutionArgs` and
+`ValidatedSubscriptionArgs`. The validator functions return one of those
+objects, or a list of `GraphQLError` values that can be returned as the
+operation result. They validate and normalize execution arguments; they do not
+replace operation validation with `validate()`.
+
+## Build a custom `execute()`
+
+`validateExecutionArgs()` checks the schema, selects the operation, coerces
+variables, prepares fragment information, and fills in default resolvers and
+execution options. `executeRootSelectionSet()` then runs the same
+single-result root selection set executor used by `execute()`.
+
+```js
+import { executeRootSelectionSet, validateExecutionArgs } from 'graphql';
+
+function executeWithTiming(args) {
+  const startedAt = Date.now();
+  const validatedArgs = validateExecutionArgs(args);
+
+  if (!('schema' in validatedArgs)) {
+    return { errors: validatedArgs };
+  }
+
+  const result = executeRootSelectionSet(validatedArgs);
+  const addTiming = (executionResult) => {
+    return {
+      ...executionResult,
+      extensions: {
+        ...executionResult.extensions,
+        durationMs: Date.now() - startedAt,
+      },
+    };
+  };
+
+  return typeof result.then === 'function' ? result.then(addTiming) : addTiming(result);
+}
+```
+
+The native `execute()` and `subscribe()` functions preserve synchronous results
+when execution completes synchronously. They do not wrap every result in a
+promise. Custom wrappers that want the same behavior need to handle both the
+synchronous and asynchronous paths, which is why the example returns either an
+`ExecutionResult` or a promise for one.
+
+For incremental delivery, use
+`experimentalExecuteRootSelectionSet(validatedArgs)` instead. It accepts the
+same `ValidatedExecutionArgs` object and returns either an `ExecutionResult` or
+the experimental incremental result shape.
+
+## Build a custom `subscribe()`
+
+`validateSubscriptionArgs()` performs the same base validation and also asserts
+that the selected operation is a subscription. `createSourceEventStream()`
+expects the resulting `ValidatedSubscriptionArgs` object and resolves the
+source event stream from the root subscription field.
+
+```js
+import {
+  createSourceEventStream,
+  mapSourceToResponseEvent,
+  validateSubscriptionArgs,
+} from 'graphql';
+
+function subscribeWithHostPipeline(args) {
+  const validatedArgs = validateSubscriptionArgs(args);
+
+  if (!('schema' in validatedArgs)) {
+    return { errors: validatedArgs };
+  }
+
+  const source = createSourceEventStream(validatedArgs);
+  const mapSource = (sourceEventStream) => {
+    if (
+      sourceEventStream == null ||
+      typeof sourceEventStream[Symbol.asyncIterator] !== 'function'
+    ) {
+      return sourceEventStream;
+    }
+
+    return mapSourceToResponseEvent(validatedArgs, sourceEventStream);
+  };
+
+  return typeof source.then === 'function' ? source.then(mapSource) : mapSource(source);
+}
+```
+
+Subscription execution has two phases:
+
+1. Create the source event stream.
+2. Execute the subscription selection set once for each source event.
+
+`subscribe()` performs both phases for you. The lower-level helpers are useful
+when a host owns one phase directly, for example when source events are
+produced by a broker process and response execution happens in a separate
+worker.
+
+`mapSourceToResponseEvent()` maps each source event into an `ExecutionResult`.
+With two arguments, it uses the default subscription event executor.
+
+## Customize per-event execution
+
+The third argument to `mapSourceToResponseEvent()` is a
+`RootSelectionSetExecutor`. That function receives the validated subscription
+arguments for one source event. It is responsible for executing the
+subscription selection set for that event and returning an `ExecutionResult`,
+or a promise for one.
+
+By default, `mapSourceToResponseEvent()` uses `executeSubscriptionEvent()` as
+that executor. Pass a custom executor when each event needs extra context,
+instrumentation, or execution policy.
+
+```js
+import {
+  createSourceEventStream,
+  executeSubscriptionEvent,
+  mapSourceToResponseEvent,
+  validateSubscriptionArgs,
+} from 'graphql';
+
+const validatedArgs = validateSubscriptionArgs({
+  schema,
+  document,
+  contextValue,
+  variableValues,
+  operationName,
+});
+
+if (!('schema' in validatedArgs)) {
+  return { errors: validatedArgs };
+}
+
+const source = await createSourceEventStream(validatedArgs);
+
+if (source == null || typeof source[Symbol.asyncIterator] !== 'function') {
+  return source;
+}
+
+const stream = mapSourceToResponseEvent(
+  validatedArgs,
+  source,
+  (validatedEventArgs) =>
+    executeSubscriptionEvent({
+      ...validatedEventArgs,
+      contextValue: {
+        requestContext: validatedEventArgs.contextValue,
+        sourceEventStartedAt: Date.now(),
+      },
+    }),
+);
+```
+
+## Choosing the right API
+
+- Use `execute()` or `subscribe()` when the built-in execution behavior is
+  enough.
+- Use [GraphQL Harness](/docs/graphql-harness) when you want to replace the
+  parse, validate, execute, or subscribe phase used by `graphql()`.
+- Use the helpers on this page when you are building a custom execution or
+  subscription function and need the same validated argument objects that
+  GraphQL.js uses internally.
+
+These helpers do not replace request parsing, validation, transport framing, or
+response serialization. They give hosts precise control over the execution
+boundary while keeping GraphQL.js's argument normalization, variable coercion,
+fragment handling, and default resolver behavior intact.

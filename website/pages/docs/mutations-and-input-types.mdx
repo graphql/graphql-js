@@ -201,6 +201,41 @@ Input types can't have fields that are other objects, only basic scalar types, l
 
 Naming input types with `Input` on the end is a useful convention, because you will often want both an input type and an output type that are slightly different for a single conceptual object.
 
+Input object fields can also define defaults for omitted fields. In SDL, use
+the same `= value` syntax as field arguments:
+
+```graphql
+input MessageInput {
+  content: String
+  author: String = "Anonymous"
+}
+```
+
+When constructing input object types in code, GraphQL.js v16 uses
+`defaultValue`:
+
+```js
+const MessageInput = new GraphQLInputObjectType({
+  name: 'MessageInput',
+  fields: {
+    content: { type: GraphQLString },
+    author: { type: GraphQLString, defaultValue: 'Anonymous' },
+  },
+});
+```
+
+`defaultValue` is the legacy way to provide an already-coerced JavaScript
+value. GraphQL.js v17 also supports the new `default: { value }` shape for the
+raw JavaScript input value before coercion; on the built schema, that same case
+is represented as `inputField.default.value`. Keeping the raw value lets
+GraphQL.js validate the default and report it through introspection without
+reconstructing the GraphQL literal from an already-coerced value, which fixes a
+subtle source of incorrect default values for some schemas. If you already have
+a GraphQL literal instead, use `default: { literal }`. GraphQL.js now uses the
+literal form internally when building a schema from SDL. Invalid defaults are
+reported by schema validation instead of waiting until a query happens to use
+that field.
+
 Here's some runnable code that implements this schema, keeping the data in memory:
 
 <Tabs items={['SDL', 'Code']}>
