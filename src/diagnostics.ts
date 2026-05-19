@@ -14,8 +14,8 @@
  * threw or rejected; it does not mean every `GraphQLError` returned by
  * GraphQL.js. Some channels complete normally and publish GraphQL errors on
  * `result`. Resolver errors can appear both as `message.error` on
- * `graphql:resolve` and as formatted errors in an enclosing execution or
- * subscription result. `graphql:parse`, `graphql:validate`, and
+ * `graphql:resolve` or `graphql:resolve:batch` and as formatted errors in an
+ * enclosing execution or subscription result. `graphql:parse`, `graphql:validate`, and
  * `graphql:execute:variableCoercion` are sync-only channels.
  * @category Diagnostics
  */
@@ -246,6 +246,34 @@ export interface GraphQLResolveContext {
   result?: unknown;
 }
 
+/**
+ * Context published on `graphql:resolve:batch`.
+ *
+ * Batch resolver throws and rejections publish the `error` lifecycle event here.
+ * The same failure may also be formatted into the enclosing execution or
+ * subscription result.
+ */
+export interface GraphQLBatchResolveContext {
+  /** Field name being resolved. */
+  fieldName: string;
+  /** Response keys for the field positions in this batch. */
+  responseKeys: ReadonlyArray<string>;
+  /** Parent type name for the fields being resolved. */
+  parentType: string;
+  /** Return type string for the fields being resolved. */
+  fieldType: string;
+  /** Argument values passed to the batch resolver. */
+  args: ObjMap<unknown>;
+  /** Number of active field positions in this batch. */
+  batchSize: number;
+  /** Response paths for the field positions in this batch. */
+  fieldPaths: ReadonlyArray<string>;
+  /** Error thrown or rejected by the batch resolver, when resolution fails. */
+  error?: unknown;
+  /** Value returned by the batch resolver, when resolution succeeds. */
+  result?: unknown;
+}
+
 /** Mapping from tracing channel name to the context type published on it. */
 export interface GraphQLChannelContextByName {
   /** Context published on `graphql:parse`. */
@@ -262,6 +290,8 @@ export interface GraphQLChannelContextByName {
   'graphql:subscribe': GraphQLSubscribeContext;
   /** Context published on `graphql:resolve`. */
   'graphql:resolve': GraphQLResolveContext;
+  /** Context published on `graphql:resolve:batch`. */
+  'graphql:resolve:batch': GraphQLBatchResolveContext;
 }
 
 /**
@@ -283,6 +313,8 @@ export interface GraphQLChannels {
   validate: MinimalTracingChannel<GraphQLValidateContext>;
   /** Tracing channel for `graphql:resolve`. */
   resolve: MinimalTracingChannel<GraphQLResolveContext>;
+  /** Tracing channel for `graphql:resolve:batch`. */
+  resolveBatch: MinimalTracingChannel<GraphQLBatchResolveContext>;
   /** Tracing channel for `graphql:subscribe`. */
   subscribe: MinimalTracingChannel<GraphQLSubscribeContext>;
 }
@@ -348,6 +380,10 @@ export const subscribeChannel:
 export const resolveChannel:
   | MinimalTracingChannel<GraphQLResolveContext>
   | undefined = dc?.tracingChannel('graphql:resolve');
+/** @internal */
+export const resolveBatchChannel:
+  | MinimalTracingChannel<GraphQLBatchResolveContext>
+  | undefined = dc?.tracingChannel('graphql:resolve:batch');
 
 const SUB_CHANNEL_KEYS: ReadonlyArray<
   'start' | 'end' | 'asyncStart' | 'asyncEnd' | 'error'
