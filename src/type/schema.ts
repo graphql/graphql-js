@@ -192,8 +192,10 @@ export class GraphQLSchema {
   /** AST extension nodes applied to this schema element. */
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
 
-  // Used as a cache for validateSchema().
-  /** Cached schema validation errors, if validation has already run. */
+  /**
+   * Cached schema validation errors, if validation has already run.
+   * @internal
+   */
   __validationErrors: Maybe<ReadonlyArray<GraphQLError>>;
 
   private _queryType: Maybe<GraphQLObjectType>;
@@ -298,7 +300,6 @@ export class GraphQLSchema {
    * schema.getType('AuditEvent'); // => AuditEvent
    * schema.getDirective('auth'); // => authDirective
    * schema.extensions; // => { owner: 'platform' }
-   * schema.__validationErrors; // => []
    * ```
    */
   constructor(config: Readonly<GraphQLSchemaConfig>) {
