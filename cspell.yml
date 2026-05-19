@@ -9,6 +9,8 @@ ignorePaths:
   - benchmark/github-schema.json
   - website/icons
   - website/css
+  - website/pages/api-v16
+  - website/pages/api-v17
 overrides:
   - filename: 'eslint.config.*'
     words:
@@ -121,6 +123,8 @@ words:
   - codeofconduct
   - graphqlconf
   - dataloaders
+  - worktree
+  - worktrees
 
   # website words
   - runtimes

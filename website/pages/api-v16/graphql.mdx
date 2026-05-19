@@ -1,180 +1,381 @@
----
-title: graphql
----
+import { ApiSignature, ApiType } from '../../components/ApiCode';
 
-{/* title can be removed in Nextra 4, since sidebar title will take from first h1 */}
+The root `graphql` package re-exports the public GraphQL.js API from its
+submodules and provides the high-level request pipeline helpers defined in
+this module.
 
-# `graphql`
-
-The `graphql` module exports a core subset of GraphQL functionality for creation
-of GraphQL type systems and servers.
-
-```js
-import { graphql } from 'graphql';
-```
-
-## Overview
-
-### Entry Point
-
-<ul className="apiIndex">
-  <li>
-    <a href="#graphql">
-      `function graphql` Lexes, parses, validates, and executes a GraphQL
-      request on a schema.
-    </a>
-  </li>
-</ul>
-
-### Schema
-
-<ul className="apiIndex">
-  <li>
-    <a href="../type/#graphqlschema">
-      `class GraphQLSchema` A representation of the capabilities of a GraphQL
-      Server.
-    </a>
-  </li>
-</ul>
-
-### Type Definitions
-
-<ul className="apiIndex">
-  <li>
-    <a href="../type/#graphqlscalartype">
-      `class GraphQLScalarType` A scalar type within GraphQL.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqlobjecttype">
-      `class GraphQLObjectType` An object type within GraphQL that contains
-      fields.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqlinterfacetype">
-      `class GraphQLInterfaceType` An interface type within GraphQL that defines
-      fields implementations will contain.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqluniontype">
-      `class GraphQLUnionType` A union type within GraphQL that defines a list
-      of implementations.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqlenumtype">
-      `class GraphQLEnumType` An enum type within GraphQL that defines a list of
-      valid values.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqlinputobjecttype">
-      `class GraphQLInputObjectType` An input object type within GraphQL that
-      represents structured inputs.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqllist">
-      `class GraphQLList` A type wrapper around other types that represents a
-      list of those types.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqlnonnull">
-      `class GraphQLNonNull` A type wrapper around other types that represents a
-      non-null version of those types.
-    </a>
-  </li>
-</ul>
-
-### Scalars
-
-<ul className="apiIndex">
-  <li>
-    <a href="../type/#graphqlint">
-      `const GraphQLInt` A scalar type representing integers.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqlfloat">
-      `const GraphQLFloat` A scalar type representing floats.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqlstring">
-      `const GraphQLString` A scalar type representing strings.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqlboolean">
-      `const GraphQLBoolean` A scalar type representing booleans.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqlid">
-      `const GraphQLID` A scalar type representing IDs.
-    </a>
-  </li>
-</ul>
-
-### Errors
-
-<ul className="apiIndex">
-  <li>
-    <a href="../error/#formaterror">
-      `function formatError` Format an error according to the rules described by
-      the Response Format.
-    </a>
-  </li>
-</ul>
-
-## Entry Point
-
-### `graphql`
+You can import public exports from GraphQL.js modules through the root
+`graphql` package or through their module-specific entry point. For example,
+these two references resolve to the same [`parse`](/api-v16/language#parse) function:
 
 ```ts
-function graphql(
-  schema: GraphQLSchema,
-  requestString: string,
-  rootValue?: any,
-  contextValue?: any,
-  variableValues?: { [key: string]: any },
-  operationName?: string,
-): Promise<GraphQLResult>;
-
-interface ExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLError>;
-  data?: TData | null;
-  extensions?: TExtensions;
-}
+import { parse } from 'graphql';
+import { parse } from 'graphql/language';
 ```
 
-The `graphql` function lexes, parses, validates and executes a GraphQL request.
-It requires a `schema` and a `requestString`. Optional arguments include a
-`rootValue`, which will get passed as the root value to the executor, a `contextValue`,
-which will get passed to all resolve functions,
-`variableValues`, which will get passed to the executor to provide values for
-any variables in `requestString`, and `operationName`, which allows the caller
-to specify which operation in `requestString` will be run, in cases where
-`requestString` contains multiple top-level operations.
+Use the root package when you want a single import surface, or use submodules
+such as `graphql/language`, `graphql/type`, `graphql/execution`, and
+`graphql/utilities` when you want module-focused imports. This module also
+defines root-only APIs, such as request pipeline helpers and version
+metadata, that do not belong to a narrower submodule.
 
-## Schema
+For documentation purposes, these exports are grouped into the following categories:
 
-See the [Type System API Reference](/type#schema).
+- [Request Pipeline](/api-v16/graphql#category-request-pipeline)
+- [Version](/api-v16/graphql#category-version)
 
-## Type Definitions
+## Category: Request Pipeline
 
-See the [Type System API Reference](/type#definitions).
+<div className="api-category-toc">
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v16/graphql#graphql">graphql()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/graphql#graphqlsync">graphqlSync()</a>
+  </p>
+  <p>
+    <strong>Types:</strong><br />
+    <a href="/api-v16/graphql#graphqlargs">GraphQLArgs</a>
+  </p>
+</div>
 
-## Scalars
+### Functions
 
-See the [Type System API Reference](/type#scalars).
+#### graphql()
 
-## Errors
+Parses, validates, and executes a GraphQL document against a schema.
 
-See the [Errors API Reference](/error)
+This is the primary entry point for fulfilling GraphQL operations. Use this
+when you want a single-call request lifecycle that returns a promise in all
+cases.
+
+More sophisticated GraphQL servers, such as those which persist queries, may
+wish to separate the validation and execution phases to a static-time tooling
+step and a server runtime step.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "graphql"], "(\n  ", ["parameter", "args"], ": ", ["link", "GraphQLArgs", "/api-v16/graphql#graphqlargs"], ",\n): ", ["type", "Promise"], "\u003c", ["link", "ExecutionResult", "/api-v16/execution#executionresult"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>args</td>
+      <td><ApiType parts={[["link", "GraphQLArgs", "/api-v16/graphql#graphqlargs"]]} /></td>
+      <td>Request execution arguments, including schema and source.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "Promise"], "\u003c", ["link", "ExecutionResult", "/api-v16/execution#executionresult"], "\u003e"]} /></td>
+      <td>A promise that resolves to an execution result or validation errors.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Execute a complete asynchronous request with variables.
+import { graphql, buildSchema } from 'graphql';
+
+const schema = buildSchema(`
+  type Query {
+    greeting(name: String!): String
+  }
+`);
+
+const result = await graphql({
+  schema,
+  source: 'query SayHello($name: String!) { greeting(name: $name) }',
+  rootValue: {
+    greeting: ({ name }) => `Hello, ${name}!`,
+  },
+  variableValues: { name: 'Ada' },
+  operationName: 'SayHello',
+});
+
+result; // => { data: { greeting: 'Hello, Ada!' } }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant supplies context plus custom field and type resolvers.
+import { graphql, buildSchema } from 'graphql';
+
+const schema = buildSchema(`
+  interface Named {
+    name: String!
+  }
+
+  type User implements Named {
+    name: String!
+  }
+
+  type Query {
+    viewer: Named
+  }
+`);
+
+const result = await graphql({
+  schema,
+  source: '{ viewer { __typename name } }',
+  rootValue: { viewer: { kind: 'user', name: 'Ada' } },
+  contextValue: { locale: 'en' },
+  fieldResolver: (source, _args, context, info) => {
+    context.locale; // => 'en'
+    return source[info.fieldName];
+  },
+  typeResolver: (value) => {
+    return value.kind === 'user' ? 'User' : undefined;
+  },
+});
+
+result; // => { data: { viewer: { __typename: 'User', name: 'Ada' } } }
+```
+
+<hr className="api-item-divider" />
+
+#### graphqlSync()
+
+Parses, validates, and executes a GraphQL document synchronously.
+
+This function guarantees that execution completes synchronously, or throws an
+error, assuming that all field resolvers are also synchronous. It throws when
+any resolver returns a promise.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "graphqlSync"], "(\n  ", ["parameter", "args"], ": ", ["link", "GraphQLArgs", "/api-v16/graphql#graphqlargs"], ",\n): ", ["link", "ExecutionResult", "/api-v16/execution#executionresult"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>args</td>
+      <td><ApiType parts={[["link", "GraphQLArgs", "/api-v16/graphql#graphqlargs"]]} /></td>
+      <td>Request execution arguments, including schema and source.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ExecutionResult", "/api-v16/execution#executionresult"]]} /></td>
+      <td>Completed execution output, or request errors if parsing or<br />
+validation fails.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Execute a complete synchronous request with variables.
+import { graphqlSync, buildSchema } from 'graphql';
+
+const schema = buildSchema(`
+  type Query {
+    greeting(name: String!): String
+  }
+`);
+
+const result = graphqlSync({
+  schema,
+  source: 'query SayHello($name: String!) { greeting(name: $name) }',
+  rootValue: {
+    greeting: ({ name }) => `Hello, ${name}!`,
+  },
+  variableValues: { name: 'Ada' },
+  operationName: 'SayHello',
+});
+
+result; // => { data: { greeting: 'Hello, Ada!' } }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant uses a synchronous custom field resolver and context.
+import { graphqlSync, buildSchema } from 'graphql';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+
+const result = graphqlSync({
+  schema,
+  source: '{ greeting }',
+  fieldResolver: (_source, _args, contextValue) => {
+    return contextValue.defaultGreeting;
+  },
+  contextValue: { defaultGreeting: 'Hello' },
+});
+
+result; // => { data: { greeting: 'Hello' } }
+```
+
+### Types
+
+#### GraphQLArgs
+
+**Interface.** Describes the input object accepted by `graphql` and [`graphqlSync`](/api-v16/graphql#graphqlsync).
+
+These arguments describe the full parse, validate, and execute lifecycle for
+a GraphQL request.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td>The GraphQL type system to use when validating and executing a query.</td>
+    </tr>
+    <tr>
+      <td>source</td>
+      <td><ApiType parts={[["keyword", "string"], " \u007c ", ["link", "Source", "/api-v16/language#source"]]} /></td>
+      <td>A GraphQL language-formatted string or source object representing the<br />
+requested operation.</td>
+    </tr>
+    <tr>
+      <td>rootValue?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>The value provided as the first argument to resolver functions on the top<br />
+level type, such as the query object type.</td>
+    </tr>
+    <tr>
+      <td>contextValue?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Application context value passed to every resolver.<br />
+Use this for shared request data such as the currently logged in user and<br />
+connections to databases or other services.</td>
+    </tr>
+    <tr>
+      <td>variableValues?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c\u007b\n  ", ["keyword", "readonly"], " [", ["parameter", "variable"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], ";\n\u007d\u003e"]} /></td>
+      <td>A mapping of variable name to runtime value for variables defined by the operation.</td>
+    </tr>
+    <tr>
+      <td>operationName?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "string"], "\u003e"]} /></td>
+      <td>The operation to execute when the source contains multiple possible<br />
+operations. This can be omitted when the source contains only one operation.</td>
+    </tr>
+    <tr>
+      <td>fieldResolver?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLFieldResolver", "/api-v16/type#graphqlfieldresolver"], "\u003c", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\u003e"]} /></td>
+      <td>A resolver function to use when one is not provided by the schema.<br />
+If not provided, the default field resolver is used, which looks for a value<br />
+or method on the source value with the field's name.</td>
+    </tr>
+    <tr>
+      <td>typeResolver?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLTypeResolver", "/api-v16/type#graphqltyperesolver"], "\u003c", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\u003e"]} /></td>
+      <td>A type resolver function to use when none is provided by the schema.<br />
+If not provided, the default type resolver is used, which looks for a<br />
+<code>{"__typename"}</code> field or alternatively calls the <code>{"isTypeOf"}</code> method.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Category: Version
+
+<div className="api-category-toc">
+  <p>
+    <strong>Constants:</strong><br />
+    <a href="/api-v16/graphql#version">version</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/graphql#versioninfo">versionInfo</a>
+  </p>
+</div>
+
+### Constants
+
+#### version
+
+A string containing the version of the GraphQL.js library
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type</div>
+
+<ApiType parts={[["keyword", "string"]]} />
+
+<hr className="api-item-divider" />
+
+#### versionInfo
+
+An object containing the components of the GraphQL.js version string
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type</div>
+
+<ApiType parts={[["type", "Readonly"], "\u003c\u007b\n  ", ["property", "major"], ": ", ["keyword", "number"], ";\n  ", ["property", "minor"], ": ", ["keyword", "number"], ";\n  ", ["property", "patch"], ": ", ["keyword", "number"], ";\n  ", ["property", "preReleaseTag"], ": ", ["keyword", "string"], " \u007c ", ["keyword", "null"], ";\n\u007d\u003e"]} />

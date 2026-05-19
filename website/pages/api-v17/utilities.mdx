@@ -7,29 +7,28 @@ These exports are also available from the root `graphql` package.
 
 For documentation purposes, these exports are grouped into the following categories:
 
-- [Type Info](/api-v16/utilities#category-type-info)
-- [Validation](/api-v16/utilities#category-validation)
-- [Values](/api-v16/utilities#category-values)
-- [Schema Construction](/api-v16/utilities#category-schema-construction)
-- [Introspection](/api-v16/utilities#category-introspection)
-- [AST Utilities](/api-v16/utilities#category-ast-utilities)
-- [Schema Changes](/api-v16/utilities#category-schema-changes)
-- [Operations](/api-v16/utilities#category-operations)
-- [Schema Printing](/api-v16/utilities#category-schema-printing)
-- [Schema Coordinates](/api-v16/utilities#category-schema-coordinates)
-- [Type Comparisons](/api-v16/utilities#category-type-comparisons)
-- [Typed Documents](/api-v16/utilities#category-typed-documents)
+- [Type Info](/api-v17/utilities#category-type-info)
+- [Values](/api-v17/utilities#category-values)
+- [Schema Construction](/api-v17/utilities#category-schema-construction)
+- [Introspection](/api-v17/utilities#category-introspection)
+- [AST Utilities](/api-v17/utilities#category-ast-utilities)
+- [Schema Changes](/api-v17/utilities#category-schema-changes)
+- [Operations](/api-v17/utilities#category-operations)
+- [Schema Printing](/api-v17/utilities#category-schema-printing)
+- [Schema Coordinates](/api-v17/utilities#category-schema-coordinates)
+- [Type Comparisons](/api-v17/utilities#category-type-comparisons)
+- [Typed Documents](/api-v17/utilities#category-typed-documents)
 
 ## Category: Type Info
 
 <div className="api-category-toc">
   <p>
     <strong>Classes:</strong><br />
-    <a href="/api-v16/utilities#typeinfo">TypeInfo</a>
+    <a href="/api-v17/utilities#typeinfo">TypeInfo</a>
   </p>
   <p>
     <strong>Functions:</strong><br />
-    <a href="/api-v16/utilities#visitwithtypeinfo">visitWithTypeInfo()</a>
+    <a href="/api-v17/utilities#visitwithtypeinfo">visitWithTypeInfo()</a>
   </p>
 </div>
 
@@ -49,7 +48,7 @@ Creates a TypeInfo instance.
 
 **Signature:**
 
-<ApiSignature parts={[["keyword", "new"], " ", ["name", "TypeInfo"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n  ", ["parameter", "initialType"], "?: ", ["type", "Maybe"], "\u003c", ["link", "GraphQLType", "/api-v16/type#graphqltype"], "\u003e,\n  ", ["parameter", "getFieldDefFn"], "?: (\n    ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n    ", ["parameter", "parentType"], ": ", ["link", "GraphQLType", "/api-v16/type#graphqltype"], ",\n    ", ["parameter", "fieldNode"], ": ", ["link", "FieldNode", "/api-v16/language#fieldnode"], ",\n  ) =\u003e ", ["type", "Maybe"], "\u003c", ["link", "GraphQLField", "/api-v16/type#graphqlfield"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e\u003e,\n);"]} />
+<ApiSignature parts={[["keyword", "new"], " ", ["name", "TypeInfo"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n  ", ["parameter", "initialType"], "?: ", ["type", "Maybe"], "\u003c", ["link", "GraphQLType", "/api-v17/type#graphqltype"], "\u003e,\n  ", ["parameter", "fragmentSignatures"], "?: ", ["type", "Maybe"], "\u003c\n    (\n      ", ["parameter", "fragmentName"], ": ", ["keyword", "string"], ",\n    ) =\u003e ", ["type", "Maybe"], "\u003c", ["type", "FragmentSignature"], "\u003e\n  \u003e,\n);"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -66,18 +65,18 @@ Creates a TypeInfo instance.
   <tbody>
     <tr>
       <td>schema</td>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
       <td>Schema used for type lookups.</td>
     </tr>
     <tr>
       <td>initialType?</td>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLType", "/api-v16/type#graphqltype"], "\u003e"]} /></td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLType", "/api-v17/type#graphqltype"], "\u003e"]} /></td>
       <td>Optional type to use at the start of traversal.</td>
     </tr>
     <tr>
-      <td>getFieldDefFn?</td>
-      <td><ApiType parts={["(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n  ", ["parameter", "parentType"], ": ", ["link", "GraphQLType", "/api-v16/type#graphqltype"], ",\n  ", ["parameter", "fieldNode"], ": ", ["link", "FieldNode", "/api-v16/language#fieldnode"], ",\n) =\u003e ", ["type", "Maybe"], "\u003c", ["link", "GraphQLField", "/api-v16/type#graphqlfield"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e\u003e"]} /></td>
-      <td>Optional field definition lookup override.</td>
+      <td>fragmentSignatures?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c\n  (", ["parameter", "fragmentName"], ": ", ["keyword", "string"], ") =\u003e ", ["type", "Maybe"], "\u003c", ["type", "FragmentSignature"], "\u003e\n\u003e"]} /></td>
+      <td>Fragment signatures available during traversal.</td>
     </tr>
   </tbody>
 </table>
@@ -88,7 +87,7 @@ Returns the current output type at this point in traversal.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "getType"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLOutputType", "/api-v16/type#graphqloutputtype"], "\u003e;"]} />
+<ApiSignature parts={[["name", "getType"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLOutputType", "/api-v17/type#graphqloutputtype"], "\u003e;"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -103,7 +102,7 @@ Returns the current output type at this point in traversal.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLOutputType", "/api-v16/type#graphqloutputtype"], "\u003e"]} /></td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLOutputType", "/api-v17/type#graphqloutputtype"], "\u003e"]} /></td>
       <td>The current output type, if known.</td>
     </tr>
   </tbody>
@@ -149,7 +148,7 @@ Returns the current parent composite type.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "getParentType"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLCompositeType", "/api-v16/type#graphqlcompositetype"], "\u003e;"]} />
+<ApiSignature parts={[["name", "getParentType"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLCompositeType", "/api-v17/type#graphqlcompositetype"], "\u003e;"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -164,7 +163,7 @@ Returns the current parent composite type.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLCompositeType", "/api-v16/type#graphqlcompositetype"], "\u003e"]} /></td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLCompositeType", "/api-v17/type#graphqlcompositetype"], "\u003e"]} /></td>
       <td>The current parent composite type, if known.</td>
     </tr>
   </tbody>
@@ -210,7 +209,7 @@ Returns the current input type at this point in traversal.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "getInputType"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"], "\u003e;"]} />
+<ApiSignature parts={[["name", "getInputType"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], "\u003e;"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -225,7 +224,7 @@ Returns the current input type at this point in traversal.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"], "\u003e"]} /></td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], "\u003e"]} /></td>
       <td>The current input type, if known.</td>
     </tr>
   </tbody>
@@ -272,7 +271,7 @@ Returns the parent input type for the current input position.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "getParentInputType"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"], "\u003e;"]} />
+<ApiSignature parts={[["name", "getParentInputType"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], "\u003e;"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -287,7 +286,7 @@ Returns the parent input type for the current input position.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"], "\u003e"]} /></td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], "\u003e"]} /></td>
       <td>The parent input type, if known.</td>
     </tr>
   </tbody>
@@ -333,7 +332,7 @@ Returns the current field definition.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "getFieldDef"], "(): ", ["type", "Maybe"], "\u003c\n  ", ["link", "GraphQLField", "/api-v16/type#graphqlfield"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e\n\u003e;"]} />
+<ApiSignature parts={[["name", "getFieldDef"], "(): ", ["type", "Maybe"], "\u003c\n  ", ["link", "GraphQLField", "/api-v17/type#graphqlfield"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e\n\u003e;"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -348,7 +347,7 @@ Returns the current field definition.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLField", "/api-v16/type#graphqlfield"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e\u003e"]} /></td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLField", "/api-v17/type#graphqlfield"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e\u003e"]} /></td>
       <td>The current field definition, if known.</td>
     </tr>
   </tbody>
@@ -386,7 +385,7 @@ fieldName; // => 'greeting'
 
 ##### getDefaultValue()
 
-Returns the default value for the current input position.
+Returns the default input representation for the current input position.
 
 **Signature:**
 
@@ -406,7 +405,7 @@ Returns the default value for the current input position.
   <tbody>
     <tr>
       <td><ApiType parts={[["keyword", "unknown"]]} /></td>
-      <td>The current default value, if one is available.</td>
+      <td>The current default input, if one is available.</td>
     </tr>
   </tbody>
 </table>
@@ -436,7 +435,7 @@ visit(
   }),
 );
 
-defaultLimit; // => 10
+defaultLimit; // => { literal: { kind: 'IntValue', value: '10' } }
 ```
 
 <hr className="api-subsection-divider" />
@@ -447,7 +446,7 @@ Returns the current directive definition.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "getDirective"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLDirective", "/api-v16/type#graphqldirective"], "\u003e;"]} />
+<ApiSignature parts={[["name", "getDirective"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLDirective", "/api-v17/type#graphqldirective"], "\u003e;"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -462,7 +461,7 @@ Returns the current directive definition.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLDirective", "/api-v16/type#graphqldirective"], "\u003e"]} /></td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLDirective", "/api-v17/type#graphqldirective"], "\u003e"]} /></td>
       <td>The current directive definition, if known.</td>
     </tr>
   </tbody>
@@ -504,7 +503,7 @@ Returns the current argument definition.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "getArgument"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLArgument", "/api-v16/type#graphqlargument"], "\u003e;"]} />
+<ApiSignature parts={[["name", "getArgument"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLArgument", "/api-v17/type#graphqlargument"], "\u003e;"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -519,7 +518,7 @@ Returns the current argument definition.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLArgument", "/api-v16/type#graphqlargument"], "\u003e"]} /></td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLArgument", "/api-v17/type#graphqlargument"], "\u003e"]} /></td>
       <td>The current argument definition, if known.</td>
     </tr>
   </tbody>
@@ -555,13 +554,13 @@ argumentName; // => 'limit'
 
 <hr className="api-subsection-divider" />
 
-##### getEnumValue()
+##### getFragmentSignature()
 
-Returns the current enum value definition.
+Returns the current fragment signature.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "getEnumValue"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLEnumValue", "/api-v16/type#graphqlenumvalue"], "\u003e;"]} />
+<ApiSignature parts={[["name", "getFragmentSignature"], "(): ", ["type", "Maybe"], "\u003c", ["type", "FragmentSignature"], "\u003e;"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -576,7 +575,216 @@ Returns the current enum value definition.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLEnumValue", "/api-v16/type#graphqlenumvalue"], "\u003e"]} /></td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["type", "FragmentSignature"], "\u003e"]} /></td>
+      <td>The fragment signature for the current fragment definition.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse(
+  `
+    {
+      ...GreetingFields
+    }
+
+    fragment GreetingFields on Query {
+      greeting
+    }
+  `,
+  { experimentalFragmentArguments: true },
+);
+const typeInfo = new TypeInfo(schema);
+let fragmentName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    FragmentSpread: () => {
+      fragmentName = typeInfo.getFragmentSignature()?.definition.name.value;
+    },
+  }),
+);
+
+fragmentName; // => 'GreetingFields'
+```
+
+<hr className="api-subsection-divider" />
+
+##### getFragmentSignatureByName()
+
+Returns the function used to look up fragment signatures by name.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getFragmentSignatureByName"], "(): (\n  ", ["parameter", "fragmentName"], ": ", ["keyword", "string"], ",\n) =\u003e ", ["type", "Maybe"], "\u003c", ["type", "FragmentSignature"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={["(\n  ", ["parameter", "fragmentName"], ": ", ["keyword", "string"], ",\n) =\u003e ", ["type", "Maybe"], "\u003c", ["type", "FragmentSignature"], "\u003e"]} /></td>
+      <td>A function that maps fragment names to fragment signatures.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse(
+  `
+    {
+      ...GreetingFields
+    }
+
+    fragment GreetingFields on Query {
+      greeting
+    }
+  `,
+  { experimentalFragmentArguments: true },
+);
+const typeInfo = new TypeInfo(schema);
+let fragmentName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    Document: () => {
+      const getFragmentSignature = typeInfo.getFragmentSignatureByName();
+      fragmentName =
+        getFragmentSignature('GreetingFields')?.definition.name.value;
+    },
+  }),
+);
+
+fragmentName; // => 'GreetingFields'
+```
+
+<hr className="api-subsection-divider" />
+
+##### getFragmentArgument()
+
+Returns the current fragment argument definition.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getFragmentArgument"], "(): ", ["type", "Maybe"], "\u003c", ["link", "VariableDefinitionNode", "/api-v17/language#variabledefinitionnode"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "VariableDefinitionNode", "/api-v17/language#variabledefinitionnode"], "\u003e"]} /></td>
+      <td>The variable definition for the current fragment argument.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting(name: String): String
+  }
+`);
+const document = parse(
+  `
+    {
+      ...GreetingFields(name: "Ada")
+    }
+
+    fragment GreetingFields($name: String) on Query {
+      greeting(name: $name)
+    }
+  `,
+  { experimentalFragmentArguments: true },
+);
+const typeInfo = new TypeInfo(schema);
+let argumentName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    FragmentArgument: () => {
+      argumentName = typeInfo.getFragmentArgument()?.variable.name.value;
+    },
+  }),
+);
+
+argumentName; // => 'name'
+```
+
+<hr className="api-subsection-divider" />
+
+##### getEnumValue()
+
+Returns the current enum value definition.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getEnumValue"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLEnumValue", "/api-v17/type#graphqlenumvalue"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLEnumValue", "/api-v17/type#graphqlenumvalue"], "\u003e"]} /></td>
       <td>The current enum value definition, if known.</td>
     </tr>
   </tbody>
@@ -623,7 +831,7 @@ Updates this TypeInfo instance for an entered AST node.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "enter"], "(", ["parameter", "node"], ": ", ["link", "ASTNode", "/api-v16/language#astnode"], "): ", ["keyword", "void"], ";"]} />
+<ApiSignature parts={[["name", "enter"], "(", ["parameter", "node"], ": ", ["link", "ASTNode", "/api-v17/language#astnode"], "): ", ["keyword", "void"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -640,7 +848,7 @@ Updates this TypeInfo instance for an entered AST node.
   <tbody>
     <tr>
       <td>node</td>
-      <td><ApiType parts={[["link", "ASTNode", "/api-v16/language#astnode"]]} /></td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v17/language#astnode"]]} /></td>
       <td>AST node being entered.</td>
     </tr>
   </tbody>
@@ -682,7 +890,7 @@ Updates this TypeInfo instance for a left AST node.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "leave"], "(", ["parameter", "node"], ": ", ["link", "ASTNode", "/api-v16/language#astnode"], "): ", ["keyword", "void"], ";"]} />
+<ApiSignature parts={[["name", "leave"], "(", ["parameter", "node"], ": ", ["link", "ASTNode", "/api-v17/language#astnode"], "): ", ["keyword", "void"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -699,7 +907,7 @@ Updates this TypeInfo instance for a left AST node.
   <tbody>
     <tr>
       <td>node</td>
-      <td><ApiType parts={[["link", "ASTNode", "/api-v16/language#astnode"]]} /></td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v17/language#astnode"]]} /></td>
       <td>AST node being entered.</td>
     </tr>
   </tbody>
@@ -742,7 +950,7 @@ along with visiting visitor.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "visitWithTypeInfo"], "(\n  ", ["parameter", "typeInfo"], ": ", ["link", "TypeInfo", "/api-v16/utilities#typeinfo"], ",\n  ", ["parameter", "visitor"], ": ", ["link", "ASTVisitor", "/api-v16/language#astvisitor"], ",\n): ", ["link", "ASTVisitor", "/api-v16/language#astvisitor"], ";"]} />
+<ApiSignature parts={[["name", "visitWithTypeInfo"], "(\n  ", ["parameter", "typeInfo"], ": ", ["link", "TypeInfo", "/api-v17/utilities#typeinfo"], ",\n  ", ["parameter", "visitor"], ": ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -759,12 +967,12 @@ along with visiting visitor.
   <tbody>
     <tr>
       <td>typeInfo</td>
-      <td><ApiType parts={[["link", "TypeInfo", "/api-v16/utilities#typeinfo"]]} /></td>
+      <td><ApiType parts={[["link", "TypeInfo", "/api-v17/utilities#typeinfo"]]} /></td>
       <td>TypeInfo instance to update during traversal.</td>
     </tr>
     <tr>
       <td>visitor</td>
-      <td><ApiType parts={[["link", "ASTVisitor", "/api-v16/language#astvisitor"]]} /></td>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
       <td>Visitor callbacks to wrap with TypeInfo updates.</td>
     </tr>
   </tbody>
@@ -783,7 +991,7 @@ along with visiting visitor.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["link", "ASTVisitor", "/api-v16/language#astvisitor"]]} /></td>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
       <td>A visitor that keeps TypeInfo in sync while delegating callbacks.</td>
     </tr>
   </tbody>
@@ -821,163 +1029,34 @@ visit(
 fields; // => [{ name: 'greeting', parentType: 'Query', type: 'String' }]
 ```
 
-## Category: Validation
-
-<div className="api-category-toc">
-  <p>
-    <strong>Functions:</strong><br />
-    <a href="/api-v16/utilities#assertvalidname">assertValidName()</a>
-    <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#isvalidnameerror">isValidNameError()</a>
-  </p>
-</div>
-
-### Functions
-
-#### assertValidName() <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
-
-Upholds the spec rules about naming. This deprecated helper is retained for
-backwards compatibility; call [`assertName`](/api-v16/type#assertname) instead because assertValidName
-will be removed in v17.
-
-**Signature:**
-
-<ApiSignature parts={[["name", "assertValidName"], "(", ["parameter", "name"], ": ", ["keyword", "string"], "): ", ["keyword", "string"], ";"]} />
-
-<hr className="api-subsection-divider" />
-
-<div className="api-subsection-title">Arguments</div>
-
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>name</td>
-      <td><ApiType parts={[["keyword", "string"]]} /></td>
-      <td>The GraphQL name to validate.</td>
-    </tr>
-  </tbody>
-</table>
-
-<hr className="api-subsection-divider" />
-
-<div className="api-subsection-title">Returns</div>
-
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><ApiType parts={[["keyword", "string"]]} /></td>
-      <td>The validated GraphQL name.</td>
-    </tr>
-  </tbody>
-</table>
-
-<hr className="api-subsection-divider" />
-
-<div className="api-subsection-title">Example</div>
-
-```ts
-import { assertValidName } from 'graphql/utilities';
-
-assertValidName('User'); // => 'User'
-assertValidName('__typename'); // throws an error
-```
-
-<hr className="api-item-divider" />
-
-#### isValidNameError() <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
-
-Returns an Error if a name is invalid. This deprecated helper is retained for
-backwards compatibility; call [`assertName`](/api-v16/type#assertname) and catch the thrown GraphQLError
-instead because isValidNameError will be removed in v17.
-
-**Signature:**
-
-<ApiSignature parts={[["name", "isValidNameError"], "(\n  ", ["parameter", "name"], ": ", ["keyword", "string"], ",\n): ", ["link", "GraphQLError", "/api-v16/error#graphqlerror"], " \u007c ", ["keyword", "undefined"], ";"]} />
-
-<hr className="api-subsection-divider" />
-
-<div className="api-subsection-title">Arguments</div>
-
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>name</td>
-      <td><ApiType parts={[["keyword", "string"]]} /></td>
-      <td>The GraphQL name to validate.</td>
-    </tr>
-  </tbody>
-</table>
-
-<hr className="api-subsection-divider" />
-
-<div className="api-subsection-title">Returns</div>
-
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><ApiType parts={[["link", "GraphQLError", "/api-v16/error#graphqlerror"], " \u007c ", ["keyword", "undefined"]]} /></td>
-      <td>A GraphQLError if the name is invalid; otherwise undefined.</td>
-    </tr>
-  </tbody>
-</table>
-
-<hr className="api-subsection-divider" />
-
-<div className="api-subsection-title">Example</div>
-
-```ts
-import { isValidNameError } from 'graphql/utilities';
-
-isValidNameError('User'); // => undefined
-
-const error = isValidNameError('__typename');
-error.message; // => 'Name "__typename" must not begin with "__", which is reserved by GraphQL introspection.'
-```
-
 ## Category: Values
 
 <div className="api-category-toc">
   <p>
     <strong>Functions:</strong><br />
-    <a href="/api-v16/utilities#astfromvalue">astFromValue()</a>
+    <a href="/api-v17/utilities#astfromvalue">astFromValue()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#coerceinputvalue">coerceInputValue()</a>
+    <a href="/api-v17/utilities#coerceinputvalue">coerceInputValue()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#valuefromast">valueFromAST()</a>
+    <a href="/api-v17/utilities#coerceinputliteral">coerceInputLiteral()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#valuefromastuntyped">valueFromASTUntyped()</a>
+    <a href="/api-v17/utilities#replacevariables">replaceVariables()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#validateinputvalue">validateInputValue()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#validateinputliteral">validateInputLiteral()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#valuefromast">valueFromAST()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#valuefromastuntyped">valueFromASTUntyped()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#valuetoliteral">valueToLiteral()</a>
   </p>
 </div>
 
 ### Functions
 
-#### astFromValue()
+#### astFromValue() <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
 
 Produces a GraphQL Value AST given a JavaScript object.
 Function will match JavaScript/JSON values to GraphQL AST schema format
@@ -986,6 +1065,9 @@ by using suggested GraphQLInputType.
 A GraphQL type must be provided, which will be used to interpret different
 JavaScript values.
 
+This deprecated function will be removed in v18. Use `valueToLiteral()`
+instead, and take care to operate on external values.
+
 | JSON Value    | GraphQL Value        |
 | ------------- | -------------------- |
 | Object        | Input Object         |
@@ -993,12 +1075,13 @@ JavaScript values.
 | Boolean       | Boolean              |
 | String        | String / Enum Value  |
 | Number        | Int / Float          |
+| BigInt        | Int                  |
 | Unknown       | Enum Value           |
 | null          | NullValue            |
 
 **Signature:**
 
-<ApiSignature parts={[["name", "astFromValue"], "(\n  ", ["parameter", "value"], ": ", ["keyword", "unknown"], ",\n  ", ["parameter", "type"], ": ", ["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"], ",\n): ", ["type", "Maybe"], "\u003c", ["link", "ValueNode", "/api-v16/language#valuenode"], "\u003e;"]} />
+<ApiSignature parts={[["name", "astFromValue"], "(\n  ", ["parameter", "value"], ": ", ["keyword", "unknown"], ",\n  ", ["parameter", "type"], ": ", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], ",\n): ", ["type", "Maybe"], "\u003c", ["link", "ConstValueNode", "/api-v17/language#constvaluenode"], "\u003e;"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -1020,7 +1103,7 @@ JavaScript values.
     </tr>
     <tr>
       <td>type</td>
-      <td><ApiType parts={[["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"]]} /></td>
       <td>The GraphQL type to inspect.</td>
     </tr>
   </tbody>
@@ -1039,7 +1122,7 @@ JavaScript values.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "ValueNode", "/api-v16/language#valuenode"], "\u003e"]} /></td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "ConstValueNode", "/api-v17/language#constvaluenode"], "\u003e"]} /></td>
       <td>A GraphQL value AST for the provided JavaScript value, or null when no literal can represent it.</td>
     </tr>
   </tbody>
@@ -1084,9 +1167,13 @@ astFromValue(null, new GraphQLNonNull(GraphQLString)); // => null
 
 Coerces a JavaScript value given a GraphQL Input Type.
 
+Returns `undefined` when the value could not be validly coerced according to
+the provided type. Use [`validateInputValue`](/api-v17/utilities#validateinputvalue) when coercion diagnostics
+are needed.
+
 **Signature:**
 
-<ApiSignature parts={[["name", "coerceInputValue"], "(\n  ", ["parameter", "inputValue"], ": ", ["keyword", "unknown"], ",\n  ", ["parameter", "type"], ": ", ["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"], ",\n  ", ["parameter", "onError"], ": (\n    ", ["parameter", "path"], ": ", ["type", "ReadonlyArray"], "\u003c", ["keyword", "string"], " \u007c ", ["keyword", "number"], "\u003e,\n    ", ["parameter", "invalidValue"], ": ", ["keyword", "unknown"], ",\n    ", ["parameter", "error"], ": ", ["link", "GraphQLError", "/api-v16/error#graphqlerror"], ",\n  ) =\u003e ", ["keyword", "void"], " = defaultOnError,\n): ", ["keyword", "unknown"], ";"]} />
+<ApiSignature parts={[["name", "coerceInputValue"], "(\n  ", ["parameter", "inputValue"], ": ", ["keyword", "unknown"], ",\n  ", ["parameter", "type"], ": ", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], ",\n): ", ["keyword", "unknown"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -1097,7 +1184,6 @@ Coerces a JavaScript value given a GraphQL Input Type.
     <tr>
       <th>Name</th>
       <th>Type</th>
-      <th>Default</th>
       <th>Description</th>
     </tr>
   </thead>
@@ -1105,20 +1191,12 @@ Coerces a JavaScript value given a GraphQL Input Type.
     <tr>
       <td>inputValue</td>
       <td><ApiType parts={[["keyword", "unknown"]]} /></td>
-      <td></td>
       <td>JavaScript value to coerce.</td>
     </tr>
     <tr>
       <td>type</td>
-      <td><ApiType parts={[["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"]]} /></td>
-      <td></td>
+      <td><ApiType parts={[["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"]]} /></td>
       <td>GraphQL input type to coerce the value against.</td>
-    </tr>
-    <tr>
-      <td>onError</td>
-      <td><ApiType parts={["(\n  ", ["parameter", "path"], ": ", ["type", "ReadonlyArray"], "\u003c", ["keyword", "string"], " \u007c ", ["keyword", "number"], "\u003e,\n  ", ["parameter", "invalidValue"], ": ", ["keyword", "unknown"], ",\n  ", ["parameter", "error"], ": ", ["link", "GraphQLError", "/api-v16/error#graphqlerror"], ",\n) =\u003e ", ["keyword", "void"]]} /></td>
-      <td><ApiType parts={["defaultOnError"]} /></td>
-      <td>Callback invoked for each coercion error.</td>
     </tr>
   </tbody>
 </table>
@@ -1137,17 +1215,17 @@ Coerces a JavaScript value given a GraphQL Input Type.
   <tbody>
     <tr>
       <td><ApiType parts={[["keyword", "unknown"]]} /></td>
-      <td>Coerced value, or undefined if coercion failed and errors were reported.</td>
+      <td>Coerced value, or undefined if coercion fails.</td>
     </tr>
   </tbody>
 </table>
 
 <hr className="api-subsection-divider" />
 
-<div className="api-subsection-title">Example 1</div>
+<div className="api-subsection-title">Example</div>
 
 ```ts
-// Coerce runtime input values and throw on invalid input by default.
+// Coerce runtime input values, returning undefined when coercion fails.
 import {
   GraphQLInputObjectType,
   GraphQLInt,
@@ -1166,56 +1244,21 @@ const ReviewInput = new GraphQLInputObjectType({
 });
 
 coerceInputValue({ stars: '5', tags: ['featured'] }, ReviewInput); // => { stars: 5, tags: ['featured'] }
-coerceInputValue({ stars: 'bad' }, ReviewInput); // throws an error
-```
-
-<hr className="api-subsection-divider" />
-
-<div className="api-subsection-title">Example 2</div>
-
-```ts
-// This variant collects coercion errors with a custom onError callback.
-import { GraphQLInt, GraphQLNonNull } from 'graphql/type';
-import { coerceInputValue } from 'graphql/utilities';
-
-const errors = [];
-const value = coerceInputValue(
-  null,
-  new GraphQLNonNull(GraphQLInt),
-  (path, invalidValue, error) => {
-    errors.push({ path, invalidValue, message: error.message });
-  },
-);
-
-value; // => undefined
-errors; // => [ { path: [], invalidValue: null, message: 'Expected non-nullable type "Int!" not to be null.' } ]
+coerceInputValue({ stars: 'bad' }, ReviewInput); // => undefined
 ```
 
 <hr className="api-item-divider" />
 
-#### valueFromAST()
+#### coerceInputLiteral()
 
-Produces a JavaScript value given a GraphQL Value AST.
-
-A GraphQL type must be provided, which will be used to interpret different
-GraphQL Value literals.
+Produces a coerced "internal" JavaScript value given a GraphQL Value AST.
 
 Returns `undefined` when the value could not be validly coerced according to
 the provided type.
 
-| GraphQL Value        | JSON Value    |
-| -------------------- | ------------- |
-| Input Object         | Object        |
-| List                 | Array         |
-| Boolean              | Boolean       |
-| String               | String        |
-| Int / Float          | Number        |
-| Enum Value           | Unknown       |
-| NullValue            | null          |
-
 **Signature:**
 
-<ApiSignature parts={[["name", "valueFromAST"], "(\n  ", ["parameter", "valueNode"], ": ", ["type", "Maybe"], "\u003c", ["link", "ValueNode", "/api-v16/language#valuenode"], "\u003e,\n  ", ["parameter", "type"], ": ", ["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"], ",\n  ", ["parameter", "variables"], "?: ", ["type", "Maybe"], "\u003c", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e\u003e,\n): ", ["keyword", "unknown"], ";"]} />
+<ApiSignature parts={[["name", "coerceInputLiteral"], "(\n  ", ["parameter", "valueNode"], ": ", ["link", "ValueNode", "/api-v17/language#valuenode"], ",\n  ", ["parameter", "type"], ": ", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], ",\n  ", ["parameter", "variableValues"], "?: ", ["type", "Maybe"], "\u003c", ["link", "VariableValues", "/api-v17/execution#variablevalues"], "\u003e,\n  ", ["parameter", "fragmentVariableValues"], "?: ", ["type", "Maybe"], "\u003c", ["type", "FragmentVariableValues"], "\u003e,\n): ", ["keyword", "unknown"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -1232,12 +1275,486 @@ the provided type.
   <tbody>
     <tr>
       <td>valueNode</td>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "ValueNode", "/api-v16/language#valuenode"], "\u003e"]} /></td>
+      <td><ApiType parts={[["link", "ValueNode", "/api-v17/language#valuenode"]]} /></td>
+      <td>GraphQL value AST node to coerce.</td>
+    </tr>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"]]} /></td>
+      <td>GraphQL input type to coerce the literal against.</td>
+    </tr>
+    <tr>
+      <td>variableValues?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "VariableValues", "/api-v17/execution#variablevalues"], "\u003e"]} /></td>
+      <td>Operation variable values returned by getVariableValues.</td>
+    </tr>
+    <tr>
+      <td>fragmentVariableValues?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["type", "FragmentVariableValues"], "\u003e"]} /></td>
+      <td>Fragment variable values for the current fragment scope.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Coerced value, or undefined if coercion fails.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Coerce literal input values without variables.
+import { parseValue } from 'graphql/language';
+import {
+  GraphQLInputObjectType,
+  GraphQLInt,
+  GraphQLNonNull,
+  GraphQLString,
+} from 'graphql/type';
+import { coerceInputLiteral } from 'graphql/utilities';
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  fields: {
+    stars: { type: new GraphQLNonNull(GraphQLInt) },
+    comment: { type: GraphQLString },
+  },
+});
+
+coerceInputLiteral(parseValue('{ stars: 5, comment: "Loved it" }'), ReviewInput); // => { stars: 5, comment: 'Loved it' }
+coerceInputLiteral(parseValue('{ comment: "Missing" }'), ReviewInput); // => undefined
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant resolves variable references using VariableValues from getVariableValues().
+import assert from 'node:assert';
+import { parse, parseValue } from 'graphql/language';
+import { GraphQLInt } from 'graphql/type';
+import { getVariableValues } from 'graphql/execution';
+import { buildSchema, coerceInputLiteral } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    review(stars: Int): String
+  }
+`);
+const document = parse('query ($stars: Int = 5) { review(stars: $stars) }');
+const operation = document.definitions[0];
+const result = getVariableValues(
+  schema,
+  operation.variableDefinitions,
+  { stars: '4' },
+);
+
+assert('variableValues' in result);
+
+coerceInputLiteral(parseValue('$stars'), GraphQLInt, result.variableValues); // => 4
+```
+
+<hr className="api-item-divider" />
+
+#### replaceVariables()
+
+Replaces any Variables found within an AST Value literal with literals
+supplied from a map of variable values, or removed if no variable replacement
+exists, returning a constant value.
+
+Used primarily to ensure only complete constant values are used during input
+coercion of custom scalars which accept complex literals.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "replaceVariables"], "(\n  ", ["parameter", "valueNode"], ": ", ["link", "ValueNode", "/api-v17/language#valuenode"], ",\n  ", ["parameter", "variableValues"], "?: ", ["type", "Maybe"], "\u003c", ["link", "VariableValues", "/api-v17/execution#variablevalues"], "\u003e,\n  ", ["parameter", "fragmentVariableValues"], "?: ", ["type", "Maybe"], "\u003c", ["type", "FragmentVariableValues"], "\u003e,\n): ", ["link", "ConstValueNode", "/api-v17/language#constvaluenode"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>valueNode</td>
+      <td><ApiType parts={[["link", "ValueNode", "/api-v17/language#valuenode"]]} /></td>
+      <td>Value AST node in which variables should be replaced.</td>
+    </tr>
+    <tr>
+      <td>variableValues?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "VariableValues", "/api-v17/execution#variablevalues"], "\u003e"]} /></td>
+      <td>Operation variable values returned by getVariableValues.</td>
+    </tr>
+    <tr>
+      <td>fragmentVariableValues?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["type", "FragmentVariableValues"], "\u003e"]} /></td>
+      <td>Fragment variable values for the current fragment scope.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ConstValueNode", "/api-v17/language#constvaluenode"]]} /></td>
+      <td>A constant value AST with variables replaced.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import assert from 'node:assert';
+import { parse, parseValue, print } from 'graphql/language';
+import { getVariableValues } from 'graphql/execution';
+import { buildSchema, replaceVariables } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    review(stars: Int = 5): String
+  }
+`);
+const document = parse(
+  'query ($stars: Int = 5) { review(stars: $stars) }',
+);
+const operation = document.definitions[0];
+const result = getVariableValues(
+  schema,
+  operation.variableDefinitions,
+  { stars: 4 },
+);
+
+assert('variableValues' in result);
+
+const literal = replaceVariables(
+  parseValue('{ stars: $stars, comment: $missing }'),
+  result.variableValues,
+);
+
+print(literal); // => '{ stars: 4 }'
+```
+
+<hr className="api-item-divider" />
+
+#### validateInputValue()
+
+Validate that the provided input value is allowed for this type, collecting
+all errors via a callback function.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "validateInputValue"], "(\n  ", ["parameter", "inputValue"], ": ", ["keyword", "unknown"], ",\n  ", ["parameter", "type"], ": ", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], ",\n  ", ["parameter", "onError"], ": (\n    ", ["parameter", "error"], ": ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], ",\n    ", ["parameter", "path"], ": ", ["keyword", "readonly"], " (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[],\n  ) =\u003e ", ["keyword", "void"], ",\n  ", ["parameter", "hideSuggestions"], "?: ", ["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e,\n): ", ["keyword", "void"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>inputValue</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>JavaScript value to validate.</td>
+    </tr>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"]]} /></td>
+      <td>GraphQL input type to validate the value against.</td>
+    </tr>
+    <tr>
+      <td>onError</td>
+      <td><ApiType parts={["(\n  ", ["parameter", "error"], ": ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], ",\n  ", ["parameter", "path"], ": ", ["keyword", "readonly"], " (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[],\n) =\u003e ", ["keyword", "void"]]} /></td>
+      <td>Callback invoked for each validation error and path.</td>
+    </tr>
+    <tr>
+      <td>hideSuggestions?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e"]} /></td>
+      <td>Whether suggestion text should be omitted from errors.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Collect validation errors with their input paths.
+import {
+  GraphQLInputObjectType,
+  GraphQLInt,
+  GraphQLNonNull,
+} from 'graphql/type';
+import { validateInputValue } from 'graphql/utilities';
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  fields: {
+    stars: { type: new GraphQLNonNull(GraphQLInt) },
+  },
+});
+const errors = [];
+
+validateInputValue({ stars: 'bad' }, ReviewInput, (error, path) => {
+  errors.push({ message: error.message, path });
+});
+
+errors; // => [ { message: 'Expected value of type "Int", found: "bad".', path: ['stars'] } ]
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant hides suggestion text for unknown input fields.
+import { GraphQLInputObjectType, GraphQLString } from 'graphql/type';
+import { validateInputValue } from 'graphql/utilities';
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  fields: {
+    comment: { type: GraphQLString },
+  },
+});
+const errors = [];
+
+validateInputValue(
+  { rating: 'extra field' },
+  ReviewInput,
+  (error) => {
+    errors.push(error.message);
+  },
+  true,
+);
+
+errors; // => ['Expected value of type "ReviewInput" not to include unknown field "rating", found: { rating: "extra field" }.']
+```
+
+<hr className="api-item-divider" />
+
+#### validateInputLiteral()
+
+Validate that the provided input literal is allowed for this type, collecting
+all errors via a callback function.
+
+If variable values are not provided, the literal is validated statically
+(not assuming that those variables are missing runtime values).
+
+**Signature:**
+
+<ApiSignature parts={[["name", "validateInputLiteral"], "(\n  ", ["parameter", "valueNode"], ": ", ["link", "ValueNode", "/api-v17/language#valuenode"], ",\n  ", ["parameter", "type"], ": ", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], ",\n  ", ["parameter", "onError"], ": (\n    ", ["parameter", "error"], ": ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], ",\n    ", ["parameter", "path"], ": ", ["keyword", "readonly"], " (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[],\n  ) =\u003e ", ["keyword", "void"], ",\n  ", ["parameter", "variables"], "?: ", ["type", "Maybe"], "\u003c", ["link", "VariableValues", "/api-v17/execution#variablevalues"], "\u003e,\n  ", ["parameter", "fragmentVariableValues"], "?: ", ["type", "Maybe"], "\u003c", ["type", "FragmentVariableValues"], "\u003e,\n  ", ["parameter", "hideSuggestions"], "?: ", ["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e,\n): ", ["keyword", "void"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>valueNode</td>
+      <td><ApiType parts={[["link", "ValueNode", "/api-v17/language#valuenode"]]} /></td>
+      <td>GraphQL value AST node to validate.</td>
+    </tr>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"]]} /></td>
+      <td>GraphQL input type to validate the literal against.</td>
+    </tr>
+    <tr>
+      <td>onError</td>
+      <td><ApiType parts={["(\n  ", ["parameter", "error"], ": ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], ",\n  ", ["parameter", "path"], ": ", ["keyword", "readonly"], " (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[],\n) =\u003e ", ["keyword", "void"]]} /></td>
+      <td>Callback invoked for each validation error and path.</td>
+    </tr>
+    <tr>
+      <td>variables?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "VariableValues", "/api-v17/execution#variablevalues"], "\u003e"]} /></td>
+      <td>Operation variable values returned by getVariableValues.</td>
+    </tr>
+    <tr>
+      <td>fragmentVariableValues?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["type", "FragmentVariableValues"], "\u003e"]} /></td>
+      <td>Fragment variable values for the current fragment scope.</td>
+    </tr>
+    <tr>
+      <td>hideSuggestions?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e"]} /></td>
+      <td>Whether suggestion text should be omitted from errors.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Validate literal input values and collect literal paths.
+import { parseValue } from 'graphql/language';
+import {
+  GraphQLInputObjectType,
+  GraphQLInt,
+  GraphQLNonNull,
+} from 'graphql/type';
+import { validateInputLiteral } from 'graphql/utilities';
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  fields: {
+    stars: { type: new GraphQLNonNull(GraphQLInt) },
+  },
+});
+const errors = [];
+
+validateInputLiteral(parseValue('{ stars: "bad" }'), ReviewInput, (error, path) => {
+  errors.push({ message: error.message, path });
+});
+
+errors; // => [ { message: 'Expected value of type "Int", found: "bad".', path: ['stars'] } ]
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant resolves variable references using VariableValues from getVariableValues().
+import assert from 'node:assert';
+import { parse, parseValue } from 'graphql/language';
+import { GraphQLInt } from 'graphql/type';
+import { getVariableValues } from 'graphql/execution';
+import { buildSchema, validateInputLiteral } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    review(stars: Int): String
+  }
+`);
+const document = parse('query ($stars: Int = 5) { review(stars: $stars) }');
+const operation = document.definitions[0];
+const result = getVariableValues(
+  schema,
+  operation.variableDefinitions,
+  { stars: '4' },
+);
+
+assert('variableValues' in result);
+
+const errors = [];
+validateInputLiteral(
+  parseValue('$stars'),
+  GraphQLInt,
+  (error) => errors.push(error.message),
+  result.variableValues,
+  undefined,
+  true,
+);
+
+errors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### valueFromAST() <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+
+Produces a JavaScript value given a GraphQL Value AST.
+
+A GraphQL type must be provided, which will be used to interpret different
+GraphQL Value literals.
+
+Returns `undefined` when the value could not be validly coerced according to
+the provided type.
+
+This deprecated function will be removed in v18. Use `coerceInputLiteral()`
+instead.
+
+| GraphQL Value        | JSON Value    |
+| -------------------- | ------------- |
+| Input Object         | Object        |
+| List                 | Array         |
+| Boolean              | Boolean       |
+| String               | String        |
+| Int / Float          | Number        |
+| Enum Value           | Unknown       |
+| NullValue            | null          |
+
+**Signature:**
+
+<ApiSignature parts={[["name", "valueFromAST"], "(\n  ", ["parameter", "valueNode"], ": ", ["type", "Maybe"], "\u003c", ["link", "ValueNode", "/api-v17/language#valuenode"], "\u003e,\n  ", ["parameter", "type"], ": ", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], ",\n  ", ["parameter", "variables"], "?: ", ["type", "Maybe"], "\u003c", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e\u003e,\n): ", ["keyword", "unknown"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>valueNode</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "ValueNode", "/api-v17/language#valuenode"], "\u003e"]} /></td>
       <td>GraphQL value AST node to convert.</td>
     </tr>
     <tr>
       <td>type</td>
-      <td><ApiType parts={[["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"]]} /></td>
       <td>The GraphQL type to inspect.</td>
     </tr>
     <tr>
@@ -1329,7 +1846,7 @@ the provided GraphQL value AST.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "valueFromASTUntyped"], "(\n  ", ["parameter", "valueNode"], ": ", ["link", "ValueNode", "/api-v16/language#valuenode"], ",\n  ", ["parameter", "variables"], "?: ", ["type", "Maybe"], "\u003c", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e\u003e,\n): ", ["keyword", "unknown"], ";"]} />
+<ApiSignature parts={[["name", "valueFromASTUntyped"], "(\n  ", ["parameter", "valueNode"], ": ", ["link", "ValueNode", "/api-v17/language#valuenode"], ",\n  ", ["parameter", "variables"], "?: ", ["type", "Maybe"], "\u003c", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e\u003e,\n): ", ["keyword", "unknown"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -1346,7 +1863,7 @@ the provided GraphQL value AST.
   <tbody>
     <tr>
       <td>valueNode</td>
-      <td><ApiType parts={[["link", "ValueNode", "/api-v16/language#valuenode"]]} /></td>
+      <td><ApiType parts={[["link", "ValueNode", "/api-v17/language#valuenode"]]} /></td>
       <td>GraphQL value AST node to convert.</td>
     </tr>
     <tr>
@@ -1390,22 +1907,115 @@ value; // => [1, 2, 3]
 valueFromASTUntyped(parseValue('$name'), { name: 'Ada' }); // => 'Ada'
 ```
 
+<hr className="api-item-divider" />
+
+#### valueToLiteral()
+
+Produces a GraphQL Value AST given a JavaScript value and a GraphQL type.
+
+Scalar types are converted by calling the [`valueToLiteral`](/api-v17/utilities#valuetoliteral) method on that
+type, otherwise the default scalar [`valueToLiteral`](/api-v17/utilities#valuetoliteral) method is used, defined
+below.
+
+Provided value is a non-coerced "input" value. This function does not
+perform any coercion, however it does perform validation. Provided values
+which are invalid for the given type will result in an `undefined` return
+value.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "valueToLiteral"], "(\n  ", ["parameter", "value"], ": ", ["keyword", "unknown"], ",\n  ", ["parameter", "type"], ": ", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], ",\n): ", ["link", "ConstValueNode", "/api-v17/language#constvaluenode"], " \u007c ", ["keyword", "undefined"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>value</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>JavaScript value to convert.</td>
+    </tr>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"]]} /></td>
+      <td>GraphQL input type to convert the value against.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ConstValueNode", "/api-v17/language#constvaluenode"], " \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>A GraphQL value AST, or undefined if the value is invalid.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { print } from 'graphql/language';
+import {
+  GraphQLInputObjectType,
+  GraphQLInt,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLString,
+} from 'graphql/type';
+import { valueToLiteral } from 'graphql/utilities';
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  fields: {
+    stars: { type: new GraphQLNonNull(GraphQLInt) },
+    tags: { type: new GraphQLList(GraphQLString) },
+  },
+});
+
+const literal = valueToLiteral({ stars: 5, tags: ['featured'] }, ReviewInput);
+
+print(literal); // => '{ stars: 5, tags: ["featured"] }'
+valueToLiteral({ tags: ['missing stars'] }, ReviewInput); // => undefined
+```
+
 ## Category: Schema Construction
 
 <div className="api-category-toc">
   <p>
     <strong>Functions:</strong><br />
-    <a href="/api-v16/utilities#buildastschema">buildASTSchema()</a>
+    <a href="/api-v17/utilities#buildastschema">buildASTSchema()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#buildschema">buildSchema()</a>
+    <a href="/api-v17/utilities#buildschema">buildSchema()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#extendschema">extendSchema()</a>
+    <a href="/api-v17/utilities#extendschema">extendSchema()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#lexicographicsortschema">lexicographicSortSchema()</a>
+    <a href="/api-v17/utilities#lexicographicsortschema">lexicographicSortSchema()</a>
   </p>
   <p>
     <strong>Types:</strong><br />
-    <a href="/api-v16/utilities#buildschemaoptions">BuildSchemaOptions</a>
+    <a href="/api-v17/utilities#buildschemaoptions">BuildSchemaOptions</a>
   </p>
 </div>
 
@@ -1423,7 +2033,7 @@ default field resolver.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "buildASTSchema"], "(\n  ", ["parameter", "documentAST"], ": ", ["link", "DocumentNode", "/api-v16/language#documentnode"], ",\n  ", ["parameter", "options"], "?: ", ["link", "BuildSchemaOptions", "/api-v16/utilities#buildschemaoptions"], ",\n): ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ";"]} />
+<ApiSignature parts={[["name", "buildASTSchema"], "(\n  ", ["parameter", "documentAST"], ": ", ["link", "DocumentNode", "/api-v17/language#documentnode"], ",\n  ", ["parameter", "options"], "?: ", ["link", "BuildSchemaOptions", "/api-v17/utilities#buildschemaoptions"], ",\n): ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -1440,12 +2050,12 @@ default field resolver.
   <tbody>
     <tr>
       <td>documentAST</td>
-      <td><ApiType parts={[["link", "DocumentNode", "/api-v16/language#documentnode"]]} /></td>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v17/language#documentnode"]]} /></td>
       <td>The parsed GraphQL document AST.</td>
     </tr>
     <tr>
       <td>options?</td>
-      <td><ApiType parts={[["link", "BuildSchemaOptions", "/api-v16/utilities#buildschemaoptions"]]} /></td>
+      <td><ApiType parts={[["link", "BuildSchemaOptions", "/api-v17/utilities#buildschemaoptions"]]} /></td>
       <td>Optional configuration for this operation.</td>
     </tr>
   </tbody>
@@ -1464,7 +2074,7 @@ default field resolver.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
       <td>The schema built from the provided SDL document.</td>
     </tr>
   </tbody>
@@ -1511,7 +2121,7 @@ Builds a GraphQLSchema directly from a schema definition language source.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "buildSchema"], "(\n  ", ["parameter", "source"], ": ", ["keyword", "string"], " \u007c ", ["link", "Source", "/api-v16/language#source"], ",\n  ", ["parameter", "options"], "?: ", ["link", "BuildSchemaOptions", "/api-v16/utilities#buildschemaoptions"], " & ", ["link", "ParseOptions", "/api-v16/language#parseoptions"], ",\n): ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ";"]} />
+<ApiSignature parts={[["name", "buildSchema"], "(\n  ", ["parameter", "source"], ": ", ["keyword", "string"], " \u007c ", ["link", "Source", "/api-v17/language#source"], ",\n  ", ["parameter", "options"], "?: ", ["link", "BuildSchemaOptions", "/api-v17/utilities#buildschemaoptions"], " & ", ["link", "ParseOptions", "/api-v17/language#parseoptions"], ",\n): ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -1528,12 +2138,12 @@ Builds a GraphQLSchema directly from a schema definition language source.
   <tbody>
     <tr>
       <td>source</td>
-      <td><ApiType parts={[["keyword", "string"], " \u007c ", ["link", "Source", "/api-v16/language#source"]]} /></td>
+      <td><ApiType parts={[["keyword", "string"], " \u007c ", ["link", "Source", "/api-v17/language#source"]]} /></td>
       <td>The GraphQL source text or source object.</td>
     </tr>
     <tr>
       <td>options?</td>
-      <td><ApiType parts={[["link", "BuildSchemaOptions", "/api-v16/utilities#buildschemaoptions"], " & ", ["link", "ParseOptions", "/api-v16/language#parseoptions"]]} /></td>
+      <td><ApiType parts={[["link", "BuildSchemaOptions", "/api-v17/utilities#buildschemaoptions"], " & ", ["link", "ParseOptions", "/api-v17/language#parseoptions"]]} /></td>
       <td>Optional configuration for this operation.</td>
     </tr>
   </tbody>
@@ -1552,7 +2162,7 @@ Builds a GraphQLSchema directly from a schema definition language source.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
       <td>The schema built from the provided SDL document.</td>
     </tr>
   </tbody>
@@ -1584,6 +2194,7 @@ const schema = buildSchema(
     'directive @compose @tag on FIELD_DEFINITION',
   {
     experimentalDirectivesOnDirectiveDefinitions: true,
+    experimentalFragmentArguments: true,
     noLocation: true,
   },
 );
@@ -1611,7 +2222,7 @@ producing the copy. The original schema remains unaltered.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "extendSchema"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n  ", ["parameter", "documentAST"], ": ", ["link", "DocumentNode", "/api-v16/language#documentnode"], ",\n  ", ["parameter", "options"], "?: \u007b ", ["property", "assumeValidSDL"], "?: ", ["keyword", "boolean"], " \u007d,\n): ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ";"]} />
+<ApiSignature parts={[["name", "extendSchema"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n  ", ["parameter", "documentAST"], ": ", ["link", "DocumentNode", "/api-v17/language#documentnode"], ",\n  ", ["parameter", "options"], "?: \u007b ", ["property", "assumeValidSDL"], "?: ", ["keyword", "boolean"], " \u007c ", ["keyword", "undefined"], " \u007d,\n): ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -1628,17 +2239,17 @@ producing the copy. The original schema remains unaltered.
   <tbody>
     <tr>
       <td>schema</td>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
       <td>GraphQL schema to use.</td>
     </tr>
     <tr>
       <td>documentAST</td>
-      <td><ApiType parts={[["link", "DocumentNode", "/api-v16/language#documentnode"]]} /></td>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v17/language#documentnode"]]} /></td>
       <td>The parsed GraphQL document AST.</td>
     </tr>
     <tr>
       <td>options?</td>
-      <td><ApiType parts={["\u007b ", ["property", "assumeValidSDL"], "?: ", ["keyword", "boolean"], " \u007d"]} /></td>
+      <td><ApiType parts={["\u007b ", ["property", "assumeValidSDL"], "?: ", ["keyword", "boolean"], " \u007c ", ["keyword", "undefined"], " \u007d"]} /></td>
       <td>Optional configuration for this operation.</td>
     </tr>
   </tbody>
@@ -1657,7 +2268,7 @@ producing the copy. The original schema remains unaltered.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
       <td>A new schema with the extensions and definitions applied.</td>
     </tr>
   </tbody>
@@ -1731,7 +2342,7 @@ This function returns a sorted copy of the given GraphQLSchema.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "lexicographicSortSchema"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n): ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ";"]} />
+<ApiSignature parts={[["name", "lexicographicSortSchema"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n): ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -1748,7 +2359,7 @@ This function returns a sorted copy of the given GraphQLSchema.
   <tbody>
     <tr>
       <td>schema</td>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
       <td>GraphQL schema to use.</td>
     </tr>
   </tbody>
@@ -1767,7 +2378,7 @@ This function returns a sorted copy of the given GraphQLSchema.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
       <td>A copy of the schema with types, fields, arguments, and values sorted lexicographically.</td>
     </tr>
   </tbody>
@@ -1842,57 +2453,57 @@ Default: false</td>
 <div className="api-category-toc">
   <p>
     <strong>Functions:</strong><br />
-    <a href="/api-v16/utilities#buildclientschema">buildClientSchema()</a>
+    <a href="/api-v17/utilities#buildclientschema">buildClientSchema()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#getintrospectionquery">getIntrospectionQuery()</a>
+    <a href="/api-v17/utilities#getintrospectionquery">getIntrospectionQuery()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectionfromschema">introspectionFromSchema()</a>
+    <a href="/api-v17/utilities#introspectionfromschema">introspectionFromSchema()</a>
   </p>
   <p>
     <strong>Types:</strong><br />
-    <a href="/api-v16/utilities#introspectionoptions">IntrospectionOptions</a>
+    <a href="/api-v17/utilities#introspectionoptions">IntrospectionOptions</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectionquery">IntrospectionQuery</a>
+    <a href="/api-v17/utilities#introspectionquery">IntrospectionQuery</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectionschema">IntrospectionSchema</a>
+    <a href="/api-v17/utilities#introspectionschema">IntrospectionSchema</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectiontype">IntrospectionType</a>
+    <a href="/api-v17/utilities#introspectiontype">IntrospectionType</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectionoutputtype">IntrospectionOutputType</a>
+    <a href="/api-v17/utilities#introspectionoutputtype">IntrospectionOutputType</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectioninputtype">IntrospectionInputType</a>
+    <a href="/api-v17/utilities#introspectioninputtype">IntrospectionInputType</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectionscalartype">IntrospectionScalarType</a>
+    <a href="/api-v17/utilities#introspectionscalartype">IntrospectionScalarType</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectionobjecttype">IntrospectionObjectType</a>
+    <a href="/api-v17/utilities#introspectionobjecttype">IntrospectionObjectType</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectioninterfacetype">IntrospectionInterfaceType</a>
+    <a href="/api-v17/utilities#introspectioninterfacetype">IntrospectionInterfaceType</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectionuniontype">IntrospectionUnionType</a>
+    <a href="/api-v17/utilities#introspectionuniontype">IntrospectionUnionType</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectionenumtype">IntrospectionEnumType</a>
+    <a href="/api-v17/utilities#introspectionenumtype">IntrospectionEnumType</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectioninputobjecttype">IntrospectionInputObjectType</a>
+    <a href="/api-v17/utilities#introspectioninputobjecttype">IntrospectionInputObjectType</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectionlisttyperef">IntrospectionListTypeRef</a>
+    <a href="/api-v17/utilities#introspectionlisttyperef">IntrospectionListTypeRef</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectionnonnulltyperef">IntrospectionNonNullTypeRef</a>
+    <a href="/api-v17/utilities#introspectionnonnulltyperef">IntrospectionNonNullTypeRef</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectiontyperef">IntrospectionTypeRef</a>
+    <a href="/api-v17/utilities#introspectiontyperef">IntrospectionTypeRef</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectionoutputtyperef">IntrospectionOutputTypeRef</a>
+    <a href="/api-v17/utilities#introspectionoutputtyperef">IntrospectionOutputTypeRef</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectioninputtyperef">IntrospectionInputTypeRef</a>
+    <a href="/api-v17/utilities#introspectioninputtyperef">IntrospectionInputTypeRef</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectionnamedtyperef">IntrospectionNamedTypeRef</a>
+    <a href="/api-v17/utilities#introspectionnamedtyperef">IntrospectionNamedTypeRef</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectionfield">IntrospectionField</a>
+    <a href="/api-v17/utilities#introspectionfield">IntrospectionField</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectioninputvalue">IntrospectionInputValue</a>
+    <a href="/api-v17/utilities#introspectioninputvalue">IntrospectionInputValue</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectionenumvalue">IntrospectionEnumValue</a>
+    <a href="/api-v17/utilities#introspectionenumvalue">IntrospectionEnumValue</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#introspectiondirective">IntrospectionDirective</a>
+    <a href="/api-v17/utilities#introspectiondirective">IntrospectionDirective</a>
   </p>
 </div>
 
@@ -1913,7 +2524,7 @@ the "errors" field of a server response before calling this function.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "buildClientSchema"], "(\n  ", ["parameter", "introspection"], ": ", ["link", "IntrospectionQuery", "/api-v16/utilities#introspectionquery"], ",\n  ", ["parameter", "options"], "?: ", ["type", "GraphQLSchemaValidationOptions"], ",\n): ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ";"]} />
+<ApiSignature parts={[["name", "buildClientSchema"], "(\n  ", ["parameter", "introspection"], ": ", ["link", "IntrospectionQuery", "/api-v17/utilities#introspectionquery"], ",\n  ", ["parameter", "options"], "?: ", ["type", "GraphQLSchemaValidationOptions"], ",\n): ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -1930,7 +2541,7 @@ the "errors" field of a server response before calling this function.
   <tbody>
     <tr>
       <td>introspection</td>
-      <td><ApiType parts={[["link", "IntrospectionQuery", "/api-v16/utilities#introspectionquery"]]} /></td>
+      <td><ApiType parts={[["link", "IntrospectionQuery", "/api-v17/utilities#introspectionquery"]]} /></td>
       <td>Introspection result data to build from.</td>
     </tr>
     <tr>
@@ -1954,7 +2565,7 @@ the "errors" field of a server response before calling this function.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
       <td>The client schema represented by the introspection result.</td>
     </tr>
   </tbody>
@@ -1984,7 +2595,7 @@ Accepts optional IntrospectionOptions.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "getIntrospectionQuery"], "(", ["parameter", "options"], "?: ", ["link", "IntrospectionOptions", "/api-v16/utilities#introspectionoptions"], "): ", ["keyword", "string"], ";"]} />
+<ApiSignature parts={[["name", "getIntrospectionQuery"], "(", ["parameter", "options"], "?: ", ["link", "IntrospectionOptions", "/api-v17/utilities#introspectionoptions"], "): ", ["keyword", "string"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -2001,7 +2612,7 @@ Accepts optional IntrospectionOptions.
   <tbody>
     <tr>
       <td>options?</td>
-      <td><ApiType parts={[["link", "IntrospectionOptions", "/api-v16/utilities#introspectionoptions"]]} /></td>
+      <td><ApiType parts={[["link", "IntrospectionOptions", "/api-v17/utilities#introspectionoptions"]]} /></td>
       <td>Optional configuration for this operation.</td>
     </tr>
   </tbody>
@@ -2082,7 +2693,7 @@ of the server context, for instance when doing schema comparisons.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "introspectionFromSchema"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n  ", ["parameter", "options"], "?: ", ["link", "IntrospectionOptions", "/api-v16/utilities#introspectionoptions"], ",\n): ", ["link", "IntrospectionQuery", "/api-v16/utilities#introspectionquery"], ";"]} />
+<ApiSignature parts={[["name", "introspectionFromSchema"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n  ", ["parameter", "options"], "?: ", ["link", "IntrospectionOptions", "/api-v17/utilities#introspectionoptions"], ",\n): ", ["link", "IntrospectionQuery", "/api-v17/utilities#introspectionquery"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -2099,12 +2710,12 @@ of the server context, for instance when doing schema comparisons.
   <tbody>
     <tr>
       <td>schema</td>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
       <td>GraphQL schema to use.</td>
     </tr>
     <tr>
       <td>options?</td>
-      <td><ApiType parts={[["link", "IntrospectionOptions", "/api-v16/utilities#introspectionoptions"]]} /></td>
+      <td><ApiType parts={[["link", "IntrospectionOptions", "/api-v17/utilities#introspectionoptions"]]} /></td>
       <td>Optional configuration for this operation.</td>
     </tr>
   </tbody>
@@ -2123,7 +2734,7 @@ of the server context, for instance when doing schema comparisons.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["link", "IntrospectionQuery", "/api-v16/utilities#introspectionquery"]]} /></td>
+      <td><ApiType parts={[["link", "IntrospectionQuery", "/api-v17/utilities#introspectionquery"]]} /></td>
       <td>Introspection result data for the schema.</td>
     </tr>
   </tbody>
@@ -2281,7 +2892,7 @@ Default: 9</td>
   <tbody>
     <tr>
       <td>__schema</td>
-      <td><ApiType parts={[["link", "IntrospectionSchema", "/api-v16/utilities#introspectionschema"]]} /></td>
+      <td><ApiType parts={[["link", "IntrospectionSchema", "/api-v17/utilities#introspectionschema"]]} /></td>
       <td>The  schema.</td>
     </tr>
   </tbody>
@@ -2313,27 +2924,27 @@ Default: 9</td>
     </tr>
     <tr>
       <td>queryType</td>
-      <td><ApiType parts={[["link", "IntrospectionNamedTypeRef", "/api-v16/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionObjectType", "/api-v16/utilities#introspectionobjecttype"], "\u003e"]} /></td>
+      <td><ApiType parts={[["link", "IntrospectionNamedTypeRef", "/api-v17/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionObjectType", "/api-v17/utilities#introspectionobjecttype"], "\u003e"]} /></td>
       <td>The root object type used for query operations.</td>
     </tr>
     <tr>
       <td>mutationType</td>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "IntrospectionNamedTypeRef", "/api-v16/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionObjectType", "/api-v16/utilities#introspectionobjecttype"], "\u003e\u003e"]} /></td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "IntrospectionNamedTypeRef", "/api-v17/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionObjectType", "/api-v17/utilities#introspectionobjecttype"], "\u003e\u003e"]} /></td>
       <td>The root object type used for mutation operations, if supported.</td>
     </tr>
     <tr>
       <td>subscriptionType</td>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "IntrospectionNamedTypeRef", "/api-v16/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionObjectType", "/api-v16/utilities#introspectionobjecttype"], "\u003e\u003e"]} /></td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "IntrospectionNamedTypeRef", "/api-v17/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionObjectType", "/api-v17/utilities#introspectionobjecttype"], "\u003e\u003e"]} /></td>
       <td>The root object type used for subscription operations, if supported.</td>
     </tr>
     <tr>
       <td>types</td>
-      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionType", "/api-v16/utilities#introspectiontype"], "[]"]} /></td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionType", "/api-v17/utilities#introspectiontype"], "[]"]} /></td>
       <td>Object types that belong to this union type.</td>
     </tr>
     <tr>
       <td>directives</td>
-      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionDirective", "/api-v16/utilities#introspectiondirective"], "[]"]} /></td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionDirective", "/api-v17/utilities#introspectiondirective"], "[]"]} /></td>
       <td>Directives available in this schema or applied to this AST node.</td>
     </tr>
   </tbody>
@@ -2345,7 +2956,7 @@ Default: 9</td>
 
 **Type alias.** Any introspection representation of a GraphQL type.
 
-<ApiSignature parts={[["keyword", "type"], " ", ["name", "IntrospectionType"], " =\n  \u007c ", ["link", "IntrospectionScalarType", "/api-v16/utilities#introspectionscalartype"], "\n  \u007c ", ["link", "IntrospectionObjectType", "/api-v16/utilities#introspectionobjecttype"], "\n  \u007c ", ["link", "IntrospectionInterfaceType", "/api-v16/utilities#introspectioninterfacetype"], "\n  \u007c ", ["link", "IntrospectionUnionType", "/api-v16/utilities#introspectionuniontype"], "\n  \u007c ", ["link", "IntrospectionEnumType", "/api-v16/utilities#introspectionenumtype"], "\n  \u007c ", ["link", "IntrospectionInputObjectType", "/api-v16/utilities#introspectioninputobjecttype"], ";"]} />
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "IntrospectionType"], " =\n  \u007c ", ["link", "IntrospectionScalarType", "/api-v17/utilities#introspectionscalartype"], "\n  \u007c ", ["link", "IntrospectionObjectType", "/api-v17/utilities#introspectionobjecttype"], "\n  \u007c ", ["link", "IntrospectionInterfaceType", "/api-v17/utilities#introspectioninterfacetype"], "\n  \u007c ", ["link", "IntrospectionUnionType", "/api-v17/utilities#introspectionuniontype"], "\n  \u007c ", ["link", "IntrospectionEnumType", "/api-v17/utilities#introspectionenumtype"], "\n  \u007c ", ["link", "IntrospectionInputObjectType", "/api-v17/utilities#introspectioninputobjecttype"], ";"]} />
 
 <hr className="api-item-divider" />
 
@@ -2353,7 +2964,7 @@ Default: 9</td>
 
 **Type alias.** An introspection type that can appear in output position.
 
-<ApiSignature parts={[["keyword", "type"], " ", ["name", "IntrospectionOutputType"], " =\n  \u007c ", ["link", "IntrospectionScalarType", "/api-v16/utilities#introspectionscalartype"], "\n  \u007c ", ["link", "IntrospectionObjectType", "/api-v16/utilities#introspectionobjecttype"], "\n  \u007c ", ["link", "IntrospectionInterfaceType", "/api-v16/utilities#introspectioninterfacetype"], "\n  \u007c ", ["link", "IntrospectionUnionType", "/api-v16/utilities#introspectionuniontype"], "\n  \u007c ", ["link", "IntrospectionEnumType", "/api-v16/utilities#introspectionenumtype"], ";"]} />
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "IntrospectionOutputType"], " =\n  \u007c ", ["link", "IntrospectionScalarType", "/api-v17/utilities#introspectionscalartype"], "\n  \u007c ", ["link", "IntrospectionObjectType", "/api-v17/utilities#introspectionobjecttype"], "\n  \u007c ", ["link", "IntrospectionInterfaceType", "/api-v17/utilities#introspectioninterfacetype"], "\n  \u007c ", ["link", "IntrospectionUnionType", "/api-v17/utilities#introspectionuniontype"], "\n  \u007c ", ["link", "IntrospectionEnumType", "/api-v17/utilities#introspectionenumtype"], ";"]} />
 
 <hr className="api-item-divider" />
 
@@ -2361,7 +2972,7 @@ Default: 9</td>
 
 **Type alias.** An introspection type that can appear in input position.
 
-<ApiSignature parts={[["keyword", "type"], " ", ["name", "IntrospectionInputType"], " =\n  \u007c ", ["link", "IntrospectionScalarType", "/api-v16/utilities#introspectionscalartype"], "\n  \u007c ", ["link", "IntrospectionEnumType", "/api-v16/utilities#introspectionenumtype"], "\n  \u007c ", ["link", "IntrospectionInputObjectType", "/api-v16/utilities#introspectioninputobjecttype"], ";"]} />
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "IntrospectionInputType"], " =\n  \u007c ", ["link", "IntrospectionScalarType", "/api-v17/utilities#introspectionscalartype"], "\n  \u007c ", ["link", "IntrospectionEnumType", "/api-v17/utilities#introspectionenumtype"], "\n  \u007c ", ["link", "IntrospectionInputObjectType", "/api-v17/utilities#introspectioninputobjecttype"], ";"]} />
 
 <hr className="api-item-divider" />
 
@@ -2441,12 +3052,12 @@ Default: 9</td>
     </tr>
     <tr>
       <td>fields</td>
-      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionField", "/api-v16/utilities#introspectionfield"], "[]"]} /></td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionField", "/api-v17/utilities#introspectionfield"], "[]"]} /></td>
       <td>Fields declared by this object, interface, input object, or literal.</td>
     </tr>
     <tr>
       <td>interfaces</td>
-      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionNamedTypeRef", "/api-v16/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionInterfaceType", "/api-v16/utilities#introspectioninterfacetype"], "\u003e[]"]} /></td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionNamedTypeRef", "/api-v17/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionInterfaceType", "/api-v17/utilities#introspectioninterfacetype"], "\u003e[]"]} /></td>
       <td>Interfaces implemented by this object or interface type.</td>
     </tr>
   </tbody>
@@ -2488,17 +3099,17 @@ Default: 9</td>
     </tr>
     <tr>
       <td>fields</td>
-      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionField", "/api-v16/utilities#introspectionfield"], "[]"]} /></td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionField", "/api-v17/utilities#introspectionfield"], "[]"]} /></td>
       <td>Fields declared by this object, interface, input object, or literal.</td>
     </tr>
     <tr>
       <td>interfaces</td>
-      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionNamedTypeRef", "/api-v16/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionInterfaceType", "/api-v16/utilities#introspectioninterfacetype"], "\u003e[]"]} /></td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionNamedTypeRef", "/api-v17/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionInterfaceType", "/api-v17/utilities#introspectioninterfacetype"], "\u003e[]"]} /></td>
       <td>Interfaces implemented by this object or interface type.</td>
     </tr>
     <tr>
       <td>possibleTypes</td>
-      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionNamedTypeRef", "/api-v16/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionObjectType", "/api-v16/utilities#introspectionobjecttype"], "\u003e[]"]} /></td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionNamedTypeRef", "/api-v17/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionObjectType", "/api-v17/utilities#introspectionobjecttype"], "\u003e[]"]} /></td>
       <td>Object types that may be returned for this abstract type.</td>
     </tr>
   </tbody>
@@ -2540,7 +3151,7 @@ Default: 9</td>
     </tr>
     <tr>
       <td>possibleTypes</td>
-      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionNamedTypeRef", "/api-v16/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionObjectType", "/api-v16/utilities#introspectionobjecttype"], "\u003e[]"]} /></td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionNamedTypeRef", "/api-v17/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionObjectType", "/api-v17/utilities#introspectionobjecttype"], "\u003e[]"]} /></td>
       <td>Object types that may be returned for this abstract type.</td>
     </tr>
   </tbody>
@@ -2582,7 +3193,7 @@ Default: 9</td>
     </tr>
     <tr>
       <td>enumValues</td>
-      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionEnumValue", "/api-v16/utilities#introspectionenumvalue"], "[]"]} /></td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionEnumValue", "/api-v17/utilities#introspectionenumvalue"], "[]"]} /></td>
       <td>Values declared by this enum type.</td>
     </tr>
   </tbody>
@@ -2624,7 +3235,7 @@ Default: 9</td>
     </tr>
     <tr>
       <td>inputFields</td>
-      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionInputValue", "/api-v16/utilities#introspectioninputvalue"], "[]"]} /></td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionInputValue", "/api-v17/utilities#introspectioninputvalue"], "[]"]} /></td>
       <td>Input fields declared by this input object type.</td>
     </tr>
     <tr>
@@ -2657,8 +3268,8 @@ Default: 9</td>
   <tbody>
     <tr>
       <td>T</td>
-      <td><ApiType parts={[["link", "IntrospectionTypeRef", "/api-v16/utilities#introspectiontyperef"]]} /></td>
-      <td><ApiType parts={[["link", "IntrospectionTypeRef", "/api-v16/utilities#introspectiontyperef"]]} /></td>
+      <td><ApiType parts={[["link", "IntrospectionTypeRef", "/api-v17/utilities#introspectiontyperef"]]} /></td>
+      <td><ApiType parts={[["link", "IntrospectionTypeRef", "/api-v17/utilities#introspectiontyperef"]]} /></td>
       <td>The introspection type reference wrapped by this list type reference.</td>
     </tr>
   </tbody>
@@ -2712,8 +3323,8 @@ Default: 9</td>
   <tbody>
     <tr>
       <td>T</td>
-      <td><ApiType parts={[["link", "IntrospectionTypeRef", "/api-v16/utilities#introspectiontyperef"]]} /></td>
-      <td><ApiType parts={[["link", "IntrospectionTypeRef", "/api-v16/utilities#introspectiontyperef"]]} /></td>
+      <td><ApiType parts={[["link", "IntrospectionTypeRef", "/api-v17/utilities#introspectiontyperef"]]} /></td>
+      <td><ApiType parts={[["link", "IntrospectionTypeRef", "/api-v17/utilities#introspectiontyperef"]]} /></td>
       <td>The introspection type reference wrapped by this non-null type reference.</td>
     </tr>
   </tbody>
@@ -2751,7 +3362,7 @@ Default: 9</td>
 
 **Type alias.** Any introspection representation of a type reference.
 
-<ApiSignature parts={[["keyword", "type"], " ", ["name", "IntrospectionTypeRef"], " =\n  \u007c ", ["link", "IntrospectionNamedTypeRef", "/api-v16/utilities#introspectionnamedtyperef"], "\n  \u007c ", ["link", "IntrospectionListTypeRef", "/api-v16/utilities#introspectionlisttyperef"], "\n  \u007c ", ["link", "IntrospectionNonNullTypeRef", "/api-v16/utilities#introspectionnonnulltyperef"], "\u003c", ["link", "IntrospectionNamedTypeRef", "/api-v16/utilities#introspectionnamedtyperef"], " \u007c ", ["link", "IntrospectionListTypeRef", "/api-v16/utilities#introspectionlisttyperef"], "\u003e;"]} />
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "IntrospectionTypeRef"], " =\n  \u007c ", ["link", "IntrospectionNamedTypeRef", "/api-v17/utilities#introspectionnamedtyperef"], "\n  \u007c ", ["link", "IntrospectionListTypeRef", "/api-v17/utilities#introspectionlisttyperef"], "\n  \u007c ", ["link", "IntrospectionNonNullTypeRef", "/api-v17/utilities#introspectionnonnulltyperef"], "\u003c", ["link", "IntrospectionNamedTypeRef", "/api-v17/utilities#introspectionnamedtyperef"], " \u007c ", ["link", "IntrospectionListTypeRef", "/api-v17/utilities#introspectionlisttyperef"], "\u003e;"]} />
 
 <hr className="api-item-divider" />
 
@@ -2759,7 +3370,7 @@ Default: 9</td>
 
 **Type alias.** An introspection type reference that can appear in output position.
 
-<ApiSignature parts={[["keyword", "type"], " ", ["name", "IntrospectionOutputTypeRef"], " =\n  \u007c ", ["link", "IntrospectionNamedTypeRef", "/api-v16/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionOutputType", "/api-v16/utilities#introspectionoutputtype"], "\u003e\n  \u007c ", ["link", "IntrospectionListTypeRef", "/api-v16/utilities#introspectionlisttyperef"], "\u003c", ["link", "IntrospectionOutputTypeRef", "/api-v16/utilities#introspectionoutputtyperef"], "\u003e\n  \u007c ", ["link", "IntrospectionNonNullTypeRef", "/api-v16/utilities#introspectionnonnulltyperef"], "\u003c\n      \u007c ", ["link", "IntrospectionNamedTypeRef", "/api-v16/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionOutputType", "/api-v16/utilities#introspectionoutputtype"], "\u003e\n      \u007c ", ["link", "IntrospectionListTypeRef", "/api-v16/utilities#introspectionlisttyperef"], "\u003c", ["link", "IntrospectionOutputTypeRef", "/api-v16/utilities#introspectionoutputtyperef"], "\u003e\n    \u003e;"]} />
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "IntrospectionOutputTypeRef"], " =\n  \u007c ", ["link", "IntrospectionNamedTypeRef", "/api-v17/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionOutputType", "/api-v17/utilities#introspectionoutputtype"], "\u003e\n  \u007c ", ["link", "IntrospectionListTypeRef", "/api-v17/utilities#introspectionlisttyperef"], "\u003c", ["link", "IntrospectionOutputTypeRef", "/api-v17/utilities#introspectionoutputtyperef"], "\u003e\n  \u007c ", ["link", "IntrospectionNonNullTypeRef", "/api-v17/utilities#introspectionnonnulltyperef"], "\u003c\n      \u007c ", ["link", "IntrospectionNamedTypeRef", "/api-v17/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionOutputType", "/api-v17/utilities#introspectionoutputtype"], "\u003e\n      \u007c ", ["link", "IntrospectionListTypeRef", "/api-v17/utilities#introspectionlisttyperef"], "\u003c", ["link", "IntrospectionOutputTypeRef", "/api-v17/utilities#introspectionoutputtyperef"], "\u003e\n    \u003e;"]} />
 
 <hr className="api-item-divider" />
 
@@ -2767,7 +3378,7 @@ Default: 9</td>
 
 **Type alias.** An introspection type reference that can appear in input position.
 
-<ApiSignature parts={[["keyword", "type"], " ", ["name", "IntrospectionInputTypeRef"], " =\n  \u007c ", ["link", "IntrospectionNamedTypeRef", "/api-v16/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionInputType", "/api-v16/utilities#introspectioninputtype"], "\u003e\n  \u007c ", ["link", "IntrospectionListTypeRef", "/api-v16/utilities#introspectionlisttyperef"], "\u003c", ["link", "IntrospectionInputTypeRef", "/api-v16/utilities#introspectioninputtyperef"], "\u003e\n  \u007c ", ["link", "IntrospectionNonNullTypeRef", "/api-v16/utilities#introspectionnonnulltyperef"], "\u003c\n      \u007c ", ["link", "IntrospectionNamedTypeRef", "/api-v16/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionInputType", "/api-v16/utilities#introspectioninputtype"], "\u003e\n      \u007c ", ["link", "IntrospectionListTypeRef", "/api-v16/utilities#introspectionlisttyperef"], "\u003c", ["link", "IntrospectionInputTypeRef", "/api-v16/utilities#introspectioninputtyperef"], "\u003e\n    \u003e;"]} />
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "IntrospectionInputTypeRef"], " =\n  \u007c ", ["link", "IntrospectionNamedTypeRef", "/api-v17/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionInputType", "/api-v17/utilities#introspectioninputtype"], "\u003e\n  \u007c ", ["link", "IntrospectionListTypeRef", "/api-v17/utilities#introspectionlisttyperef"], "\u003c", ["link", "IntrospectionInputTypeRef", "/api-v17/utilities#introspectioninputtyperef"], "\u003e\n  \u007c ", ["link", "IntrospectionNonNullTypeRef", "/api-v17/utilities#introspectionnonnulltyperef"], "\u003c\n      \u007c ", ["link", "IntrospectionNamedTypeRef", "/api-v17/utilities#introspectionnamedtyperef"], "\u003c", ["link", "IntrospectionInputType", "/api-v17/utilities#introspectioninputtype"], "\u003e\n      \u007c ", ["link", "IntrospectionListTypeRef", "/api-v17/utilities#introspectionlisttyperef"], "\u003c", ["link", "IntrospectionInputTypeRef", "/api-v17/utilities#introspectioninputtyperef"], "\u003e\n    \u003e;"]} />
 
 <hr className="api-item-divider" />
 
@@ -2791,8 +3402,8 @@ Default: 9</td>
   <tbody>
     <tr>
       <td>T</td>
-      <td><ApiType parts={[["link", "IntrospectionType", "/api-v16/utilities#introspectiontype"]]} /></td>
-      <td><ApiType parts={[["link", "IntrospectionType", "/api-v16/utilities#introspectiontype"]]} /></td>
+      <td><ApiType parts={[["link", "IntrospectionType", "/api-v17/utilities#introspectiontype"]]} /></td>
+      <td><ApiType parts={[["link", "IntrospectionType", "/api-v17/utilities#introspectiontype"]]} /></td>
       <td>The introspection type represented by this named type reference.</td>
     </tr>
   </tbody>
@@ -2855,12 +3466,12 @@ Default: 9</td>
     </tr>
     <tr>
       <td>args</td>
-      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionInputValue", "/api-v16/utilities#introspectioninputvalue"], "[]"]} /></td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionInputValue", "/api-v17/utilities#introspectioninputvalue"], "[]"]} /></td>
       <td>Arguments accepted by this field or directive.</td>
     </tr>
     <tr>
       <td>type</td>
-      <td><ApiType parts={[["link", "IntrospectionOutputTypeRef", "/api-v16/utilities#introspectionoutputtyperef"]]} /></td>
+      <td><ApiType parts={[["link", "IntrospectionOutputTypeRef", "/api-v17/utilities#introspectionoutputtyperef"]]} /></td>
       <td>The GraphQL type reference or runtime type for this element.</td>
     </tr>
     <tr>
@@ -2907,7 +3518,7 @@ Default: 9</td>
     </tr>
     <tr>
       <td>type</td>
-      <td><ApiType parts={[["link", "IntrospectionInputTypeRef", "/api-v16/utilities#introspectioninputtyperef"]]} /></td>
+      <td><ApiType parts={[["link", "IntrospectionInputTypeRef", "/api-v17/utilities#introspectioninputtyperef"]]} /></td>
       <td>The GraphQL type reference or runtime type for this element.</td>
     </tr>
     <tr>
@@ -3016,12 +3627,12 @@ Default: 9</td>
     </tr>
     <tr>
       <td>locations</td>
-      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "DirectiveLocation", "/api-v16/language#directivelocation"], "[]"]} /></td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "DirectiveLocation", "/api-v17/language#directivelocation"], "[]"]} /></td>
       <td>Locations where this directive may be applied.</td>
     </tr>
     <tr>
       <td>args</td>
-      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionInputValue", "/api-v16/utilities#introspectioninputvalue"], "[]"]} /></td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionInputValue", "/api-v17/utilities#introspectioninputvalue"], "[]"]} /></td>
       <td>Arguments accepted by this field or directive.</td>
     </tr>
   </tbody>
@@ -3032,11 +3643,11 @@ Default: 9</td>
 <div className="api-category-toc">
   <p>
     <strong>Functions:</strong><br />
-    <a href="/api-v16/utilities#concatast">concatAST()</a>
+    <a href="/api-v17/utilities#concatast">concatAST()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#separateoperations">separateOperations()</a>
+    <a href="/api-v17/utilities#separateoperations">separateOperations()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#stripignoredcharacters">stripIgnoredCharacters()</a>
+    <a href="/api-v17/utilities#stripignoredcharacters">stripIgnoredCharacters()</a>
   </p>
 </div>
 
@@ -3050,7 +3661,7 @@ GraphQL source files which together represent one conceptual application.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "concatAST"], "(\n  ", ["parameter", "documents"], ": ", ["keyword", "readonly"], " ", ["link", "DocumentNode", "/api-v16/language#documentnode"], "[],\n): ", ["link", "DocumentNode", "/api-v16/language#documentnode"], ";"]} />
+<ApiSignature parts={[["name", "concatAST"], "(\n  ", ["parameter", "documents"], ": ", ["keyword", "readonly"], " ", ["link", "DocumentNode", "/api-v17/language#documentnode"], "[],\n): ", ["link", "DocumentNode", "/api-v17/language#documentnode"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -3067,7 +3678,7 @@ GraphQL source files which together represent one conceptual application.
   <tbody>
     <tr>
       <td>documents</td>
-      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "DocumentNode", "/api-v16/language#documentnode"], "[]"]} /></td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "DocumentNode", "/api-v17/language#documentnode"], "[]"]} /></td>
       <td>Document ASTs to concatenate.</td>
     </tr>
   </tbody>
@@ -3086,7 +3697,7 @@ GraphQL source files which together represent one conceptual application.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["link", "DocumentNode", "/api-v16/language#documentnode"]]} /></td>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v17/language#documentnode"]]} /></td>
       <td>A document AST containing all definitions from the provided documents.</td>
     </tr>
   </tbody>
@@ -3116,7 +3727,7 @@ refers to.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "separateOperations"], "(\n  ", ["parameter", "documentAST"], ": ", ["link", "DocumentNode", "/api-v16/language#documentnode"], ",\n): ", ["type", "ObjMap"], "\u003c", ["link", "DocumentNode", "/api-v16/language#documentnode"], "\u003e;"]} />
+<ApiSignature parts={[["name", "separateOperations"], "(\n  ", ["parameter", "documentAST"], ": ", ["link", "DocumentNode", "/api-v17/language#documentnode"], ",\n): ", ["type", "ObjMap"], "\u003c", ["link", "DocumentNode", "/api-v17/language#documentnode"], "\u003e;"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -3133,7 +3744,7 @@ refers to.
   <tbody>
     <tr>
       <td>documentAST</td>
-      <td><ApiType parts={[["link", "DocumentNode", "/api-v16/language#documentnode"]]} /></td>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v17/language#documentnode"]]} /></td>
       <td>The parsed GraphQL document AST.</td>
     </tr>
   </tbody>
@@ -3152,7 +3763,7 @@ refers to.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["link", "DocumentNode", "/api-v16/language#documentnode"], "\u003e"]} /></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["link", "DocumentNode", "/api-v17/language#documentnode"], "\u003e"]} /></td>
       <td>A map of operation names to documents containing each operation and its referenced fragments.</td>
     </tr>
   </tbody>
@@ -3214,7 +3825,7 @@ releases due to bugfixes or changes in the GraphQL specification.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "stripIgnoredCharacters"], "(\n  ", ["parameter", "source"], ": ", ["keyword", "string"], " \u007c ", ["link", "Source", "/api-v16/language#source"], ",\n): ", ["keyword", "string"], ";"]} />
+<ApiSignature parts={[["name", "stripIgnoredCharacters"], "(\n  ", ["parameter", "source"], ": ", ["keyword", "string"], " \u007c ", ["link", "Source", "/api-v17/language#source"], ",\n): ", ["keyword", "string"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -3231,7 +3842,7 @@ releases due to bugfixes or changes in the GraphQL specification.
   <tbody>
     <tr>
       <td>source</td>
-      <td><ApiType parts={[["keyword", "string"], " \u007c ", ["link", "Source", "/api-v16/language#source"]]} /></td>
+      <td><ApiType parts={[["keyword", "string"], " \u007c ", ["link", "Source", "/api-v17/language#source"]]} /></td>
       <td>The GraphQL source text or source object.</td>
     </tr>
   </tbody>
@@ -3317,34 +3928,44 @@ source; // => 'query Example{name}'
 <div className="api-category-toc">
   <p>
     <strong>Functions:</strong><br />
-    <a href="/api-v16/utilities#findbreakingchanges">findBreakingChanges()</a>
+    <a href="/api-v17/utilities#findbreakingchanges">findBreakingChanges()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#finddangerouschanges">findDangerousChanges()</a>
+    <a href="/api-v17/utilities#finddangerouschanges">findDangerousChanges()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#findschemachanges">findSchemaChanges()</a>
   </p>
   <p>
     <strong>Enumerations:</strong><br />
-    <a href="/api-v16/utilities#breakingchangetype">BreakingChangeType</a>
+    <a href="/api-v17/utilities#breakingchangetype">BreakingChangeType</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#dangerouschangetype">DangerousChangeType</a>
+    <a href="/api-v17/utilities#dangerouschangetype">DangerousChangeType</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#safechangetype">SafeChangeType</a>
   </p>
   <p>
     <strong>Types:</strong><br />
-    <a href="/api-v16/utilities#breakingchange">BreakingChange</a>
+    <a href="/api-v17/utilities#breakingchange">BreakingChange</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#dangerouschange">DangerousChange</a>
+    <a href="/api-v17/utilities#dangerouschange">DangerousChange</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#safechange">SafeChange</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#schemachange">SchemaChange</a>
   </p>
 </div>
 
 ### Functions
 
-#### findBreakingChanges()
+#### findBreakingChanges() <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
 
 Given two schemas, returns an Array containing descriptions of all the types
-of breaking changes covered by the other functions down below.
+of breaking changes covered by the other functions down below. This
+deprecated wrapper will be removed in v18; use `findSchemaChanges()` instead
+and filter for breaking changes.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "findBreakingChanges"], "(\n  ", ["parameter", "oldSchema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n  ", ["parameter", "newSchema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n): ", ["link", "BreakingChange", "/api-v16/utilities#breakingchange"], "[];"]} />
+<ApiSignature parts={[["name", "findBreakingChanges"], "(\n  ", ["parameter", "oldSchema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n  ", ["parameter", "newSchema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n): ", ["link", "BreakingChange", "/api-v17/utilities#breakingchange"], "[];"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -3361,12 +3982,12 @@ of breaking changes covered by the other functions down below.
   <tbody>
     <tr>
       <td>oldSchema</td>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
       <td>Schema before the change.</td>
     </tr>
     <tr>
       <td>newSchema</td>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
       <td>Schema after the change.</td>
     </tr>
   </tbody>
@@ -3385,7 +4006,7 @@ of breaking changes covered by the other functions down below.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["link", "BreakingChange", "/api-v16/utilities#breakingchange"], "[]"]} /></td>
+      <td><ApiType parts={[["link", "BreakingChange", "/api-v17/utilities#breakingchange"], "[]"]} /></td>
       <td>Breaking changes between the two schemas.</td>
     </tr>
   </tbody>
@@ -3399,41 +4020,33 @@ of breaking changes covered by the other functions down below.
 import { buildSchema, findBreakingChanges } from 'graphql/utilities';
 
 const oldSchema = buildSchema(`
-  type User {
-    id: ID!
-    name: String
-  }
-
   type Query {
-    viewer: User
+    greeting: String
   }
 `);
 const newSchema = buildSchema(`
-  type User {
-    id: ID!
-  }
-
   type Query {
-    viewer: User
+    hello: String
   }
 `);
 
 const changes = findBreakingChanges(oldSchema, newSchema);
 
-changes[0].type; // => 'FIELD_REMOVED'
-changes[0].description; // matches /User.name was removed/
+changes.map((change) => change.type); // => ['FIELD_REMOVED']
 ```
 
 <hr className="api-item-divider" />
 
-#### findDangerousChanges()
+#### findDangerousChanges() <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
 
 Given two schemas, returns an Array containing descriptions of all the types
 of potentially dangerous changes covered by the other functions down below.
+This deprecated wrapper will be removed in v18; use `findSchemaChanges()`
+instead and filter for dangerous changes.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "findDangerousChanges"], "(\n  ", ["parameter", "oldSchema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n  ", ["parameter", "newSchema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n): ", ["link", "DangerousChange", "/api-v16/utilities#dangerouschange"], "[];"]} />
+<ApiSignature parts={[["name", "findDangerousChanges"], "(\n  ", ["parameter", "oldSchema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n  ", ["parameter", "newSchema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n): ", ["link", "DangerousChange", "/api-v17/utilities#dangerouschange"], "[];"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -3450,12 +4063,12 @@ of potentially dangerous changes covered by the other functions down below.
   <tbody>
     <tr>
       <td>oldSchema</td>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
       <td>Schema before the change.</td>
     </tr>
     <tr>
       <td>newSchema</td>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
       <td>Schema after the change.</td>
     </tr>
   </tbody>
@@ -3474,7 +4087,7 @@ of potentially dangerous changes covered by the other functions down below.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["link", "DangerousChange", "/api-v16/utilities#dangerouschange"], "[]"]} /></td>
+      <td><ApiType parts={[["link", "DangerousChange", "/api-v17/utilities#dangerouschange"], "[]"]} /></td>
       <td>Dangerous changes between the two schemas.</td>
     </tr>
   </tbody>
@@ -3509,8 +4122,86 @@ const newSchema = buildSchema(`
 
 const changes = findDangerousChanges(oldSchema, newSchema);
 
-changes[0].type; // => 'VALUE_ADDED_TO_ENUM'
-changes[0].description; // matches /EMPIRE was added/
+changes.map((change) => change.type); // => ['VALUE_ADDED_TO_ENUM']
+```
+
+<hr className="api-item-divider" />
+
+#### findSchemaChanges()
+
+Finds all schema changes between two schemas.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "findSchemaChanges"], "(\n  ", ["parameter", "oldSchema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n  ", ["parameter", "newSchema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n): ", ["link", "SchemaChange", "/api-v17/utilities#schemachange"], "[];"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>oldSchema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
+      <td>Schema before the change.</td>
+    </tr>
+    <tr>
+      <td>newSchema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
+      <td>Schema after the change.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "SchemaChange", "/api-v17/utilities#schemachange"], "[]"]} /></td>
+      <td>Safe, dangerous, and breaking changes between the two schemas.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, findSchemaChanges } from 'graphql/utilities';
+
+const oldSchema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const newSchema = buildSchema(`
+  type Query {
+    greeting(name: String): String
+    farewell: String
+  }
+`);
+
+const changes = findSchemaChanges(oldSchema, newSchema);
+
+changes.map((change) => change.type); // => ['OPTIONAL_ARG_ADDED', 'FIELD_ADDED']
 ```
 
 ### Enumerations
@@ -3518,6 +4209,8 @@ changes[0].description; // matches /EMPIRE was added/
 #### BreakingChangeType
 
 **Enumeration.** Categories of schema changes that may break existing operations.
+
+> This is not a TypeScript `enum`. GraphQL.js exports `BreakingChangeType` as both a runtime const object of literal values and a TypeScript type alias for those values.
 
 <hr className="api-subsection-divider" />
 
@@ -3528,89 +4221,72 @@ changes[0].description; // matches /EMPIRE was added/
     <tr>
       <th>Name</th>
       <th>Value</th>
-      <th>Description</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td><code>{"TYPE_REMOVED"}</code></td>
       <td><code>{"\"TYPE_REMOVED\""}</code></td>
-      <td>Breaking change code for type removed.</td>
     </tr>
     <tr>
       <td><code>{"TYPE_CHANGED_KIND"}</code></td>
       <td><code>{"\"TYPE_CHANGED_KIND\""}</code></td>
-      <td>Breaking change code for type changed kind.</td>
     </tr>
     <tr>
       <td><code>{"TYPE_REMOVED_FROM_UNION"}</code></td>
       <td><code>{"\"TYPE_REMOVED_FROM_UNION\""}</code></td>
-      <td>Breaking change code for type removed from union.</td>
     </tr>
     <tr>
       <td><code>{"VALUE_REMOVED_FROM_ENUM"}</code></td>
       <td><code>{"\"VALUE_REMOVED_FROM_ENUM\""}</code></td>
-      <td>Breaking change code for value removed from enum.</td>
     </tr>
     <tr>
       <td><code>{"REQUIRED_INPUT_FIELD_ADDED"}</code></td>
       <td><code>{"\"REQUIRED_INPUT_FIELD_ADDED\""}</code></td>
-      <td>Breaking change code for required input field added.</td>
     </tr>
     <tr>
       <td><code>{"IMPLEMENTED_INTERFACE_REMOVED"}</code></td>
       <td><code>{"\"IMPLEMENTED_INTERFACE_REMOVED\""}</code></td>
-      <td>Breaking change code for implemented interface removed.</td>
     </tr>
     <tr>
       <td><code>{"FIELD_REMOVED"}</code></td>
       <td><code>{"\"FIELD_REMOVED\""}</code></td>
-      <td>Breaking change code for field removed.</td>
     </tr>
     <tr>
       <td><code>{"FIELD_CHANGED_KIND"}</code></td>
       <td><code>{"\"FIELD_CHANGED_KIND\""}</code></td>
-      <td>Breaking change code for field changed kind.</td>
     </tr>
     <tr>
       <td><code>{"REQUIRED_ARG_ADDED"}</code></td>
       <td><code>{"\"REQUIRED_ARG_ADDED\""}</code></td>
-      <td>Breaking change code for required arg added.</td>
     </tr>
     <tr>
       <td><code>{"ARG_REMOVED"}</code></td>
       <td><code>{"\"ARG_REMOVED\""}</code></td>
-      <td>Breaking change code for arg removed.</td>
     </tr>
     <tr>
       <td><code>{"ARG_CHANGED_KIND"}</code></td>
       <td><code>{"\"ARG_CHANGED_KIND\""}</code></td>
-      <td>Breaking change code for arg changed kind.</td>
     </tr>
     <tr>
       <td><code>{"DIRECTIVE_REMOVED"}</code></td>
       <td><code>{"\"DIRECTIVE_REMOVED\""}</code></td>
-      <td>Breaking change code for directive removed.</td>
     </tr>
     <tr>
       <td><code>{"DIRECTIVE_ARG_REMOVED"}</code></td>
       <td><code>{"\"DIRECTIVE_ARG_REMOVED\""}</code></td>
-      <td>Breaking change code for directive arg removed.</td>
     </tr>
     <tr>
       <td><code>{"REQUIRED_DIRECTIVE_ARG_ADDED"}</code></td>
       <td><code>{"\"REQUIRED_DIRECTIVE_ARG_ADDED\""}</code></td>
-      <td>Breaking change code for required directive arg added.</td>
     </tr>
     <tr>
       <td><code>{"DIRECTIVE_REPEATABLE_REMOVED"}</code></td>
       <td><code>{"\"DIRECTIVE_REPEATABLE_REMOVED\""}</code></td>
-      <td>Breaking change code for directive repeatable removed.</td>
     </tr>
     <tr>
       <td><code>{"DIRECTIVE_LOCATION_REMOVED"}</code></td>
       <td><code>{"\"DIRECTIVE_LOCATION_REMOVED\""}</code></td>
-      <td>Breaking change code for directive location removed.</td>
     </tr>
   </tbody>
 </table>
@@ -3621,6 +4297,8 @@ changes[0].description; // matches /EMPIRE was added/
 
 **Enumeration.** Categories of schema changes that may be dangerous for existing operations.
 
+> This is not a TypeScript `enum`. GraphQL.js exports `DangerousChangeType` as both a runtime const object of literal values and a TypeScript type alias for those values.
+
 <hr className="api-subsection-divider" />
 
 <div className="api-subsection-title">Members</div>
@@ -3630,39 +4308,103 @@ changes[0].description; // matches /EMPIRE was added/
     <tr>
       <th>Name</th>
       <th>Value</th>
-      <th>Description</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td><code>{"VALUE_ADDED_TO_ENUM"}</code></td>
       <td><code>{"\"VALUE_ADDED_TO_ENUM\""}</code></td>
-      <td>Dangerous change code for value added to enum.</td>
     </tr>
     <tr>
       <td><code>{"TYPE_ADDED_TO_UNION"}</code></td>
       <td><code>{"\"TYPE_ADDED_TO_UNION\""}</code></td>
-      <td>Dangerous change code for type added to union.</td>
     </tr>
     <tr>
       <td><code>{"OPTIONAL_INPUT_FIELD_ADDED"}</code></td>
       <td><code>{"\"OPTIONAL_INPUT_FIELD_ADDED\""}</code></td>
-      <td>Dangerous change code for optional input field added.</td>
     </tr>
     <tr>
       <td><code>{"OPTIONAL_ARG_ADDED"}</code></td>
       <td><code>{"\"OPTIONAL_ARG_ADDED\""}</code></td>
-      <td>Dangerous change code for optional arg added.</td>
     </tr>
     <tr>
       <td><code>{"IMPLEMENTED_INTERFACE_ADDED"}</code></td>
       <td><code>{"\"IMPLEMENTED_INTERFACE_ADDED\""}</code></td>
-      <td>Dangerous change code for implemented interface added.</td>
     </tr>
     <tr>
       <td><code>{"ARG_DEFAULT_VALUE_CHANGE"}</code></td>
       <td><code>{"\"ARG_DEFAULT_VALUE_CHANGE\""}</code></td>
-      <td>Dangerous change code for arg default value change.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### SafeChangeType
+
+**Enumeration.** Categories of schema changes that are considered safe for existing operations.
+
+> This is not a TypeScript `enum`. GraphQL.js exports `SafeChangeType` as both a runtime const object of literal values and a TypeScript type alias for those values.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>{"DESCRIPTION_CHANGED"}</code></td>
+      <td><code>{"\"DESCRIPTION_CHANGED\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"TYPE_ADDED"}</code></td>
+      <td><code>{"\"TYPE_ADDED\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"OPTIONAL_INPUT_FIELD_ADDED"}</code></td>
+      <td><code>{"\"OPTIONAL_INPUT_FIELD_ADDED\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"OPTIONAL_ARG_ADDED"}</code></td>
+      <td><code>{"\"OPTIONAL_ARG_ADDED\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"DIRECTIVE_ADDED"}</code></td>
+      <td><code>{"\"DIRECTIVE_ADDED\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"FIELD_ADDED"}</code></td>
+      <td><code>{"\"FIELD_ADDED\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"DIRECTIVE_REPEATABLE_ADDED"}</code></td>
+      <td><code>{"\"DIRECTIVE_REPEATABLE_ADDED\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"DIRECTIVE_LOCATION_ADDED"}</code></td>
+      <td><code>{"\"DIRECTIVE_LOCATION_ADDED\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"OPTIONAL_DIRECTIVE_ARG_ADDED"}</code></td>
+      <td><code>{"\"OPTIONAL_DIRECTIVE_ARG_ADDED\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"FIELD_CHANGED_KIND_SAFE"}</code></td>
+      <td><code>{"\"FIELD_CHANGED_KIND_SAFE\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"ARG_CHANGED_KIND_SAFE"}</code></td>
+      <td><code>{"\"ARG_CHANGED_KIND_SAFE\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"ARG_DEFAULT_VALUE_ADDED"}</code></td>
+      <td><code>{"\"ARG_DEFAULT_VALUE_ADDED\""}</code></td>
     </tr>
   </tbody>
 </table>
@@ -3688,7 +4430,7 @@ changes[0].description; // matches /EMPIRE was added/
   <tbody>
     <tr>
       <td>type</td>
-      <td><ApiType parts={[["link", "BreakingChangeType", "/api-v16/utilities#breakingchangetype"]]} /></td>
+      <td><ApiType parts={[["link", "BreakingChangeType", "/api-v17/utilities#breakingchangetype"]]} /></td>
       <td>Specific kind of breaking schema change.</td>
     </tr>
     <tr>
@@ -3720,7 +4462,7 @@ changes[0].description; // matches /EMPIRE was added/
   <tbody>
     <tr>
       <td>type</td>
-      <td><ApiType parts={[["link", "DangerousChangeType", "/api-v16/utilities#dangerouschangetype"]]} /></td>
+      <td><ApiType parts={[["link", "DangerousChangeType", "/api-v17/utilities#dangerouschangetype"]]} /></td>
       <td>Specific kind of dangerous schema change.</td>
     </tr>
     <tr>
@@ -3731,14 +4473,52 @@ changes[0].description; // matches /EMPIRE was added/
   </tbody>
 </table>
 
+<hr className="api-item-divider" />
+
+#### SafeChange
+
+**Interface.** Description of a schema change that is considered safe for existing operations.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["link", "SafeChangeType", "/api-v17/utilities#safechangetype"]]} /></td>
+      <td>Specific kind of safe schema change.</td>
+    </tr>
+    <tr>
+      <td>description</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Human-readable description of the safe schema change.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### SchemaChange
+
+**Type alias.** Any schema change detected between two schemas.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "SchemaChange"], " =\n  \u007c ", ["link", "SafeChange", "/api-v17/utilities#safechange"], "\n  \u007c ", ["link", "DangerousChange", "/api-v17/utilities#dangerouschange"], "\n  \u007c ", ["link", "BreakingChange", "/api-v17/utilities#breakingchange"], ";"]} />
+
 ## Category: Operations
 
 <div className="api-category-toc">
   <p>
     <strong>Functions:</strong><br />
-    <a href="/api-v16/utilities#getoperationast">getOperationAST()</a>
-    <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#getoperationroottype">getOperationRootType()</a>
+    <a href="/api-v17/utilities#getoperationast">getOperationAST()</a>
   </p>
 </div>
 
@@ -3752,7 +4532,7 @@ provided in the document.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "getOperationAST"], "(\n  ", ["parameter", "documentAST"], ": ", ["link", "DocumentNode", "/api-v16/language#documentnode"], ",\n  ", ["parameter", "operationName"], "?: ", ["type", "Maybe"], "\u003c", ["keyword", "string"], "\u003e,\n): ", ["type", "Maybe"], "\u003c", ["link", "OperationDefinitionNode", "/api-v16/language#operationdefinitionnode"], "\u003e;"]} />
+<ApiSignature parts={[["name", "getOperationAST"], "(\n  ", ["parameter", "documentAST"], ": ", ["link", "DocumentNode", "/api-v17/language#documentnode"], ",\n  ", ["parameter", "operationName"], "?: ", ["type", "Maybe"], "\u003c", ["keyword", "string"], "\u003e,\n): ", ["type", "Maybe"], "\u003c", ["link", "OperationDefinitionNode", "/api-v17/language#operationdefinitionnode"], "\u003e;"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -3769,7 +4549,7 @@ provided in the document.
   <tbody>
     <tr>
       <td>documentAST</td>
-      <td><ApiType parts={[["link", "DocumentNode", "/api-v16/language#documentnode"]]} /></td>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v17/language#documentnode"]]} /></td>
       <td>The parsed GraphQL document AST.</td>
     </tr>
     <tr>
@@ -3793,7 +4573,7 @@ provided in the document.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "OperationDefinitionNode", "/api-v16/language#operationdefinitionnode"], "\u003e"]} /></td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "OperationDefinitionNode", "/api-v17/language#operationdefinitionnode"], "\u003e"]} /></td>
       <td>The resolved operation ast.</td>
     </tr>
   </tbody>
@@ -3814,89 +4594,18 @@ operation.name.value; // => 'GetName'
 getOperationAST(document, 'Missing'); // => undefined
 ```
 
-<hr className="api-item-divider" />
-
-#### getOperationRootType() <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
-
-Extracts the root type of the operation from the schema. This deprecated
-helper is retained for backwards compatibility; call
-[`GraphQLSchema.getRootType`](/api-v16/type#getroottype) instead because getOperationRootType will be
-removed in v17.
-
-**Signature:**
-
-<ApiSignature parts={[["name", "getOperationRootType"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n  ", ["parameter", "operation"], ": ", ["link", "OperationDefinitionNode", "/api-v16/language#operationdefinitionnode"], " \u007c ", ["link", "OperationTypeDefinitionNode", "/api-v16/language#operationtypedefinitionnode"], ",\n): ", ["link", "GraphQLObjectType", "/api-v16/type#graphqlobjecttype"], ";"]} />
-
-<hr className="api-subsection-divider" />
-
-<div className="api-subsection-title">Arguments</div>
-
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>schema</td>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
-      <td>GraphQL schema to use.</td>
-    </tr>
-    <tr>
-      <td>operation</td>
-      <td><ApiType parts={[["link", "OperationDefinitionNode", "/api-v16/language#operationdefinitionnode"], " \u007c ", ["link", "OperationTypeDefinitionNode", "/api-v16/language#operationtypedefinitionnode"]]} /></td>
-      <td>The operation definition to inspect.</td>
-    </tr>
-  </tbody>
-</table>
-
-<hr className="api-subsection-divider" />
-
-<div className="api-subsection-title">Returns</div>
-
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><ApiType parts={[["link", "GraphQLObjectType", "/api-v16/type#graphqlobjecttype"]]} /></td>
-      <td>The resolved operation root type.</td>
-    </tr>
-  </tbody>
-</table>
-
-<hr className="api-subsection-divider" />
-
-<div className="api-subsection-title">Example</div>
-
-```ts
-import { buildSchema, getOperationRootType } from 'graphql/utilities';
-import { parse } from 'graphql/language';
-
-const schema = buildSchema('type Query { name: String }');
-const operation = parse('{ name }').definitions[0];
-const rootType = getOperationRootType(schema, operation);
-
-rootType.name; // => 'Query'
-```
-
 ## Category: Schema Printing
 
 <div className="api-category-toc">
   <p>
     <strong>Functions:</strong><br />
-    <a href="/api-v16/utilities#printschema">printSchema()</a>
+    <a href="/api-v17/utilities#printschema">printSchema()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#printintrospectionschema">printIntrospectionSchema()</a>
+    <a href="/api-v17/utilities#printintrospectionschema">printIntrospectionSchema()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#printtype">printType()</a>
+    <a href="/api-v17/utilities#printtype">printType()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#printdirective">printDirective()</a>
   </p>
 </div>
 
@@ -3908,7 +4617,7 @@ Prints the schema.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "printSchema"], "(", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], "): ", ["keyword", "string"], ";"]} />
+<ApiSignature parts={[["name", "printSchema"], "(", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], "): ", ["keyword", "string"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -3925,7 +4634,7 @@ Prints the schema.
   <tbody>
     <tr>
       <td>schema</td>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
       <td>GraphQL schema to use.</td>
     </tr>
   </tbody>
@@ -3976,7 +4685,7 @@ Prints the introspection schema.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "printIntrospectionSchema"], "(", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], "): ", ["keyword", "string"], ";"]} />
+<ApiSignature parts={[["name", "printIntrospectionSchema"], "(", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], "): ", ["keyword", "string"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -3993,7 +4702,7 @@ Prints the introspection schema.
   <tbody>
     <tr>
       <td>schema</td>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
       <td>GraphQL schema to use.</td>
     </tr>
   </tbody>
@@ -4046,7 +4755,7 @@ Prints the type.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "printType"], "(", ["parameter", "type"], ": ", ["link", "GraphQLNamedType", "/api-v16/type#graphqlnamedtype"], "): ", ["keyword", "string"], ";"]} />
+<ApiSignature parts={[["name", "printType"], "(", ["parameter", "type"], ": ", ["link", "GraphQLNamedType", "/api-v17/type#graphqlnamedtype"], "): ", ["keyword", "string"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -4063,7 +4772,7 @@ Prints the type.
   <tbody>
     <tr>
       <td>type</td>
-      <td><ApiType parts={[["link", "GraphQLNamedType", "/api-v16/type#graphqlnamedtype"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLNamedType", "/api-v17/type#graphqlnamedtype"]]} /></td>
       <td>The GraphQL type to inspect.</td>
     </tr>
   </tbody>
@@ -4109,18 +4818,88 @@ const schema = buildSchema(`
 printType(schema.getType('User')); // => ['type User {', '  id: ID!', '  name: String', '}'].join('\n')
 ```
 
+<hr className="api-item-divider" />
+
+#### printDirective()
+
+Prints a directive definition in GraphQL SDL.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "printDirective"], "(", ["parameter", "directive"], ": ", ["link", "GraphQLDirective", "/api-v17/type#graphqldirective"], "): ", ["keyword", "string"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>directive</td>
+      <td><ApiType parts={[["link", "GraphQLDirective", "/api-v17/type#graphqldirective"]]} /></td>
+      <td>Directive to print.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>SDL string for the directive definition.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { DirectiveLocation, GraphQLDirective, GraphQLString } from 'graphql/type';
+import { printDirective } from 'graphql/utilities';
+
+const authDirective = new GraphQLDirective({
+  name: 'auth',
+  description: 'Requires authorization.',
+  locations: [DirectiveLocation.FIELD_DEFINITION],
+  args: {
+    scope: { type: GraphQLString },
+  },
+});
+
+printDirective(authDirective); // => '"""Requires authorization."""\ndirective @auth(scope: String) on FIELD_DEFINITION'
+```
+
 ## Category: Schema Coordinates
 
 <div className="api-category-toc">
   <p>
     <strong>Functions:</strong><br />
-    <a href="/api-v16/utilities#resolveschemacoordinate">resolveSchemaCoordinate()</a>
+    <a href="/api-v17/utilities#resolveschemacoordinate">resolveSchemaCoordinate()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#resolveastschemacoordinate">resolveASTSchemaCoordinate()</a>
+    <a href="/api-v17/utilities#resolveastschemacoordinate">resolveASTSchemaCoordinate()</a>
   </p>
   <p>
     <strong>Types:</strong><br />
-    <a href="/api-v16/utilities#resolvedschemaelement">ResolvedSchemaElement</a>
+    <a href="/api-v17/utilities#resolvedschemaelement">ResolvedSchemaElement</a>
   </p>
 </div>
 
@@ -4138,7 +4917,7 @@ https://spec.graphql.org/draft/#sec-Schema-Coordinates.Semantics
 
 **Signature:**
 
-<ApiSignature parts={[["name", "resolveSchemaCoordinate"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n  ", ["parameter", "schemaCoordinate"], ": ", ["keyword", "string"], " \u007c ", ["link", "Source", "/api-v16/language#source"], ",\n): ", ["link", "ResolvedSchemaElement", "/api-v16/utilities#resolvedschemaelement"], " \u007c ", ["keyword", "undefined"], ";"]} />
+<ApiSignature parts={[["name", "resolveSchemaCoordinate"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n  ", ["parameter", "schemaCoordinate"], ": ", ["keyword", "string"], " \u007c ", ["link", "Source", "/api-v17/language#source"], ",\n): ", ["link", "ResolvedSchemaElement", "/api-v17/utilities#resolvedschemaelement"], " \u007c ", ["keyword", "undefined"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -4155,12 +4934,12 @@ https://spec.graphql.org/draft/#sec-Schema-Coordinates.Semantics
   <tbody>
     <tr>
       <td>schema</td>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
       <td>GraphQL schema to use.</td>
     </tr>
     <tr>
       <td>schemaCoordinate</td>
-      <td><ApiType parts={[["keyword", "string"], " \u007c ", ["link", "Source", "/api-v16/language#source"]]} /></td>
+      <td><ApiType parts={[["keyword", "string"], " \u007c ", ["link", "Source", "/api-v17/language#source"]]} /></td>
       <td>The schema coordinate to resolve.</td>
     </tr>
   </tbody>
@@ -4179,7 +4958,7 @@ https://spec.graphql.org/draft/#sec-Schema-Coordinates.Semantics
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["link", "ResolvedSchemaElement", "/api-v16/utilities#resolvedschemaelement"], " \u007c ", ["keyword", "undefined"]]} /></td>
+      <td><ApiType parts={[["link", "ResolvedSchemaElement", "/api-v17/utilities#resolvedschemaelement"], " \u007c ", ["keyword", "undefined"]]} /></td>
       <td>The schema element identified by the coordinate, or undefined if none exists.</td>
     </tr>
   </tbody>
@@ -4226,7 +5005,7 @@ Resolves schema coordinate from a parsed SchemaCoordinate node.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "resolveASTSchemaCoordinate"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n  ", ["parameter", "schemaCoordinate"], ": ", ["link", "SchemaCoordinateNode", "/api-v16/language#schemacoordinatenode"], ",\n): ", ["link", "ResolvedSchemaElement", "/api-v16/utilities#resolvedschemaelement"], " \u007c ", ["keyword", "undefined"], ";"]} />
+<ApiSignature parts={[["name", "resolveASTSchemaCoordinate"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n  ", ["parameter", "schemaCoordinate"], ": ", ["link", "SchemaCoordinateNode", "/api-v17/language#schemacoordinatenode"], ",\n): ", ["link", "ResolvedSchemaElement", "/api-v17/utilities#resolvedschemaelement"], " \u007c ", ["keyword", "undefined"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -4243,12 +5022,12 @@ Resolves schema coordinate from a parsed SchemaCoordinate node.
   <tbody>
     <tr>
       <td>schema</td>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
       <td>GraphQL schema to use.</td>
     </tr>
     <tr>
       <td>schemaCoordinate</td>
-      <td><ApiType parts={[["link", "SchemaCoordinateNode", "/api-v16/language#schemacoordinatenode"]]} /></td>
+      <td><ApiType parts={[["link", "SchemaCoordinateNode", "/api-v17/language#schemacoordinatenode"]]} /></td>
       <td>The schema coordinate to resolve.</td>
     </tr>
   </tbody>
@@ -4267,7 +5046,7 @@ Resolves schema coordinate from a parsed SchemaCoordinate node.
   </thead>
   <tbody>
     <tr>
-      <td><ApiType parts={[["link", "ResolvedSchemaElement", "/api-v16/utilities#resolvedschemaelement"], " \u007c ", ["keyword", "undefined"]]} /></td>
+      <td><ApiType parts={[["link", "ResolvedSchemaElement", "/api-v17/utilities#resolvedschemaelement"], " \u007c ", ["keyword", "undefined"]]} /></td>
       <td>The schema element identified by the parsed coordinate, or undefined if none exists.</td>
     </tr>
   </tbody>
@@ -4307,11 +5086,11 @@ resolved.fieldArgument.name; // => 'name'
 <div className="api-category-toc">
   <p>
     <strong>Functions:</strong><br />
-    <a href="/api-v16/utilities#isequaltype">isEqualType()</a>
+    <a href="/api-v17/utilities#isequaltype">isEqualType()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#istypesubtypeof">isTypeSubTypeOf()</a>
+    <a href="/api-v17/utilities#istypesubtypeof">isTypeSubTypeOf()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#dotypesoverlap">doTypesOverlap()</a>
+    <a href="/api-v17/utilities#dotypesoverlap">doTypesOverlap()</a>
   </p>
 </div>
 
@@ -4323,7 +5102,7 @@ Provided two types, return true if the types are equal (invariant).
 
 **Signature:**
 
-<ApiSignature parts={[["name", "isEqualType"], "(\n  ", ["parameter", "typeA"], ": ", ["link", "GraphQLType", "/api-v16/type#graphqltype"], ",\n  ", ["parameter", "typeB"], ": ", ["link", "GraphQLType", "/api-v16/type#graphqltype"], ",\n): ", ["keyword", "boolean"], ";"]} />
+<ApiSignature parts={[["name", "isEqualType"], "(\n  ", ["parameter", "typeA"], ": ", ["link", "GraphQLType", "/api-v17/type#graphqltype"], ",\n  ", ["parameter", "typeB"], ": ", ["link", "GraphQLType", "/api-v17/type#graphqltype"], ",\n): ", ["keyword", "boolean"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -4340,12 +5119,12 @@ Provided two types, return true if the types are equal (invariant).
   <tbody>
     <tr>
       <td>typeA</td>
-      <td><ApiType parts={[["link", "GraphQLType", "/api-v16/type#graphqltype"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLType", "/api-v17/type#graphqltype"]]} /></td>
       <td>The first GraphQL type to compare.</td>
     </tr>
     <tr>
       <td>typeB</td>
-      <td><ApiType parts={[["link", "GraphQLType", "/api-v16/type#graphqltype"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLType", "/api-v17/type#graphqltype"]]} /></td>
       <td>The second GraphQL type to compare.</td>
     </tr>
   </tbody>
@@ -4396,7 +5175,7 @@ equal or a subset of the second super type (covariant).
 
 **Signature:**
 
-<ApiSignature parts={[["name", "isTypeSubTypeOf"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n  ", ["parameter", "maybeSubType"], ": ", ["link", "GraphQLType", "/api-v16/type#graphqltype"], ",\n  ", ["parameter", "superType"], ": ", ["link", "GraphQLType", "/api-v16/type#graphqltype"], ",\n): ", ["keyword", "boolean"], ";"]} />
+<ApiSignature parts={[["name", "isTypeSubTypeOf"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n  ", ["parameter", "maybeSubType"], ": ", ["link", "GraphQLType", "/api-v17/type#graphqltype"], ",\n  ", ["parameter", "superType"], ": ", ["link", "GraphQLType", "/api-v17/type#graphqltype"], ",\n): ", ["keyword", "boolean"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -4413,17 +5192,17 @@ equal or a subset of the second super type (covariant).
   <tbody>
     <tr>
       <td>schema</td>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
       <td>GraphQL schema to use.</td>
     </tr>
     <tr>
       <td>maybeSubType</td>
-      <td><ApiType parts={[["link", "GraphQLType", "/api-v16/type#graphqltype"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLType", "/api-v17/type#graphqltype"]]} /></td>
       <td>The possible subtype to compare.</td>
     </tr>
     <tr>
       <td>superType</td>
-      <td><ApiType parts={[["link", "GraphQLType", "/api-v16/type#graphqltype"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLType", "/api-v17/type#graphqltype"]]} /></td>
       <td>The possible supertype to compare.</td>
     </tr>
   </tbody>
@@ -4496,7 +5275,7 @@ This function is commutative.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "doTypesOverlap"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n  ", ["parameter", "typeA"], ": ", ["link", "GraphQLCompositeType", "/api-v16/type#graphqlcompositetype"], ",\n  ", ["parameter", "typeB"], ": ", ["link", "GraphQLCompositeType", "/api-v16/type#graphqlcompositetype"], ",\n): ", ["keyword", "boolean"], ";"]} />
+<ApiSignature parts={[["name", "doTypesOverlap"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n  ", ["parameter", "typeA"], ": ", ["link", "GraphQLCompositeType", "/api-v17/type#graphqlcompositetype"], ",\n  ", ["parameter", "typeB"], ": ", ["link", "GraphQLCompositeType", "/api-v17/type#graphqlcompositetype"], ",\n): ", ["keyword", "boolean"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -4513,17 +5292,17 @@ This function is commutative.
   <tbody>
     <tr>
       <td>schema</td>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
       <td>GraphQL schema to use.</td>
     </tr>
     <tr>
       <td>typeA</td>
-      <td><ApiType parts={[["link", "GraphQLCompositeType", "/api-v16/type#graphqlcompositetype"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLCompositeType", "/api-v17/type#graphqlcompositetype"]]} /></td>
       <td>The first GraphQL type to compare.</td>
     </tr>
     <tr>
       <td>typeB</td>
-      <td><ApiType parts={[["link", "GraphQLCompositeType", "/api-v16/type#graphqlcompositetype"]]} /></td>
+      <td><ApiType parts={[["link", "GraphQLCompositeType", "/api-v17/type#graphqlcompositetype"]]} /></td>
       <td>The second GraphQL type to compare.</td>
     </tr>
   </tbody>
@@ -4586,7 +5365,7 @@ doTypesOverlap(schema, StillImage, Video); // => false
 <div className="api-category-toc">
   <p>
     <strong>Types:</strong><br />
-    <a href="/api-v16/utilities#typedquerydocumentnode">TypedQueryDocumentNode</a>
+    <a href="/api-v17/utilities#typedquerydocumentnode">TypedQueryDocumentNode</a>
   </p>
 </div>
 
@@ -4625,7 +5404,7 @@ doTypesOverlap(schema, StillImage, Video); // => false
   </tbody>
 </table>
 
-<ApiSignature parts={[["keyword", "interface"], " ", ["name", "TypedQueryDocumentNode"], "\u003c\n  ", ["type", "TResponseData"], " = \u007b [", ["parameter", "key"], ": ", ["keyword", "string"], "]: ", ["keyword", "any"], " \u007d,\n  ", ["type", "TRequestVariables"], " = \u007b [", ["parameter", "key"], ": ", ["keyword", "string"], "]: ", ["keyword", "any"], " \u007d,\n\u003e ", ["keyword", "extends"], " ", ["link", "DocumentNode", "/api-v16/language#documentnode"]]} />
+<ApiSignature parts={[["keyword", "interface"], " ", ["name", "TypedQueryDocumentNode"], "\u003c\n  ", ["type", "TResponseData"], " = \u007b [", ["parameter", "key"], ": ", ["keyword", "string"], "]: ", ["keyword", "any"], " \u007d,\n  ", ["type", "TRequestVariables"], " = \u007b [", ["parameter", "key"], ": ", ["keyword", "string"], "]: ", ["keyword", "any"], " \u007d,\n\u003e ", ["keyword", "extends"], " ", ["link", "DocumentNode", "/api-v17/language#documentnode"]]} />
 
 <hr className="api-subsection-divider" />
 
@@ -4642,7 +5421,7 @@ doTypesOverlap(schema, StillImage, Video); // => false
   <tbody>
     <tr>
       <td>definitions</td>
-      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ExecutableDefinitionNode", "/api-v16/language#executabledefinitionnode"], "[]"]} /></td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ExecutableDefinitionNode", "/api-v17/language#executabledefinitionnode"], "[]"]} /></td>
       <td>Top-level executable and type-system definitions in this document.</td>
     </tr>
     <tr>

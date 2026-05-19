@@ -80,6 +80,117 @@ div[id^='headlessui-menu-items'] {
   @apply gap-6;
 }
 
+/*
+ * The API versions are real top-level route folders so Nextra can build their sidebars.
+ * Hide the version folders from non-API sidebars; keep both visible inside either API
+ * reference so users can switch versions even when a folder is collapsed.
+ */
+.site-route:not(.api-docs-route)
+  .nextra-sidebar-container
+  li:has(> button[data-href='/api-v16']),
+.site-route:not(.api-docs-route)
+  .nextra-sidebar-container
+  li:has(> button[data-href='/api-v17']) {
+  display: none;
+}
+
+.api-category-toc {
+  margin: 1.25rem 0 2rem;
+  font-size: 0.925rem;
+  line-height: 1.8;
+  hyphens: none;
+  overflow-wrap: normal;
+  text-align: center !important;
+  word-break: normal;
+}
+
+.api-category-toc p {
+  margin: 0.45rem 0;
+  hyphens: none;
+  overflow-wrap: normal;
+  text-align: center !important;
+  word-break: normal;
+}
+
+.api-category-toc a {
+  display: inline-block;
+  hyphens: none;
+  overflow-wrap: normal;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  word-break: keep-all;
+}
+
+.api-item-divider {
+  margin: 2rem 0;
+  border: 0;
+  border-top: 1px solid rgb(156 163 175);
+}
+
+.api-subsection-divider {
+  margin: 1rem 0 0.65rem;
+  border: 0;
+  border-top: 1px solid rgb(209 213 219);
+}
+
+.api-subsection-title {
+  margin-bottom: 0.55rem;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: rgb(75 85 99);
+}
+
+.api-tag {
+  align-items: center;
+  background: #fffbeb;
+  border: 1px solid #fbbf24;
+  border-radius: 999px;
+  color: #92400e;
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+  margin-left: 0.35rem;
+  padding: 0.12rem 0.42rem;
+  vertical-align: 0.08rem;
+  white-space: nowrap;
+}
+
+.api-docs-route table {
+  border-collapse: collapse;
+  display: table;
+  margin: 1rem 0;
+  width: 100%;
+}
+
+.api-docs-route th,
+.api-docs-route td {
+  border: 1px solid rgb(209 213 219);
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.api-docs-route th {
+  background: #f6f8fa;
+  color: #24292e;
+  font-weight: 650;
+}
+
+.api-docs-route table .api-type {
+  padding: 0.55rem 0.75rem;
+  width: 100%;
+}
+
+.api-docs-route .api-type::before,
+.api-docs-route .api-type::after,
+.api-docs-route .api-signature code::before,
+.api-docs-route .api-signature code::after {
+  content: none;
+}
+
 /* Move nav links to the left */
 .nextra-nav-container nav {
   @apply justify-start;
@@ -136,6 +247,119 @@ div[id^='headlessui-menu-items'] {
 
 ::selection {
   @apply bg-primary/50 dark:bg-primary;
+}
+
+.api-signature {
+  background: #f6f8fa;
+  border-radius: 0.375rem;
+  color: #24292e;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  margin: 1rem 0;
+  overflow-x: auto;
+  overflow-wrap: normal;
+  padding: 0.75rem 1rem;
+  tab-size: 2;
+  white-space: pre-wrap;
+  word-break: normal;
+}
+
+pre.api-signature > code:not([class*='twoslash-']) {
+  display: block !important;
+  white-space: inherit;
+}
+
+pre.api-signature > code:not([class*='twoslash-']) > span,
+pre.api-signature > code:not([class*='twoslash-']) a {
+  display: inline !important;
+  padding: 0 !important;
+}
+
+.api-signature :where(a:hover),
+.api-type :where(a:hover) {
+  text-decoration: underline;
+}
+
+.api-signature-name {
+  color: #6f42c1;
+}
+
+.api-signature-keyword {
+  color: #d73a49;
+}
+
+.api-signature-type {
+  color: #005cc5;
+  text-decoration: none;
+}
+
+.api-signature-parameter,
+.api-signature-property {
+  color: #e36209;
+}
+
+.api-signature-literal {
+  color: #032f62;
+}
+
+.api-type {
+  background: #f6f8fa;
+  border-radius: 0.375rem;
+  color: #24292e;
+  display: block;
+  font-size: 0.875em;
+  line-height: 1.7;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 0.15rem 0.35rem;
+  white-space: pre-wrap;
+}
+
+html[class~='dark'] .api-signature {
+  background: #111827;
+  color: #e1e4e8;
+}
+
+html[class~='dark'] .api-type {
+  background: #111827;
+  color: #e1e4e8;
+}
+
+html[class~='dark'] .api-tag {
+  background: #422006;
+  border-color: #a16207;
+  color: #fde68a;
+}
+
+html[class~='dark'] .api-docs-route th,
+html[class~='dark'] .api-docs-route td {
+  border-color: rgb(75 85 99);
+}
+
+html[class~='dark'] .api-docs-route th {
+  background: #111827;
+  color: #e1e4e8;
+}
+
+html[class~='dark'] .api-signature-type {
+  color: #79b8ff;
+}
+
+html[class~='dark'] .api-signature-name {
+  color: #b392f0;
+}
+
+html[class~='dark'] .api-signature-keyword {
+  color: #f97583;
+}
+
+html[class~='dark'] .api-signature-parameter,
+html[class~='dark'] .api-signature-property {
+  color: #ffa657;
+}
+
+html[class~='dark'] .api-signature-literal {
+  color: #a5d6ff;
 }
 
 @media (prefers-color-scheme: dark) {

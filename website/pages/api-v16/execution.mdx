@@ -1,151 +1,1236 @@
----
-title: graphql/execution
----
+import { ApiSignature, ApiType } from '../../components/ApiCode';
 
-{/* title can be removed in Nextra 4, since sidebar title will take from first h1 */}
+Execute GraphQL operations and produce GraphQL execution results.
 
-# `graphql/execution`
+These exports are also available from the root `graphql` package.
 
-The `graphql/execution` module is responsible for the execution phase of
-fulfilling a GraphQL request. You can import either from the `graphql/execution` module, or from the root `graphql` module. For example:
+For documentation purposes, these exports are grouped into the following categories:
 
-```js
-import { execute } from 'graphql';
-```
+- [Execution](/api-v16/execution#category-execution)
+- [Subscriptions](/api-v16/execution#category-subscriptions)
+- [Values](/api-v16/execution#category-values)
+- [Paths](/api-v16/execution#category-paths)
 
-## Overview
+## Category: Execution
 
-<ul className="apiIndex">
-  <li>
-    <a href="#execute">
-      `function execute` Executes a GraphQL request on the provided schema.
-    </a>
-  </li>
-</ul>
+<div className="api-category-toc">
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v16/execution#execute">execute()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/execution#executesync">executeSync()</a>
+  </p>
+  <p>
+    <strong>Constants:</strong><br />
+    <a href="/api-v16/execution#defaulttyperesolver">defaultTypeResolver</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/execution#defaultfieldresolver">defaultFieldResolver</a>
+  </p>
+  <p>
+    <strong>Types:</strong><br />
+    <a href="/api-v16/execution#executionresult">ExecutionResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/execution#formattedexecutionresult">FormattedExecutionResult</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/execution#executionargs">ExecutionArgs</a>
+  </p>
+</div>
 
-## Execution
+### Functions
 
-### execute
+#### execute()
 
-```ts
-export function execute({
-  schema,
-  document
-  rootValue,
-  contextValue,
-  variableValues,
-  operationName,
-  options,
-}: ExecutionParams): MaybePromise<ExecutionResult>;
+Implements the "Executing requests" section of the GraphQL specification.
 
-type ExecutionParams = {
-  schema: GraphQLSchema;
-  document: Document;
-  rootValue?: unknown;
-  contextValue?: unknown;
-  variableValues?: Record<string, unknown>;
-  operationName?: string;
-  options?: {
-    /** Set the maximum number of errors allowed for coercing (defaults to 50). */
-    maxCoercionErrors?: number;
-  }
-};
-
-type MaybePromise<T> = Promise<T> | T;
-
-interface ExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLError>;
-  data?: TData | null;
-  extensions?: TExtensions;
-}
-```
-
-We have another approach with positional arguments, this is however deprecated and set
-to be removed in v17.
-
-```ts
-export function execute(
-  schema: GraphQLSchema,
-  documentAST: Document,
-  rootValue?: unknown,
-  contextValue?: unknown,
-  variableValues?: Record<string, unknown>,
-  operationName?: string,
-): MaybePromise<ExecutionResult>;
-```
-
-Implements the "Evaluating requests" section of the GraphQL specification.
-
-Returns a Promise that will eventually be resolved and never rejected.
+Returns either a synchronous ExecutionResult (if all encountered resolvers
+are synchronous), or a Promise of an ExecutionResult that will eventually be
+resolved and never rejected.
 
 If the arguments to this function do not result in a legal execution context,
 a GraphQLError will be thrown immediately explaining the invalid input.
 
-`ExecutionResult` represents the result of execution. `data` is the result of
-executing the query, `errors` is null if no errors occurred, and is a
-non-empty array if an error occurred.
+Field errors are collected into the response instead of rejecting the
+returned promise. Only the field that produced the error and its descendants
+are omitted; sibling fields continue to execute. Errors from fields of
+non-null type may propagate to the nearest nullable parent, which can be the
+entire response data.
 
-### executeSync
+**Signature:**
 
-This is a short-hand method that will call `execute` and when the response can
-be returned synchronously it will be returned, when a `Promise` is returned this
-method will throw an error.
+<ApiSignature parts={[["name", "execute"], "(\n  ", ["parameter", "args"], ": ", ["link", "ExecutionArgs", "/api-v16/execution#executionargs"], ",\n): ", ["type", "PromiseOrValue"], "\u003c", ["link", "ExecutionResult", "/api-v16/execution#executionresult"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>args</td>
+      <td><ApiType parts={[["link", "ExecutionArgs", "/api-v16/execution#executionargs"]]} /></td>
+      <td>The arguments used to perform the operation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "PromiseOrValue"], "\u003c", ["link", "ExecutionResult", "/api-v16/execution#executionresult"], "\u003e"]} /></td>
+      <td>A completed execution result, or a promise resolving to one when execution is asynchronous.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
 
 ```ts
-export function executeSync({
+// Execute an asynchronous operation with variables.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { execute } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    greeting(name: String!): String
+  }
+`);
+
+const result = await execute({
+  schema,
+  document: parse('query ($name: String!) { greeting(name: $name) }'),
+  rootValue: {
+    greeting: ({ name }) => `Hello, ${name}!`,
+  },
+  variableValues: { name: 'Ada' },
+});
+
+result; // => { data: { greeting: 'Hello, Ada!' } }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant supplies context plus custom field and type resolvers.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { execute } from 'graphql/execution';
+
+const schema = buildSchema(`
+  interface Named {
+    name: String!
+  }
+
+  type User implements Named {
+    name: String!
+  }
+
+  type Query {
+    viewer: Named
+  }
+`);
+
+const result = await execute({
+  schema,
+  document: parse('query Viewer { viewer { __typename name } }'),
+  rootValue: { viewer: { kind: 'user', name: 'Ada' } },
+  contextValue: { locale: 'en' },
+  operationName: 'Viewer',
+  fieldResolver: (source, _args, contextValue, info) => {
+    contextValue.locale; // => 'en'
+    return source[info.fieldName];
+  },
+  typeResolver: (value) => {
+    return value.kind === 'user' ? 'User' : undefined;
+  },
+});
+
+result; // => { data: { viewer: { __typename: 'User', name: 'Ada' } } }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 3</div>
+
+```ts
+// This variant shows how resolver errors become field errors in the result.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { execute } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    broken: String
+  }
+`);
+const document = parse('{ broken }');
+
+const result = await execute({
   schema,
   document,
-  rootValue,
-  contextValue,
-  variableValues,
-  operationName,
-  options,
-}: ExecutionParams): MaybePromise<ExecutionResult>;
+  rootValue: {
+    broken: () => {
+      throw new Error('Resolver failed.');
+    },
+  },
+});
 
-type ExecutionParams = {
-  schema: GraphQLSchema;
-  document: Document;
-  rootValue?: unknown;
-  contextValue?: unknown;
-  variableValues?: Record<string, unknown>;
-  operationName?: string;
-  options?: {
-    /** Set the maximum number of errors allowed for coercing (defaults to 50). */
-    maxCoercionErrors?: number;
-  }
-};
-
-type MaybePromise<T> = Promise<T> | T;
-
-interface ExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLError>;
-  data?: TData | null;
-  extensions?: TExtensions;
-}
+result.data.broken; // => null
+result.errors[0].message; // => 'Resolver failed.'
 ```
 
-We have another approach with positional arguments, this is however deprecated and set
-to be removed in v17.
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 4</div>
 
 ```ts
-export function executeSync(
-  schema: GraphQLSchema,
-  documentAST: Document,
-  rootValue?: unknown,
-  contextValue?: unknown,
-  variableValues?: Record<string, unknown>,
-  operationName?: string,
-): ExecutionResult;
+// This variant limits how many variable coercion errors are reported.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { execute } from 'graphql/execution';
+
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+  }
+
+  type Query {
+    review(input: ReviewInput!): String
+  }
+`);
+const document = parse(`
+  query ($first: ReviewInput!, $second: ReviewInput!) {
+    first: review(input: $first)
+    second: review(input: $second)
+  }
+`);
+
+const result = await execute({
+  schema,
+  document,
+  variableValues: {
+    first: { stars: 'bad' },
+    second: { stars: 'also bad' },
+  },
+  options: { maxCoercionErrors: 1 },
+});
+
+result.errors.length; // => 2
+result.errors[1].message; // matches /error limit reached/
 ```
 
-#### Execution options
+<hr className="api-item-divider" />
 
-##### maxCoercionErrors
+#### executeSync()
 
-Set the maximum number of errors allowed for coercing variables, this implements a default limit of 50 errors.
+Also implements the "Executing requests" section of the GraphQL specification.
+However, it guarantees to complete synchronously (or throw an error) assuming
+that all field resolvers are also synchronous.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "executeSync"], "(\n  ", ["parameter", "args"], ": ", ["link", "ExecutionArgs", "/api-v16/execution#executionargs"], ",\n): ", ["link", "ExecutionResult", "/api-v16/execution#executionresult"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>args</td>
+      <td><ApiType parts={[["link", "ExecutionArgs", "/api-v16/execution#executionargs"]]} /></td>
+      <td>The arguments used to perform the operation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ExecutionResult", "/api-v16/execution#executionresult"]]} /></td>
+      <td>Completed execution output for a synchronous operation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Execute an operation synchronously when all resolvers are synchronous.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { executeSync } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse('{ greeting }');
+
+const result = executeSync({
+  schema,
+  document,
+  rootValue: {
+    greeting: 'Hello',
+  },
+});
+
+result; // => { data: { greeting: 'Hello' } }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant shows executeSync throwing when a resolver returns a promise.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { executeSync } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+
+executeSync({
+  schema,
+  document: parse('{ greeting }'),
+  rootValue: {
+    greeting: async () => 'Hello',
+  },
+}); // throws an error
+```
+
+### Constants
+
+#### defaultTypeResolver
+
+If a resolveType function is not given, then a default resolve behavior is
+used which attempts two strategies:
+
+First, See if the provided value has a `__typename` field defined, if so, use
+that value as name of the resolved type.
+
+Otherwise, test each possible type for the abstract type by calling
+isTypeOf for the object being coerced, returning the first type that matches.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type</div>
+
+<ApiType parts={[["link", "GraphQLTypeResolver", "/api-v16/type#graphqltyperesolver"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e"]} />
+
+<hr className="api-item-divider" />
+
+#### defaultFieldResolver
+
+If a resolve function is not given, then a default resolve behavior is used
+which takes the property of the source object of the same name as the field
+and returns it as the result, or if it's a function, returns the result
+of calling that function while passing along args and context value.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type</div>
+
+<ApiType parts={[["link", "GraphQLFieldResolver", "/api-v16/type#graphqlfieldresolver"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e"]} />
+
+### Types
+
+#### ExecutionResult
+
+**Interface.** Represents the response produced by executing a GraphQL operation.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the execution data payload.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the extensions payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>errors?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "GraphQLError", "/api-v16/error#graphqlerror"], "[]"]} /></td>
+      <td>Errors raised while parsing, validating, or executing the operation.</td>
+    </tr>
+    <tr>
+      <td>data?</td>
+      <td><ApiType parts={[["type", "TData"], " \u007c ", ["keyword", "null"]]} /></td>
+      <td>Data returned by execution, or null when execution could not produce data.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "TExtensions"]]} /></td>
+      <td>Extension fields to include in the formatted result.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### FormattedExecutionResult
+
+**Interface.** A JSON-serializable GraphQL execution result.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TData</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the formatted data payload.</td>
+    </tr>
+    <tr>
+      <td>TExtensions</td>
+      <td></td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Shape of the formatted extensions payload.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>errors?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "GraphQLFormattedError", "/api-v16/error#graphqlformattederror"], "[]"]} /></td>
+      <td>Errors raised while parsing, validating, or executing the operation.</td>
+    </tr>
+    <tr>
+      <td>data?</td>
+      <td><ApiType parts={[["type", "TData"], " \u007c ", ["keyword", "null"]]} /></td>
+      <td>Data returned by execution, or null when execution could not produce data.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "TExtensions"]]} /></td>
+      <td>Extension fields to include in the formatted result.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ExecutionArgs
+
+**Interface.** Arguments accepted by execute and executeSync.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td>The schema used for validation or execution.</td>
+    </tr>
+    <tr>
+      <td>document</td>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v16/language#documentnode"]]} /></td>
+      <td>The parsed GraphQL document to execute.</td>
+    </tr>
+    <tr>
+      <td>rootValue?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Initial root value passed to the operation.</td>
+    </tr>
+    <tr>
+      <td>contextValue?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Application context value passed to every resolver.</td>
+    </tr>
+    <tr>
+      <td>variableValues?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c\u007b\n  ", ["keyword", "readonly"], " [", ["parameter", "variable"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], ";\n\u007d\u003e"]} /></td>
+      <td>Runtime variable values keyed by variable name.</td>
+    </tr>
+    <tr>
+      <td>operationName?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "string"], "\u003e"]} /></td>
+      <td>Name of the operation to execute when the document contains multiple operations.</td>
+    </tr>
+    <tr>
+      <td>fieldResolver?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLFieldResolver", "/api-v16/type#graphqlfieldresolver"], "\u003c", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\u003e"]} /></td>
+      <td>Resolver used when a field does not define its own resolver.</td>
+    </tr>
+    <tr>
+      <td>typeResolver?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLTypeResolver", "/api-v16/type#graphqltyperesolver"], "\u003c", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\u003e"]} /></td>
+      <td>Resolver used when an abstract type does not define its own resolver.</td>
+    </tr>
+    <tr>
+      <td>subscribeFieldResolver?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLFieldResolver", "/api-v16/type#graphqlfieldresolver"], "\u003c", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\u003e"]} /></td>
+      <td>Resolver used for the root subscription field.</td>
+    </tr>
+    <tr>
+      <td>options?</td>
+      <td><ApiType parts={["\u007b ", ["property", "maxCoercionErrors"], "?: ", ["keyword", "number"], " \u007d"]} /></td>
+      <td>Additional execution options.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Category: Subscriptions
+
+<div className="api-category-toc">
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v16/execution#subscribe">subscribe()</a>
+  </p>
+</div>
+
+### Functions
+
+#### subscribe()
+
+Implements the "Subscribe" algorithm described in the GraphQL specification.
+
+Returns a Promise that resolves to either an AsyncIterator (if successful)
+or an ExecutionResult (error). The promise will be rejected if the schema or
+other arguments to this function are invalid, or if the resolved event stream
+is not an async iterable.
+
+If the client-provided arguments to this function do not result in a
+compliant subscription, a GraphQL Response (ExecutionResult) with
+descriptive errors and no data will be returned.
+
+If the source stream could not be created due to faulty subscription
+resolver logic or underlying systems, the promise will resolve to a single
+ExecutionResult containing `errors` and no `data`.
+
+If the operation succeeded, the promise resolves to an AsyncIterator, which
+yields a stream of ExecutionResults representing the response stream.
+
+Each payload yielded by the source event stream is executed with the payload
+as the root value. This maps the subscription source stream into the response
+stream described by the GraphQL specification.
+
+Accepts an object with named arguments.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "subscribe"], "(\n  ", ["parameter", "args"], ": ", ["link", "ExecutionArgs", "/api-v16/execution#executionargs"], ",\n): ", ["type", "Promise"], "\u003c\n  ", ["link", "ExecutionResult", "/api-v16/execution#executionresult"], " \u007c ", ["type", "AsyncGenerator"], "\u003c", ["link", "ExecutionResult", "/api-v16/execution#executionresult"], ", ", ["keyword", "void"], ", ", ["keyword", "void"], "\u003e\n\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>args</td>
+      <td><ApiType parts={[["link", "ExecutionArgs", "/api-v16/execution#executionargs"]]} /></td>
+      <td>The arguments used to perform the operation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "Promise"], "\u003c\n  ", ["link", "ExecutionResult", "/api-v16/execution#executionresult"], " \u007c ", ["type", "AsyncGenerator"], "\u003c", ["link", "ExecutionResult", "/api-v16/execution#executionresult"], ", ", ["keyword", "void"], ", ", ["keyword", "void"], "\u003e\n\u003e"]} /></td>
+      <td>A source stream mapped to execution results, or an execution result<br />
+containing subscription errors.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Use a same-named rootValue function to provide the source event stream.
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { subscribe } from 'graphql/execution';
+
+async function* greetings() {
+  yield { greeting: 'Hello' };
+  yield { greeting: 'Bonjour' };
+}
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+
+  type Subscription {
+    greeting: String
+  }
+`);
+
+const result = await subscribe({
+  schema,
+  document: parse('subscription { greeting }'),
+  rootValue: { greeting: () => greetings() },
+});
+
+assert('next' in result);
+
+const firstPayload = await result.next();
+firstPayload.value; // => { data: { greeting: 'Hello' } }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant supplies events through a custom subscribeFieldResolver.
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { subscribe } from 'graphql/execution';
+
+async function* defaultGreetings() {
+  yield { greeting: 'Hello' };
+}
+
+async function* frenchGreetings() {
+  yield { greeting: 'Bonjour' };
+}
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+
+  type Subscription {
+    greeting(locale: String): String
+  }
+`);
+
+const result = await subscribe({
+  schema,
+  document: parse(
+    'subscription Greeting($locale: String) { greeting(locale: $locale) }',
+  ),
+  rootValue: {
+    greeting: (args, contextValue) => {
+      const locale = args.locale ?? contextValue.defaultLocale;
+      return locale === 'fr' ? frenchGreetings() : defaultGreetings();
+    },
+  },
+  contextValue: { defaultLocale: 'fr' },
+  variableValues: { locale: 'fr' },
+  operationName: 'Greeting',
+  subscribeFieldResolver: (rootValue, args, contextValue, info) => {
+    args.locale; // => 'fr'
+    return rootValue[info.fieldName](args, contextValue);
+  },
+});
+
+assert('next' in result);
+
+const firstPayload = await result.next();
+firstPayload.value; // => { data: { greeting: 'Bonjour' } }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 3</div>
+
+```ts
+// This variant shows the error result when the schema has no subscription root.
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { subscribe } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+`);
+
+const result = await subscribe({
+  schema,
+  document: parse('subscription { greeting }'),
+});
+
+assert('errors' in result);
+
+result.errors[0].message; // => 'Schema is not configured to execute subscription operation.'
+```
+
+## Category: Values
+
+<div className="api-category-toc">
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v16/execution#getvariablevalues">getVariableValues()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/execution#getargumentvalues">getArgumentValues()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/execution#getdirectivevalues">getDirectiveValues()</a>
+  </p>
+</div>
+
+### Functions
+
+#### getVariableValues()
+
+Prepares an object map of variableValues of the correct type based on the
+provided variable definitions and arbitrary input. If the input cannot be
+parsed to match the variable definitions, GraphQLError values are returned.
+
+Note: Returned value is a plain Object with a prototype, since it is
+exposed to user code. Care should be taken to not pull values from the
+Object prototype.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getVariableValues"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n  ", ["parameter", "varDefNodes"], ": ", ["keyword", "readonly"], " ", ["link", "VariableDefinitionNode", "/api-v16/language#variabledefinitionnode"], "[],\n  ", ["parameter", "inputs"], ": \u007b ", ["keyword", "readonly"], " [", ["parameter", "variable"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], " \u007d,\n  ", ["parameter", "options"], "?: ", ["type", "GetVariableValuesOptions"], ",\n):\n  \u007c \u007b\n      ", ["property", "errors"], ": ", ["type", "ReadonlyArray"], "\u003c", ["link", "GraphQLError", "/api-v16/error#graphqlerror"], "\u003e;\n      ", ["property", "coerced"], "?: ", ["keyword", "never"], ";\n    \u007d\n  \u007c \u007b\n      ", ["property", "coerced"], ": \u007b [", ["parameter", "variable"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], " \u007d;\n      ", ["property", "errors"], "?: ", ["keyword", "never"], ";\n    \u007d;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td>GraphQL schema to use.</td>
+    </tr>
+    <tr>
+      <td>varDefNodes</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "VariableDefinitionNode", "/api-v16/language#variabledefinitionnode"], "[]"]} /></td>
+      <td>The variable definition AST nodes to coerce.</td>
+    </tr>
+    <tr>
+      <td>inputs</td>
+      <td><ApiType parts={["\u007b ", ["keyword", "readonly"], " [", ["parameter", "variable"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], " \u007d"]} /></td>
+      <td>The runtime variable values keyed by variable name.</td>
+    </tr>
+    <tr>
+      <td>options?</td>
+      <td><ApiType parts={[["type", "GetVariableValuesOptions"]]} /></td>
+      <td>Optional variable coercion options, including error limits.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={["\u007c \u007b\n      ", ["property", "errors"], ": ", ["type", "ReadonlyArray"], "\u003c", ["link", "GraphQLError", "/api-v16/error#graphqlerror"], "\u003e;\n      ", ["property", "coerced"], "?: ", ["keyword", "never"], ";\n    \u007d\n\u007c \u007b\n      ", ["property", "coerced"], ": \u007b [", ["parameter", "variable"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], " \u007d;\n      ", ["property", "errors"], "?: ", ["keyword", "never"], ";\n    \u007d"]} /></td>
+      <td>Coerced variable values, or request errors.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Coerce provided variables and apply operation defaults.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { getVariableValues } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    reviews(stars: Int!, limit: Int = 10): [String]
+  }
+`);
+const document = parse(`
+  query ($stars: Int!, $limit: Int = 10) {
+    reviews(stars: $stars, limit: $limit)
+  }
+`);
+const operation = document.definitions[0];
+
+const result = getVariableValues(
+  schema,
+  operation.variableDefinitions,
+  { stars: '5' },
+);
+
+result; // => { coerced: { stars: 5, limit: 10 } }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant uses maxErrors to cap reported coercion errors.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { getVariableValues } from 'graphql/execution';
+
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+  }
+
+  type Query {
+    review(input: ReviewInput!): String
+  }
+`);
+const document = parse(`
+  query ($first: ReviewInput!, $second: ReviewInput!) {
+    first: review(input: $first)
+    second: review(input: $second)
+  }
+`);
+const operation = document.definitions[0];
+
+const result = getVariableValues(
+  schema,
+  operation.variableDefinitions,
+  { first: { stars: 'bad' }, second: { stars: 'also bad' } },
+  { maxErrors: 1 },
+);
+
+result.errors.length; // => 2
+result.errors[1].message; // matches /error limit reached/
+```
+
+<hr className="api-item-divider" />
+
+#### getArgumentValues()
+
+Prepares an object map of argument values given a list of argument
+definitions and list of argument AST nodes.
+
+Note: Returned value is a plain Object with a prototype, since it is
+exposed to user code. Care should be taken to not pull values from the
+Object prototype.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getArgumentValues"], "(\n  ", ["parameter", "def"], ":\n    \u007c ", ["link", "GraphQLField", "/api-v16/type#graphqlfield"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e\n    \u007c ", ["link", "GraphQLDirective", "/api-v16/type#graphqldirective"], ",\n  ", ["parameter", "node"], ": ", ["link", "FieldNode", "/api-v16/language#fieldnode"], " \u007c ", ["link", "DirectiveNode", "/api-v16/language#directivenode"], ",\n  ", ["parameter", "variableValues"], "?: ", ["type", "Maybe"], "\u003c", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e\u003e,\n): \u007b [", ["parameter", "argument"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], " \u007d;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>def</td>
+      <td><ApiType parts={[["link", "GraphQLField", "/api-v16/type#graphqlfield"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e \u007c ", ["link", "GraphQLDirective", "/api-v16/type#graphqldirective"]]} /></td>
+      <td>The field or directive definition whose arguments should be coerced.</td>
+    </tr>
+    <tr>
+      <td>node</td>
+      <td><ApiType parts={[["link", "FieldNode", "/api-v16/language#fieldnode"], " \u007c ", ["link", "DirectiveNode", "/api-v16/language#directivenode"]]} /></td>
+      <td>The AST node to inspect.</td>
+    </tr>
+    <tr>
+      <td>variableValues?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e\u003e"]} /></td>
+      <td>The runtime variable values keyed by variable name.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={["\u007b [", ["parameter", "argument"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], " \u007d"]} /></td>
+      <td>Coerced argument values keyed by argument name.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Read literal argument values and defaults.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { getArgumentValues } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    reviews(stars: Int!, limit: Int = 10): [String]
+  }
+`);
+const fieldDef = schema.getQueryType().getFields().reviews;
+const document = parse('{ reviews(stars: 5) }');
+const fieldNode = document.definitions[0].selectionSet.selections[0];
+
+getArgumentValues(fieldDef, fieldNode); // => { stars: 5, limit: 10 }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant resolves argument values from operation variables.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { getArgumentValues } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    reviews(stars: Int!): [String]
+  }
+`);
+const fieldDef = schema.getQueryType().getFields().reviews;
+const document = parse('query ($stars: Int!) { reviews(stars: $stars) }');
+const fieldNode = document.definitions[0].selectionSet.selections[0];
+
+getArgumentValues(fieldDef, fieldNode, { stars: 5 }); // => { stars: 5 }
+getArgumentValues(fieldDef, fieldNode, {}); // throws an error
+```
+
+<hr className="api-item-divider" />
+
+#### getDirectiveValues()
+
+Prepares an object map of argument values given a directive definition
+and a AST node which may contain directives. Optionally also accepts a map
+of variable values.
+
+If the directive does not exist on the node, returns undefined.
+
+Note: Returned value is a plain Object with a prototype, since it is
+exposed to user code. Care should be taken to not pull values from the
+Object prototype.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getDirectiveValues"], "(\n  ", ["parameter", "directiveDef"], ": ", ["link", "GraphQLDirective", "/api-v16/type#graphqldirective"], ",\n  ", ["parameter", "node"], ": ", ["type", "DirectiveValuesNode"], ",\n  ", ["parameter", "variableValues"], "?: ", ["type", "Maybe"], "\u003c", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e\u003e,\n): \u007b [", ["parameter", "argument"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], " \u007d \u007c ", ["keyword", "undefined"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>directiveDef</td>
+      <td><ApiType parts={[["link", "GraphQLDirective", "/api-v16/type#graphqldirective"]]} /></td>
+      <td>The directive definition whose arguments should be coerced.</td>
+    </tr>
+    <tr>
+      <td>node</td>
+      <td><ApiType parts={[["type", "DirectiveValuesNode"]]} /></td>
+      <td>The AST node to inspect.</td>
+    </tr>
+    <tr>
+      <td>variableValues?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e\u003e"]} /></td>
+      <td>The runtime variable values keyed by variable name.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={["\u007b [", ["parameter", "argument"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], " \u007d \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>Coerced directive argument values keyed by argument name.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Read literal directive arguments from a node.
+import { parse } from 'graphql/language';
+import { GraphQLSkipDirective } from 'graphql/type';
+import { getDirectiveValues } from 'graphql/execution';
+
+const document = parse('{ name @skip(if: true) }');
+const fieldNode = document.definitions[0].selectionSet.selections[0];
+
+getDirectiveValues(GraphQLSkipDirective, fieldNode); // => { if: true }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant resolves directive arguments from variables and handles absent directives.
+import { parse } from 'graphql/language';
+import { GraphQLIncludeDirective } from 'graphql/type';
+import { getDirectiveValues } from 'graphql/execution';
+
+const document = parse('query ($includeName: Boolean!) { name @include(if: $includeName) }');
+const fieldNode = document.definitions[0].selectionSet.selections[0];
+
+getDirectiveValues(GraphQLIncludeDirective, fieldNode, {
+  includeName: false,
+}); // => { if: false }
+getDirectiveValues(GraphQLIncludeDirective, { directives: [] }); // => undefined
+```
+
+## Category: Paths
+
+<div className="api-category-toc">
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v16/execution#responsepathasarray">responsePathAsArray()</a>
+  </p>
+</div>
+
+### Functions
+
+#### responsePathAsArray()
+
+Given a Path, return an Array of the path keys.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "responsePathAsArray"], "(\n  ", ["parameter", "path"], ": ", ["type", "Maybe"], "\u003c\n    ", ["type", "Readonly"], "\u003c", ["link", "Path", "/api-v16/type#responsepath"], "\u003e\n  \u003e,\n): (", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[];"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>path</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["type", "Readonly"], "\u003c", ["link", "Path", "/api-v16/type#responsepath"], "\u003e\u003e"]} /></td>
+      <td>The linked response path to flatten.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={["(", ["keyword", "string"], " \u007c ", ["keyword", "number"], ")[]"]} /></td>
+      <td>An array of response path keys from root to leaf.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { pathToArray } from 'graphql/jsutils/Path';
+
+const path = {
+  prev: {
+    prev: {
+      prev: undefined,
+      key: 'viewer',
+      typename: 'Query',
+    },
+    key: 'friends',
+    typename: 'User',
+  },
+  key: 0,
+  typename: undefined,
+};
+
+pathToArray(path); // => ['viewer', 'friends', 0]
+pathToArray(undefined); // => []
+```

@@ -241,6 +241,7 @@ const cfg: DocsThemeConfig = {
     hue: 319,
   },
   sidebar: {
+    autoCollapse: true,
     defaultMenuCollapseLevel: 1,
   },
   footer: {
