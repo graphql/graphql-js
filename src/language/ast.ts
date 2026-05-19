@@ -552,7 +552,11 @@ export interface FragmentDefinitionNode {
   /** Name node identifying this AST node. */
   readonly name: NameNode;
   /**
-   * Variable definitions declared by this legacy fragment definition.
+   * Deprecated variable definitions declared by this legacy fragment
+   * definition. This legacy fragment variable syntax will be removed in v17.
+   * Move variable definitions to operations for spec-compliant documents; if
+   * you need variables or arguments scoped to fragments, v17 has a more
+   * complete experimental fragment-arguments feature.
    * @deprecated variableDefinitions will be removed in v17.0.0
    */
   readonly variableDefinitions?: ReadonlyArray<VariableDefinitionNode>;

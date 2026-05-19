@@ -91,8 +91,8 @@ type ReducedField<T, R> = T extends null | undefined
   : R;
 
 /**
- * Legacy visitor key map type retained for compatibility. Inline this mapped
- * type at use sites; ASTVisitorKeyMap will be removed in v17.
+ * Deprecated visitor key map type retained for compatibility. Inline this
+ * mapped type at use sites because ASTVisitorKeyMap will be removed in v17.
  * @deprecated Please inline it. Will be removed in v17
  */
 export type ASTVisitorKeyMap = {
@@ -508,9 +508,9 @@ export function getEnterLeaveForKind(
 
 /**
  * Given a visitor instance, if it is leaving or not, and a node kind, return
- * the function the visitor runtime should call. This compatibility helper
- * delegates to `getEnterLeaveForKind`; call `getEnterLeaveForKind` directly
- * because getVisitFn will be removed in v17.
+ * the function the visitor runtime should call. This deprecated compatibility
+ * helper delegates to `getEnterLeaveForKind`; call `getEnterLeaveForKind`
+ * directly because getVisitFn will be removed in v17.
  * @param visitor - The visitor object to inspect.
  * @param kind - The AST node kind to resolve a handler for.
  * @param isLeaving - Whether to resolve the leave handler instead of the enter handler.

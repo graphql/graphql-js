@@ -11,9 +11,10 @@ import type { GraphQLObjectType } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
 
 /**
- * Extracts the root type of the operation from the schema. This helper is
- * retained for backwards compatibility; call `GraphQLSchema.getRootType` instead
- * because getOperationRootType will be removed in v17.
+ * Extracts the root type of the operation from the schema. This deprecated
+ * helper is retained for backwards compatibility; call
+ * `GraphQLSchema.getRootType` instead because getOperationRootType will be
+ * removed in v17.
  * @param schema - GraphQL schema to use.
  * @param operation - The operation definition to inspect.
  * @returns The resolved operation root type.

@@ -115,9 +115,11 @@ enum Kind {
 export { Kind };
 
 /**
- * Legacy alias for the enum type representing the possible kind values of AST
- * nodes. This is retained for backwards compatibility; use `Kind` instead
- * because KindEnum will be removed in v17.
- * @deprecated Please use `Kind`. Will be removed in v17.
+ * Deprecated legacy alias for the enum type representing the possible kind
+ * values of AST nodes. This alias will be removed in v17. In v17, `Kind` is
+ * exported as the single public symbol for both the runtime object and the
+ * corresponding TypeScript type.
+ * @deprecated Will be removed in v17. In v17, use `Kind` as both the runtime
+ * value and the type.
  */
 export type KindEnum = typeof Kind;

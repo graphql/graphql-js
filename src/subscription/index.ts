@@ -15,9 +15,9 @@
 import type { ExecutionArgs } from '../execution/execute';
 
 /**
- * Legacy alias for ExecutionArgs retained by the subscription module. Use
- * `ExecutionArgs` directly instead because SubscriptionArgs will be removed in
- * v17.
+ * Deprecated legacy alias for ExecutionArgs retained by the subscription
+ * module. Use `ExecutionArgs` directly instead because SubscriptionArgs will be
+ * removed in v17.
  *
  * ExecutionArgs has been broadened to include all properties within SubscriptionArgs.
  * The SubscriptionArgs type is retained for backwards compatibility.

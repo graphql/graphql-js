@@ -136,6 +136,8 @@ export class GraphQLError extends Error {
    * Creates a GraphQLError instance.
    * @param message - Human-readable error message.
    * @param options - Error metadata such as source locations, response path, original error, and extensions.
+   * This positional-arguments constructor overload is deprecated. Use the
+   * `GraphQLError(message, options)` overload instead.
    * @example
    * ```ts
    * // Create an error from AST nodes and response metadata.
@@ -178,8 +180,9 @@ export class GraphQLError extends Error {
   constructor(message: string, options?: GraphQLErrorOptions);
   /**
    * Creates a GraphQLError instance using the legacy positional constructor.
-   * Prefer the `GraphQLErrorOptions` object overload, which keeps optional error
-   * metadata in a single options bag.
+   * This deprecated overload will be removed in v17. Prefer the
+   * `GraphQLErrorOptions` object overload, which keeps optional error metadata
+   * in a single options bag.
    * @param message - Human-readable error message.
    * @param nodes - AST node or nodes associated with this error.
    * @param source - Source document used to derive error locations.
@@ -409,9 +412,9 @@ export interface GraphQLFormattedError {
 
 /**
  * Prints a GraphQLError to a string, representing useful location information
- * about the error's position in the source. This helper is retained for
- * backwards compatibility; call `error.toString()` instead because printError
- * will be removed in v17.
+ * about the error's position in the source. This deprecated helper is retained
+ * for backwards compatibility; call `error.toString()` instead because
+ * printError will be removed in v17.
  * @param error - The error to format.
  * @returns The printed string representation.
  * @example
@@ -430,9 +433,9 @@ export function printError(error: GraphQLError): string {
 
 /**
  * Given a GraphQLError, format it according to the rules described by the
- * Response Format, Errors section of the GraphQL Specification. This helper is
- * retained for backwards compatibility; call `error.toJSON()` instead because
- * formatError will be removed in v17.
+ * Response Format, Errors section of the GraphQL Specification. This deprecated
+ * helper is retained for backwards compatibility; call `error.toJSON()`
+ * instead because formatError will be removed in v17.
  * @param error - The error to format.
  * @returns The JSON-serializable formatted error.
  * @example

@@ -284,8 +284,8 @@ export async function createSourceEventStream(
 ): Promise<AsyncIterable<unknown> | ExecutionResult>;
 /**
  * Creates the source event stream for a subscription operation using the legacy
- * positional argument overload. Use the args object overload instead; this
- * overload will be removed in the next major version.
+ * positional argument overload. This deprecated overload will be removed in the
+ * next major version; use the args object overload instead.
  * @param schema - GraphQL schema to use.
  * @param document - The parsed GraphQL document containing the subscription
  * operation.

@@ -55,9 +55,11 @@ enum TokenKind {
 export { TokenKind };
 
 /**
- * Legacy alias for the enum type representing token kind values. This is
- * retained for backwards compatibility; use `TokenKind` instead because
- * TokenKindEnum will be removed in v17.
- * @deprecated Please use `TokenKind`. Will be removed in v17.
+ * Deprecated legacy alias for the enum type representing token kind values.
+ * This alias will be removed in v17. In v17, `TokenKind` is exported as the
+ * single public symbol for both the runtime object and the corresponding
+ * TypeScript type.
+ * @deprecated Will be removed in v17. In v17, use `TokenKind` as both the
+ * runtime value and the type.
  */
 export type TokenKindEnum = typeof TokenKind;

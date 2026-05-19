@@ -8,9 +8,9 @@ import { assertName } from '../type/assertName';
 
 /* c8 ignore start */
 /**
- * Upholds the spec rules about naming. This helper is retained for backwards
- * compatibility; call `assertName` instead because assertValidName will be
- * removed in v17.
+ * Upholds the spec rules about naming. This deprecated helper is retained for
+ * backwards compatibility; call `assertName` instead because assertValidName
+ * will be removed in v17.
  * @param name - The GraphQL name to validate.
  * @returns The validated GraphQL name.
  * @example
@@ -31,9 +31,9 @@ export function assertValidName(name: string): string {
 }
 
 /**
- * Returns an Error if a name is invalid. This helper is retained for backwards
- * compatibility; call `assertName` and catch the thrown GraphQLError instead
- * because isValidNameError will be removed in v17.
+ * Returns an Error if a name is invalid. This deprecated helper is retained for
+ * backwards compatibility; call `assertName` and catch the thrown GraphQLError
+ * instead because isValidNameError will be removed in v17.
  * @param name - The GraphQL name to validate.
  * @returns A GraphQLError if the name is invalid; otherwise undefined.
  * @example

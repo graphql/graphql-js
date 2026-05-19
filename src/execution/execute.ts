@@ -481,7 +481,9 @@ function buildResponse(
 
 /**
  * Essential assertions before executing to provide developer feedback for
- * improper use of the GraphQL library.
+ * improper use of the GraphQL library. This deprecated internal helper will be
+ * removed in v17; call `assertValidSchema()` and rely on TypeScript checks
+ * instead.
  *
  * @deprecated will be removed in v17 in favor of assertValidSchema() and TS checks
  * @internal

@@ -46,9 +46,11 @@ enum DirectiveLocation {
 export { DirectiveLocation };
 
 /**
- * Legacy alias for the enum type representing directive location values. This
- * is retained for backwards compatibility; use `DirectiveLocation` instead
- * because DirectiveLocationEnum will be removed in v17.
- * @deprecated Please use `DirectiveLocation`. Will be removed in v17.
+ * Deprecated legacy alias for the enum type representing directive location
+ * values. This alias will be removed in v17. In v17, `DirectiveLocation` is
+ * exported as the single public symbol for both the runtime object and the
+ * corresponding TypeScript type.
+ * @deprecated Will be removed in v17. In v17, use `DirectiveLocation` as both
+ * the runtime value and the type.
  */
 export type DirectiveLocationEnum = typeof DirectiveLocation;

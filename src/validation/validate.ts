@@ -114,7 +114,8 @@ export function validate(
   options?: ValidationOptions,
 
   /**
-   * TypeInfo instance used to track traversal state during validation.
+   * Deprecated TypeInfo instance used to track traversal state during
+   * validation. Omit this argument so validate creates the TypeInfo instance.
    * @deprecated will be removed in 17.0.0
    */
   typeInfo: TypeInfo = new TypeInfo(schema),

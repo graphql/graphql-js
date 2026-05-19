@@ -134,7 +134,8 @@ export class TypeInfo {
     initialType?: Maybe<GraphQLType>,
 
     /**
-     * Legacy field definition lookup override.
+     * Deprecated field definition lookup override. Use TypeInfo's built-in
+     * field definition lookup instead because this hook will be removed in v17.
      * @deprecated will be removed in 17.0.0
      */
     getFieldDefFn?: GetFieldDefFn,
