@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -14,6 +16,7 @@ const withNextra = nextra({
 const sep = path.sep === '/' ? '/' : '\\\\';
 
 const ALLOWED_SVG_REGEX = new RegExp(`${sep}icons${sep}.+\\.svg$`);
+const isProductionBuild = process.env.NODE_ENV === 'production';
 
 /**
  * @type {import('next').NextConfig}
@@ -32,8 +35,12 @@ export default withNextra({
     });
     return config;
   },
-  redirects: () => vercel.redirects,
-  output: 'export',
+  // Local dev benefits from Next-managed redirects, but static export builds do
+  // not support them and Vercel reads vercel.json directly in deployment.
+  redirects: isProductionBuild
+    ? undefined
+    : () => Promise.resolve(vercel.redirects),
+  output: isProductionBuild ? 'export' : undefined,
   images: {
     loader: 'custom',
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -41,7 +48,6 @@ export default withNextra({
   },
   transpilePackages: ['next-image-export-optimizer'],
   env: {
-    /* eslint-disable camelcase */
     nextImageExportOptimizer_imageFolderPath: 'public/images',
     nextImageExportOptimizer_exportFolderPath: 'out',
     nextImageExportOptimizer_quality: '75',
@@ -54,7 +60,6 @@ export default withNextra({
     // If you want to cache the remote images, you can set the time to live of the cache in seconds.
     // The default value is 0 seconds.
     nextImageExportOptimizer_remoteImageCacheTTL: '0',
-    /* eslint-enable camelcase */
   },
   trailingSlash: true,
 });
