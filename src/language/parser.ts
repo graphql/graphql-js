@@ -98,19 +98,19 @@ export interface ParseOptions {
 
   /**
    * Allows legacy fragment variable definitions to be parsed.
-   * @deprecated will be removed in the v17.0.0
-   *
-   * If enabled, the parser will understand and parse variable definitions
-   * contained in a fragment definition. They'll be represented in the
-   * `variableDefinitions` field of the FragmentDefinitionNode.
-   *
-   * The syntax is identical to normal, query-defined variables. For example:
+   * @example
+   * The syntax is identical to normal, query-defined variables.
    *
    * ```graphql
    * fragment A($var: Boolean = false) on T {
    *   ...
    * }
    * ```
+   * @deprecated will be removed in the v17.0.0
+   *
+   * If enabled, the parser will understand and parse variable definitions
+   * contained in a fragment definition. They'll be represented in the
+   * `variableDefinitions` field of the FragmentDefinitionNode.
    */
   allowLegacyFragmentVariables?: boolean;
 
@@ -119,7 +119,7 @@ export interface ParseOptions {
    *
    * If enabled, the parser will parse directives on directive definitions.
    * This syntax is not part of the GraphQL specification and may change.
-   *
+   * @example
    * ```graphql
    * directive @foo @bar on FIELD
    * ```

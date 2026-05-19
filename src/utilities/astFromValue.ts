@@ -22,9 +22,7 @@ import { GraphQLID } from '../type/scalars';
 /**
  * Produces a GraphQL Value AST given a JavaScript object.
  * Function will match JavaScript/JSON values to GraphQL AST schema format
- * by using suggested GraphQLInputType. For example:
- *
- *     astFromValue("value", GraphQLString)
+ * by using suggested GraphQLInputType.
  *
  * A GraphQL type must be provided, which will be used to interpret different
  * JavaScript values.
