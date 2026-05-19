@@ -1,4 +1,4 @@
-/** @category Definitions */
+/** @category Types */
 
 import { devAssert } from '../jsutils/devAssert';
 import { didYouMean } from '../jsutils/didYouMean';
