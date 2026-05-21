@@ -201,6 +201,120 @@ describe('Validate: Defer/Stream directive on valid operations', () => {
       },
     ]);
   });
+  it('Defer fragment spread with @skip directive', () => {
+    expectValid(`
+      subscription MySubscription {
+        subscriptionField {
+          ...myFragment @skip @defer
+        }
+      }
+      fragment myFragment on Message {
+        body
+      }
+    `);
+  });
+  it('Defer fragment spread with @skip(if: true) directive', () => {
+    expectValid(`
+      subscription MySubscription {
+        subscriptionField {
+          ...myFragment @skip(if: true) @defer
+        }
+      }
+      fragment myFragment on Message {
+        body
+      }
+    `);
+  });
+  it('Defer fragment spread with @skip(if: false) directive', () => {
+    expectErrors(`
+      subscription MySubscription {
+        subscriptionField {
+          ...myFragment @skip(if: false) @defer
+        }
+      }
+      fragment myFragment on Message {
+        body
+      }
+    `).toDeepEqual([
+      {
+        locations: [{ column: 42, line: 4 }],
+        message:
+          'Defer directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
+      },
+    ]);
+  });
+  it('Defer fragment spread with @skip(if: $variable) directive', () => {
+    expectValid(`
+      subscription MySubscription($variable: Boolean) {
+        subscriptionField {
+          ...myFragment @skip(if: $variable) @defer
+        }
+      }
+      fragment myFragment on Message {
+        body
+      }
+    `);
+  });
+  it('Defer fragment spread with @include directive', () => {
+    expectErrors(`
+      subscription MySubscription {
+        subscriptionField {
+          ...myFragment @include @defer
+        }
+      }
+      fragment myFragment on Message {
+        body
+      }
+    `).toDeepEqual([
+      {
+        locations: [{ column: 34, line: 4 }],
+        message:
+          'Defer directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
+      },
+    ]);
+  });
+  it('Defer fragment spread with @include(if: true) directive', () => {
+    expectErrors(`
+      subscription MySubscription {
+        subscriptionField {
+          ...myFragment @include(if: true) @defer
+        }
+      }
+      fragment myFragment on Message {
+        body
+      }
+    `).toDeepEqual([
+      {
+        locations: [{ column: 44, line: 4 }],
+        message:
+          'Defer directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
+      },
+    ]);
+  });
+  it('Defer fragment spread with @include(if: false) directive', () => {
+    expectValid(`
+      subscription MySubscription {
+        subscriptionField {
+          ...myFragment @include(if: false) @defer
+        }
+      }
+      fragment myFragment on Message {
+        body
+      }
+    `);
+  });
+  it('Defer fragment spread with @include(if: $variable) directive', () => {
+    expectValid(`
+      subscription MySubscription ($variable: Boolean) {
+        subscriptionField {
+          ...myFragment @include(if: $variable) @defer
+        }
+      }
+      fragment myFragment on Message {
+        body
+      }
+    `);
+  });
   it('Stream on query field', () => {
     expectValid(`
       {
@@ -260,7 +374,10 @@ describe('Validate: Defer/Stream directive on valid operations', () => {
       {
         message:
           'Stream directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.',
-        locations: [{ line: 8, column: 18 }],
+        locations: [
+          { line: 8, column: 18 },
+          { line: 4, column: 11 },
+        ],
       },
     ]);
   });
@@ -302,7 +419,38 @@ describe('Validate: Defer/Stream directive on valid operations', () => {
       {
         message:
           'Stream directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.',
-        locations: [{ line: 15, column: 18 }],
+        locations: [
+          { line: 15, column: 18 },
+          { line: 10, column: 13 },
+        ],
+      },
+    ]);
+  });
+  it('Stream on subscription in document with fragment used multiple times', () => {
+    expectErrors(`
+      subscription MySubscription {
+        subscriptionField {
+          message {
+            ...myOtherFragment
+            ...myFragment
+          }
+        }
+      }
+      fragment myOtherFragment on Message {
+        ...myFragment
+      }
+      fragment myFragment on Message {
+        messages @stream
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Stream directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.',
+        locations: [
+          { line: 14, column: 18 },
+          { line: 11, column: 9 },
+          { line: 5, column: 13 },
+        ],
       },
     ]);
   });
