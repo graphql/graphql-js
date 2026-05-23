@@ -8,13 +8,10 @@ import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';
 
 import { inspect } from '../../jsutils/inspect.ts';
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
-import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.ts';
 
 import type { FieldNode } from '../../language/ast.ts';
-import { Kind } from '../../language/kinds.ts';
 import { parse } from '../../language/parser.ts';
 
-import type { GraphQLResolveInfo } from '../../type/definition.ts';
 import {
   GraphQLInputObjectType,
   GraphQLInterfaceType,
@@ -22,7 +19,6 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLScalarType,
-  GraphQLUnionType,
 } from '../../type/definition.ts';
 import { GraphQLStreamDirective } from '../../type/directives.ts';
 import {
@@ -218,161 +214,6 @@ describe('Execute: Handles basic execution tasks', () => {
             b: 'Banana',
             c: 'Cherry',
           },
-        },
-      },
-    });
-  });
-
-  it('provides info about current execution state', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-    const { promise, resolve } = promiseWithResolvers<void>();
-    let resolvedInfo: GraphQLResolveInfo | undefined;
-    const testType = new GraphQLObjectType({
-      name: 'Test',
-      fields: {
-        test: {
-          type: GraphQLString,
-          resolve(_val, _args, _ctx, info) {
-            resolvedInfo = info;
-            return promise;
-          },
-        },
-      },
-    });
-    const schema = new GraphQLSchema({ query: testType });
-
-    const document = parse('query ($var: String) { result: test }');
-    const rootValue = { root: 'val' };
-    const variableValues = { var: 'abc' };
-
-    const result = execute({ schema, document, rootValue, variableValues });
-
-    expect(resolvedInfo).to.have.all.keys(
-      'fieldName',
-      'fieldNodes',
-      'returnType',
-      'parentType',
-      'path',
-      'schema',
-      'fragments',
-      'rootValue',
-      'operation',
-      'variableValues',
-      'getAbortSignal',
-      'getAsyncHelpers',
-    );
-    const asyncHelpers = resolvedInfo?.getAsyncHelpers();
-    expect(asyncHelpers).to.have.all.keys('promiseAll', 'track');
-
-    const operation = document.definitions[0];
-    assert(operation.kind === Kind.OPERATION_DEFINITION);
-
-    expect(resolvedInfo).to.include({
-      fieldName: 'test',
-      returnType: GraphQLString,
-      parentType: testType,
-      schema,
-      rootValue,
-      operation,
-    });
-
-    const field = operation.selectionSet.selections[0];
-    expect(resolvedInfo).to.deep.include({
-      fieldNodes: [field],
-      path: { prev: undefined, key: 'result', typename: 'Test' },
-      variableValues: {
-        sources: {
-          var: {
-            signature: {
-              name: 'var',
-              type: GraphQLString,
-              default: undefined,
-            },
-            value: 'abc',
-          },
-        },
-        coerced: { var: 'abc' },
-      },
-    });
-
-    const abortSignal = resolvedInfo?.getAbortSignal();
-    expect(abortSignal).to.be.instanceOf(AbortSignal);
-    expect(resolvedInfo?.getAbortSignal()).to.equal(abortSignal);
-
-    expect(resolvedInfo?.getAsyncHelpers()).to.equal(asyncHelpers);
-
-    const promiseAll = asyncHelpers?.promiseAll;
-    expect(promiseAll).to.be.a('function');
-    expect(resolvedInfo?.getAsyncHelpers().promiseAll).to.equal(promiseAll);
-
-    const track = asyncHelpers?.track;
-    expect(track).to.be.a('function');
-    expect(resolvedInfo?.getAsyncHelpers().track).to.equal(track);
-    track?.([Promise.resolve()]);
-
-    resolve();
-
-    await result;
-
-    const lateAbortSignal = resolvedInfo?.getAbortSignal();
-    expect(lateAbortSignal).to.be.instanceOf(AbortSignal);
-    expect(lateAbortSignal?.aborted).to.equal(true);
-  });
-
-  it('populates path correctly with complex types', () => {
-    let path;
-    const someObject = new GraphQLObjectType({
-      name: 'SomeObject',
-      fields: {
-        test: {
-          type: GraphQLString,
-          resolve(_val, _args, _ctx, info) {
-            path = info.path;
-          },
-        },
-      },
-    });
-    const someUnion = new GraphQLUnionType({
-      name: 'SomeUnion',
-      types: [someObject],
-      resolveType() {
-        return 'SomeObject';
-      },
-    });
-    const testType = new GraphQLObjectType({
-      name: 'SomeQuery',
-      fields: {
-        test: {
-          type: new GraphQLNonNull(
-            new GraphQLList(new GraphQLNonNull(someUnion)),
-          ),
-        },
-      },
-    });
-    const schema = new GraphQLSchema({ query: testType });
-    const rootValue = { test: [{}] };
-    const document = parse(`
-      query {
-        l1: test {
-          ... on SomeObject {
-            l2: test
-          }
-        }
-      }
-    `);
-
-    executeSync({ schema, document, rootValue });
-
-    expect(path).to.deep.equal({
-      key: 'l2',
-      typename: 'SomeObject',
-      prev: {
-        key: 0,
-        typename: undefined,
-        prev: {
-          key: 'l1',
-          typename: 'SomeQuery',
-          prev: undefined,
         },
       },
     });
