@@ -149,7 +149,7 @@ const postRepository = {
 // Resolver for the `Post.body` field:
 function Post_body(source, args, context, info) {
   // return the post body only if the user is the post's author
-  return postRepository.getBody({ user: context.user, post: obj })
+  return postRepository.getBody({ user: context.user, post: source })
 }
 ```
 
