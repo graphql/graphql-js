@@ -15,7 +15,7 @@ import {
 import { GraphQLBoolean, GraphQLString } from '../../type/scalars.ts';
 import { GraphQLSchema } from '../../type/schema.ts';
 
-import { execute, executeSync } from '../execute.ts';
+import { execute, executeSync } from './executeTestUtils.ts';
 
 class Dog {
   name: string;

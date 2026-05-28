@@ -29,11 +29,12 @@ export function getStreamUsage(
   const { operation, variableValues } = validatedExecutionArgs;
   // validation only allows equivalent streams on multiple fields, so it is
   // safe to only check the first fieldNode for the stream directive
+  const firstFieldDetails = fieldDetailsList[0];
   const stream = getDirectiveValues(
     GraphQLStreamDirective,
-    fieldDetailsList[0].node,
+    firstFieldDetails.node,
     variableValues,
-    fieldDetailsList[0].fragmentVariableValues,
+    firstFieldDetails.fragmentVariableValues,
   );
 
   if (!stream) {
@@ -61,9 +62,8 @@ export function getStreamUsage(
 
   const streamedFieldDetailsList: FieldDetailsList = fieldDetailsList.map(
     (fieldDetails) => ({
-      node: fieldDetails.node,
+      ...fieldDetails,
       deferUsage: undefined,
-      fragmentVariableValues: fieldDetails.fragmentVariableValues,
     }),
   );
 

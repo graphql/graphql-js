@@ -22,16 +22,18 @@ import {
 } from '../../type/scalars.ts';
 import { GraphQLSchema } from '../../type/schema.ts';
 
+import { compileSubscription } from '../compile/index.ts';
+import { createSourceEventStream as originalCreateSourceEventStream } from '../execute.ts';
+import type { ExecutionArgs } from '../ExecutionArgs.ts';
+import type { ExecutionResult } from '../Executor.ts';
+
 import {
   createSourceEventStream,
   executeSubscriptionEvent,
   mapSourceToResponseEvent,
   subscribe,
   validateSubscriptionArgs,
-} from '../execute.ts';
-import type { ExecutionArgs } from '../ExecutionArgs.ts';
-import type { ExecutionResult } from '../Executor.ts';
-
+} from './executeTestUtils.ts';
 import { SimplePubSub } from './simplePubSub.ts';
 
 interface Email {
@@ -139,28 +141,32 @@ function createSubscription(
       unread: false,
     },
   ];
+  const seenEmails = new Set<Email>();
 
   const data: any = {
     inbox: { emails },
-    // FIXME: we shouldn't use mapAsyncIterator here since it makes tests way more complex
-    importantEmail: pubsub.getSubscriber((newEmail) => {
-      emails.push(newEmail);
+    importantEmail: () =>
+      pubsub.getSubscriber((newEmail) => {
+        if (!seenEmails.has(newEmail)) {
+          seenEmails.add(newEmail);
+          emails.push(newEmail);
+        }
 
-      return {
-        importantEmail: {
-          email: newEmail,
-          inbox: data.inbox,
-        },
-      };
-    }),
+        return {
+          importantEmail: {
+            email: newEmail,
+            inbox: data.inbox,
+          },
+        };
+      }),
   };
 
-  return subscribe({
+  return subscribe(() => ({
     schema: emailSchema,
     document,
     rootValue: data,
     variableValues,
-  });
+  }));
 }
 
 const DummyQueryType = new GraphQLObjectType({
@@ -190,15 +196,14 @@ function subscribeWithBadFn(
 function subscribeWithBadArgs(
   args: ExecutionArgs,
 ): PromiseOrValue<ExecutionResult | AsyncIterable<unknown>> {
-  const validatedExecutionArgs = validateSubscriptionArgs(args);
-  const sourceEventStreamResult =
-    'schema' in validatedExecutionArgs
-      ? createSourceEventStream(validatedExecutionArgs)
-      : { errors: validatedExecutionArgs };
-
   return expectEqualPromisesOrValues([
-    subscribe(args),
-    sourceEventStreamResult,
+    () => subscribe(args),
+    () => {
+      const validatedSubscriptionArgs = validateSubscriptionArgs(args);
+      return 'schema' in validatedSubscriptionArgs
+        ? createSourceEventStream(validatedSubscriptionArgs)
+        : { errors: validatedSubscriptionArgs };
+    },
   ]);
 }
 
@@ -217,10 +222,36 @@ describe('Subscription Initialization Phase', () => {
     });
 
     expect(() =>
-      createSourceEventStream({
+      originalCreateSourceEventStream({
         schema,
         document: parse('subscription { foo }'),
       } as never),
+    ).to.throw(
+      'Passing ExecutionArgs to createSourceEventStream() was removed in graphql-js@17.0.0; call validateSubscriptionArgs() first and pass the result instead, or use subscribe() for the full subscription pipeline.',
+    );
+  });
+
+  it('throws for legacy ExecutionArgs passed to compiled createSourceEventStream', () => {
+    const schema = new GraphQLSchema({
+      query: DummyQueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          foo: { type: GraphQLString },
+        },
+      }),
+    });
+    const legacyExecutionArgs = {
+      schema,
+      document: parse('subscription { foo }'),
+    };
+    const compiledSubscription = compileSubscription(legacyExecutionArgs);
+    assert('createSourceEventStream' in compiledSubscription);
+
+    expect(() =>
+      compiledSubscription.createSourceEventStream(
+        legacyExecutionArgs as never,
+      ),
     ).to.throw(
       'Passing ExecutionArgs to createSourceEventStream() was removed in graphql-js@17.0.0; call validateSubscriptionArgs() first and pass the result instead, or use subscribe() for the full subscription pipeline.',
     );
@@ -250,6 +281,32 @@ describe('Subscription Initialization Phase', () => {
         document: parse('{ dummy }'),
       }),
     ).to.throw('Expected subscription operation.');
+  });
+
+  it('resolves to an error if no operation name is provided with multiple subscription operations', () => {
+    const schema = new GraphQLSchema({
+      query: DummyQueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          foo: { type: GraphQLString },
+        },
+      }),
+    });
+    const document = parse(`
+        subscription First { foo }
+        subscription Second { foo }
+      `);
+
+    const result = subscribeWithBadArgs({ schema, document });
+    expectJSON(result).toDeepEqual({
+      errors: [
+        {
+          message:
+            'Must provide operation name if query contains multiple operations.',
+        },
+      ],
+    });
   });
 
   it('accepts multiple subscription fields defined in schema', async () => {
@@ -396,6 +453,43 @@ describe('Subscription Initialization Phase', () => {
     });
   });
 
+  it('uses the default subscribeFieldResolver with function sources', async () => {
+    const schema = new GraphQLSchema({
+      query: DummyQueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          foo: { type: GraphQLString },
+        },
+      }),
+    });
+
+    async function* fooGenerator() {
+      yield { foo: 'FooValue' };
+    }
+    function rootValue() {
+      return undefined;
+    }
+    Object.assign(rootValue, { foo: fooGenerator });
+
+    const subscription = subscribe({
+      schema,
+      document: parse('subscription { foo }'),
+      rootValue,
+    });
+    assert(isAsyncIterable(subscription));
+
+    expect(await subscription.next()).to.deep.equal({
+      done: false,
+      value: { data: { foo: 'FooValue' } },
+    });
+
+    expect(await subscription.next()).to.deep.equal({
+      done: true,
+      value: undefined,
+    });
+  });
+
   it('maps a source stream to response events with a custom rootSelectionSetExecutor', async () => {
     const schema = new GraphQLSchema({
       query: DummyQueryType,
@@ -443,7 +537,29 @@ describe('Subscription Initialization Phase', () => {
       done: true,
       value: undefined,
     });
-    expect(count).to.equal(1);
+    // Doubled counts reflect original and compiled execution.
+    expect(count).to.equal(2);
+  });
+
+  it('executes subscription events directly', () => {
+    const schema = new GraphQLSchema({
+      query: DummyQueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          foo: { type: GraphQLString },
+        },
+      }),
+    });
+
+    const validatedSubscriptionArgs = validateSubscriptionArgs({
+      schema,
+      document: parse('subscription { foo }'),
+      rootValue: { foo: 'FooValue' },
+    });
+    assert('schema' in validatedSubscriptionArgs);
+    const result = executeSubscriptionEvent(validatedSubscriptionArgs);
+    expectJSON(result).toDeepEqual({ data: { foo: 'FooValue' } });
   });
 
   it('should only resolve the first field of invalid multi-field', async () => {
@@ -481,7 +597,8 @@ describe('Subscription Initialization Phase', () => {
     });
     assert(isAsyncIterable(subscription));
 
-    expect(fooSpy.callCount).to.equal(1);
+    // Doubled counts reflect original and compiled execution.
+    expect(fooSpy.callCount).to.equal(2);
     expect(barSpy.callCount).to.equal(0);
 
     expect(await subscription.next()).to.have.property('done', false);
@@ -526,6 +643,41 @@ describe('Subscription Initialization Phase', () => {
         {
           message: 'The subscription field "unknownField" is not defined.',
           locations: [{ line: 1, column: 16 }],
+        },
+      ],
+    });
+  });
+
+  it('resolves to an error if subscription root fields are skipped', async () => {
+    const schema = new GraphQLSchema({
+      query: DummyQueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          foo: { type: GraphQLString },
+        },
+      }),
+    });
+    const document = parse(`
+      subscription ($shouldInclude: Boolean!) {
+        ...Foo @include(if: $shouldInclude)
+      }
+
+      fragment Foo on Subscription {
+        foo
+      }
+    `);
+
+    const result = subscribeWithBadArgs({
+      schema,
+      document,
+      variableValues: { shouldInclude: false },
+    });
+
+    expectJSON(result).toDeepEqual({
+      errors: [
+        {
+          message: 'Subscription operation must select a field.',
         },
       ],
     });
@@ -605,7 +757,7 @@ describe('Subscription Initialization Phase', () => {
     ).toDeepEqual(expectedResult);
   });
 
-  it('resolves to an error if variables were wrong type', async () => {
+  it('resolves to an error if variables were wrong type', () => {
     const schema = new GraphQLSchema({
       query: DummyQueryType,
       subscription: new GraphQLObjectType({
@@ -628,7 +780,7 @@ describe('Subscription Initialization Phase', () => {
 
     // If we receive variables that cannot be coerced correctly, subscribe() will
     // resolve to an ExecutionResult that contains an informative error description.
-    const result = subscribeWithBadArgs({ schema, document, variableValues });
+    const result = subscribe({ schema, document, variableValues });
     expectJSON(result).toDeepEqual({
       errors: [
         {
@@ -637,6 +789,45 @@ describe('Subscription Initialization Phase', () => {
           locations: [{ line: 2, column: 21 }],
         },
       ],
+    });
+  });
+
+  it('maps source events to response events directly', async () => {
+    const schema = new GraphQLSchema({
+      query: DummyQueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          foo: { type: GraphQLString },
+        },
+      }),
+    });
+    const validatedSubscriptionArgs = validateSubscriptionArgs({
+      schema,
+      document: parse('subscription { foo }'),
+    });
+    assert('schema' in validatedSubscriptionArgs);
+
+    async function* sourceEventStream() {
+      yield { foo: 'FooValue' };
+    }
+
+    const responseStream = mapSourceToResponseEvent(
+      validatedSubscriptionArgs,
+      sourceEventStream(),
+    );
+    assert(isAsyncIterable(responseStream));
+    expect(await responseStream.next()).to.deep.equal({
+      done: false,
+      value: {
+        data: {
+          foo: 'FooValue',
+        },
+      },
+    });
+    expect(await responseStream.next()).to.deep.equal({
+      done: true,
+      value: undefined,
     });
   });
 });

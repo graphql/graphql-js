@@ -341,6 +341,8 @@ interface ExecutionGroup extends Task<
   computation: Computation<ExecutionGroupResult>;
 }
 
+type IncrementalPositionContext = ReadonlyMap<DeferUsage, DeliveryGroup>;
+
 /** @internal */
 export interface DeliveryGroup extends Group<DeliveryGroup> {
   path: Path | undefined;
@@ -397,7 +399,7 @@ export interface StreamItemResult {
 /** @internal */
 export class IncrementalExecutor<
   TExperimental = ExperimentalIncrementalExecutionResults,
-> extends Executor<ReadonlyMap<DeferUsage, DeliveryGroup>, TExperimental> {
+> extends Executor<IncrementalPositionContext, TExperimental> {
   deferUsageSet?: DeferUsageSet | undefined;
   groups: Array<DeliveryGroup>;
   tasks: Array<ExecutionGroup>;

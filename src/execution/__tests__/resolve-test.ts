@@ -9,7 +9,7 @@ import { GraphQLObjectType } from '../../type/definition.ts';
 import { GraphQLInt, GraphQLString } from '../../type/scalars.ts';
 import { GraphQLSchema } from '../../type/schema.ts';
 
-import { executeSync } from '../execute.ts';
+import { executeSync } from './executeTestUtils.ts';
 
 describe('Execute: resolve function', () => {
   function testSchema(testField: GraphQLFieldConfig<any, any>) {

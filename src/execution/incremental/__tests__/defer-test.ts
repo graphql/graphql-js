@@ -20,14 +20,11 @@ import {
 import { GraphQLID, GraphQLString } from '../../../type/scalars.ts';
 import { GraphQLSchema } from '../../../type/schema.ts';
 
-import { buildSchema } from '../../../utilities/buildASTSchema.ts';
-
-import { experimentalExecuteIncrementally } from '../../execute.ts';
-
-import type {
-  InitialIncrementalExecutionResult,
-  SubsequentIncrementalExecutionResult,
-} from '../IncrementalExecutor.ts';
+import {
+  completeDirectly,
+  completeExecution,
+  experimentalExecuteIncrementally,
+} from '../../__tests__/executeTestUtils.ts';
 
 const friendType = new GraphQLObjectType({
   fields: {
@@ -130,6 +127,23 @@ const heroType = new GraphQLObjectType({
   name: 'Hero',
 });
 
+const cancellationUserType = new GraphQLObjectType({
+  fields: {
+    id: { type: GraphQLID },
+    name: { type: GraphQLString },
+  },
+  name: 'User',
+});
+
+const cancellationTodoType = new GraphQLObjectType({
+  fields: {
+    id: { type: GraphQLID },
+    items: { type: new GraphQLList(GraphQLString) },
+    author: { type: cancellationUserType },
+  },
+  name: 'Todo',
+});
+
 const query = new GraphQLObjectType({
   fields: {
     hero: {
@@ -137,90 +151,46 @@ const query = new GraphQLObjectType({
     },
     a: { type: a },
     g: { type: g },
+    todo: {
+      type: cancellationTodoType,
+    },
+    nonNullableTodo: {
+      type: new GraphQLNonNull(cancellationTodoType),
+    },
+    blocker: {
+      type: GraphQLString,
+    },
+    scalarList: {
+      type: new GraphQLList(GraphQLString),
+    },
+    slowScalarList: {
+      type: new GraphQLList(GraphQLString),
+    },
   },
   name: 'Query',
 });
 
 const schema = new GraphQLSchema({ query });
 
-const cancellationSchema = buildSchema(`
-  type Todo {
-    id: ID
-    items: [String]
-    author: User
-  }
-
-  type User {
-    id: ID
-    name: String
-  }
-
-  type Query {
-    todo: Todo
-    nonNullableTodo: Todo!
-    blocker: String
-    scalarList: [String]
-    slowScalarList: [String]
-  }
-
-  type Mutation {
-    foo: String
-    bar: String
-  }
-
-  type Subscription {
-    foo: String
-  }
-`);
-
-async function complete(
+function complete(
   document: DocumentNode,
   rootValue: unknown = { hero },
-  enableEarlyExecution = false,
+  options: {
+    enableEarlyExecution?: boolean;
+    compareCompiledExecution?: boolean;
+    abortSignal?: AbortSignal;
+  } = {},
 ) {
-  const result = await experimentalExecuteIncrementally({
+  const args = {
     schema,
     document,
     rootValue,
-    enableEarlyExecution,
-  });
-
-  if ('initialResult' in result) {
-    const results: Array<
-      InitialIncrementalExecutionResult | SubsequentIncrementalExecutionResult
-    > = [result.initialResult];
-    for await (const patch of result.subsequentResults) {
-      results.push(patch);
-    }
-    return results;
-  }
-  return result;
-}
-
-async function completeCancellation(
-  document: DocumentNode,
-  rootValue: unknown,
-  abortSignal: AbortSignal,
-  enableEarlyExecution = false,
-) {
-  const result = await experimentalExecuteIncrementally({
-    schema: cancellationSchema,
-    document,
-    rootValue,
-    enableEarlyExecution,
-    abortSignal,
-  });
-
-  if ('initialResult' in result) {
-    const results: Array<
-      InitialIncrementalExecutionResult | SubsequentIncrementalExecutionResult
-    > = [result.initialResult];
-    for await (const patch of result.subsequentResults) {
-      results.push(patch);
-    }
-    return results;
-  }
-  return result;
+    enableEarlyExecution: options.enableEarlyExecution ?? false,
+    abortSignal: options.abortSignal,
+  };
+  return (options.compareCompiledExecution ?? true)
+    ? completeExecution(args)
+    : completeDirectly(args);
 }
 
 describe('Execute: defer directive', () => {
@@ -399,21 +369,25 @@ describe('Execute: defer directive', () => {
       }
     `);
     const order: Array<string> = [];
-    const result = await complete(document, {
-      hero: {
-        ...hero,
-        id: async () => {
-          await resolveOnNextTick();
-          await resolveOnNextTick();
-          order.push('slow-id');
-          return hero.id;
-        },
-        name: () => {
-          order.push('fast-name');
-          return hero.name;
+    const result = await complete(
+      document,
+      {
+        hero: {
+          ...hero,
+          id: async () => {
+            await resolveOnNextTick();
+            await resolveOnNextTick();
+            order.push('slow-id');
+            return hero.id;
+          },
+          name: () => {
+            order.push('fast-name');
+            return hero.name;
+          },
         },
       },
-    });
+      { compareCompiledExecution: false },
+    );
 
     expectJSON(result).toDeepEqual([
       {
@@ -470,7 +444,7 @@ describe('Execute: defer directive', () => {
           },
         },
       },
-      true,
+      { enableEarlyExecution: true, compareCompiledExecution: false },
     );
 
     expectJSON(result).toDeepEqual([
@@ -1077,7 +1051,8 @@ describe('Execute: defer directive', () => {
       done: false,
     });
 
-    expect(cResolverSpy.callCount).to.equal(1);
+    // Doubled counts reflect original and compiled execution.
+    expect(cResolverSpy.callCount).to.equal(2);
     expect(eResolverSpy.callCount).to.equal(0);
 
     resolveSlowField('someField');
@@ -1104,7 +1079,8 @@ describe('Execute: defer directive', () => {
       done: false,
     });
 
-    expect(eResolverSpy.callCount).to.equal(1);
+    // Doubled counts reflect original and compiled execution.
+    expect(eResolverSpy.callCount).to.equal(2);
 
     const result4 = await iterator.next();
     expectJSON(result4).toDeepEqual({
@@ -1199,7 +1175,8 @@ describe('Execute: defer directive', () => {
 
     resolveC();
 
-    expect(cResolverSpy.callCount).to.equal(1);
+    // Doubled counts reflect original and compiled execution.
+    expect(cResolverSpy.callCount).to.equal(2);
     expect(eResolverSpy.callCount).to.equal(0);
 
     const result3 = await iterator.next();
@@ -2149,7 +2126,7 @@ describe('Execute: defer directive', () => {
           someField: 'someField',
         },
       },
-      true,
+      { enableEarlyExecution: true },
     );
     expectJSON(result).toDeepEqual([
       {
@@ -2215,7 +2192,7 @@ describe('Execute: defer directive', () => {
           nonNullName: () => null,
         },
       },
-      true,
+      { enableEarlyExecution: true },
     );
     expectJSON(result).toDeepEqual({
       data: {
@@ -2253,7 +2230,7 @@ describe('Execute: defer directive', () => {
           nonNullName: () => null,
         },
       },
-      true,
+      { enableEarlyExecution: true },
     );
     expectJSON(result).toDeepEqual({
       data: {
@@ -2377,7 +2354,9 @@ describe('Execute: defer directive', () => {
       promiseWithResolvers<{
         value: () => string;
       }>();
-    const resultPromise = experimentalExecuteIncrementally({
+    // Compiled execution finishes already-started sibling work after null
+    // bubbling instead of returning early.
+    const resultPromise = completeDirectly({
       schema: lateSchema,
       document,
       rootValue: {
@@ -2392,28 +2371,23 @@ describe('Execute: defer directive', () => {
     });
     rejectBoom(new Error('boom'));
     const result = await resultPromise;
-    assert('initialResult' in result);
-    expectJSON(result.initialResult).toDeepEqual({
-      data: {
-        parent: null,
-        g: {},
-      },
-      errors: [
-        {
-          message: 'boom',
-          locations: [{ line: 4, column: 11 }],
-          path: ['parent', 'boom'],
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          parent: null,
+          g: {},
         },
-      ],
-      pending: [{ id: '0', path: ['g'] }],
-      hasNext: true,
-    });
-
-    const iterator = result.subsequentResults[Symbol.asyncIterator]();
-    const result2 = await iterator.next();
-    expectJSON(result2).toDeepEqual({
-      done: false,
-      value: {
+        errors: [
+          {
+            message: 'boom',
+            locations: [{ line: 4, column: 11 }],
+            path: ['parent', 'boom'],
+          },
+        ],
+        pending: [{ id: '0', path: ['g'] }],
+        hasNext: true,
+      },
+      {
         incremental: [
           {
             data: {
@@ -2425,7 +2399,7 @@ describe('Execute: defer directive', () => {
         completed: [{ id: '0' }],
         hasNext: false,
       },
-    });
+    ]);
 
     const lateSide = {
       value: () => 'late value',
@@ -2435,12 +2409,6 @@ describe('Execute: defer directive', () => {
     await resolveOnNextTick();
     await resolveOnNextTick();
     expect(lateValueSpy.callCount).to.equal(0);
-
-    const result3 = await iterator.next();
-    expectJSON(result3).toDeepEqual({
-      value: undefined,
-      done: true,
-    });
   });
 
   it('Cancels deferred fields when deferred result exhibits null bubbling', async () => {
@@ -2462,7 +2430,7 @@ describe('Execute: defer directive', () => {
           nonNullName: () => null,
         },
       },
-      true,
+      { enableEarlyExecution: true },
     );
     expectJSON(result).toDeepEqual([
       {
@@ -2533,7 +2501,9 @@ describe('Execute: defer directive', () => {
       promiseWithResolvers<{
         value: () => string;
       }>();
-    const resultPromise = experimentalExecuteIncrementally({
+    // Compiled execution finishes already-started sibling work after null
+    // bubbling instead of returning early.
+    const resultPromise = completeDirectly({
       schema: lateSchema,
       document,
       rootValue: {
@@ -2546,17 +2516,13 @@ describe('Execute: defer directive', () => {
     });
     rejectBoom(new Error('boom'));
     const result = await resultPromise;
-    assert('initialResult' in result);
-    expectJSON(result.initialResult).toDeepEqual({
-      data: {},
-      pending: [{ id: '0', path: [] }],
-      hasNext: true,
-    });
-    const iterator = result.subsequentResults[Symbol.asyncIterator]();
-    const result2 = await iterator.next();
-    expectJSON(result2).toDeepEqual({
-      done: false,
-      value: {
+    expectJSON(result).toDeepEqual([
+      {
+        data: {},
+        pending: [{ id: '0', path: [] }],
+        hasNext: true,
+      },
+      {
         incremental: [
           {
             data: {
@@ -2575,7 +2541,7 @@ describe('Execute: defer directive', () => {
         completed: [{ id: '0' }],
         hasNext: false,
       },
-    });
+    ]);
 
     const lateSide = {
       value: () => 'late value',
@@ -2585,12 +2551,6 @@ describe('Execute: defer directive', () => {
     await resolveOnNextTick();
     await resolveOnNextTick();
     expect(lateValueSpy.callCount).to.equal(0);
-
-    const result3 = await iterator.next();
-    expectJSON(result3).toDeepEqual({
-      value: undefined,
-      done: true,
-    });
   });
 
   it('Deduplicates list fields', async () => {
@@ -3132,7 +3092,7 @@ describe('Execute: defer directive', () => {
     `);
 
     const result = await experimentalExecuteIncrementally({
-      schema: cancellationSchema,
+      schema,
       document,
       rootValue: {
         todo: {
@@ -3188,7 +3148,7 @@ describe('Execute: defer directive', () => {
     `);
 
     const resultPromise = experimentalExecuteIncrementally({
-      schema: cancellationSchema,
+      schema,
       document,
       rootValue: {
         todo: async () =>
@@ -3223,7 +3183,7 @@ describe('Execute: defer directive', () => {
       }
     `);
 
-    const resultPromise = completeCancellation(
+    const resultPromise = complete(
       document,
       {
         todo: () =>
@@ -3234,7 +3194,10 @@ describe('Execute: defer directive', () => {
               Promise.resolve(() => expect.fail('Should not be called')),
           }),
       },
-      abortController.signal,
+      {
+        compareCompiledExecution: false,
+        abortSignal: abortController.signal,
+      },
     );
 
     abortController.abort();
@@ -3250,7 +3213,7 @@ describe('Execute: defer directive', () => {
     const document = parse('{ scalarList ... @defer { slowScalarList } }');
 
     const result = await experimentalExecuteIncrementally({
-      schema: cancellationSchema,
+      schema,
       document,
       rootValue: {
         scalarList: () => ['a'],
@@ -3320,7 +3283,7 @@ describe('Execute: defer directive', () => {
     const sourceReturnSpy = spyOnMethod(asyncIterator, 'return');
 
     const resultPromise = experimentalExecuteIncrementally({
-      schema: cancellationSchema,
+      schema,
       document,
       enableEarlyExecution: true,
       abortSignal: abortController.signal,
@@ -3349,7 +3312,8 @@ describe('Execute: defer directive', () => {
     abortController.abort();
     await resolveOnNextTick();
 
-    expect(sourceReturnSpy.callCount).to.equal(1);
+    // Doubled counts reflect original and compiled execution.
+    expect(sourceReturnSpy.callCount).to.equal(2);
     await expectPromise(resultPromise).toRejectWith(
       'This operation was aborted',
     );
@@ -3382,7 +3346,7 @@ describe('Execute: defer directive', () => {
       promiseWithResolvers<{ id: string }>();
 
     const result = await experimentalExecuteIncrementally({
-      schema: cancellationSchema,
+      schema,
       document,
       abortSignal: abortController.signal,
       enableEarlyExecution: true,
@@ -3434,7 +3398,7 @@ describe('Execute: defer directive', () => {
       promiseWithResolvers<{ id: string }>();
 
     const result = await experimentalExecuteIncrementally({
-      schema: cancellationSchema,
+      schema,
       document,
       abortSignal: abortController.signal,
       enableEarlyExecution: true,
