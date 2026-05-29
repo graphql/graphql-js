@@ -32,6 +32,7 @@ import { getOperationAST } from '../utilities/getOperationAST.ts';
 import type { GraphQLExecuteContext } from '../diagnostics.ts';
 import {
   executeChannel,
+  executeVariableCoercionChannel,
   shouldTrace,
   subscribeChannel,
   traceMixed,
@@ -778,15 +779,37 @@ export function validateExecutionArgs(
   const variableDefinitions = operation.variableDefinitions ?? [];
   const hideSuggestions = args.hideSuggestions ?? false;
 
-  const variableValuesOrErrors = getVariableValues(
-    schema,
-    variableDefinitions,
-    rawVariableValues ?? {},
-    {
-      maxErrors: options?.maxCoercionErrors ?? 50,
-      hideSuggestions,
-    },
-  );
+  const coercionInput = rawVariableValues ?? {};
+  const coercionOptions = {
+    maxErrors: options?.maxCoercionErrors ?? 50,
+    hideSuggestions,
+  };
+  const coercionChannel = executeVariableCoercionChannel;
+  const variableValuesOrErrors = shouldTrace(coercionChannel)
+    ? traceMixed(
+        coercionChannel,
+        {
+          schema,
+          document,
+          operation,
+          rawVariableValues: rawVariableValues ?? undefined,
+          operationName: operation.name?.value,
+          operationType: operation.operation,
+        },
+        () =>
+          getVariableValues(
+            schema,
+            variableDefinitions,
+            coercionInput,
+            coercionOptions,
+          ),
+      )
+    : getVariableValues(
+        schema,
+        variableDefinitions,
+        coercionInput,
+        coercionOptions,
+      );
 
   if (variableValuesOrErrors.errors) {
     return variableValuesOrErrors.errors;

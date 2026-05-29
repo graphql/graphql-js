@@ -28,6 +28,7 @@ import type { GraphQLSchema } from './type/schema.ts';
 
 import type { ExecutionResult } from './execution/Executor.ts';
 import type { ExperimentalIncrementalExecutionResults } from './execution/incremental/IncrementalExecutor.ts';
+import type { VariableValues } from './execution/values.ts';
 
 /**
  * Structural subset of `DiagnosticsChannel` sufficient for publishing and
@@ -123,6 +124,27 @@ export interface GraphQLExecuteRootSelectionSetContext {
 }
 
 /**
+ * Context published on `graphql:execute:variableCoercion`.
+ *
+ * Coercion runs synchronously inside argument validation, so only the
+ * `start`/`end` (and, on a thrown error, `error`) lifecycle fires. When
+ * coercion produces variable errors it does not throw; instead `result`
+ * carries the `errors` array, mirroring `graphql:validate`.
+ */
+export interface GraphQLExecuteVariableCoercionContext {
+  schema: GraphQLSchema;
+  document: DocumentNode;
+  operation: OperationDefinitionNode;
+  rawVariableValues: Maybe<{ readonly [variable: string]: unknown }>;
+  operationName: string | undefined;
+  operationType: OperationTypeNode;
+  error?: unknown;
+  result?:
+    | { variableValues: VariableValues }
+    | { errors: ReadonlyArray<GraphQLError> };
+}
+
+/**
  * Context published on `graphql:subscribe`.
  */
 export interface GraphQLSubscribeContext {
@@ -154,6 +176,7 @@ export interface GraphQLChannelContextByName {
   'graphql:parse': GraphQLParseContext;
   'graphql:validate': GraphQLValidateContext;
   'graphql:execute': GraphQLExecuteContext;
+  'graphql:execute:variableCoercion': GraphQLExecuteVariableCoercionContext;
   'graphql:execute:rootSelectionSet': GraphQLExecuteRootSelectionSetContext;
   'graphql:subscribe': GraphQLSubscribeContext;
   'graphql:resolve': GraphQLResolveContext;
@@ -167,6 +190,7 @@ export interface GraphQLChannelContextByName {
  */
 export interface GraphQLChannels {
   execute: MinimalTracingChannel<GraphQLExecuteContext>;
+  executeVariableCoercion: MinimalTracingChannel<GraphQLExecuteVariableCoercionContext>;
   executeRootSelectionSet: MinimalTracingChannel<GraphQLExecuteRootSelectionSetContext>;
   parse: MinimalTracingChannel<GraphQLParseContext>;
   validate: MinimalTracingChannel<GraphQLValidateContext>;
@@ -226,6 +250,10 @@ export const validateChannel:
 export const executeChannel:
   | MinimalTracingChannel<GraphQLExecuteContext>
   | undefined = dc?.tracingChannel('graphql:execute');
+/** @internal */
+export const executeVariableCoercionChannel:
+  | MinimalTracingChannel<GraphQLExecuteVariableCoercionContext>
+  | undefined = dc?.tracingChannel('graphql:execute:variableCoercion');
 /** @internal */
 export const executeRootSelectionSetChannel:
   | MinimalTracingChannel<GraphQLExecuteRootSelectionSetContext>

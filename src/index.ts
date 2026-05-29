@@ -34,6 +34,7 @@ export type {
   GraphQLChannels,
   GraphQLExecuteContext,
   GraphQLExecuteRootSelectionSetContext,
+  GraphQLExecuteVariableCoercionContext,
   GraphQLParseContext,
   GraphQLResolveContext,
   GraphQLSubscribeContext,

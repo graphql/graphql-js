@@ -10,6 +10,7 @@ import type { MinimalTracingChannel } from '../diagnostics.ts';
 import {
   executeChannel,
   executeRootSelectionSetChannel,
+  executeVariableCoercionChannel,
   parseChannel,
   resolveChannel,
   shouldTrace,
@@ -22,6 +23,7 @@ describe('diagnostics', () => {
     invariant(parseChannel !== undefined);
     invariant(validateChannel !== undefined);
     invariant(executeChannel !== undefined);
+    invariant(executeVariableCoercionChannel !== undefined);
     invariant(executeRootSelectionSetChannel !== undefined);
     invariant(subscribeChannel !== undefined);
     invariant(resolveChannel !== undefined);
@@ -36,6 +38,9 @@ describe('diagnostics', () => {
     );
     expect(executeChannel.start).to.equal(
       dc.channel('tracing:graphql:execute:start'),
+    );
+    expect(executeVariableCoercionChannel.start).to.equal(
+      dc.channel('tracing:graphql:execute:variableCoercion:start'),
     );
     expect(executeRootSelectionSetChannel.start).to.equal(
       dc.channel('tracing:graphql:execute:rootSelectionSet:start'),
