@@ -279,18 +279,18 @@ export function shouldTrace<TContext = unknown>(
  *
  * @internal
  */
-export function traceMixed<T, TContext = unknown>(
+export function traceMixed<TResult, TContext = unknown>(
   channel: MinimalTracingChannel<TContext>,
   contextInput: TContext extends object ? TContext : object,
-  fn: () => T | Promise<T>,
-): T | Promise<T> {
+  fn: () => TResult,
+): TResult {
   const context = contextInput as TContext & {
     error?: unknown;
     result?: unknown;
   };
 
   return channel.start.runStores(context, () => {
-    let result: T | Promise<T>;
+    let result: TResult;
     try {
       result = fn();
     } catch (err) {
@@ -323,6 +323,6 @@ export function traceMixed<T, TContext = unknown>(
       )
       .finally(() => {
         channel.asyncEnd.publish(context);
-      });
+      }) as TResult;
   });
 }
