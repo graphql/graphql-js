@@ -140,6 +140,7 @@ export interface GraphQLSubscribeContext {
  */
 export interface GraphQLResolveContext {
   fieldName: string;
+  alias: string;
   parentType: string;
   fieldType: string;
   args: ObjMap<unknown>;

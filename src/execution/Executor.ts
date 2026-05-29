@@ -686,6 +686,7 @@ export class Executor<
     let cachedFieldPath: string | undefined;
     return {
       fieldName: info.fieldName,
+      alias: String(info.path.key),
       parentType: info.parentType.name,
       fieldType: String(info.returnType),
       args,

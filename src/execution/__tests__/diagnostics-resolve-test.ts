@@ -55,6 +55,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'start',
           context: {
             fieldName: 'sync',
+            alias: 'sync',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -66,6 +67,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'end',
           context: {
             fieldName: 'sync',
+            alias: 'sync',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -94,6 +96,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'start',
           context: {
             fieldName: 'async',
+            alias: 'async',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -105,6 +108,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'end',
           context: {
             fieldName: 'async',
+            alias: 'async',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -116,6 +120,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'asyncStart',
           context: {
             fieldName: 'async',
+            alias: 'async',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -127,6 +132,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'asyncEnd',
           context: {
             fieldName: 'async',
+            alias: 'async',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -160,6 +166,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'start',
           context: {
             fieldName: 'fail',
+            alias: 'fail',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -171,6 +178,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'error',
           context: {
             fieldName: 'fail',
+            alias: 'fail',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -183,6 +191,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'end',
           context: {
             fieldName: 'fail',
+            alias: 'fail',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -214,6 +223,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'start',
           context: {
             fieldName: 'asyncFail',
+            alias: 'asyncFail',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -225,6 +235,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'end',
           context: {
             fieldName: 'asyncFail',
+            alias: 'asyncFail',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -236,6 +247,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'asyncStart',
           context: {
             fieldName: 'asyncFail',
+            alias: 'asyncFail',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -247,6 +259,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'error',
           context: {
             fieldName: 'asyncFail',
+            alias: 'asyncFail',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -259,6 +272,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'asyncEnd',
           context: {
             fieldName: 'asyncFail',
+            alias: 'asyncFail',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -298,6 +312,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'start',
           context: {
             fieldName: 'trivial',
+            alias: 'trivial',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -309,6 +324,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'end',
           context: {
             fieldName: 'trivial',
+            alias: 'trivial',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -321,6 +337,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'start',
           context: {
             fieldName: 'custom',
+            alias: 'custom',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -332,6 +349,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'end',
           context: {
             fieldName: 'custom',
+            alias: 'custom',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -363,6 +381,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'start',
           context: {
             fieldName: 'nested',
+            alias: 'nested',
             parentType: 'Query',
             fieldType: 'Nested',
             args: {},
@@ -374,6 +393,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'end',
           context: {
             fieldName: 'nested',
+            alias: 'nested',
             parentType: 'Query',
             fieldType: 'Nested',
             args: {},
@@ -386,6 +406,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'start',
           context: {
             fieldName: 'leaf',
+            alias: 'leaf',
             parentType: 'Nested',
             fieldType: 'String',
             args: {},
@@ -397,11 +418,81 @@ describe('resolve diagnostics channel', () => {
           channel: 'end',
           context: {
             fieldName: 'leaf',
+            alias: 'leaf',
             parentType: 'Nested',
             fieldType: 'String',
             args: {},
             isDefaultResolver: true,
             fieldPath: 'nested.leaf',
+            result: 'leaf-value',
+          },
+        },
+      ],
+    );
+  });
+
+  it('reports the response key as alias, using it in fieldPath', async () => {
+    const document = parse('{ renamed: nested { aliasedLeaf: leaf } }');
+    const nested = { leaf: 'leaf-value' };
+
+    await expectEvents(
+      resolveChannel,
+      () =>
+        execute({
+          schema,
+          document,
+          rootValue: {
+            nested,
+          },
+        }),
+      () => [
+        {
+          channel: 'start',
+          context: {
+            fieldName: 'nested',
+            alias: 'renamed',
+            parentType: 'Query',
+            fieldType: 'Nested',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'renamed',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            fieldName: 'nested',
+            alias: 'renamed',
+            parentType: 'Query',
+            fieldType: 'Nested',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'renamed',
+            result: nested,
+          },
+        },
+        {
+          channel: 'start',
+          context: {
+            fieldName: 'leaf',
+            alias: 'aliasedLeaf',
+            parentType: 'Nested',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'renamed.aliasedLeaf',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            fieldName: 'leaf',
+            alias: 'aliasedLeaf',
+            parentType: 'Nested',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'renamed.aliasedLeaf',
             result: 'leaf-value',
           },
         },
@@ -430,6 +521,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'start',
           context: {
             fieldName: 'sync',
+            alias: 'sync',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -441,6 +533,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'end',
           context: {
             fieldName: 'sync',
+            alias: 'sync',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -453,6 +546,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'start',
           context: {
             fieldName: 'plain',
+            alias: 'plain',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -464,6 +558,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'end',
           context: {
             fieldName: 'plain',
+            alias: 'plain',
             parentType: 'Query',
             fieldType: 'String',
             args: {},
@@ -476,6 +571,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'start',
           context: {
             fieldName: 'nested',
+            alias: 'nested',
             parentType: 'Query',
             fieldType: 'Nested',
             args: {},
@@ -487,6 +583,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'end',
           context: {
             fieldName: 'nested',
+            alias: 'nested',
             parentType: 'Query',
             fieldType: 'Nested',
             args: {},
@@ -499,6 +596,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'start',
           context: {
             fieldName: 'leaf',
+            alias: 'leaf',
             parentType: 'Nested',
             fieldType: 'String',
             args: {},
@@ -510,6 +608,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'end',
           context: {
             fieldName: 'leaf',
+            alias: 'leaf',
             parentType: 'Nested',
             fieldType: 'String',
             args: {},
@@ -541,6 +640,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'start',
           context: {
             fieldName: 'first',
+            alias: 'first',
             parentType: 'Mutation',
             fieldType: 'String',
             args: {},
@@ -552,6 +652,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'end',
           context: {
             fieldName: 'first',
+            alias: 'first',
             parentType: 'Mutation',
             fieldType: 'String',
             args: {},
@@ -564,6 +665,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'start',
           context: {
             fieldName: 'second',
+            alias: 'second',
             parentType: 'Mutation',
             fieldType: 'String',
             args: {},
@@ -575,6 +677,7 @@ describe('resolve diagnostics channel', () => {
           channel: 'end',
           context: {
             fieldName: 'second',
+            alias: 'second',
             parentType: 'Mutation',
             fieldType: 'String',
             args: {},
