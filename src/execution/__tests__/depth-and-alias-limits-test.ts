@@ -5,10 +5,7 @@ import { expectJSON } from '../../__testUtils__/expectJSON';
 
 import { parse } from '../../language/parser';
 
-import {
-  GraphQLList,
-  GraphQLObjectType,
-} from '../../type/definition';
+import { GraphQLList, GraphQLObjectType } from '../../type/definition';
 import { GraphQLString } from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
 
@@ -97,8 +94,7 @@ describe('Execute: maxDepth option', () => {
       data: { nest: { nest: { nest: null } } },
       errors: [
         {
-          message:
-            'Query depth limit of 3 exceeded, found depth: 4.',
+          message: 'Query depth limit of 3 exceeded, found depth: 4.',
           locations: [{ line: 6, column: 15 }],
           path: ['nest', 'nest', 'nest'],
         },
@@ -172,8 +168,7 @@ describe('Execute: maxDepth option', () => {
       data: { nest: null },
       errors: [
         {
-          message:
-            'Query depth limit of 1 exceeded, found depth: 2.',
+          message: 'Query depth limit of 1 exceeded, found depth: 2.',
           locations: [{ line: 4, column: 11 }],
           path: ['nest'],
         },
@@ -254,8 +249,7 @@ describe('Execute: maxAliases option', () => {
       data: null,
       errors: [
         {
-          message:
-            'Aliases limit of 3 exceeded, found 4 aliases.',
+          message: 'Aliases limit of 3 exceeded, found 4 aliases.',
           locations: [
             { line: 3, column: 9 },
             { line: 4, column: 9 },
@@ -290,8 +284,7 @@ describe('Execute: maxAliases option', () => {
       data: { nest: null },
       errors: [
         {
-          message:
-            'Aliases limit of 3 exceeded, found 4 aliases.',
+          message: 'Aliases limit of 3 exceeded, found 4 aliases.',
           locations: [
             { line: 4, column: 11 },
             { line: 5, column: 11 },
@@ -389,8 +382,7 @@ describe('Execute: maxAliases option', () => {
       },
       errors: [
         {
-          message:
-            'Query depth limit of 3 exceeded, found depth: 4.',
+          message: 'Query depth limit of 3 exceeded, found depth: 4.',
           locations: [{ line: 8, column: 15 }],
           path: ['nest', 'nest', 'nest'],
         },
