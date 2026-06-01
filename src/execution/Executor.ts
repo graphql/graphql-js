@@ -277,7 +277,7 @@ export class Executor<
       schema: args.schema,
       document: args.document,
       operation: args.operation,
-      variableValues: args.rawVariableValues,
+      rawVariableValues: args.rawVariableValues,
       operationName: args.operation.name?.value,
       operationType: args.operation.operation,
     };

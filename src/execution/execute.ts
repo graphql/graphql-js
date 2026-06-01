@@ -138,7 +138,7 @@ function buildOperationContextFromArgs(
   return {
     schema: args.schema,
     document: args.document,
-    variableValues: args.variableValues,
+    rawVariableValues: args.variableValues,
     get operationName() {
       return args.operationName ?? resolveOperation()?.name?.value;
     },

@@ -113,7 +113,7 @@ export interface GraphQLExecuteContext {
   /** Parsed document being executed. */
   document: DocumentNode;
   /** Raw variable values provided by the caller before coercion. */
-  variableValues: Maybe<{ readonly [variable: string]: unknown }>;
+  rawVariableValues: Maybe<{ readonly [variable: string]: unknown }>;
   /** Selected operation name, if one is available. */
   operationName: string | undefined;
   /** Selected operation type, if one is available. */
@@ -135,7 +135,7 @@ export interface GraphQLExecuteRootSelectionSetContext {
   /** Operation definition selected for execution. */
   operation: OperationDefinitionNode;
   /** Raw variable values provided by the caller before coercion. */
-  variableValues: Maybe<{ readonly [variable: string]: unknown }>;
+  rawVariableValues: Maybe<{ readonly [variable: string]: unknown }>;
   /** Selected operation name, if one is available. */
   operationName: string | undefined;
   /** Selected operation type. */
@@ -184,7 +184,7 @@ export interface GraphQLSubscribeContext {
   /** Parsed subscription document. */
   document: DocumentNode;
   /** Raw variable values provided by the caller before coercion. */
-  variableValues: Maybe<{ readonly [variable: string]: unknown }>;
+  rawVariableValues: Maybe<{ readonly [variable: string]: unknown }>;
   /** Selected operation name, if one is available. */
   operationName: string | undefined;
   /** Selected operation type, if one is available. */
