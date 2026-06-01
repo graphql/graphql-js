@@ -267,6 +267,7 @@ export class Executor<
    * Build an operation-scoped diagnostics context from ValidatedExecutionArgs.
    * Used after the operation has already been resolved during argument
    * validation.
+   * @internal
    */
   buildExecuteContextFromValidatedArgs(
     args: ValidatedExecutionArgs,
@@ -676,6 +677,7 @@ export class Executor<
    * `fieldPath` is exposed as a lazy getter because serializing the response
    * path is O(depth) and APMs that depth-filter or skip default resolvers
    * often never read it. `args` is passed through by reference.
+   * @internal
    */
   buildResolveContext(
     args: ObjMap<unknown>,

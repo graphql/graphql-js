@@ -9,6 +9,7 @@
  * APMs do not need to interact with the graphql API to enable tracing. On
  * runtimes that do not expose `node:diagnostics_channel` (e.g., browsers) the
  * load silently no-ops and emission sites short-circuit.
+ * @category Diagnostics
  */
 
 import { isPromise } from './jsutils/isPromise.ts';
@@ -82,8 +83,11 @@ interface DiagnosticsChannelModule {
  * Context published on `graphql:parse`.
  */
 export interface GraphQLParseContext {
+  /** Source text or source object passed to the parser. */
   source: string | Source;
+  /** Error thrown while parsing, when parsing fails. */
   error?: unknown;
+  /** Parsed document, when parsing succeeds. */
   result?: DocumentNode;
 }
 
@@ -91,9 +95,13 @@ export interface GraphQLParseContext {
  * Context published on `graphql:validate`.
  */
 export interface GraphQLValidateContext {
+  /** Schema used for validation. */
   schema: GraphQLSchema;
+  /** Parsed document being validated. */
   document: DocumentNode;
+  /** Error thrown while validating, when validation fails abruptly. */
   error?: unknown;
+  /** Validation errors returned by validation. */
   result?: ReadonlyArray<GraphQLError>;
 }
 
@@ -101,12 +109,19 @@ export interface GraphQLValidateContext {
  * Context published on `graphql:execute`.
  */
 export interface GraphQLExecuteContext {
+  /** Schema used for execution. */
   schema: GraphQLSchema;
+  /** Parsed document being executed. */
   document: DocumentNode;
+  /** Raw variable values provided by the caller before coercion. */
   variableValues: Maybe<{ readonly [variable: string]: unknown }>;
+  /** Selected operation name, if one is available. */
   operationName: string | undefined;
+  /** Selected operation type, if one is available. */
   operationType: OperationTypeNode | undefined;
+  /** Error thrown while executing, when execution fails abruptly. */
   error?: unknown;
+  /** Execution result returned by execution. */
   result?: ExecutionResult | ExperimentalIncrementalExecutionResults;
 }
 
@@ -114,13 +129,21 @@ export interface GraphQLExecuteContext {
  * Context published on `graphql:execute:rootSelectionSet`.
  */
 export interface GraphQLExecuteRootSelectionSetContext {
+  /** Schema used for execution. */
   schema: GraphQLSchema;
+  /** Parsed document being executed. */
   document: DocumentNode;
+  /** Operation definition selected for execution. */
   operation: OperationDefinitionNode;
+  /** Raw variable values provided by the caller before coercion. */
   variableValues: Maybe<{ readonly [variable: string]: unknown }>;
+  /** Selected operation name, if one is available. */
   operationName: string | undefined;
+  /** Selected operation type. */
   operationType: OperationTypeNode;
+  /** Error thrown while executing the root selection set. */
   error?: unknown;
+  /** Execution result returned from the root selection set. */
   result?: ExecutionResult | ExperimentalIncrementalExecutionResults;
 }
 
@@ -133,13 +156,21 @@ export interface GraphQLExecuteRootSelectionSetContext {
  * carries the `errors` array, mirroring `graphql:validate`.
  */
 export interface GraphQLExecuteVariableCoercionContext {
+  /** Schema used for variable coercion. */
   schema: GraphQLSchema;
+  /** Parsed document being executed. */
   document: DocumentNode;
+  /** Operation definition whose variables are being coerced. */
   operation: OperationDefinitionNode;
+  /** Raw variable values provided by the caller before coercion. */
   rawVariableValues: Maybe<{ readonly [variable: string]: unknown }>;
+  /** Selected operation name, if one is available. */
   operationName: string | undefined;
+  /** Selected operation type. */
   operationType: OperationTypeNode;
+  /** Error thrown while coercing variables, when coercion fails abruptly. */
   error?: unknown;
+  /** Coerced variable values or coercion errors returned by coercion. */
   result?:
     | { variableValues: VariableValues }
     | { errors: ReadonlyArray<GraphQLError> };
@@ -149,12 +180,19 @@ export interface GraphQLExecuteVariableCoercionContext {
  * Context published on `graphql:subscribe`.
  */
 export interface GraphQLSubscribeContext {
+  /** Schema used for subscription execution. */
   schema: GraphQLSchema;
+  /** Parsed subscription document. */
   document: DocumentNode;
+  /** Raw variable values provided by the caller before coercion. */
   variableValues: Maybe<{ readonly [variable: string]: unknown }>;
+  /** Selected operation name, if one is available. */
   operationName: string | undefined;
+  /** Selected operation type, if one is available. */
   operationType: OperationTypeNode | undefined;
+  /** Error thrown while subscribing, when subscription setup fails abruptly. */
   error?: unknown;
+  /** Subscription response stream or execution result returned by subscribe. */
   result?: AsyncGenerator<ExecutionResult, void, void> | ExecutionResult;
 }
 
@@ -162,24 +200,43 @@ export interface GraphQLSubscribeContext {
  * Context published on `graphql:resolve`.
  */
 export interface GraphQLResolveContext {
+  /** Field name being resolved. */
   fieldName: string;
+  /** Response alias for the field being resolved. */
   alias: string;
+  /** Parent type name for the field being resolved. */
   parentType: string;
+  /** Return type string for the field being resolved. */
   fieldType: string;
+  /** Argument values passed to the resolver. */
   args: ObjMap<unknown>;
+  /** Whether the field is using the default resolver. */
   isDefaultResolver: boolean;
+  /** Response path for the field being resolved. */
   fieldPath: string;
+  /** Error thrown by the resolver, when resolution fails. */
   error?: unknown;
+  /** Value returned by the resolver. */
   result?: unknown;
 }
 
+/**
+ * Mapping from tracing channel name to the context type published on it.
+ */
 export interface GraphQLChannelContextByName {
+  /** Context published on `graphql:parse`. */
   'graphql:parse': GraphQLParseContext;
+  /** Context published on `graphql:validate`. */
   'graphql:validate': GraphQLValidateContext;
+  /** Context published on `graphql:execute`. */
   'graphql:execute': GraphQLExecuteContext;
+  /** Context published on `graphql:execute:variableCoercion`. */
   'graphql:execute:variableCoercion': GraphQLExecuteVariableCoercionContext;
+  /** Context published on `graphql:execute:rootSelectionSet`. */
   'graphql:execute:rootSelectionSet': GraphQLExecuteRootSelectionSetContext;
+  /** Context published on `graphql:subscribe`. */
   'graphql:subscribe': GraphQLSubscribeContext;
+  /** Context published on `graphql:resolve`. */
   'graphql:resolve': GraphQLResolveContext;
 }
 
@@ -190,12 +247,19 @@ export interface GraphQLChannelContextByName {
  * by name.
  */
 export interface GraphQLChannels {
+  /** Tracing channel for `graphql:execute`. */
   execute: MinimalTracingChannel<GraphQLExecuteContext>;
+  /** Tracing channel for `graphql:execute:variableCoercion`. */
   executeVariableCoercion: MinimalTracingChannel<GraphQLExecuteVariableCoercionContext>;
+  /** Tracing channel for `graphql:execute:rootSelectionSet`. */
   executeRootSelectionSet: MinimalTracingChannel<GraphQLExecuteRootSelectionSetContext>;
+  /** Tracing channel for `graphql:parse`. */
   parse: MinimalTracingChannel<GraphQLParseContext>;
+  /** Tracing channel for `graphql:validate`. */
   validate: MinimalTracingChannel<GraphQLValidateContext>;
+  /** Tracing channel for `graphql:resolve`. */
   resolve: MinimalTracingChannel<GraphQLResolveContext>;
+  /** Tracing channel for `graphql:subscribe`. */
   subscribe: MinimalTracingChannel<GraphQLSubscribeContext>;
 }
 

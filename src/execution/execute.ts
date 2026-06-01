@@ -123,6 +123,7 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
  * Build a graphql:execute channel context from raw ExecutionArgs. Defers
  * resolution of the operation AST to a lazy getter so the cost of walking
  * the document is only paid if a subscriber reads it.
+ * @internal
  */
 function buildOperationContextFromArgs(
   args: ExecutionArgs,
