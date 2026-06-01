@@ -72,6 +72,7 @@ describe('GraphQLError', () => {
 
   it('creates new stack if original error has no stack', () => {
     const original = new Error('original');
+    delete original.stack;
     const e = new GraphQLError('msg', { originalError: original });
 
     expect(e).to.include({
