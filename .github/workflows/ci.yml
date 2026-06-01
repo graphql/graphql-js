@@ -253,7 +253,7 @@ jobs:
       matrix:
         # Keep minors pinned to preserve backward-compat coverage; include v2.x
         # so CI also exercises the latest Deno release used for publishing.
-        deno_version_to_setup: [2.4.x, 2.5.x, 2.6.x, 2.7.x, v2.x]
+        deno_version_to_setup: [2.4.x, 2.5.x, 2.6.x, 2.7.x, 2.8.x, v2.x]
     permissions:
       contents: read # for actions/download-artifact
     steps:
