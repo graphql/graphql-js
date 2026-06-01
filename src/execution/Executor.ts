@@ -43,6 +43,7 @@ import type { GraphQLSchema } from '../type/schema.ts';
 import type {
   GraphQLExecuteRootSelectionSetContext,
   GraphQLResolveContext,
+  MinimalTracingChannel,
 } from '../diagnostics.ts';
 import {
   executeRootSelectionSetChannel,
@@ -484,6 +485,10 @@ export class Executor<
     groupedFieldSet: GroupedFieldSet,
     positionContext: TPositionContext | undefined,
   ): PromiseOrValue<ObjMap<unknown>> {
+    let tracingChannel = shouldTrace(resolveChannel)
+      ? resolveChannel
+      : undefined;
+
     return promiseReduce(
       groupedFieldSet,
       (results, [responseName, fieldDetailsList]) => {
@@ -497,6 +502,7 @@ export class Executor<
           fieldDetailsList,
           fieldPath,
           positionContext,
+          tracingChannel,
         );
         if (result === undefined) {
           return results;
@@ -504,6 +510,9 @@ export class Executor<
         if (isPromise(result)) {
           return result.then((resolved) => {
             results[responseName] = resolved;
+            tracingChannel = shouldTrace(resolveChannel)
+              ? resolveChannel
+              : undefined;
             return results;
           });
         }
@@ -529,6 +538,9 @@ export class Executor<
   ): PromiseOrValue<ObjMap<unknown>> {
     const results = Object.create(null);
     let containsPromise = false;
+    const tracingChannel = shouldTrace(resolveChannel)
+      ? resolveChannel
+      : undefined;
 
     try {
       for (const [responseName, fieldDetailsList] of groupedFieldSet) {
@@ -539,6 +551,7 @@ export class Executor<
           fieldDetailsList,
           fieldPath,
           positionContext,
+          tracingChannel,
         );
 
         if (result !== undefined) {
@@ -582,6 +595,7 @@ export class Executor<
     fieldDetailsList: FieldDetailsList,
     path: Path,
     positionContext: TPositionContext | undefined,
+    tracingChannel: MinimalTracingChannel<GraphQLResolveContext> | undefined,
   ): PromiseOrValue<unknown> {
     const validatedExecutionArgs = this.validatedExecutionArgs;
     const { schema, contextValue, variableValues, hideSuggestions } =
@@ -597,12 +611,11 @@ export class Executor<
     const returnType = fieldDef.type;
     let resolveFn = fieldDef.resolve ?? validatedExecutionArgs.fieldResolver;
 
-    if (shouldTrace(resolveChannel)) {
-      const channel = resolveChannel;
+    if (tracingChannel !== undefined) {
       const originalResolveFn = resolveFn;
       resolveFn = (s, args, c, info) =>
         traceMixed(
-          channel,
+          tracingChannel,
           this.buildResolveContext(args, info, fieldDef.resolve === undefined),
           () => originalResolveFn(s, args, c, info),
         );

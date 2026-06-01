@@ -2,6 +2,8 @@ import { describe, it } from 'node:test';
 
 import { expect } from 'chai';
 
+import type { TracingSubChannelRecord } from '../../__testUtils__/diagnosticsTracing.ts';
+import { tracingSubChannels } from '../../__testUtils__/diagnosticsTracing.ts';
 import { expectEvents } from '../../__testUtils__/expectEvents.ts';
 import { expectNoTracingActivity } from '../../__testUtils__/expectNoTracingActivity.ts';
 import { getTracingChannel } from '../../__testUtils__/getTracingChannel.ts';
@@ -13,6 +15,8 @@ import { GraphQLString } from '../../type/scalars.ts';
 import { GraphQLSchema } from '../../type/schema.ts';
 
 import { buildSchema } from '../../utilities/buildASTSchema.ts';
+
+import type { GraphQLResolveContext } from '../../diagnostics.ts';
 
 import { execute } from '../execute.ts';
 
@@ -688,6 +692,75 @@ describe('resolve diagnostics channel', () => {
         },
       ],
     );
+  });
+
+  it('observes subscribers added before the next async serial mutation field', async () => {
+    const document = parse('mutation M { first second }');
+    const events: Array<{
+      channel: string;
+      context: GraphQLResolveContext;
+    }> = [];
+    const handler = {} as TracingSubChannelRecord<
+      (context: GraphQLResolveContext) => void
+    >;
+
+    for (const tracingSubChannel of tracingSubChannels) {
+      handler[tracingSubChannel] = (context) => {
+        events.push({
+          channel: tracingSubChannel,
+          context: { ...context },
+        });
+      };
+    }
+
+    let subscribed = false;
+    try {
+      const result = await execute({
+        schema,
+        document,
+        rootValue: {
+          first: () => {
+            resolveChannel.subscribe(handler);
+            subscribed = true;
+            return Promise.resolve('one');
+          },
+          second: () => 'two',
+        },
+      });
+
+      expect(result).to.deep.equal({ data: { first: 'one', second: 'two' } });
+      expect(events).to.deep.equal([
+        {
+          channel: 'start',
+          context: {
+            fieldName: 'second',
+            alias: 'second',
+            parentType: 'Mutation',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'second',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            fieldName: 'second',
+            alias: 'second',
+            parentType: 'Mutation',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'second',
+            result: 'two',
+          },
+        },
+      ]);
+    } finally {
+      if (subscribed) {
+        resolveChannel.unsubscribe(handler);
+      }
+    }
   });
 
   it('does not call tracing methods when no subscribers are attached', async () => {
