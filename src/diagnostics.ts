@@ -11,7 +11,7 @@
  * @category Diagnostics
  */
 
-import { isPromise } from './jsutils/isPromise.ts';
+import { isPromiseLike } from './jsutils/isPromise.ts';
 import type { Maybe } from './jsutils/Maybe.ts';
 import type { ObjMap } from './jsutils/ObjMap.ts';
 
@@ -391,7 +391,7 @@ export function traceMixed<TResult, TContext extends TraceLifecycleContext>(
       throw err;
     }
 
-    if (!isPromise(result)) {
+    if (!isPromiseLike(result)) {
       context.result = result;
       channel.end.publish(context);
       return result;
@@ -400,20 +400,18 @@ export function traceMixed<TResult, TContext extends TraceLifecycleContext>(
     channel.end.publish(context);
     channel.asyncStart.publish(context);
 
-    return result
-      .then(
-        (value) => {
-          context.result = value;
-          return value;
-        },
-        (err: unknown) => {
-          context.error = err;
-          channel.error.publish(context);
-          throw err;
-        },
-      )
-      .finally(() => {
+    return result.then(
+      (value) => {
+        context.result = value;
         channel.asyncEnd.publish(context);
-      }) as TResult;
+        return value;
+      },
+      (err: unknown) => {
+        context.error = err;
+        channel.error.publish(context);
+        channel.asyncEnd.publish(context);
+        throw err;
+      },
+    ) as TResult;
   });
 }

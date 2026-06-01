@@ -149,6 +149,83 @@ describe('resolve diagnostics channel', () => {
     );
   });
 
+  it('emits the full async lifecycle when a resolver returns a thenable', async () => {
+    const document = parse('{ async }');
+    const thenable = {
+      then<TResult1 = string, TResult2 = never>(
+        onfulfilled?:
+          | ((value: string) => TResult1 | PromiseLike<TResult1>)
+          | null,
+        onrejected?:
+          | ((reason: unknown) => TResult2 | PromiseLike<TResult2>)
+          | null,
+      ): PromiseLike<TResult1 | TResult2> {
+        return Promise.resolve('hello-thenable').then(onfulfilled, onrejected);
+      },
+    };
+
+    await expectEvents(
+      resolveChannel,
+      () =>
+        execute({
+          schema,
+          document,
+          rootValue: { async: () => thenable },
+        }),
+      () => [
+        {
+          channel: 'start',
+          context: {
+            fieldName: 'async',
+            alias: 'async',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'async',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            fieldName: 'async',
+            alias: 'async',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'async',
+          },
+        },
+        {
+          channel: 'asyncStart',
+          context: {
+            fieldName: 'async',
+            alias: 'async',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'async',
+          },
+        },
+        {
+          channel: 'asyncEnd',
+          context: {
+            fieldName: 'async',
+            alias: 'async',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'async',
+            result: 'hello-thenable',
+          },
+        },
+      ],
+    );
+  });
+
   it('emits start, error, end when a sync resolver throws', async () => {
     const document = parse('{ fail }');
     const error = new Error('boom');
