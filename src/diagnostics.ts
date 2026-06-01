@@ -367,21 +367,28 @@ export function shouldTrace<TContext = unknown>(
   /* c8 ignore stop */
 }
 
+interface TraceLifecycleContext {
+  error?: unknown;
+  result?: unknown;
+}
+
+type TraceStartContext<TContext extends TraceLifecycleContext> = Omit<
+  TContext,
+  'error' | 'result'
+>;
+
 /**
  * Publish a mixed sync-or-promise operation through `channel`. Caller has
  * already verified that a subscriber is attached.
  *
  * @internal
  */
-export function traceMixed<TResult, TContext = unknown>(
+export function traceMixed<TResult, TContext extends TraceLifecycleContext>(
   channel: MinimalTracingChannel<TContext>,
-  contextInput: TContext extends object ? TContext : object,
+  contextInput: TraceStartContext<TContext>,
   fn: () => TResult,
 ): TResult {
-  const context = contextInput as TContext & {
-    error?: unknown;
-    result?: unknown;
-  };
+  const context = contextInput as TContext;
 
   return channel.start.runStores(context, () => {
     let result: TResult;
