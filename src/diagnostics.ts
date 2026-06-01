@@ -1,4 +1,3 @@
-/* eslint-disable no-undef, import/no-nodejs-modules, n/global-require, @typescript-eslint/no-require-imports */
 /**
  * TracingChannel integration.
  *
@@ -266,26 +265,19 @@ export interface GraphQLChannels {
 function resolveDiagnosticsChannel(): DiagnosticsChannelModule | undefined {
   let dc: DiagnosticsChannelModule | undefined;
   try {
+    const processRef = (
+      globalThis as {
+        process?: { getBuiltinModule?: (id: string) => unknown };
+      }
+    ).process;
     if (
       // eslint-disable-next-line n/no-unsupported-features/node-builtins
-      typeof (
-        globalThis as {
-          process?: { getBuiltinModule?: (id: string) => unknown };
-        }
-      )?.process?.getBuiltinModule === 'function'
+      typeof processRef?.getBuiltinModule === 'function'
     ) {
       // eslint-disable-next-line n/no-unsupported-features/node-builtins
-      dc = globalThis.process.getBuiltinModule(
+      dc = processRef.getBuiltinModule(
         'node:diagnostics_channel',
       ) as DiagnosticsChannelModule;
-    }
-    // TODO: remove this code when we drop support for Node < 20.16>.
-    /* node:coverage ignore next 6 */
-    if (!dc && typeof require === 'function') {
-      // CJS fallback for runtimes that lack `process.getBuiltinModule`
-      // (e.g. Node 20.0 - 20.15). ESM builds skip this branch because
-      // `require` is undeclared there.
-      dc = require('node:diagnostics_channel') as DiagnosticsChannelModule;
     }
     /* node:coverage ignore next 3 */
   } catch {
