@@ -46,8 +46,13 @@ export interface GraphQLErrorOptions {
   positions?: Maybe<ReadonlyArray<number>>;
   /** Response path where this error occurred during execution. */
   path?: Maybe<ReadonlyArray<string | number>>;
-  /** Original error that caused this GraphQLError, if one exists. */
+  /**
+   * Original error that caused this GraphQLError, if one exists.
+   * @deprecated Prefer `cause` instead.
+   */
   originalError?: Maybe<Error & { readonly extensions?: unknown }>;
+  /** Cause of this GraphQLError, if one exists. */
+  cause?: unknown;
   /** Extension fields to include in the formatted result. */
   extensions?: Maybe<GraphQLErrorExtensions>;
 }
@@ -96,7 +101,10 @@ export class GraphQLError extends Error {
    */
   readonly positions: ReadonlyArray<number> | undefined;
 
-  /** Original error that caused this GraphQLError, if one exists. */
+  /**
+   * The original error thrown from a field resolver during execution.
+   * @deprecated Prefer using {@link Error.cause} instead
+   */
   readonly originalError: Error | undefined;
 
   /** Extension fields to add to the formatted error. */
@@ -105,7 +113,7 @@ export class GraphQLError extends Error {
   /**
    * Creates a GraphQLError instance.
    * @param message - Human-readable error message.
-   * @param options - Error metadata such as source locations, response path, original error, and extensions.
+   * @param options - Error metadata such as source locations, response path, cause, original error, and extensions.
    * @example
    * ```ts
    * // Create an error from AST nodes and response metadata.
@@ -127,33 +135,34 @@ export class GraphQLError extends Error {
    * ```
    * @example
    * ```ts
-   * // This variant derives locations from source positions and preserves the original error.
+   * // This variant derives locations from source positions and preserves the cause.
    * import { Source } from 'graphql/language';
    * import { GraphQLError } from 'graphql/error';
    *
    * const source = new Source('{ greeting }');
-   * const originalError = new Error('Database unavailable.');
+   * const cause = new Error('Database unavailable.');
    * const error = new GraphQLError('Resolver failed.', {
    *   source,
    *   positions: [2],
    *   path: ['greeting'],
-   *   originalError,
+   *   cause,
    * });
    *
    * error.locations; // => [{ line: 1, column: 3 }]
    * error.path; // => ['greeting']
-   * error.originalError; // => originalError
+   * error.cause; // => cause
    * ```
    */
   constructor(message: string, options: GraphQLErrorOptions = {}) {
-    const { nodes, source, positions, path, originalError, extensions } =
+    const { nodes, source, positions, path, originalError, cause, extensions } =
       options;
 
-    super(message);
+    super(message, { cause: cause ?? originalError });
 
     this.name = 'GraphQLError';
     this.path = path ?? undefined;
-    this.originalError = originalError ?? undefined;
+    this.originalError =
+      originalError ?? (cause instanceof Error ? cause : undefined);
 
     // Compute list of blame nodes.
     this.nodes = undefinedIfEmpty(
