@@ -2,10 +2,8 @@ import childProcess from 'node:child_process';
 
 const nodeTests = [
   // Old node versions, require => CJS
-  { version: '20.18.0', moduleSync: false },
   { version: '22.11.0', moduleSync: false },
   // New node versions, module-sync => ESM
-  { version: '20.19.0', moduleSync: true },
   { version: '22.12.0', moduleSync: true },
   { version: '24.0.0', moduleSync: true },
 ];
