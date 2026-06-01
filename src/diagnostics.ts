@@ -280,14 +280,14 @@ function resolveDiagnosticsChannel(): DiagnosticsChannelModule | undefined {
       ) as DiagnosticsChannelModule;
     }
     // TODO: remove this code when we drop support for Node < 20.16>.
-    /* c8 ignore next 6 */
+    /* node:coverage ignore next 6 */
     if (!dc && typeof require === 'function') {
       // CJS fallback for runtimes that lack `process.getBuiltinModule`
       // (e.g. Node 20.0 - 20.15). ESM builds skip this branch because
       // `require` is undeclared there.
       dc = require('node:diagnostics_channel') as DiagnosticsChannelModule;
     }
-    /* c8 ignore next 3 */
+    /* node:coverage ignore next 3 */
   } catch {
     // diagnostics_channel not available on this runtime; tracing is a no-op.
   }
@@ -355,7 +355,6 @@ export function shouldTrace<TContext = unknown>(
   const aggregate = channel.hasSubscribers;
   if (aggregate !== undefined) {
     return aggregate;
-    /* c8 ignore start */
   }
   // Bun-only fallback, exercised by integrationTests/diagnostics-bun.
   for (const key of SUB_CHANNEL_KEYS) {
@@ -364,7 +363,6 @@ export function shouldTrace<TContext = unknown>(
     }
   }
   return false;
-  /* c8 ignore stop */
 }
 
 interface TraceLifecycleContext {

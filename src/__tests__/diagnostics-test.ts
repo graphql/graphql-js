@@ -6,7 +6,7 @@ import { expect } from 'chai';
 
 import { invariant } from '../jsutils/invariant.ts';
 
-import type { MinimalTracingChannel } from '../diagnostics.ts';
+import type { MinimalChannel, MinimalTracingChannel } from '../diagnostics.ts';
 import {
   executeChannel,
   executeRootSelectionSetChannel,
@@ -54,6 +54,38 @@ describe('diagnostics', () => {
   });
 
   describe('shouldTrace', () => {
+    function makeSubChannel(hasSubscribers: boolean): MinimalChannel {
+      return {
+        hasSubscribers,
+        publish: () => undefined,
+        runStores<T, ContextType extends object>(
+          context: ContextType,
+          fn: (this: ContextType, ...args: Array<unknown>) => T,
+        ): T {
+          return fn.call(context);
+        },
+      };
+    }
+
+    function makeFallbackTracingChannel(
+      subscribedSubChannel?: keyof Pick<
+        MinimalTracingChannel,
+        'start' | 'end' | 'asyncStart' | 'asyncEnd' | 'error'
+      >,
+    ): MinimalTracingChannel {
+      return {
+        hasSubscribers: undefined,
+        start: makeSubChannel(subscribedSubChannel === 'start'),
+        end: makeSubChannel(subscribedSubChannel === 'end'),
+        asyncStart: makeSubChannel(subscribedSubChannel === 'asyncStart'),
+        asyncEnd: makeSubChannel(subscribedSubChannel === 'asyncEnd'),
+        error: makeSubChannel(subscribedSubChannel === 'error'),
+        traceSync<T>(fn: (...args: Array<unknown>) => T): T {
+          return fn();
+        },
+      };
+    }
+
     it('returns false when channel is undefined', () => {
       expect(shouldTrace(undefined)).to.equal(false);
     });
@@ -78,6 +110,11 @@ describe('diagnostics', () => {
       } finally {
         realTC.unsubscribe(handler);
       }
+    });
+
+    it('falls back to sub-channel subscribers when aggregate is missing', () => {
+      expect(shouldTrace(makeFallbackTracingChannel('error'))).to.equal(true);
+      expect(shouldTrace(makeFallbackTracingChannel())).to.equal(false);
     });
   });
 });
