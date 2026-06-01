@@ -793,7 +793,7 @@ export function validateExecutionArgs(
           schema,
           document,
           operation,
-          rawVariableValues: rawVariableValues ?? undefined,
+          rawVariableValues,
           operationName: operation.name?.value,
           operationType: operation.operation,
         },
@@ -838,7 +838,7 @@ export function validateExecutionArgs(
     externalAbortSignal: externalAbortSignal ?? undefined,
     enableEarlyExecution: enableEarlyExecution === true,
     hooks: hooks ?? undefined,
-    rawVariableValues: rawVariableValues ?? undefined,
+    rawVariableValues,
   };
 }
 
