@@ -1173,7 +1173,7 @@ export class Executor<
     const runtimeType = resolveTypeFn(result, contextValue, info, returnType);
 
     if (isPromiseLike(runtimeType)) {
-      return Promise.resolve(runtimeType).then((resolvedRuntimeType) => {
+      return runtimeType.then((resolvedRuntimeType) => {
         if (this.aborted) {
           throw new Error('Aborted!');
         }
@@ -1285,7 +1285,7 @@ export class Executor<
       );
 
       if (isPromiseLike(isTypeOf)) {
-        return Promise.resolve(isTypeOf).then((resolvedIsTypeOf) => {
+        return isTypeOf.then((resolvedIsTypeOf) => {
           if (this.aborted) {
             throw new Error('Aborted!');
           }

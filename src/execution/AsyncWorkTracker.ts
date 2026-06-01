@@ -2,15 +2,15 @@ import { isPromiseLike } from '../jsutils/isPromise.ts';
 
 /** @internal */
 export class AsyncWorkTracker {
-  pendingAsyncWork: Set<Promise<void>>;
+  pendingAsyncWork: Set<PromiseLike<void>>;
 
   constructor() {
-    this.pendingAsyncWork = new Set<Promise<void>>();
+    this.pendingAsyncWork = new Set();
   }
 
   add(promiseLike: PromiseLike<unknown>): void {
     const pendingAsyncWork = this.pendingAsyncWork;
-    const promiseToSettle = Promise.resolve(promiseLike).then(
+    const promiseToSettle = promiseLike.then(
       () => {
         pendingAsyncWork.delete(promiseToSettle);
       },
