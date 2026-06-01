@@ -4,7 +4,6 @@ import { inspect } from '../jsutils/inspect.ts';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.ts';
 import { isObjectLike } from '../jsutils/isObjectLike.ts';
 import { isPromise, isPromiseLike } from '../jsutils/isPromise.ts';
-import type { Maybe } from '../jsutils/Maybe.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
 import { addPath, pathToArray } from '../jsutils/Path.ts';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
@@ -14,7 +13,6 @@ import { GraphQLError } from '../error/GraphQLError.ts';
 import { locatedError } from '../error/locatedError.ts';
 
 import type {
-  DocumentNode,
   FieldNode,
   FragmentDefinitionNode,
   OperationDefinitionNode,
@@ -28,7 +26,6 @@ import type {
   GraphQLTypeResolver,
 } from '../type/index.ts';
 import { assertValidSchema } from '../type/index.ts';
-import type { GraphQLSchema } from '../type/schema.ts';
 
 import { buildResolveInfo } from './buildResolveInfo.ts';
 import { cancellablePromise } from './cancellablePromise.ts';
@@ -36,14 +33,14 @@ import type { FieldDetailsList, FragmentDetails } from './collectFields.ts';
 import { collectFields } from './collectFields.ts';
 import { createSharedExecutionContext } from './createSharedExecutionContext.ts';
 import type {
-  ExecutionResult,
+  ExecutionArgs,
   ValidatedExecutionArgs,
   ValidatedSubscriptionArgs,
-} from './Executor.ts';
+} from './ExecutionArgs.ts';
+import type { ExecutionResult } from './Executor.ts';
 import { Executor } from './Executor.ts';
 import { ExecutorThrowingOnIncremental } from './ExecutorThrowingOnIncremental.ts';
 import { getVariableSignature } from './getVariableSignature.ts';
-import type { ExecutionHooks } from './hooks.ts';
 import type { ExperimentalIncrementalExecutionResults } from './incremental/IncrementalExecutor.ts';
 import { IncrementalExecutor } from './incremental/IncrementalExecutor.ts';
 import { mapAsyncIterable } from './mapAsyncIterable.ts';
@@ -572,45 +569,6 @@ export function createSourceEventStream(
   } catch (error) {
     return { errors: [ensureGraphQLError(error)] };
   }
-}
-
-/** Arguments accepted by execute and executeSync. */
-export interface ExecutionArgs {
-  /** The schema used for validation or execution. */
-  schema: GraphQLSchema;
-  /** The parsed GraphQL document to execute. */
-  document: DocumentNode;
-  /** Initial root value passed to the operation. */
-  rootValue?: unknown;
-  /** Application context value passed to every resolver. */
-  contextValue?: unknown;
-  /** Runtime variable values keyed by variable name. */
-  variableValues?: Maybe<{ readonly [variable: string]: unknown }>;
-  /** Name of the operation to execute when the document contains multiple operations. */
-  operationName?: Maybe<string>;
-  /** Resolver used when a field does not define its own resolver. */
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  /** Resolver used when an abstract type does not define its own resolver. */
-  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
-  /** Resolver used for the root subscription field. */
-  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  /** Whether suggestion text should be omitted from request errors. */
-  hideSuggestions?: Maybe<boolean>;
-  /** AbortSignal used to cancel execution. */
-  abortSignal?: Maybe<AbortSignal>;
-  /** Whether incremental execution may begin eligible work early. */
-  enableEarlyExecution?: Maybe<boolean>;
-  /** Execution hooks invoked during this operation. */
-  hooks?: Maybe<ExecutionHooks>;
-  /** Additional execution options. */
-  options?: {
-    /**
-     * Set the maximum number of errors allowed for coercing (defaults to 50).
-     *
-     * @internal
-     */
-    maxCoercionErrors?: number;
-  };
 }
 
 /**

@@ -5,7 +5,7 @@ import { OperationTypeNode } from '../language/ast.ts';
 import { GraphQLStreamDirective } from '../type/directives.ts';
 
 import type { FieldDetailsList } from './collectFields.ts';
-import type { ValidatedExecutionArgs } from './Executor.ts';
+import type { ValidatedExecutionArgs } from './ExecutionArgs.ts';
 import { getDirectiveValues } from './values.ts';
 
 /** @internal */

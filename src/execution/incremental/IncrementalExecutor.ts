@@ -33,11 +33,8 @@ import type {
 import { collectSubfields as _collectSubfields } from '../collectFields.ts';
 import { collectIteratorPromises } from '../collectIteratorPromises.ts';
 import type { SharedExecutionContext } from '../createSharedExecutionContext.ts';
-import type {
-  ExecutionResult,
-  FormattedExecutionResult,
-  ValidatedExecutionArgs,
-} from '../Executor.ts';
+import type { ValidatedExecutionArgs } from '../ExecutionArgs.ts';
+import type { ExecutionResult, FormattedExecutionResult } from '../Executor.ts';
 import { Executor } from '../Executor.ts';
 import type { StreamUsage } from '../getStreamUsage.ts';
 import { returnIteratorCatchingErrors } from '../returnIteratorCatchingErrors.ts';

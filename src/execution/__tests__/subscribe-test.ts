@@ -22,7 +22,6 @@ import {
 } from '../../type/scalars.ts';
 import { GraphQLSchema } from '../../type/schema.ts';
 
-import type { ExecutionArgs } from '../execute.ts';
 import {
   createSourceEventStream,
   executeSubscriptionEvent,
@@ -30,6 +29,7 @@ import {
   subscribe,
   validateSubscriptionArgs,
 } from '../execute.ts';
+import type { ExecutionArgs } from '../ExecutionArgs.ts';
 import type { ExecutionResult } from '../Executor.ts';
 
 import { SimplePubSub } from './simplePubSub.ts';

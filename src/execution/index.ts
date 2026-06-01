@@ -26,16 +26,16 @@ export {
   legacyExecuteIncrementally,
   legacyExecuteRootSelectionSet,
 } from './legacyIncremental/legacyExecuteIncrementally.ts';
-export type { ExecutionArgs, RootSelectionSetExecutor } from './execute.ts';
-
-export type { AsyncWorkFinishedInfo, ExecutionHooks } from './hooks.ts';
-
 export type {
+  AsyncWorkFinishedInfo,
+  ExecutionArgs,
+  ExecutionHooks,
   ValidatedExecutionArgs,
   ValidatedSubscriptionArgs,
-  ExecutionResult,
-  FormattedExecutionResult,
-} from './Executor.ts';
+} from './ExecutionArgs.ts';
+export type { RootSelectionSetExecutor } from './execute.ts';
+
+export type { ExecutionResult, FormattedExecutionResult } from './Executor.ts';
 
 export type {
   ExperimentalIncrementalExecutionResults,

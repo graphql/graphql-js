@@ -33,7 +33,6 @@ import {
 import { GraphQLSchema } from '../../type/schema.ts';
 
 import type { FieldDetailsList } from '../collectFields.ts';
-import type { ExecutionArgs } from '../execute.ts';
 import {
   execute as executeThrowingOnIncremental,
   executeIgnoringIncremental,
@@ -41,6 +40,7 @@ import {
   experimentalExecuteIncrementally,
   validateExecutionArgs,
 } from '../execute.ts';
+import type { ExecutionArgs } from '../ExecutionArgs.ts';
 import type { ExecutionResult } from '../Executor.ts';
 import { collectSubfields, getStreamUsage } from '../Executor.ts';
 import { legacyExecuteIncrementally } from '../legacyIncremental/legacyExecuteIncrementally.ts';

@@ -19,24 +19,17 @@ import type { GraphQLFormattedError } from '../error/GraphQLError.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
 import { locatedError } from '../error/locatedError.ts';
 
-import type {
-  FieldNode,
-  FragmentDefinitionNode,
-  OperationDefinitionNode,
-  SubscriptionOperationDefinitionNode,
-} from '../language/ast.ts';
+import type { FieldNode } from '../language/ast.ts';
 import { OperationTypeNode } from '../language/ast.ts';
 
 import type {
   GraphQLAbstractType,
-  GraphQLFieldResolver,
   GraphQLLeafType,
   GraphQLList,
   GraphQLObjectType,
   GraphQLOutputType,
   GraphQLResolveInfo,
   GraphQLResolveInfoHelpers,
-  GraphQLTypeResolver,
 } from '../type/definition.ts';
 import {
   isAbstractType,
@@ -53,7 +46,6 @@ import { withCancellation } from './cancellablePromise.ts';
 import type {
   DeferUsage,
   FieldDetailsList,
-  FragmentDetails,
   GroupedFieldSet,
 } from './collectFields.ts';
 import {
@@ -63,12 +55,11 @@ import {
 import { collectIteratorPromises } from './collectIteratorPromises.ts';
 import type { SharedExecutionContext } from './createSharedExecutionContext.ts';
 import { createSharedExecutionContext } from './createSharedExecutionContext.ts';
+import type { ValidatedExecutionArgs } from './ExecutionArgs.ts';
 import type { StreamUsage } from './getStreamUsage.ts';
 import { getStreamUsage as _getStreamUsage } from './getStreamUsage.ts';
-import type { ExecutionHooks } from './hooks.ts';
 import { runAsyncWorkFinishedHook } from './hooks.ts';
 import { returnIteratorCatchingErrors } from './returnIteratorCatchingErrors.ts';
-import type { VariableValues } from './values.ts';
 import { getArgumentValues } from './values.ts';
 
 /* eslint-disable max-params */
@@ -96,54 +87,6 @@ import { getArgumentValues } from './values.ts';
  *
  * @internal
  */
-
-/**
- * Data that must be available at all points during query execution.
- *
- * Namely, schema of the type system that is currently executing,
- * and the fragments defined in the query document
- */
-export interface ValidatedExecutionArgs {
-  /** Schema used for execution. */
-  schema: GraphQLSchema;
-  // TODO: consider deprecating/removing fragmentDefinitions if/when fragment
-  // arguments are officially supported and/or the full fragment details are
-  // exposed within GraphQLResolveInfo.
-  /** Fragment definitions keyed by fragment name. */
-  fragmentDefinitions: ObjMap<FragmentDefinitionNode>;
-  /** Fragment details keyed by fragment name. */
-  fragments: ObjMap<FragmentDetails>;
-  /** Root value passed to the operation. */
-  rootValue: unknown;
-  /** Application context value passed to every resolver. */
-  contextValue: unknown;
-  /** Operation definition selected for execution. */
-  operation: OperationDefinitionNode;
-  /** Operation variable values with source metadata and coerced runtime values. */
-  variableValues: VariableValues;
-  /** Resolver used for fields without an explicit resolver. */
-  fieldResolver: GraphQLFieldResolver<any, any>;
-  /** Resolver used for abstract types without an explicit type resolver. */
-  typeResolver: GraphQLTypeResolver<any, any>;
-  /** Resolver used for subscription fields without an explicit subscribe resolver. */
-  subscribeFieldResolver: GraphQLFieldResolver<any, any>;
-  /** Whether suggestion text should be omitted from execution errors. */
-  hideSuggestions: boolean;
-  /** Whether execution should use error propagation. */
-  errorPropagation: boolean;
-  /** External signal that may abort execution. */
-  externalAbortSignal: AbortSignal | undefined;
-  /** Whether incremental execution may begin eligible work early. */
-  enableEarlyExecution: boolean;
-  /** Execution hooks supplied by the caller. */
-  hooks: ExecutionHooks | undefined;
-}
-
-/** Validated execution arguments for a subscription operation. */
-export interface ValidatedSubscriptionArgs extends ValidatedExecutionArgs {
-  /** Subscription operation definition selected for execution. */
-  operation: SubscriptionOperationDefinitionNode;
-}
 
 /**
  * A memoized collection of relevant subfields with regard to the return

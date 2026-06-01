@@ -16,7 +16,7 @@ import { validateSchema } from './type/validate.ts';
 import type { ValidationOptions } from './validation/validate.ts';
 import type { ValidationRule } from './validation/ValidationContext.ts';
 
-import type { ExecutionArgs } from './execution/execute.ts';
+import type { ExecutionArgs } from './execution/ExecutionArgs.ts';
 import type { ExecutionResult } from './execution/Executor.ts';
 
 import type { GraphQLHarness } from './harness.ts';

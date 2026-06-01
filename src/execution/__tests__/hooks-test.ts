@@ -20,9 +20,12 @@ import { GraphQLSchema } from '../../type/schema.ts';
 import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
 import type { SharedExecutionContext } from '../createSharedExecutionContext.ts';
-import type { ExecutionArgs } from '../execute.ts';
 import { execute, experimentalExecuteIncrementally } from '../execute.ts';
-import type { ExecutionResult, ValidatedExecutionArgs } from '../Executor.ts';
+import type {
+  ExecutionArgs,
+  ValidatedExecutionArgs,
+} from '../ExecutionArgs.ts';
+import type { ExecutionResult } from '../Executor.ts';
 import { runAsyncWorkFinishedHook } from '../hooks.ts';
 
 const executeHookSchema = new GraphQLSchema({

@@ -2,9 +2,12 @@
 
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 
-import type { ExecutionArgs } from '../execute.ts';
 import { validateExecutionArgs } from '../execute.ts';
-import type { ExecutionResult, ValidatedExecutionArgs } from '../Executor.ts';
+import type {
+  ExecutionArgs,
+  ValidatedExecutionArgs,
+} from '../ExecutionArgs.ts';
+import type { ExecutionResult } from '../Executor.ts';
 
 import type { LegacyExperimentalIncrementalExecutionResults } from './BranchingIncrementalExecutor.ts';
 import { BranchingIncrementalExecutor } from './BranchingIncrementalExecutor.ts';
