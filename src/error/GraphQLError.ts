@@ -103,7 +103,7 @@ export class GraphQLError extends Error {
 
   /**
    * The original error thrown from a field resolver during execution.
-   * @deprecated Prefer using {@link Error.cause} instead
+   * @deprecated Use `cause` instead.
    */
   readonly originalError: Error | undefined;
 
@@ -157,12 +157,19 @@ export class GraphQLError extends Error {
     const { nodes, source, positions, path, originalError, cause, extensions } =
       options;
 
-    super(message, { cause: cause ?? originalError });
+    const hasCause = 'cause' in options;
+    const errorCause = hasCause ? cause : originalError;
+    const errorOptions =
+      hasCause || originalError != null ? { cause: errorCause } : undefined;
+    super(message, errorOptions);
 
     this.name = 'GraphQLError';
     this.path = path ?? undefined;
-    this.originalError =
-      originalError ?? (cause instanceof Error ? cause : undefined);
+    const underlyingError:
+      | (Error & { readonly extensions?: unknown })
+      | undefined =
+      originalError ?? (errorCause instanceof Error ? errorCause : undefined);
+    this.originalError = underlyingError;
 
     // Compute list of blame nodes.
     this.nodes = undefinedIfEmpty(
@@ -185,8 +192,8 @@ export class GraphQLError extends Error {
         ? positions.map((pos) => getLocation(source, pos))
         : nodeLocations?.map((loc) => getLocation(loc.source, loc.start));
 
-    const originalExtensions = isObjectLike(originalError?.extensions)
-      ? originalError?.extensions
+    const originalExtensions = isObjectLike(underlyingError?.extensions)
+      ? underlyingError.extensions
       : undefined;
     this.extensions = extensions ?? originalExtensions ?? Object.create(null);
 
@@ -205,9 +212,9 @@ export class GraphQLError extends Error {
     });
 
     // Include (non-enumerable) stack trace.
-    if (originalError?.stack != null) {
+    if (underlyingError?.stack != null) {
       Object.defineProperty(this, 'stack', {
-        value: originalError.stack,
+        value: underlyingError.stack,
         writable: true,
         configurable: true,
       });

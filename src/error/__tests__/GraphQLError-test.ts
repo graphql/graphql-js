@@ -38,12 +38,19 @@ describe('GraphQLError', () => {
     expect(e.stack).to.be.a('string');
   });
 
+  it('does not add a cause property without a cause', () => {
+    const e = new GraphQLError('msg');
+
+    expect(Object.hasOwn(e, 'cause')).to.equal(false);
+  });
+
   it('enumerate only properties prescribed by the spec', () => {
     const e = new GraphQLError('msg' /* message */, {
       nodes: [fieldNode],
       source,
       positions: [1, 2, 3],
       path: ['a', 'b', 'c'],
+      cause: new Error('test'),
       originalError: new Error('test'),
       extensions: { foo: 'bar' },
     });
@@ -56,7 +63,21 @@ describe('GraphQLError', () => {
     ]);
   });
 
-  it('uses the stack of an original error', () => {
+  it('uses the stack of cause when possible', () => {
+    const original = new Error('original');
+    const e = new GraphQLError('msg', {
+      cause: original,
+    });
+
+    expect(e).to.include({
+      name: 'GraphQLError',
+      message: 'msg',
+      stack: original.stack,
+      cause: original,
+    });
+  });
+
+  it('uses the stack of an original error via originalError', () => {
     const original = new Error('original');
     const e = new GraphQLError('msg', {
       originalError: original,
@@ -68,6 +89,66 @@ describe('GraphQLError', () => {
       stack: original.stack,
       originalError: original,
     });
+  });
+
+  it('uses an Error cause as the original error for compatibility', () => {
+    class ErrorWithExtensions extends Error {
+      extensions: unknown;
+
+      constructor(message: string) {
+        super(message);
+        this.extensions = { original: 'extensions' };
+      }
+    }
+
+    const cause = new ErrorWithExtensions('cause');
+    const e = new GraphQLError('msg', { cause });
+
+    expect(e).to.deep.include({
+      name: 'GraphQLError',
+      message: 'msg',
+      stack: cause.stack,
+      cause,
+      originalError: cause,
+      extensions: { original: 'extensions' },
+    });
+    expect(Object.keys(e)).to.not.include.members(['cause', 'originalError']);
+  });
+
+  it('preserves a non-Error cause without setting originalError', () => {
+    const cause = 'cause';
+    const e = new GraphQLError('msg', { cause });
+
+    expect(e).to.include({
+      cause,
+      originalError: undefined,
+    });
+    expect(e.stack).to.be.a('string');
+  });
+
+  it('prefers cause for Error.cause and originalError for originalError', () => {
+    const originalError = new Error('original');
+    const cause = new Error('cause');
+    const e = new GraphQLError('msg', { originalError, cause });
+
+    expect(e).to.include({
+      cause,
+      originalError,
+      stack: originalError.stack,
+    });
+  });
+
+  it('creates new stack if cause has no stack', () => {
+    const original = new Error('original');
+    delete original.stack;
+    const e = new GraphQLError('msg', { originalError: original });
+
+    expect(e).to.include({
+      name: 'GraphQLError',
+      message: 'msg',
+      cause: original,
+    });
+    expect(e.stack).to.be.a('string');
   });
 
   it('creates new stack if original error has no stack', () => {
@@ -135,6 +216,50 @@ describe('GraphQLError', () => {
       nodes: undefined,
       positions: [6],
       locations: [{ line: 2, column: 5 }],
+    });
+  });
+
+  it('defaults to original cause extension only if extensions argument is not passed', () => {
+    class ErrorWithExtensions extends Error {
+      extensions: unknown;
+
+      constructor(message: string) {
+        super(message);
+        this.extensions = { original: 'extensions' };
+      }
+    }
+
+    const original = new ErrorWithExtensions('original');
+    const inheritedExtensions = new GraphQLError('InheritedExtensions', {
+      cause: original,
+    });
+
+    expect(inheritedExtensions).to.deep.include({
+      message: 'InheritedExtensions',
+      cause: original,
+      extensions: { original: 'extensions' },
+    });
+
+    const ownExtensions = new GraphQLError('OwnExtensions', {
+      cause: original,
+      extensions: { own: 'extensions' },
+    });
+
+    expect(ownExtensions).to.deep.include({
+      message: 'OwnExtensions',
+      cause: original,
+      extensions: { own: 'extensions' },
+    });
+
+    const ownEmptyExtensions = new GraphQLError('OwnEmptyExtensions', {
+      cause: original,
+      extensions: {},
+    });
+
+    expect(ownEmptyExtensions).to.deep.include({
+      message: 'OwnEmptyExtensions',
+      cause: original,
+      extensions: {},
     });
   });
 
