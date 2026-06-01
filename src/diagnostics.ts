@@ -115,6 +115,7 @@ export interface GraphQLExecuteContext {
  */
 export interface GraphQLExecuteRootSelectionSetContext {
   schema: GraphQLSchema;
+  document: DocumentNode;
   operation: OperationDefinitionNode;
   variableValues: Maybe<{ readonly [variable: string]: unknown }>;
   operationName: string | undefined;

@@ -67,6 +67,8 @@ export interface ExecutionArgs {
 export interface ValidatedExecutionArgs {
   /** Schema used for execution. */
   schema: GraphQLSchema;
+  /** Parsed GraphQL document being executed. */
+  document: DocumentNode;
   // TODO: consider deprecating/removing fragmentDefinitions if/when fragment
   // arguments are officially supported and/or the full fragment details are
   // exposed within GraphQLResolveInfo.

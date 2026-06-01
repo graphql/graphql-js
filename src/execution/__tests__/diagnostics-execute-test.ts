@@ -389,6 +389,7 @@ describe('execute root selection set diagnostics channel', () => {
           channel: 'start',
           context: {
             schema,
+            document,
             operation,
             variableValues,
             operationName: 'Q',
@@ -399,6 +400,7 @@ describe('execute root selection set diagnostics channel', () => {
           channel: 'end',
           context: {
             schema,
+            document,
             operation,
             variableValues,
             operationName: 'Q',
@@ -427,6 +429,7 @@ describe('execute root selection set diagnostics channel', () => {
           channel: 'start',
           context: {
             schema,
+            document,
             operation,
             variableValues: undefined,
             operationName: undefined,
@@ -437,6 +440,7 @@ describe('execute root selection set diagnostics channel', () => {
           channel: 'end',
           context: {
             schema,
+            document,
             operation,
             variableValues: undefined,
             operationName: undefined,
@@ -447,6 +451,7 @@ describe('execute root selection set diagnostics channel', () => {
           channel: 'asyncStart',
           context: {
             schema,
+            document,
             operation,
             variableValues: undefined,
             operationName: undefined,
@@ -457,6 +462,7 @@ describe('execute root selection set diagnostics channel', () => {
           channel: 'asyncEnd',
           context: {
             schema,
+            document,
             operation,
             variableValues: undefined,
             operationName: undefined,

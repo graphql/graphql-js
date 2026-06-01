@@ -202,6 +202,7 @@ describe('subscribe diagnostics channel', () => {
           channel: 'start',
           context: {
             schema,
+            document,
             operation,
             variableValues,
             operationName: 'S',
@@ -212,6 +213,7 @@ describe('subscribe diagnostics channel', () => {
           channel: 'end',
           context: {
             schema,
+            document,
             operation,
             variableValues,
             operationName: 'S',
@@ -223,6 +225,7 @@ describe('subscribe diagnostics channel', () => {
           channel: 'start',
           context: {
             schema,
+            document,
             operation,
             variableValues,
             operationName: 'S',
@@ -233,6 +236,7 @@ describe('subscribe diagnostics channel', () => {
           channel: 'end',
           context: {
             schema,
+            document,
             operation,
             variableValues,
             operationName: 'S',
@@ -298,6 +302,7 @@ describe('subscribe diagnostics channel', () => {
           channel: 'start',
           context: {
             schema,
+            document,
             operation,
             variableValues,
             operationName: 'S',
@@ -308,6 +313,7 @@ describe('subscribe diagnostics channel', () => {
           channel: 'end',
           context: {
             schema,
+            document,
             operation,
             variableValues,
             operationName: 'S',
@@ -319,6 +325,7 @@ describe('subscribe diagnostics channel', () => {
           channel: 'start',
           context: {
             schema,
+            document,
             operation,
             variableValues,
             operationName: 'S',
@@ -329,6 +336,7 @@ describe('subscribe diagnostics channel', () => {
           channel: 'end',
           context: {
             schema,
+            document,
             operation,
             variableValues,
             operationName: 'S',

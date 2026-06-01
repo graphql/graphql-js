@@ -153,6 +153,7 @@ function runExecuteRootSelectionSetCase() {
       events.push({
         kind: 'start',
         schema: msg.schema,
+        document: msg.document,
         operation: msg.operation,
         variableValues: msg.variableValues,
         operationName: msg.operationName,
@@ -180,6 +181,7 @@ function runExecuteRootSelectionSetCase() {
     );
     assert.equal(events[0].operationType, 'query');
     assert.equal(events[0].operationName, 'Greeting');
+    assert.equal(events[0].document, document);
     assert.equal(events[0].operation, operation);
     assert.equal(events[0].schema, schema);
     assert.equal(events[1].result, result);

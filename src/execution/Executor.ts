@@ -266,15 +266,14 @@ export class Executor<
   /**
    * Build an operation-scoped diagnostics context from ValidatedExecutionArgs.
    * Used after the operation has already been resolved during argument
-   * validation. The original document is not available at this point, only the
-   * resolved operation; subscribers that need the document should read it from
-   * the graphql:execute or graphql:subscribe contexts.
+   * validation.
    */
   buildExecuteContextFromValidatedArgs(
     args: ValidatedExecutionArgs,
   ): GraphQLExecuteRootSelectionSetContext {
     return {
       schema: args.schema,
+      document: args.document,
       operation: args.operation,
       variableValues: args.rawVariableValues,
       operationName: args.operation.name?.value,

@@ -822,6 +822,7 @@ export function validateExecutionArgs(
 
   return {
     schema,
+    document,
     fragmentDefinitions,
     fragments,
     rootValue,
