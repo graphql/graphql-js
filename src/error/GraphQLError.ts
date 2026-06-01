@@ -48,6 +48,7 @@ export interface GraphQLErrorOptions {
   path?: Maybe<ReadonlyArray<string | number>>;
   /**
    * Original error that caused this GraphQLError, if one exists.
+   * Deprecated in favor of `cause` to better align with JavaScript standards.
    * @deprecated Prefer `cause` instead.
    */
   originalError?: Maybe<Error & { readonly extensions?: unknown }>;
@@ -102,7 +103,8 @@ export class GraphQLError extends Error {
   readonly positions: ReadonlyArray<number> | undefined;
 
   /**
-   * The original error thrown from a field resolver during execution.
+   * Original error that caused this GraphQLError, if one exists.
+   * Deprecated in favor of `cause` to better align with JavaScript standards.
    * @deprecated Use `cause` instead.
    */
   readonly originalError: Error | undefined;
