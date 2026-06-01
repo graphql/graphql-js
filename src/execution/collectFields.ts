@@ -2,13 +2,13 @@ import { AccumulatorMap } from '../jsutils/AccumulatorMap.ts';
 import type { ObjMap, ReadOnlyObjMap } from '../jsutils/ObjMap.ts';
 
 import type {
-  ConstValueNode,
   DirectiveNode,
   FieldNode,
   FragmentDefinitionNode,
   FragmentSpreadNode,
   InlineFragmentNode,
   SelectionSetNode,
+  ValueNode,
 } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
 
@@ -43,9 +43,10 @@ export interface FragmentVariableValues {
   readonly coerced: ReadOnlyObjMap<unknown>;
 }
 
-interface FragmentVariableValueSource {
+/** @internal */
+export interface FragmentVariableValueSource {
   readonly signature: GraphQLVariableSignature;
-  readonly value?: ConstValueNode;
+  readonly value?: ValueNode;
   readonly fragmentVariableValues?: FragmentVariableValues;
 }
 

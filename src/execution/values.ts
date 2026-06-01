@@ -38,7 +38,10 @@ import {
   validateInputValue,
 } from '../utilities/validateInputValue.ts';
 
-import type { FragmentVariableValues } from './collectFields.ts';
+import type {
+  FragmentVariableValues,
+  FragmentVariableValueSource,
+} from './collectFields.ts';
 import type { GraphQLVariableSignature } from './getVariableSignature.ts';
 import { getVariableSignature } from './getVariableSignature.ts';
 
@@ -306,17 +309,23 @@ export function getFragmentVariableValues(
 ): FragmentVariableValues {
   const argumentNodes = fragmentSpreadNode.arguments ?? [];
   const argNodeMap = new Map(argumentNodes.map((arg) => [arg.name.value, arg]));
-  const sources = Object.create(null);
-  const coerced = Object.create(null);
+  const sources: ObjMap<FragmentVariableValueSource> = Object.create(null);
+  const coerced: ObjMap<unknown> = Object.create(null);
   for (const [varName, varSignature] of Object.entries(fragmentSignatures)) {
-    sources[varName] = {
-      signature: varSignature,
-    };
     const argumentNode = argNodeMap.get(varName);
     if (argumentNode !== undefined) {
-      const source = sources[varName];
-      source.value = argumentNode.value;
-      source.fragmentVariableValues = fragmentVariableValues;
+      sources[varName] =
+        fragmentVariableValues == null
+          ? { signature: varSignature, value: argumentNode.value }
+          : {
+              signature: varSignature,
+              value: argumentNode.value,
+              fragmentVariableValues,
+            };
+    } else {
+      sources[varName] = {
+        signature: varSignature,
+      };
     }
 
     coerceArgument(
