@@ -70,7 +70,7 @@ Creates a GraphQLError instance.
       <td>options</td>
       <td><ApiType parts={[["link", "GraphQLErrorOptions", "/api-v17/error#graphqlerroroptions"]]} /></td>
       <td><ApiType parts={["\u007b\u007d"]} /></td>
-      <td>Error metadata such as source locations, response path, original error, and extensions.</td>
+      <td>Error metadata such as source locations, response path, cause, original error, and extensions.</td>
     </tr>
   </tbody>
 </table>
@@ -126,7 +126,8 @@ which correspond to this error.</td>
     <tr>
       <td>originalError</td>
       <td><ApiType parts={[["type", "Error"], " \u007c ", ["keyword", "undefined"]]} /></td>
-      <td>Original error that caused this GraphQLError, if one exists.</td>
+      <td>Original error that caused this GraphQLError, if one exists.<br />
+Deprecated in favor of <code>{"cause"}</code> to better align with JavaScript standards.</td>
     </tr>
     <tr>
       <td>extensions</td>
@@ -445,7 +446,13 @@ an object which can contain all the values you need.
     <tr>
       <td>originalError?</td>
       <td><ApiType parts={[["type", "Maybe"], "\u003c\n  ", ["type", "Error"], " & \u007b ", ["property", "extensions"], "?: ", ["keyword", "unknown"], " \u007d\n\u003e"]} /></td>
-      <td>Original error that caused this GraphQLError, if one exists.</td>
+      <td>Original error that caused this GraphQLError, if one exists.<br />
+Deprecated in favor of <code>{"cause"}</code> to better align with JavaScript standards.</td>
+    </tr>
+    <tr>
+      <td>cause?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Cause of this GraphQLError, if one exists.</td>
     </tr>
     <tr>
       <td>extensions?</td>
