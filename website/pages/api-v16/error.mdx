@@ -11,9 +11,9 @@ These exports are also available from the root `graphql` package.
   </p>
   <p>
     <strong>Functions:</strong><br />
-    <a href="/api-v16/error#printerror">printError()</a>
+    <a className="api-deprecated-link" href="/api-v16/error#printerror">printError()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/error#formaterror">formatError()</a>
+    <a className="api-deprecated-link" href="/api-v16/error#formaterror">formatError()</a>
     <span aria-hidden="true">&middot;</span>
     <a href="/api-v16/error#locatederror">locatedError()</a>
     <span aria-hidden="true">&middot;</span>
@@ -80,7 +80,7 @@ This positional-arguments constructor overload is deprecated. Use the<br />
 
 <hr className="api-subsection-divider" />
 
-#### Constructor <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+#### <span className="api-deprecated-title">Constructor</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
 Creates a GraphQLError instance using the legacy positional constructor.
 This deprecated overload will be removed in v17. Prefer the
@@ -296,7 +296,7 @@ error.toJSON(); // => { message: 'Resolver failed.', path: ['viewer', 'name'], e
 
 ## Functions
 
-### printError() <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+### <span className="api-deprecated-title">printError()</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
 Prints a GraphQLError to a string, representing useful location information
 about the error's position in the source. This deprecated helper is retained
@@ -361,7 +361,7 @@ message; // => 'Example error'
 
 <hr className="api-item-divider" />
 
-### formatError() <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+### <span className="api-deprecated-title">formatError()</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
 Given a GraphQLError, format it according to the rules described by the
 Response Format, Errors section of the GraphQL Specification. This deprecated

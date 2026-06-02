@@ -118,6 +118,10 @@ div[id^='headlessui-menu-items'] {
   word-break: keep-all;
 }
 
+.api-category-toc a.api-deprecated-link {
+  text-decoration-line: underline line-through;
+}
+
 .api-item-divider {
   margin: 2rem 0;
   border: 0;
@@ -153,6 +157,24 @@ div[id^='headlessui-menu-items'] {
   padding: 0.12rem 0.42rem;
   vertical-align: 0.08rem;
   white-space: nowrap;
+}
+
+.api-tag::before {
+  content: 'Deprecated';
+}
+
+.nextra-toc .api-deprecated-title {
+  text-decoration: line-through;
+  text-decoration-thickness: from-font;
+}
+
+.nextra-toc .api-tag {
+  display: none;
+}
+
+.api-docs-route .nextra-sidebar-container a[href='/api-v16/subscription/'] {
+  text-decoration-line: line-through;
+  text-decoration-thickness: from-font;
 }
 
 .api-docs-route table {

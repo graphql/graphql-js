@@ -83,7 +83,7 @@ const typeNodeKeywordNames = new Map([
 
 const apiCodeComponents = ['ApiSignature', 'ApiType'];
 const deprecatedTagMarkup =
-  '<span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>';
+  '<span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>';
 
 const renderContext = emptyRenderContext();
 let sourceContext = emptySourceContext();
@@ -672,11 +672,19 @@ function deprecatedTag(node) {
   return isDeprecated(node) ? ` ${deprecatedTagMarkup}` : '';
 }
 
-function callableDeprecatedTag(node, signatures) {
-  return isDeprecated(node) ||
+function isCallableDeprecated(node, signatures) {
+  return (
+    isDeprecated(node) ||
     (signatures.length === 1 && isDeprecated(signatures[0]))
-    ? ` ${deprecatedTagMarkup}`
-    : '';
+  );
+}
+
+function deprecatedHeadingLabel(label, deprecated) {
+  return deprecated
+    ? `<span className="api-deprecated-title">${jsxText(
+        label,
+      )}</span>${deprecatedTagMarkup}`
+    : label;
 }
 
 function code(value) {
@@ -790,7 +798,10 @@ function tableCell(value) {
   if (isApiCodeComponentMarkup(cell)) {
     return cell;
   }
-  return mapInlineCodeSpans(cell, tableText, tableCode);
+  return cell
+    .split(deprecatedTagMarkup)
+    .map((part) => mapInlineCodeSpans(part, tableText, tableCode))
+    .join(deprecatedTagMarkup);
 }
 
 function isApiCodeComponentMarkup(value) {
@@ -2273,7 +2284,9 @@ function renderFields(parent, level, options = {}) {
     }
     const defaultValue = defaultText(child, parent, options);
     rows.push([
-      `${htmlText(child.name)}${child.flags?.isOptional ? '?' : ''}`,
+      `${htmlText(child.name)}${
+        child.flags?.isOptional ? '?' : ''
+      }${deprecatedTag(child)}`,
       renderApiType(child.type, options),
       defaultValue,
       summary(child),
@@ -2299,7 +2312,9 @@ function renderParams(signature, options = {}) {
   for (const param of signature.parameters ?? []) {
     const defaultValue = defaultText(param, signature, options);
     rows.push([
-      `${htmlText(param.name)}${param.flags?.isOptional ? '?' : ''}`,
+      `${htmlText(param.name)}${
+        param.flags?.isOptional ? '?' : ''
+      }${deprecatedTag(param)}`,
       renderApiType(param.type, options),
       defaultValue,
       summary(param),
@@ -2374,7 +2389,7 @@ function renderTypeParameters(node, options = {}) {
   }
 
   const rows = typeParameters.map((param) => [
-    param.name,
+    `${param.name}${deprecatedTag(param)}`,
     param.type == null ? '' : renderApiType(param.type, options),
     param.default == null ? '' : renderApiType(param.default, options),
     summary(param),
@@ -2425,7 +2440,13 @@ function renderCallable(
   const signatures = node.signatures ?? [node];
   const headingLabel = label.endsWith(')') ? label : `${label}()`;
   const lines = [
-    heading(level, `${headingLabel}${callableDeprecatedTag(node, signatures)}`),
+    heading(
+      level,
+      deprecatedHeadingLabel(
+        headingLabel,
+        isCallableDeprecated(node, signatures),
+      ),
+    ),
   ];
 
   for (const [index, signature] of signatures.entries()) {
@@ -2463,7 +2484,7 @@ function renderDeclaration(node, level = 3, siblings = []) {
     return renderCallable(node, level, title, options);
   }
 
-  lines.push(heading(level, `${title}${deprecatedTag(node)}`));
+  lines.push(heading(level, deprecatedHeadingLabel(title, isDeprecated(node))));
 
   const comment = renderComment(node);
   const label = typeLabel(node, siblings);
@@ -2505,7 +2526,7 @@ function renderDeclaration(node, level = 3, siblings = []) {
   if (node.kind === ReflectionKind.Enum) {
     lines.push(...examples);
     const rows = visibleChildren(node).map((child) => [
-      code(child.name),
+      `${code(child.name)}${deprecatedTag(child)}`,
       code(typeName(child.type, options)),
       summary(child),
     ]);
@@ -2526,7 +2547,7 @@ function renderDeclaration(node, level = 3, siblings = []) {
       for (const signature of constructor.signatures ?? []) {
         lines.push(
           ...headingSubsection(
-            `Constructor${deprecatedTag(signature)}`,
+            deprecatedHeadingLabel('Constructor', isDeprecated(signature)),
             level + 1,
           ),
         );
@@ -2566,7 +2587,7 @@ function enumLikeNote(node) {
 
 function renderEnumMembers(node, options = {}) {
   const rows = enumLikeMembers(node).map((child) => [
-    code(child.name),
+    `${code(child.name)}${deprecatedTag(child)}`,
     code(typeName(child.type, options)),
     summary(child),
   ]);
@@ -2781,7 +2802,14 @@ function renderItemToc(groups, page) {
 function tocLink(item, page) {
   const label =
     item.kind === ReflectionKind.Function ? `${item.name}()` : item.name;
-  return `<a href="${jsxAttribute(
+  const className =
+    item.kind === ReflectionKind.Function &&
+    isCallableDeprecated(item, item.signatures ?? [])
+      ? ' className="api-deprecated-link"'
+      : isDeprecated(item)
+      ? ' className="api-deprecated-link"'
+      : '';
+  return `<a${className} href="${jsxAttribute(
     docHref({ page, anchor: slug(item.name) }),
   )}">${jsxText(label)}</a>`;
 }
@@ -2853,7 +2881,11 @@ function categorySection(name, items, moduleName) {
 }
 
 function renderModulePage(docs) {
-  const content = [summary(docs.module)];
+  const content = [];
+  if (isDeprecatedModule(docs)) {
+    content.push(heading(1, deprecatedHeadingLabel(docs.title, true)));
+  }
+  content.push(summary(docs.module));
   if (docs.categories.length === 1) {
     content.push(
       renderItems(docs.byCategory.get(docs.categories[0]), docs.name).trimEnd(),
@@ -2867,6 +2899,14 @@ function renderModulePage(docs) {
     );
   }
   return content.filter(Boolean).join('\n\n') + '\n';
+}
+
+function isDeprecatedModule(docs) {
+  return (
+    isDeprecated(docs.module) ||
+    (docs.name === 'subscription' &&
+      /\bdeprecated\b/i.test(summary(docs.module)))
+  );
 }
 
 function addModuleMeta(meta, docs) {
