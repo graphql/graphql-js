@@ -245,7 +245,11 @@ assertEnumValueName('true'); // throws an error
     <span aria-hidden="true">&middot;</span>
     <a href="/api-v16/type#assertinputobjecttype">assertInputObjectType()</a>
     <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/type#islisttype">isListType()</a>
+    <span aria-hidden="true">&middot;</span>
     <a href="/api-v16/type#assertlisttype">assertListType()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/type#isnonnulltype">isNonNullType()</a>
     <span aria-hidden="true">&middot;</span>
     <a href="/api-v16/type#assertnonnulltype">assertNonNullType()</a>
     <span aria-hidden="true">&middot;</span>
@@ -277,9 +281,13 @@ assertEnumValueName('true'); // throws an error
     <span aria-hidden="true">&middot;</span>
     <a href="/api-v16/type#assertnullabletype">assertNullableType()</a>
     <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/type#getnullabletype">getNullableType()</a>
+    <span aria-hidden="true">&middot;</span>
     <a href="/api-v16/type#isnamedtype">isNamedType()</a>
     <span aria-hidden="true">&middot;</span>
     <a href="/api-v16/type#assertnamedtype">assertNamedType()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/type#getnamedtype">getNamedType()</a>
     <span aria-hidden="true">&middot;</span>
     <a href="/api-v16/type#resolvereadonlyarraythunk">resolveReadonlyArrayThunk()</a>
     <span aria-hidden="true">&middot;</span>
@@ -4128,6 +4136,212 @@ assertInputObjectType(schema.getType('Review')); // throws an error
 
 <hr className="api-item-divider" />
 
+#### isListType()
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 1</div>
+
+Returns true when the value is a GraphQLList.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "isListType"], "(\n  ", ["parameter", "type"], ": ", ["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"], ",\n): ", ["parameter", "type"], " ", ["keyword", "is"], " ", ["link", "GraphQLList", "/api-v16/type#graphqllist"], "\u003c", ["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"]]} /></td>
+      <td>The GraphQL type to inspect.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["parameter", "type"], " ", ["keyword", "is"], " ", ["link", "GraphQLList", "/api-v16/type#graphqllist"], "\u003c", ["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"], "\u003e"]} /></td>
+      <td>True when the value is a GraphQLList.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { GraphQLList, GraphQLString, isListType } from 'graphql/type';
+
+const schema = buildSchema(`
+  type Query {
+    tags: [String!]!
+  }
+`);
+
+const tagsField = schema.getQueryType()?.getFields().tags;
+
+isListType(new GraphQLList(GraphQLString)); // => true
+isListType(GraphQLString); // => false
+isListType(tagsField?.type); // => false
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 2</div>
+
+Returns true when the output type is a GraphQLList.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "isListType"], "(\n  ", ["parameter", "type"], ": ", ["link", "GraphQLOutputType", "/api-v16/type#graphqloutputtype"], ",\n): ", ["parameter", "type"], " ", ["keyword", "is"], " ", ["link", "GraphQLList", "/api-v16/type#graphqllist"], "\u003c", ["link", "GraphQLOutputType", "/api-v16/type#graphqloutputtype"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["link", "GraphQLOutputType", "/api-v16/type#graphqloutputtype"]]} /></td>
+      <td>The GraphQL output type to inspect.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["parameter", "type"], " ", ["keyword", "is"], " ", ["link", "GraphQLList", "/api-v16/type#graphqllist"], "\u003c", ["link", "GraphQLOutputType", "/api-v16/type#graphqloutputtype"], "\u003e"]} /></td>
+      <td>True when the output type is a list type.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { getNullableType, isListType } from 'graphql/type';
+
+const schema = buildSchema(`
+  type Query {
+    tags: [String!]!
+  }
+`);
+
+const tagsField = schema.getQueryType()?.getFields().tags;
+const nullableTagsType = getNullableType(tagsField?.type);
+
+isListType(nullableTagsType); // => true
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 3</div>
+
+Returns true when the value is a GraphQLList.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "isListType"], "(\n  ", ["parameter", "type"], ": ", ["keyword", "unknown"], ",\n): ", ["parameter", "type"], " ", ["keyword", "is"], " ", ["link", "GraphQLList", "/api-v16/type#graphqllist"], "\u003c", ["link", "GraphQLType", "/api-v16/type#graphqltype"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>The value to inspect.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["parameter", "type"], " ", ["keyword", "is"], " ", ["link", "GraphQLList", "/api-v16/type#graphqllist"], "\u003c", ["link", "GraphQLType", "/api-v16/type#graphqltype"], "\u003e"]} /></td>
+      <td>True when the value is a list type.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { isListType } from 'graphql/type';
+
+isListType('[String]'); // => false
+isListType(null); // => false
+```
+
+<hr className="api-item-divider" />
+
 #### assertListType()
 
 Returns the value as a GraphQLList, or throws if it is not one.
@@ -4187,6 +4401,214 @@ const listType = assertListType(new GraphQLList(GraphQLString));
 
 listType.ofType; // => GraphQLString
 assertListType(GraphQLString); // throws an error
+```
+
+<hr className="api-item-divider" />
+
+#### isNonNullType()
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 1</div>
+
+Returns true when the value is a GraphQLNonNull.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "isNonNullType"], "(\n  ", ["parameter", "type"], ": ", ["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"], ",\n): ", ["parameter", "type"], " ", ["keyword", "is"], " ", ["link", "GraphQLNonNull", "/api-v16/type#graphqlnonnull"], "\u003c", ["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"]]} /></td>
+      <td>The GraphQL type to inspect.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["parameter", "type"], " ", ["keyword", "is"], " ", ["link", "GraphQLNonNull", "/api-v16/type#graphqlnonnull"], "\u003c", ["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"], "\u003e"]} /></td>
+      <td>True when the value is a GraphQLNonNull.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { GraphQLNonNull, GraphQLString, isNonNullType } from 'graphql/type';
+
+const schema = buildSchema(`
+  type Query {
+    name: String!
+    nickname: String
+  }
+`);
+
+const fields = schema.getQueryType()?.getFields();
+
+isNonNullType(new GraphQLNonNull(GraphQLString)); // => true
+isNonNullType(fields?.name.type); // => true
+isNonNullType(fields?.nickname.type); // => false
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 2</div>
+
+Returns true when the output type is a GraphQLNonNull.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "isNonNullType"], "(\n  ", ["parameter", "type"], ": ", ["link", "GraphQLOutputType", "/api-v16/type#graphqloutputtype"], ",\n): ", ["parameter", "type"], " ", ["keyword", "is"], " ", ["link", "GraphQLNonNull", "/api-v16/type#graphqlnonnull"], "\u003c", ["link", "GraphQLOutputType", "/api-v16/type#graphqloutputtype"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["link", "GraphQLOutputType", "/api-v16/type#graphqloutputtype"]]} /></td>
+      <td>The GraphQL output type to inspect.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["parameter", "type"], " ", ["keyword", "is"], " ", ["link", "GraphQLNonNull", "/api-v16/type#graphqlnonnull"], "\u003c", ["link", "GraphQLOutputType", "/api-v16/type#graphqloutputtype"], "\u003e"]} /></td>
+      <td>True when the output type is a non-null type.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { isNonNullType } from 'graphql/type';
+
+const schema = buildSchema(`
+  type Query {
+    name: String!
+    nickname: String
+  }
+`);
+
+const fields = schema.getQueryType()?.getFields();
+
+isNonNullType(fields?.name.type); // => true
+isNonNullType(fields?.nickname.type); // => false
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 3</div>
+
+Returns true when the value is a GraphQLNonNull.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "isNonNullType"], "(\n  ", ["parameter", "type"], ": ", ["keyword", "unknown"], ",\n): ", ["parameter", "type"], " ", ["keyword", "is"], " ", ["link", "GraphQLNonNull", "/api-v16/type#graphqlnonnull"], "\u003c", ["link", "GraphQLType", "/api-v16/type#graphqltype"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>The value to inspect.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["parameter", "type"], " ", ["keyword", "is"], " ", ["link", "GraphQLNonNull", "/api-v16/type#graphqlnonnull"], "\u003c", ["link", "GraphQLType", "/api-v16/type#graphqltype"], "\u003e"]} /></td>
+      <td>True when the value is a non-null type.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { isNonNullType } from 'graphql/type';
+
+isNonNullType('String!'); // => false
+isNonNullType(null); // => false
 ```
 
 <hr className="api-item-divider" />
@@ -5295,6 +5717,214 @@ assertNullableType(new GraphQLNonNull(GraphQLString)); // throws an error
 
 <hr className="api-item-divider" />
 
+#### getNullableType()
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 1</div>
+
+Returns the nullable type.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getNullableType"], "(", ["parameter", "type"], ": ", ["keyword", "null"], " \u007c ", ["keyword", "undefined"], "): ", ["keyword", "void"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["keyword", "null"], " \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>The GraphQL type to inspect.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { getNullableType } from 'graphql/type';
+
+getNullableType(null); // => undefined
+getNullableType(undefined); // => undefined
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 2</div>
+
+Returns the nullable type after removing one non-null wrapper.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>T</td>
+      <td><ApiType parts={[["link", "GraphQLNullableType", "/api-v16/type#graphqlnullabletype"]]} /></td>
+      <td></td>
+      <td>The nullable GraphQL type returned after removing one non-null wrapper.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getNullableType"], "\u003c", ["type", "T"], " ", ["keyword", "extends"], " ", ["link", "GraphQLNullableType", "/api-v16/type#graphqlnullabletype"], "\u003e(\n  ", ["parameter", "type"], ":\n    \u007c ", ["type", "T"], "\n    \u007c ", ["link", "GraphQLNonNull", "/api-v16/type#graphqlnonnull"], "\u003c", ["type", "T"], "\u003e,\n): ", ["type", "T"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["type", "T"], " \u007c ", ["link", "GraphQLNonNull", "/api-v16/type#graphqlnonnull"], "\u003c", ["type", "T"], "\u003e"]} /></td>
+      <td>A nullable type or non-null wrapper.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "T"]]} /></td>
+      <td>The nullable type after removing one non-null wrapper, if present.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import {
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLString,
+  getNullableType,
+} from 'graphql/type';
+
+const requiredString = new GraphQLNonNull(GraphQLString);
+const stringList = new GraphQLList(GraphQLString);
+
+getNullableType(requiredString); // => GraphQLString
+getNullableType(stringList); // => stringList
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 3</div>
+
+Returns the nullable type after removing one non-null wrapper.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getNullableType"], "(\n  ", ["parameter", "type"], ": ", ["type", "Maybe"], "\u003c", ["link", "GraphQLType", "/api-v16/type#graphqltype"], "\u003e,\n): ", ["link", "GraphQLNullableType", "/api-v16/type#graphqlnullabletype"], " \u007c ", ["keyword", "undefined"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLType", "/api-v16/type#graphqltype"], "\u003e"]} /></td>
+      <td>The GraphQL type to inspect.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "GraphQLNullableType", "/api-v16/type#graphqlnullabletype"], " \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>The nullable type after removing one non-null wrapper, if present.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import {
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLString,
+  getNullableType,
+} from 'graphql/type';
+
+const requiredStringList = new GraphQLNonNull(
+  new GraphQLList(GraphQLString),
+);
+
+getNullableType(requiredStringList).toString(); // => '[String]'
+getNullableType(GraphQLString); // => GraphQLString
+```
+
+<hr className="api-item-divider" />
+
 #### isNamedType()
 
 Returns true when the value is a GraphQL named type.
@@ -5416,6 +6046,332 @@ const namedType = assertNamedType(GraphQLString);
 
 namedType.name; // => 'String'
 assertNamedType(new GraphQLList(GraphQLString)); // throws an error
+```
+
+<hr className="api-item-divider" />
+
+#### getNamedType()
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 1</div>
+
+Returns the named type.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getNamedType"], "(", ["parameter", "type"], ": ", ["keyword", "null"], " \u007c ", ["keyword", "undefined"], "): ", ["keyword", "void"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["keyword", "null"], " \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>The GraphQL type to inspect.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { getNamedType } from 'graphql/type';
+
+getNamedType(null); // => undefined
+getNamedType(undefined); // => undefined
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 2</div>
+
+Returns the named input type after unwrapping all list and non-null wrappers.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getNamedType"], "(\n  ", ["parameter", "type"], ": ", ["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"], ",\n): ", ["link", "GraphQLNamedInputType", "/api-v16/type#graphqlnamedinputtype"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"]]} /></td>
+      <td>The GraphQL input type to inspect.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "GraphQLNamedInputType", "/api-v16/type#graphqlnamedinputtype"]]} /></td>
+      <td>The named input type after unwrapping all wrappers.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { getNamedType } from 'graphql/type';
+
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+  }
+
+  type Query {
+    review(input: [ReviewInput!]!): Boolean
+  }
+`);
+
+const inputArg = schema.getQueryType()?.getFields().review.args[0];
+
+getNamedType(inputArg?.type).toString(); // => 'ReviewInput'
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 3</div>
+
+Returns the named output type after unwrapping all list and non-null wrappers.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getNamedType"], "(\n  ", ["parameter", "type"], ": ", ["link", "GraphQLOutputType", "/api-v16/type#graphqloutputtype"], ",\n): ", ["link", "GraphQLNamedOutputType", "/api-v16/type#graphqlnamedoutputtype"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["link", "GraphQLOutputType", "/api-v16/type#graphqloutputtype"]]} /></td>
+      <td>The GraphQL output type to inspect.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "GraphQLNamedOutputType", "/api-v16/type#graphqlnamedoutputtype"]]} /></td>
+      <td>The named output type after unwrapping all wrappers.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema } from 'graphql/utilities';
+import { getNamedType } from 'graphql/type';
+
+const schema = buildSchema(`
+  type User {
+    name: String
+  }
+
+  type Query {
+    users: [User!]!
+  }
+`);
+
+const usersField = schema.getQueryType()?.getFields().users;
+
+getNamedType(usersField?.type).toString(); // => 'User'
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 4</div>
+
+Returns the named type after unwrapping all list and non-null wrappers.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getNamedType"], "(\n  ", ["parameter", "type"], ": ", ["link", "GraphQLType", "/api-v16/type#graphqltype"], ",\n): ", ["link", "GraphQLNamedType", "/api-v16/type#graphqlnamedtype"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["link", "GraphQLType", "/api-v16/type#graphqltype"]]} /></td>
+      <td>The GraphQL type to inspect.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "GraphQLNamedType", "/api-v16/type#graphqlnamedtype"]]} /></td>
+      <td>The named type after unwrapping all wrappers.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import {
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLString,
+  getNamedType,
+} from 'graphql/type';
+
+const nestedType = new GraphQLNonNull(
+  new GraphQLList(new GraphQLNonNull(GraphQLString)),
+);
+
+getNamedType(nestedType); // => GraphQLString
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 5</div>
+
+Returns the named type after unwrapping all list and non-null wrappers.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getNamedType"], "(\n  ", ["parameter", "type"], ": ", ["type", "Maybe"], "\u003c", ["link", "GraphQLType", "/api-v16/type#graphqltype"], "\u003e,\n): ", ["link", "GraphQLNamedType", "/api-v16/type#graphqlnamedtype"], " \u007c ", ["keyword", "undefined"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLType", "/api-v16/type#graphqltype"], "\u003e"]} /></td>
+      <td>The GraphQL type to inspect.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "GraphQLNamedType", "/api-v16/type#graphqlnamedtype"], " \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>The named type after unwrapping all wrappers, or undefined for nullish input.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import {
+  GraphQLList,
+  GraphQLString,
+  getNamedType,
+} from 'graphql/type';
+
+getNamedType(new GraphQLList(GraphQLString)); // => GraphQLString
+getNamedType(undefined); // => undefined
 ```
 
 <hr className="api-item-divider" />
