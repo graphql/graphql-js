@@ -10,21 +10,29 @@ specification. It provides the parser, validator, executor, type system, and
 utilities used to build GraphQL servers, clients, tools, and schema workflows in
 JavaScript and TypeScript.
 
-## Version reference
+## Start here
 
-| Version area | Start here |
-| --- | --- |
-| Stable v16 API | [v16 API reference](/api-v16/graphql) |
-| v17 release candidate API | [v17 API reference](/api-v17/graphql) |
-| v16 to v17 changes | [What changed in GraphQL.js v17](/upgrade-guides/v16-v17) |
-| v17 specification experiments | [Experimental Specification Features](/docs/experimental-specification-features) |
-| v17 runtime features | [GraphQL Harness](/docs/graphql-harness), [Abort Signals](/docs/abort-signals), [Execution Hooks](/docs/execution-hooks), [Node.js tracing channels](/api-v17/graphql#category-diagnostics) |
+GraphQL.js v16 is the current stable release line, and a v17 release candidate
+is available for final testing and feedback. If you are upgrading from an older
+major version, follow each upgrade guide in sequence until you reach your target
+version.
 
-The guides in this section describe GraphQL concepts and GraphQL.js behavior.
-The API sections document the public exports by package module.
+- **Upgrade guides:** [v14 to v15](/upgrade-guides/v14-v15),
+  [v15 to v16](/upgrade-guides/v15-v16),
+  [v16 to v17](/upgrade-guides/v16-v17)
+- **API reference:** [v16 stable](/api-v16/graphql),
+  [v17 release candidate](/api-v17/graphql)
+- **Specification experiments:**
+  [Experimental Specification Features](/docs/experimental-specification-features)
+- **GraphQL.js runtime APIs:** [GraphQL Harness](/docs/graphql-harness),
+  [Abort Signals](/docs/abort-signals),
+  [Execution Hooks](/docs/execution-hooks),
+  [Node.js tracing channels](/api-v17/graphql#category-diagnostics)
 
-GraphQL.js v17 also publishes Node.js `node:diagnostics_channel` tracing
-events, mainly for application performance monitoring (APM) integrations that
-observe parse, validate, execute, subscribe, and resolver lifecycle boundaries.
-See the [Diagnostics API reference](/api-v17/graphql#category-diagnostics) for
-the channel names and payload shapes.
+## More Guides
+
+The documentation sidebar includes longer guides for building schemas,
+executing operations, handling errors, testing GraphQL servers, and preparing a
+GraphQL.js service for production. Start with
+[Getting Started](/docs/getting-started) if you are new to GraphQL.js, or use
+the Core Concepts and Advanced Guides sections for focused topics.

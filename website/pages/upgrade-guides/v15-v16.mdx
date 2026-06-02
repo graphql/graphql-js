@@ -1,0 +1,743 @@
+---
+title: What changed in GraphQL.js v16
+sidebarTitle: v15 to v16
+---
+
+import { Callout } from 'nextra/components';
+
+{/* cspell:ignore executesync graphqlsync */}
+
+# What Changed in GraphQL.js v16
+
+<Callout type="info">
+  GraphQL.js v16 is the current stable release line on npm, and a v17 release
+  candidate is available for final testing and feedback. If you are upgrading
+  from v15, use this guide first, then continue with
+  [v16 to v17](/upgrade-guides/v16-v17) when you are ready to test the release
+  candidate.
+</Callout>
+
+GraphQL.js v16 has been the stable major release line since 2021. Upgrading
+from v15 means moving to the established API shape GraphQL.js users have
+relied on throughout the v16 line: request APIs use object arguments,
+long-deprecated SDL and schema helpers are removed, and the published type
+surface changes. The latest v16 line also includes practical tooling and
+specification support such as OneOf input objects, schema coordinates, token
+limits, and directives on directive definitions. Treat this guide as the
+required cleanup before moving into the v17 execution and runtime changes.
+
+## Contents
+
+<nav className="upgrade-guide-toc" aria-labelledby="contents">
+  <div className="upgrade-guide-toc-grid">
+    <div className="upgrade-guide-toc-group">
+      <a className="upgrade-guide-toc-title" href="#using-this-guide">Using this Guide</a>
+      <div className="upgrade-guide-toc-links">
+        <a href="#using-this-guide">Scope and labels</a>
+      </div>
+    </div>
+    <div className="upgrade-guide-toc-group">
+      <a className="upgrade-guide-toc-title" href="#platform-and-package-shape">Platform and Package Shape</a>
+      <div className="upgrade-guide-toc-links">
+        <a href="#nodejs-typescript-and-flow">Node.js and types</a>
+        <a href="#runtime-polyfills">Polyfills</a>
+        <a href="#file-level-imports">File imports</a>
+      </div>
+    </div>
+    <div className="upgrade-guide-toc-group">
+      <a className="upgrade-guide-toc-title" href="#request-apis">Request APIs</a>
+      <div className="upgrade-guide-toc-links">
+        <a href="#graphql-and-graphqlsync">graphql()</a>
+        <a href="#execute-and-executesync">execute()</a>
+        <a href="#subscribe">subscribe()</a>
+      </div>
+    </div>
+    <div className="upgrade-guide-toc-group">
+      <a className="upgrade-guide-toc-title" href="#removed-apis-and-replacements">Removed APIs</a>
+      <div className="upgrade-guide-toc-links">
+        <a href="#deprecated-usage-finder">Deprecated usage</a>
+        <a href="#comments-as-descriptions">Descriptions</a>
+        <a href="#legacy-sdl-syntax">Legacy SDL</a>
+        <a href="#schema-and-type-helpers">Schema helpers</a>
+        <a href="#scalar-specification-url-casing">Scalar URLs</a>
+      </div>
+    </div>
+    <div className="upgrade-guide-toc-group">
+      <a className="upgrade-guide-toc-title" href="#validation-and-execution-behavior">Validation and Execution</a>
+      <div className="upgrade-guide-toc-links">
+        <a href="#validation-error-limits">Error limits</a>
+        <a href="#subscription-root-fields">Subscription roots</a>
+        <a href="#input-values">Input values</a>
+        <a href="#scalar-result-coercion">Scalar results</a>
+        <a href="#graphql-errors">Errors</a>
+      </div>
+    </div>
+    <div className="upgrade-guide-toc-group">
+      <a className="upgrade-guide-toc-title" href="#language-and-tooling">Language and Tooling</a>
+      <div className="upgrade-guide-toc-links">
+        <a href="#visitor-shape">Visitors</a>
+        <a href="#const-values-and-operation-types">Const values</a>
+        <a href="#parser-token-limits">Token limits</a>
+        <a href="#executable-descriptions">Descriptions</a>
+        <a href="#introspection-query-depth">Introspection depth</a>
+      </div>
+    </div>
+    <div className="upgrade-guide-toc-group">
+      <a className="upgrade-guide-toc-title" href="#schema-features-added-in-the-v16-line">Schema Features</a>
+      <div className="upgrade-guide-toc-links">
+        <a href="#enum-value-thunks">Enum thunks</a>
+        <a href="#oneof-input-objects">OneOf inputs</a>
+        <a href="#schema-coordinates">Coordinates</a>
+        <a href="#directives-on-directive-definitions">Directives</a>
+      </div>
+    </div>
+    <div className="upgrade-guide-toc-group">
+      <a className="upgrade-guide-toc-title" href="#practical-migration-order">Migration Work</a>
+      <div className="upgrade-guide-toc-links">
+        <a href="#additional-deprecations-in-v16">Deprecations</a>
+        <a href="#practical-migration-order">Order</a>
+        <a href="#detailed-migration-checklists">Checklists</a>
+        <a href="#deep-import-moves">Deep imports</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+## Using this Guide
+
+This guide is for projects that depend on GraphQL.js, including applications,
+servers, libraries, and tools. It compares the latest available v15 and v16
+release lines, and focuses on differences that still exist between those lines.
+If a change first appeared during the v16 line but also shipped in the latest
+v15 line, it is not listed here as v15-to-v16 migration work.
+
+Changes described below use these labels:
+
+- **Breaking change:** v15 code may need to change before it runs on v16.
+- **Behavioral tightening:** v16 validates, coerces, or reports a case more
+  precisely.
+- **Deprecation:** the v15 API still works in v16, but should be migrated
+  before v17.
+- **New stable API:** a new public API that can be adopted independently.
+- **Experimental or opt-in:** available in v16, but proposal-backed or outside
+  the default request path.
+
+## Platform and Package Shape
+
+### Node.js, TypeScript, and Flow
+
+**Breaking change.** GraphQL.js v16 requires Node.js 12.22, 14.16, 16, or
+newer:
+
+```json
+{
+  "engines": {
+    "node": "^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0"
+  }
+}
+```
+
+Upgrade Node.js before upgrading GraphQL.js. This separates runtime and
+package-manager errors from GraphQL.js migration errors.
+
+**Breaking change.** The published type definitions target TypeScript 4.1 and
+newer. v16 is implemented in TypeScript, so the package types are generated
+from the source rather than maintained as a parallel declaration tree.
+
+**Breaking change for Flow consumers.** v15 packages shipped `.js.flow` files.
+v16 packages do not. Runtime JavaScript imports are unaffected, but projects
+that consumed GraphQL.js Flow definitions need local definitions, generated
+stubs, or another Flow integration strategy.
+
+**Historical note.** v16 is also where the GraphQL.js source moved from
+Flow-typed JavaScript to TypeScript. The repository Flow configuration,
+checked-in `flow-typed` definitions, and Flow integration test were removed as
+part of that internal migration. The user-facing package change is the removal
+of published `.js.flow` files and the TypeScript declaration baseline above.
+
+### Runtime polyfills
+
+**Breaking change.** v16 drops old runtime and browser polyfills for APIs such
+as `Array.from`, `Array.prototype.find`, `Array.prototype.flatMap`,
+`Object.values`, `Object.entries`, `Symbol`, `Number.isFinite`, and
+`Number.isInteger`.
+
+If you support older browsers or embedded runtimes, provide polyfills in the
+host application. GraphQL.js assumes the JavaScript runtime already has the
+language features required by the supported Node.js range.
+
+### File-level imports
+
+**Breaking change for file-level imports.** GraphQL.js only treats the root
+package and package-module entry points as semver-stable API boundaries.
+Prefer imports from `graphql`, `graphql/language`, `graphql/type`,
+`graphql/execution`, `graphql/utilities`, and `graphql/validation`.
+
+If you import individual files, v16 moves a few file paths and removes some
+remaining validation-rule aliases without the `Rule` suffix. The most common
+cases are summarized in [Deep Import Moves](#deep-import-moves).
+
+## Request APIs
+
+### `graphql()` and `graphqlSync()`
+
+**Breaking change.** `graphql()` and `graphqlSync()` no longer accept
+positional arguments. Pass a single object argument. v15 accepted both forms;
+the object form is the compatibility path to use before upgrading.
+
+```diff
+- const result = await graphql(schema, source, rootValue, contextValue);
++ const result = await graphql({
++   schema,
++   source,
++   rootValue,
++   contextValue,
++ });
+```
+
+In v16, calling `graphql(schema, source)` treats the schema as the whole
+argument object and fails schema validation. Convert call sites mechanically
+before changing resolver or schema behavior.
+
+### `execute()` and `executeSync()`
+
+**Breaking change.** `execute()` and `executeSync()` also accept only the
+object-argument form. This removes the positional compatibility path that was
+still available in v15.
+
+```diff
+- const result = execute(schema, document, rootValue, contextValue);
++ const result = execute({
++   schema,
++   document,
++   rootValue,
++   contextValue,
++ });
+```
+
+Convert on v15 first when you want to separate mechanical API changes from the
+version bump.
+
+### `subscribe()`
+
+**Breaking change.** `subscribe()` accepts only the object-argument form. v15
+accepted both forms; v16 rejects positional subscription calls.
+
+```diff
+- const result = await subscribe(schema, document, rootValue, contextValue);
++ const result = await subscribe({
++   schema,
++   document,
++   rootValue,
++   contextValue,
++ });
+```
+
+**Deprecation.** Subscription APIs are exported from `graphql/execution` in
+v16. The `graphql/subscription` subpath still resolves for compatibility, but
+application code should import from `graphql` or `graphql/execution`.
+
+```diff
+- import { subscribe } from 'graphql/subscription';
++ import { subscribe } from 'graphql/execution';
+```
+
+**Deprecation.** `createSourceEventStream()` still accepts positional
+arguments in v16, but the named-argument form is the migration target before
+moving to v17.
+
+## Removed APIs and Replacements
+
+### Deprecated usage finder
+
+**Breaking change.** `findDeprecatedUsages()` was removed. Use
+`NoDeprecatedCustomRule` with `validate()`.
+
+```diff
+- import { findDeprecatedUsages } from 'graphql/utilities';
++ import { NoDeprecatedCustomRule, validate } from 'graphql/validation';
+
+- const errors = findDeprecatedUsages(schema, document);
++ const errors = validate(schema, document, [NoDeprecatedCustomRule]);
+```
+
+`NoDeprecatedCustomRule` reports deprecated fields, arguments, input fields,
+and enum values through the same validation pipeline as the rest of operation
+validation.
+
+### Comments as descriptions
+
+**Breaking change.** Long-deprecated comments-as-descriptions support was
+removed. Use GraphQL string descriptions.
+
+```diff
+- # User-facing type.
+- type User {
++ "User-facing type."
++ type User {
+    id: ID
+  }
+```
+
+The `commentDescriptions` option on schema utilities no longer has an effect,
+and the old `getDescription()` helper was removed. Read the `description`
+property from AST nodes and schema objects instead.
+
+### Legacy SDL syntax
+
+**Breaking change.** Empty field sets are no longer accepted, even with the
+old `allowLegacySDLEmptyFields` parser option.
+
+```diff
+- type Empty {}
++ type Empty {
++   _empty: Boolean
++ }
+```
+
+Prefer removing empty placeholder types entirely. If a type must remain visible
+in schema tooling, give it an intentional field.
+
+The v15 parser already rejected legacy interface lists such as
+`implements A B` by default, but could accept them with the
+`allowLegacySDLImplementsInterfaces` parser option. v16 removes that option.
+Update any remaining SDL that relied on it to use `implements A & B`.
+
+### Schema and type helpers
+
+**Breaking change.** `GraphQLSchema.isPossibleType()` was removed.
+Use `schema.isSubType(abstractType, maybeSubType)`.
+
+```diff
+- schema.isPossibleType(SomeInterface, SomeObject);
++ schema.isSubType(SomeInterface, SomeObject);
+```
+
+**Breaking change.** `GraphQLField.isDeprecated` and
+`GraphQLEnumValue.isDeprecated` were removed. Check
+`deprecationReason != null`.
+
+```diff
+- if (field.isDeprecated) {
++ if (field.deprecationReason != null) {
+    report(field.deprecationReason);
+  }
+```
+
+This also handles empty deprecation reasons correctly.
+
+### Scalar specification URL casing
+
+**Breaking change.** Programmatic scalar configuration and introspection now
+use `specifiedByURL` instead of `specifiedByUrl`.
+
+```diff
+  const URLScalar = new GraphQLScalarType({
+    name: 'URL',
+-   specifiedByUrl: 'https://example.com/url-spec',
++   specifiedByURL: 'https://example.com/url-spec',
+  });
+```
+
+The SDL directive is unchanged:
+
+```graphql
+scalar URL @specifiedBy(url: "https://example.com/url-spec")
+```
+
+The `getIntrospectionQuery({ specifiedByUrl: true })` option name remains
+lowercase `Url` for compatibility, but the introspection field it requests is
+`specifiedByURL`.
+
+## Validation and Execution Behavior
+
+### Validation error limits
+
+**Behavioral tightening.** `validate()` stops after 100 validation errors by
+default and appends an error that says validation was aborted. This prevents a
+single invalid operation from producing unbounded diagnostic work.
+
+If a tool intentionally needs more errors, pass `maxErrors` in the validation
+options.
+
+```js
+const errors = validate(schema, document, undefined, {
+  maxErrors: 500,
+});
+```
+
+### Subscription root fields
+
+**Behavioral tightening.** Subscription operations may not select an
+introspection field as the top-level subscription field.
+
+```graphql
+subscription {
+  __typename
+}
+```
+
+v15 accepted this. v16 reports a validation error. Subscription roots should
+select an actual subscription field from the schema.
+
+### Input values
+
+**Behavioral tightening.** Input coercion no longer treats non-iterable
+array-like objects as lists. Pass real arrays or iterable objects for list
+inputs.
+
+```diff
+- const value = { 0: 'A', 1: 'B', length: 2 };
++ const value = ['A', 'B'];
+```
+
+**Behavioral tightening.** Input object coercion rejects arrays. v15 could
+coerce `[]` as an empty input object. In v16, input object values must be
+ordinary object values with fields keyed by input-field name.
+
+**New stable API.** `execute()` accepts `options.maxCoercionErrors` to cap
+variable coercion errors. The default is 50.
+
+```js
+const result = execute({
+  schema,
+  document,
+  variableValues,
+  options: { maxCoercionErrors: 10 },
+});
+```
+
+### Scalar result coercion
+
+**Behavioral tightening.** A custom scalar `serialize()` function may not
+return `null`. v15 treated that as a null field value. v16 reports a field
+error because scalar serialization is expected to produce a concrete serialized
+value or throw.
+
+```js
+const BadScalar = new GraphQLScalarType({
+  name: 'Bad',
+  serialize() {
+    return null; // field error in v16
+  },
+});
+```
+
+Return a valid serialized value or throw a descriptive error from the scalar.
+
+### GraphQL errors
+
+**New stable API.** `GraphQLError` accepts an options object.
+
+```diff
+- throw new GraphQLError(message, nodes, source, positions, path, originalError);
++ throw new GraphQLError(message, {
++   nodes,
++   source,
++   positions,
++   path,
++   originalError,
++ });
+```
+
+**Behavioral tightening.** `GraphQLError` has the string tag
+`[object GraphQLError]` and its JSON representation includes the specification
+fields. Avoid asserting on `Object.prototype.toString.call(error)` or
+enumerated implementation details. Use `error.toJSON()` for formatted errors.
+
+**Deprecation.** `printError()` and `formatError()` still work in v16, but are
+deprecated. Use `error.toString()` and `error.toJSON()`.
+
+## Language and Tooling
+
+### Visitor shape
+
+**Breaking change.** The fourth visitor shape was removed. Visitors shaped as
+`{ enter: { Field() {} } }` no longer work. Use kind-keyed visitors instead.
+
+```diff
+  visit(document, {
+-   enter: {
+-     Field(node) {
+-       // ...
+-     },
++   Field(node) {
++     // ...
+    },
+  });
+```
+
+The `{ Field: { enter() {}, leave() {} } }` shape also remains supported.
+
+**New stable API.** `getEnterLeaveForKind()` is available for code that needs
+to normalize visitor functions by AST kind.
+
+### Const values and operation types
+
+**New stable API.** v16 exposes helpers and value exports that are useful for
+tooling:
+
+- `parseConstValue()`.
+- `isConstValueNode()`.
+- `OperationTypeNode`.
+- `GRAPHQL_MIN_INT` and `GRAPHQL_MAX_INT`.
+
+These are additive; adopt them where they replace local copies or string-based
+constants.
+
+### Parser token limits
+
+**New stable API.** `parse()` accepts `maxTokens` and parsed `DocumentNode`
+objects expose `tokenCount`.
+
+```js
+const document = parse(source, { maxTokens: 10_000 });
+
+console.log(document.tokenCount);
+```
+
+Use `maxTokens` at trust boundaries to reject pathologically large documents
+before validation.
+
+### Executable descriptions
+
+**New stable API.** v16 parses and prints descriptions on operation
+definitions, variable definitions, and named fragment definitions.
+
+```graphql
+"Fetch the viewer profile"
+query Viewer {
+  viewer {
+    id
+  }
+}
+```
+
+Tooling that preserves executable documents should carry the new `description`
+AST fields through visitors, transforms, and printers. Shorthand anonymous
+queries still cannot have descriptions.
+
+### Introspection query depth
+
+**New stable API.** `getIntrospectionQuery()` accepts `typeDepth` to control
+how deeply generated introspection queries recurse through nested `ofType`
+fields.
+
+```js
+const source = getIntrospectionQuery({ typeDepth: 4 });
+```
+
+Lower `typeDepth` can help when a server or gateway applies strict query-depth
+or complexity limits to introspection.
+
+## Schema Features Added in the v16 Line
+
+### Enum value thunks
+
+**New stable API.** `GraphQLEnumType` accepts `values` as a thunk. This matches
+the lazy field configuration pattern used by object and input object types and
+can help code-first schemas avoid construction-order cycles.
+
+```js
+const Episode = new GraphQLEnumType({
+  name: 'Episode',
+  values: () => ({
+    NEW_HOPE: { value: 4 },
+  }),
+});
+```
+
+### OneOf input objects
+
+**Experimental or opt-in.** v16 supports OneOf input objects through the
+`@oneOf` directive in SDL and `isOneOf: true` in code-first schemas.
+
+```graphql
+input ProductSpecifier @oneOf {
+  id: ID
+  name: String
+}
+```
+
+OneOf input objects require exactly one key at runtime. Their fields must be
+nullable and must not define defaults. Introspection exposes `isOneOf`, and
+`getIntrospectionQuery({ oneOf: true })` requests that field.
+
+### Schema coordinates
+
+**New stable API.** v16 exposes schema-coordinate parsing and resolution
+helpers for tooling that needs stable references to schema elements.
+
+```js
+import { resolveSchemaCoordinate } from 'graphql/utilities';
+
+const resolved = resolveSchemaCoordinate(
+  schema,
+  'Query.search(criteria:)',
+);
+```
+
+Coordinates can resolve named types, fields, input fields, enum values,
+directive definitions, and arguments.
+
+### Directives on directive definitions
+
+**Experimental or opt-in.** The v16 line supports directives on directive
+definitions behind `experimentalDirectivesOnDirectiveDefinitions`.
+
+```js
+const schema = buildSchema(source, {
+  experimentalDirectivesOnDirectiveDefinitions: true,
+});
+```
+
+The directive location is `DIRECTIVE_DEFINITION`. Applied directives are stored
+on directive AST nodes and directive extension AST nodes.
+
+## Additional Deprecations in v16
+
+These APIs still work in v16, but are deprecated for removal in v17:
+
+- Positional `GraphQLError` constructor arguments; use the options object.
+- `printError()` and `formatError()`; use `error.toString()` and
+  `error.toJSON()`.
+- `getOperationRootType()`; use `schema.getRootType(operation)`.
+- `assertValidName()` and `isValidNameError()`; use `assertName()`.
+- The custom `TypeInfo` fifth argument to `validate()`; use
+  `visitWithTypeInfo()` for custom traversals.
+- `TypeInfo` `getFieldDefFn` customization.
+- `assertValidExecutionArguments()`; use `assertValidSchema()` or migrate to
+  the v17 execution-argument validation helpers when you move beyond v16.
+- `graphql/subscription`; import subscription APIs from `graphql` or
+  `graphql/execution`.
+- Positional `createSourceEventStream()` arguments; use the named-argument
+  form in v16, then call `validateSubscriptionArgs()` before
+  `createSourceEventStream()` when moving to v17.
+
+## Practical Migration Order
+
+Use this order to keep the upgrade reviewable. The checklists below expand
+each category into concrete items.
+
+1. Update Node.js, TypeScript, and runtime polyfill assumptions.
+2. Convert `graphql()`, `execute()`, and `subscribe()` call sites to
+   object-style arguments while still on v15 if possible.
+3. Replace removed APIs and legacy SDL/comment-description syntax.
+4. Update scalar, input coercion, subscription, and validation behavior tests.
+5. Migrate deprecated compatibility APIs that still work in v16 but should be
+   gone before v17.
+6. Adopt optional v16 features such as OneOf, schema coordinates, parser token
+   limits, and directive-definition directives only where they match your
+   server design.
+
+Run schema validation, operation validation, execution tests, and TypeScript
+checks after each group. Mechanical changes are easiest to review when they are
+separated from behavior changes.
+
+## Detailed Migration Checklists
+
+### Platform and package shape
+
+- Run v16 on Node.js 12.22, 14.16, 16, or newer.
+- Keep TypeScript at 4.1 or newer.
+- Replace any dependency on GraphQL.js `.js.flow` package files with local Flow
+  definitions, generated stubs, or another Flow integration strategy.
+- Provide host-level polyfills if you support runtimes older than the v16
+  JavaScript baseline.
+- Audit file-level imports against the appendix below and prefer public
+  package entry points such as `graphql`, `graphql/execution`,
+  `graphql/language`, `graphql/type`, `graphql/utilities`, and
+  `graphql/validation`.
+
+### Required API replacements
+
+- Convert `graphql()` and `graphqlSync()` positional calls to object arguments.
+- Convert `execute()` and `executeSync()` positional calls to object arguments.
+- Convert `subscribe()` positional calls to object arguments.
+- Replace `findDeprecatedUsages()` with `validate()` plus
+  `NoDeprecatedCustomRule`.
+- Replace comment descriptions with string or block-string descriptions.
+- Remove `getDescription()` usage and read `description` fields directly.
+- Replace `GraphQLSchema.isPossibleType()` with `schema.isSubType()`.
+- Replace `field.isDeprecated` and `enumValue.isDeprecated` checks with
+  `deprecationReason != null`.
+- Rename scalar config and introspection reads from `specifiedByUrl` to
+  `specifiedByURL`.
+
+### SDL and schema validation
+
+- Replace empty object, interface, and input object definitions with real
+  fields or remove the placeholder types.
+- Remove `allowLegacySDLImplementsInterfaces` and replace any legacy
+  `implements A B` syntax with `implements A & B`.
+- Run `validateSchema()` after updating OneOf input objects, interface
+  inheritance, and scalar specification URLs.
+- Check subscription operations for top-level introspection selections.
+
+### Coercion, execution, and errors
+
+- Replace array-like list input values with arrays or iterable objects.
+- Replace array values passed for input object types with object values keyed by
+  input-field name.
+- Update custom scalar tests so `serialize()` returns a valid value or throws,
+  never `null`.
+- Decide whether `execute({ options: { maxCoercionErrors } })` should cap
+  variable coercion diagnostics for your host.
+- Update tests that asserted unlimited validation errors.
+- Use `GraphQLError` options objects in new code.
+- Use `error.toJSON()` and `error.toString()` instead of `formatError()` and
+  `printError()`.
+
+### Deprecated compatibility APIs
+
+- Migrate `getOperationRootType()` to `schema.getRootType(operation)`.
+- Migrate `assertValidName()` and `isValidNameError()` to `assertName()`.
+- Remove the custom `TypeInfo` argument to `validate()`.
+- Remove `TypeInfo` `getFieldDefFn` customizations.
+- Replace `graphql/subscription` imports with `graphql` or
+  `graphql/execution`.
+- Keep `createSourceEventStream()` call sites on named arguments.
+
+### Optional v16 features
+
+- Use `parse(source, { maxTokens })` and inspect `document.tokenCount` at trust
+  boundaries.
+- Preserve executable `description` fields when transforming or printing parsed
+  operations and fragments.
+- Use `getIntrospectionQuery({ typeDepth })` when generated introspection
+  queries need to fit server depth or complexity limits.
+- Use `GraphQLEnumType` `values` thunks only where lazy enum construction helps
+  code-first schema setup.
+- Use `GraphQLOneOfDirective`, SDL `@oneOf`, or `isOneOf: true` only when
+  exactly-one input semantics are intended.
+- Use `resolveSchemaCoordinate()` for tooling that stores schema element
+  references.
+- Enable `experimentalDirectivesOnDirectiveDefinitions` only for hosts that
+  intentionally support directives applied to directive definitions or
+  directive extensions.
+- Use additive tooling helpers such as `parseConstValue()`,
+  `isConstValueNode()`, `getEnterLeaveForKind()`, `OperationTypeNode`,
+  `GRAPHQL_MIN_INT`, and `GRAPHQL_MAX_INT` where they replace local code.
+
+## Deep Import Moves
+
+These notes apply only to file-level imports. Prefer package-module imports
+where possible because file-level paths are not semver-stable API boundaries.
+
+- Subscription implementation files moved under execution. Replace
+  `graphql/subscription/subscribe` with `graphql/execution/subscribe`, or
+  preferably import `subscribe` and `createSourceEventStream` from
+  `graphql/execution`. The public function names did not change.
+- The internal async-iterator helper moved from
+  `graphql/subscription/mapAsyncIterator` to
+  `graphql/execution/mapAsyncIterator`. The export changed from a default
+  export to the named `mapAsyncIterator` export.
+- `graphql/error/formatError` was folded into
+  `graphql/error/GraphQLError` and the `graphql/error` package module.
+  `formatError()` still exists in v16, but it is deprecated; prefer
+  `error.toJSON()`.
+- Remaining validation-rule file aliases without the `Rule` suffix were
+  removed. Use the suffixed `*Rule` file and export names, for example
+  `graphql/validation/rules/ExecutableDefinitionsRule` and
+  `ExecutableDefinitionsRule`, or
+  `graphql/validation/rules/UniqueTypeNamesRule` and `UniqueTypeNamesRule`.
