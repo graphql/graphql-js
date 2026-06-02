@@ -135,7 +135,7 @@ isDevModeEnabled(); // => true
 
 #### GraphQLParseContext
 
-**Interface.** Context published on `graphql:parse`.
+**Interface.** Context published on the sync-only `graphql:parse` channel.
 
 <hr className="api-subsection-divider" />
 
@@ -172,7 +172,7 @@ isDevModeEnabled(); // => true
 
 #### GraphQLValidateContext
 
-**Interface.** Context published on `graphql:validate`.
+**Interface.** Context published on the sync-only `graphql:validate` channel.
 
 <hr className="api-subsection-divider" />
 
@@ -216,6 +216,8 @@ isDevModeEnabled(); // => true
 
 **Interface.** Context published on `graphql:execute`.
 
+Returned results may contain GraphQL errors collected during execution.
+
 <hr className="api-subsection-divider" />
 
 <div className="api-subsection-title">Members</div>
@@ -257,12 +259,12 @@ isDevModeEnabled(); // => true
     <tr>
       <td>error?</td>
       <td><ApiType parts={[["keyword", "unknown"]]} /></td>
-      <td>Error thrown while executing, when execution fails abruptly.</td>
+      <td>Error thrown or rejected while executing, when execution fails abruptly.</td>
     </tr>
     <tr>
       <td>result?</td>
       <td><ApiType parts={[["link", "ExecutionResult", "/api-v17/execution#executionresult"], " \u007c ", ["link", "ExperimentalIncrementalExecutionResults", "/api-v17/execution#experimentalincrementalexecutionresults"]]} /></td>
-      <td>Execution result returned by execution.</td>
+      <td>Execution result returned by execution, including GraphQL errors.</td>
     </tr>
   </tbody>
 </table>
@@ -272,6 +274,8 @@ isDevModeEnabled(); // => true
 #### GraphQLExecuteRootSelectionSetContext
 
 **Interface.** Context published on `graphql:execute:rootSelectionSet`.
+
+Returned results may contain GraphQL errors collected during execution.
 
 <hr className="api-subsection-divider" />
 
@@ -319,12 +323,13 @@ isDevModeEnabled(); // => true
     <tr>
       <td>error?</td>
       <td><ApiType parts={[["keyword", "unknown"]]} /></td>
-      <td>Error thrown while executing the root selection set.</td>
+      <td>Error thrown or rejected while executing the root selection set.</td>
     </tr>
     <tr>
       <td>result?</td>
       <td><ApiType parts={[["link", "ExecutionResult", "/api-v17/execution#executionresult"], " \u007c ", ["link", "ExperimentalIncrementalExecutionResults", "/api-v17/execution#experimentalincrementalexecutionresults"]]} /></td>
-      <td>Execution result returned from the root selection set.</td>
+      <td>Execution result returned from the root selection set, including GraphQL<br />
+errors.</td>
     </tr>
   </tbody>
 </table>
@@ -335,10 +340,12 @@ isDevModeEnabled(); // => true
 
 **Interface.** Context published on `graphql:execute:variableCoercion`.
 
-Coercion runs synchronously inside argument validation, so only the
-`start`/`end` (and, on a thrown error, [`error`](/api-v17/error)) lifecycle fires. When
-coercion produces variable errors it does not throw; instead `result`
-carries the `errors` array, mirroring `graphql:validate`.
+Coercion runs synchronously while execution arguments are validated, so only
+the `start`/`end` (and, on an abrupt throw, [`error`](/api-v17/error)) lifecycle fires.
+Ordinary variable coercion failures are returned on `result.errors`; when
+execution is invoked through APIs such as `execute()` or `subscribe()`, they
+surface as GraphQL result errors rather than as the tracing [`error`](/api-v17/error)
+lifecycle event.
 
 <hr className="api-subsection-divider" />
 
@@ -402,6 +409,11 @@ carries the `errors` array, mirroring `graphql:validate`.
 
 **Interface.** Context published on `graphql:subscribe`.
 
+Subscription source resolver errors and invalid source stream results are
+returned on `result` as ExecutionResult errors; they do not publish the
+[`error`](/api-v17/error) lifecycle event unless subscription setup fails abruptly before
+GraphQL can form a result.
+
 <hr className="api-subsection-divider" />
 
 <div className="api-subsection-title">Members</div>
@@ -443,12 +455,13 @@ carries the `errors` array, mirroring `graphql:validate`.
     <tr>
       <td>error?</td>
       <td><ApiType parts={[["keyword", "unknown"]]} /></td>
-      <td>Error thrown while subscribing, when subscription setup fails abruptly.</td>
+      <td>Error thrown or rejected while subscribing, when setup fails abruptly.</td>
     </tr>
     <tr>
       <td>result?</td>
       <td><ApiType parts={["\u007c ", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], "\n\u007c ", ["type", "AsyncGenerator"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], ", ", ["keyword", "void"], ", ", ["keyword", "void"], "\u003e"]} /></td>
-      <td>Subscription response stream or execution result returned by subscribe.</td>
+      <td>Subscription response stream, or an ExecutionResult containing GraphQL<br />
+errors.</td>
     </tr>
   </tbody>
 </table>
@@ -458,6 +471,10 @@ carries the `errors` array, mirroring `graphql:validate`.
 #### GraphQLResolveContext
 
 **Interface.** Context published on `graphql:resolve`.
+
+Resolver throws and rejections publish the [`error`](/api-v17/error) lifecycle event here.
+The same failure may also be formatted into the enclosing execution or
+subscription result.
 
 <hr className="api-subsection-divider" />
 
@@ -510,12 +527,12 @@ carries the `errors` array, mirroring `graphql:validate`.
     <tr>
       <td>error?</td>
       <td><ApiType parts={[["keyword", "unknown"]]} /></td>
-      <td>Error thrown by the resolver, when resolution fails.</td>
+      <td>Error thrown or rejected by the resolver, when resolution fails.</td>
     </tr>
     <tr>
       <td>result?</td>
       <td><ApiType parts={[["keyword", "unknown"]]} /></td>
-      <td>Value returned by the resolver.</td>
+      <td>Value returned by the resolver, when resolution succeeds.</td>
     </tr>
   </tbody>
 </table>
@@ -581,7 +598,7 @@ carries the `errors` array, mirroring `graphql:validate`.
 
 #### GraphQLChannels
 
-**Interface.** The collection of tracing channels graphql-js emits on. Application
+**Interface.** The collection of tracing channels GraphQL.js emits on. Application
 performance monitoring (APM) tools subscribe to these by name on their own
 `node:diagnostics_channel` import; both paths land on the same channel
 instance because `tracingChannel(name)` is cached by name.

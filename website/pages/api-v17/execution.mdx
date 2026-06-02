@@ -161,8 +161,9 @@ Returns either a synchronous ExecutionResult (if all encountered resolvers
 are synchronous), or a Promise of an ExecutionResult that will eventually be
 resolved and never rejected.
 
-If the arguments to this function do not result in a legal execution context,
-a GraphQLError will be thrown immediately explaining the invalid input.
+If the schema is invalid, an error will be thrown immediately. GraphQL
+request errors, including missing operations and variable coercion errors,
+are returned in an errors-only ExecutionResult.
 
 Field errors are collected into the response instead of rejecting the
 returned promise. Only the field that produced the error and its descendants
@@ -251,17 +252,18 @@ result; // => { data: { greeting: 'Hello, Ada!' } }
 
 Implements the "Executing operations" section of the spec.
 
-Returns a Promise that will eventually resolve to the data described by
-The "Response" section of the GraphQL specification.
+Returns either a synchronous ExecutionResult, or a Promise for an
+ExecutionResult, described by the "Response" section of the GraphQL
+specification.
 
-If errors are encountered while executing a GraphQL field, only that
-field and its descendants will be omitted, and sibling fields will still
-be executed. An execution which encounters errors will still result in a
-resolved Promise.
+If errors are encountered while executing a GraphQL field, only that field
+and its descendants will be omitted, and sibling fields will still be
+executed. These field errors are collected into the returned result instead
+of being thrown or rejecting the returned promise.
 
-Errors from sub-fields of a NonNull type may propagate to the top level,
-at which point we still log the error and null the parent field, which
-in this case is the entire response.
+Errors from sub-fields of a NonNull type may propagate to the top level, at
+which point we still collect the error and null the parent field, which in
+this case is the entire response.
 
 **Signature:**
 
@@ -408,6 +410,9 @@ result; // => { data: { greeting: 'Hello' } }
 
 Executes a subscription operation once for a single source event.
 
+Field errors are collected into the returned result instead of being thrown
+or rejecting the returned promise.
+
 **Signature:**
 
 <ApiSignature parts={[["name", "executeSubscriptionEvent"], "(\n  ", ["parameter", "validatedExecutionArgs"], ": ", ["link", "ValidatedSubscriptionArgs", "/api-v17/execution#validatedsubscriptionargs"], ",\n): ", ["type", "PromiseOrValue"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], "\u003e;"]} />
@@ -489,21 +494,22 @@ result; // => { data: { greeting: 'Hello' } }
 
 Implements the "Subscribe" algorithm described in the GraphQL specification.
 
-Returns a Promise that resolves to either an AsyncIterator (if successful)
-or an ExecutionResult (error). The promise will be rejected if the schema or
-other arguments to this function are invalid, or if the resolved event stream
-is not an async iterable.
+Returns either an AsyncGenerator (if successful), an ExecutionResult (error),
+or a Promise for one of those results. The call will throw immediately if
+the schema is invalid or the selected operation is not a subscription.
 
-If the client-provided arguments to this function do not result in a
-compliant subscription, a GraphQL Response (ExecutionResult) with descriptive
-errors and no data will be returned.
+GraphQL request errors, including missing operations and variable coercion
+errors, return or resolve to a GraphQL Response (ExecutionResult) with
+descriptive errors and no data.
 
 If the source stream could not be created due to faulty subscription resolver
-logic or underlying systems, the promise will resolve to a single
-ExecutionResult containing `errors` and no `data`.
+logic, a non-async-iterable resolver result, or a system error, the
+function will return or resolve to a single ExecutionResult containing
+`errors` and no `data`.
 
-If the operation succeeded, the promise resolves to an AsyncIterator, which
-yields a stream of ExecutionResults representing the response stream.
+If the operation succeeded, the function returns or resolves to an
+AsyncGenerator, which yields a stream of ExecutionResults representing the
+response stream.
 
 This function does not support incremental delivery (`@defer` and `@stream`).
 If an operation which would defer or stream data is executed with this
@@ -657,21 +663,20 @@ Implements the "CreateSourceEventStream" algorithm described in the
 GraphQL specification, resolving the subscription source event stream for a
 previously validated subscription request.
 
-Returns a Promise that resolves to either an AsyncIterable (if successful)
-or an ExecutionResult (error). The promise will be rejected if the validated
-execution arguments are invalid, or if the resolved event stream is not an
-async iterable.
+Returns either an AsyncIterable (if successful), an ExecutionResult (error),
+or a Promise for one of those results. The call will throw immediately if
+it is not passed validated execution arguments.
 
-If the client-provided arguments to this function do not result in a
-compliant subscription, a GraphQL Response (ExecutionResult) with
-descriptive errors and no data will be returned.
+If the validated arguments do not result in a compliant subscription, a
+GraphQL Response (ExecutionResult) with descriptive errors and no data will
+be returned.
 
 If the source stream could not be created due to faulty subscription
-resolver logic or underlying systems, the promise will resolve to a single
-ExecutionResult containing `errors` and no `data`.
+resolver logic or a system error, the function will return or
+resolve to a single ExecutionResult containing `errors` and no `data`.
 
-If the operation succeeded, the promise resolves to the AsyncIterable for the
-event stream returned by the resolver.
+If the operation succeeded, the function returns or resolves to the
+AsyncIterable for the event stream returned by the resolver.
 
 A Source Event Stream represents a sequence of events, each of which triggers
 a GraphQL execution for that event.
@@ -764,12 +769,11 @@ Symbol.asyncIterator in stream; // => true
 
 #### validateExecutionArgs()
 
-Constructs a ExecutionContext object from the arguments passed to
-execute, which we will pass throughout the other execution methods.
+Validates the arguments passed to execute, subscribe, and their lower-level
+helpers.
 
-Throws a GraphQLError if a valid execution context cannot be created.
-
-TODO: consider no longer exporting this function
+Throws if the schema is invalid. GraphQL request errors, including variable
+coercion errors, are returned as a GraphQLError array.
 
 **Signature:**
 
@@ -872,6 +876,10 @@ validatedArgs.hideSuggestions; // => true
 #### validateSubscriptionArgs()
 
 Validates execution arguments for a subscription operation.
+
+Throws if the schema is invalid or the selected operation is not a
+subscription. GraphQL request errors, including variable coercion errors, are
+returned as a GraphQLError array.
 
 **Signature:**
 
@@ -1556,8 +1564,9 @@ This function returns either a single ExecutionResult, or an
 ExperimentalIncrementalExecutionResults object containing an `initialResult`
 and a stream of `subsequentResults`.
 
-If the arguments to this function do not result in a legal execution context,
-a GraphQLError will be thrown immediately explaining the invalid input.
+If the schema is invalid, an error will be thrown immediately. GraphQL
+request errors, including missing operations and variable coercion errors,
+are returned in an errors-only ExecutionResult.
 
 **Signature:**
 
