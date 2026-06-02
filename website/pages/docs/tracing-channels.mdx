@@ -61,7 +61,7 @@ channel.subscribe({
     // Runs when asynchronous execution settles.
   },
   error(message) {
-    // Runs when the operation throws or rejects. `message.error` is the cause.
+    // Runs when the traced call throws or rejects. `message.error` is the cause.
   },
 });
 ```
@@ -92,19 +92,50 @@ overhead and no error.
 
 ### Context Payloads
 
-Every context object gains an `error` property when the operation fails and a
-`result` property when it succeeds; the other fields are present from `start`.
+Every context object receives its channel-specific fields at `start`. When the
+traced call completes normally, the terminal event receives a `result`
+property. When the traced call throws or rejects, the `error` sub-channel fires
+and the terminal event receives an `error` property.
+
+Here, "traced call" means the JavaScript unit wrapped by the channel, not
+necessarily a GraphQL operation. It may be a parser call, validation call,
+execution call, variable coercion step, subscription setup, root selection set,
+or individual resolver call.
 
 See the [Diagnostics
 reference](/api-v17/graphql#category-diagnostics) for the complete set of
 fields on each context type. The context types are also exported from the
 `graphql` package if you want to type message payloads in TypeScript.
 
+### GraphQL Errors and Tracing Errors
+
+The tracing `error` lifecycle event is not the same thing as a `GraphQLError`
+returned by GraphQL.js. It fires when the traced call throws or rejects.
+Several GraphQL.js channels can instead complete normally and put
+`GraphQLError` values in the context `result`:
+
+- `graphql:validate` returns its validation error array as `result`.
+- `graphql:execute`, `graphql:execute:rootSelectionSet`, and
+  `graphql:subscribe` may return an `ExecutionResult` with `errors`.
+- `graphql:execute:variableCoercion` may return a coercion result with
+  `errors`.
+
+A resolver error is the main wrinkle. If a resolver throws or rejects, the
+`graphql:resolve` event for that resolver emits the tracing `error` lifecycle
+event. Execution may still catch that resolver error, format it as a GraphQL
+field error, and include it in the result reported by `graphql:execute`,
+`graphql:execute:rootSelectionSet`, or a subscription response event. The same
+underlying resolver failure can therefore appear both as `message.error` on
+`graphql:resolve` and as a formatted GraphQL error in an enclosing result.
+Likewise, a subscription source resolver that throws or rejects is reported as
+an error result on `graphql:subscribe`, not as the `graphql:subscribe` tracing
+`error` lifecycle event.
+
 ## The Lifecycle Events
 
 Each tracing channel exposes five sub-channels. GraphQL.js publishes them in a
-fixed order depending on whether the traced operation is synchronous or returns
-a promise.
+fixed order depending on whether the traced call is synchronous or returns a
+promise.
 
 - **Synchronous success:** `start` → `end`
 - **Synchronous failure:** `start` → `error` → `end`
@@ -112,9 +143,10 @@ a promise.
 - **Asynchronous failure:** `start` → `end` → `asyncStart` → `error` → `asyncEnd`
 
 `start` and `end` bracket the synchronous portion of the call. When the
-operation continues asynchronously, `asyncStart` fires as the async
-continuation begins and `asyncEnd` fires once it settles. `error` always fires
-before the terminal `end`/`asyncEnd` and carries the cause on `message.error`.
+traced call continues asynchronously, `asyncStart` fires as the async
+continuation begins and `asyncEnd` fires once it settles. When the traced call
+throws or rejects, `error` fires before the terminal `end`/`asyncEnd` and
+carries the cause on `message.error`.
 
 GraphQL.js runs the traced work inside the `start` channel's `runStores`, so an
 `AsyncLocalStorage` bound to that channel with `channel.start.bindStore()`
@@ -157,7 +189,7 @@ query Q($id: ID!) {
 }
 ```
 
-the channels fire like this, shown by their full `start` to `asyncEnd` lifetime:
+the channels fire like this, shown by their full lifecycle:
 
 ```text
 graphql:parse                          parse the document
@@ -246,28 +278,47 @@ channels describe different units of work:
 ```js
 import dc from 'node:diagnostics_channel';
 
-// One event per subscription: setup and overall lifetime.
+// Subscription setup and overall lifetime.
 dc.tracingChannel('graphql:subscribe').subscribe({
   start(message) {
     openSubscriptionSpan(message.operationName);
   },
+  end(message) {
+    // Synchronous setup finished. `result` may be the response stream or an
+    // ExecutionResult with setup errors.
+    if ('result' in message) {
+      closeSubscriptionSpan(message.result);
+    }
+  },
+  asyncEnd(message) {
+    // Asynchronous setup finished. `result` may be the response stream or an
+    // ExecutionResult with setup errors.
+    if ('result' in message) {
+      closeSubscriptionSpan(message.result);
+    }
+  },
   error(message) {
-    // Setup failed, e.g. the subscription root field threw.
+    // The subscribe call failed abruptly, e.g. an unexpected runtime error.
     failSubscriptionSpan(message.error);
   },
   // ...
 });
 
-// One event per delivered payload. `rootSelectionSet` also fires for queries
-// and mutations, so filter on the operation type.
+// Per-payload execution. `rootSelectionSet` also fires for queries and
+// mutations, so filter on the operation type.
 dc.tracingChannel('graphql:execute:rootSelectionSet').subscribe({
   start(message) {
     if (message.operationType === 'subscription') {
       openEventSpan(message.operationName);
     }
   },
+  end(message) {
+    if (message.operationType === 'subscription' && 'result' in message) {
+      closeEventSpan(message.result);
+    }
+  },
   asyncEnd(message) {
-    if (message.operationType === 'subscription') {
+    if (message.operationType === 'subscription' && 'result' in message) {
       closeEventSpan(message.result);
     }
   },
@@ -283,9 +334,12 @@ subscription's lifetime or only about per-event execution.
 
 - Tracing relies on `node:diagnostics_channel`. Node, Deno, and Bun expose it;
   browsers do not, where tracing is a no-op.
-- `graphql:execute:variableCoercion` runs synchronously inside argument
-  validation, so it only ever fires `start`/`end` (and `error` on an abrupt
-  throw). When coercion produces variable errors it does not throw; the errors
-  are reported on the context `result` instead, mirroring `graphql:validate`.
+- `graphql:parse`, `graphql:validate`, and
+  `graphql:execute:variableCoercion` are sync-only channels. They only emit
+  `start`/`end`, plus `error` if the traced call throws.
+- Some GraphQL errors are returned in a context `result` rather than through
+  the tracing `error` lifecycle event. See
+  [GraphQL Errors and Tracing Errors](#graphql-errors-and-tracing-errors) for
+  the returned-error channels and the resolver-error wrinkle.
 - These channels report observability events. They are not hooks for altering
   execution; mutating a context payload does not change GraphQL.js behavior.
