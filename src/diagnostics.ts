@@ -78,9 +78,7 @@ interface DiagnosticsChannelModule {
   ) => MinimalTracingChannel<TContext>;
 }
 
-/**
- * Context published on `graphql:parse`.
- */
+/** Context published on `graphql:parse`. */
 export interface GraphQLParseContext {
   /** Source text or source object passed to the parser. */
   source: string | Source;
@@ -90,9 +88,7 @@ export interface GraphQLParseContext {
   result?: DocumentNode;
 }
 
-/**
- * Context published on `graphql:validate`.
- */
+/** Context published on `graphql:validate`. */
 export interface GraphQLValidateContext {
   /** Schema used for validation. */
   schema: GraphQLSchema;
@@ -104,9 +100,7 @@ export interface GraphQLValidateContext {
   result?: ReadonlyArray<GraphQLError>;
 }
 
-/**
- * Context published on `graphql:execute`.
- */
+/** Context published on `graphql:execute`. */
 export interface GraphQLExecuteContext {
   /** Schema used for execution. */
   schema: GraphQLSchema;
@@ -124,9 +118,7 @@ export interface GraphQLExecuteContext {
   result?: ExecutionResult | ExperimentalIncrementalExecutionResults;
 }
 
-/**
- * Context published on `graphql:execute:rootSelectionSet`.
- */
+/** Context published on `graphql:execute:variableCoercion`. */
 export interface GraphQLExecuteRootSelectionSetContext {
   /** Schema used for execution. */
   schema: GraphQLSchema;
@@ -175,9 +167,7 @@ export interface GraphQLExecuteVariableCoercionContext {
     | { errors: ReadonlyArray<GraphQLError> };
 }
 
-/**
- * Context published on `graphql:subscribe`.
- */
+/** Context published on `graphql:subscribe`. */
 export interface GraphQLSubscribeContext {
   /** Schema used for subscription execution. */
   schema: GraphQLSchema;
@@ -195,9 +185,7 @@ export interface GraphQLSubscribeContext {
   result?: AsyncGenerator<ExecutionResult, void, void> | ExecutionResult;
 }
 
-/**
- * Context published on `graphql:resolve`.
- */
+/** Context published on `graphql:resolve`. */
 export interface GraphQLResolveContext {
   /** Field name being resolved. */
   fieldName: string;
@@ -219,9 +207,7 @@ export interface GraphQLResolveContext {
   result?: unknown;
 }
 
-/**
- * Mapping from tracing channel name to the context type published on it.
- */
+/** Mapping from tracing channel name to the context type published on it. */
 export interface GraphQLChannelContextByName {
   /** Context published on `graphql:parse`. */
   'graphql:parse': GraphQLParseContext;
@@ -240,10 +226,10 @@ export interface GraphQLChannelContextByName {
 }
 
 /**
- * The collection of tracing channels graphql-js emits on. APMs subscribe to
- * these by name on their own `node:diagnostics_channel` import; both paths
- * land on the same channel instance because `tracingChannel(name)` is cached
- * by name.
+ * The collection of tracing channels graphql-js emits on. Application
+ * performance monitoring (APM) tools subscribe to these by name on their own
+ * `node:diagnostics_channel` import; both paths land on the same channel
+ * instance because `tracingChannel(name)` is cached by name
  */
 export interface GraphQLChannels {
   /** Tracing channel for `graphql:execute`. */
