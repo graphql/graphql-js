@@ -22,6 +22,7 @@ metadata, that do not belong to a narrower submodule.
 For documentation purposes, these exports are grouped into the following categories:
 
 - [Development Mode](/api-v17/graphql#category-development-mode)
+- [Diagnostics](/api-v17/graphql#category-diagnostics)
 - [Request Pipeline](/api-v17/graphql#category-request-pipeline)
 - [Harness](/api-v17/graphql#category-harness)
 - [Version](/api-v17/graphql#category-version)
@@ -104,6 +105,537 @@ enableDevMode();
 
 isDevModeEnabled(); // => true
 ```
+
+## Category: Diagnostics
+
+<div className="api-category-toc">
+  <p>
+    <strong>Types:</strong><br />
+    <a href="/api-v17/graphql#graphqlparsecontext">GraphQLParseContext</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/graphql#graphqlvalidatecontext">GraphQLValidateContext</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/graphql#graphqlexecutecontext">GraphQLExecuteContext</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/graphql#graphqlexecuterootselectionsetcontext">GraphQLExecuteRootSelectionSetContext</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/graphql#graphqlexecutevariablecoercioncontext">GraphQLExecuteVariableCoercionContext</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/graphql#graphqlsubscribecontext">GraphQLSubscribeContext</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/graphql#graphqlresolvecontext">GraphQLResolveContext</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/graphql#graphqlchannelcontextbyname">GraphQLChannelContextByName</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/graphql#graphqlchannels">GraphQLChannels</a>
+  </p>
+</div>
+
+### Types
+
+#### GraphQLParseContext
+
+**Interface.** * Context published on `graphql:parse`.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>source</td>
+      <td><ApiType parts={[["keyword", "string"], " \u007c ", ["link", "Source", "/api-v17/language#source"]]} /></td>
+      <td>Source text or source object passed to the parser.</td>
+    </tr>
+    <tr>
+      <td>error?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Error thrown while parsing, when parsing fails.</td>
+    </tr>
+    <tr>
+      <td>result?</td>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v17/language#documentnode"]]} /></td>
+      <td>Parsed document, when parsing succeeds.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLValidateContext
+
+**Interface.** * Context published on `graphql:validate`.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
+      <td>Schema used for validation.</td>
+    </tr>
+    <tr>
+      <td>document</td>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v17/language#documentnode"]]} /></td>
+      <td>Parsed document being validated.</td>
+    </tr>
+    <tr>
+      <td>error?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Error thrown while validating, when validation fails abruptly.</td>
+    </tr>
+    <tr>
+      <td>result?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], "[]"]} /></td>
+      <td>Validation errors returned by validation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLExecuteContext
+
+**Interface.** * Context published on `graphql:execute`.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
+      <td>Schema used for execution.</td>
+    </tr>
+    <tr>
+      <td>document</td>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v17/language#documentnode"]]} /></td>
+      <td>Parsed document being executed.</td>
+    </tr>
+    <tr>
+      <td>rawVariableValues</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c\u007b\n  ", ["keyword", "readonly"], " [", ["parameter", "variable"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], ";\n\u007d\u003e"]} /></td>
+      <td>Raw variable values provided by the caller before coercion.</td>
+    </tr>
+    <tr>
+      <td>operationName</td>
+      <td><ApiType parts={[["keyword", "string"], " \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>Selected operation name, if one is available.</td>
+    </tr>
+    <tr>
+      <td>operationType</td>
+      <td><ApiType parts={[["link", "OperationTypeNode", "/api-v17/language#operationtypenode"], " \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>Selected operation type, if one is available.</td>
+    </tr>
+    <tr>
+      <td>error?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Error thrown while executing, when execution fails abruptly.</td>
+    </tr>
+    <tr>
+      <td>result?</td>
+      <td><ApiType parts={[["link", "ExecutionResult", "/api-v17/execution#executionresult"], " \u007c ", ["link", "ExperimentalIncrementalExecutionResults", "/api-v17/execution#experimentalincrementalexecutionresults"]]} /></td>
+      <td>Execution result returned by execution.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLExecuteRootSelectionSetContext
+
+**Interface.** * Context published on `graphql:execute:rootSelectionSet`.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
+      <td>Schema used for execution.</td>
+    </tr>
+    <tr>
+      <td>document</td>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v17/language#documentnode"]]} /></td>
+      <td>Parsed document being executed.</td>
+    </tr>
+    <tr>
+      <td>operation</td>
+      <td><ApiType parts={[["link", "OperationDefinitionNode", "/api-v17/language#operationdefinitionnode"]]} /></td>
+      <td>Operation definition selected for execution.</td>
+    </tr>
+    <tr>
+      <td>rawVariableValues</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c\u007b\n  ", ["keyword", "readonly"], " [", ["parameter", "variable"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], ";\n\u007d\u003e"]} /></td>
+      <td>Raw variable values provided by the caller before coercion.</td>
+    </tr>
+    <tr>
+      <td>operationName</td>
+      <td><ApiType parts={[["keyword", "string"], " \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>Selected operation name, if one is available.</td>
+    </tr>
+    <tr>
+      <td>operationType</td>
+      <td><ApiType parts={[["link", "OperationTypeNode", "/api-v17/language#operationtypenode"]]} /></td>
+      <td>Selected operation type.</td>
+    </tr>
+    <tr>
+      <td>error?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Error thrown while executing the root selection set.</td>
+    </tr>
+    <tr>
+      <td>result?</td>
+      <td><ApiType parts={[["link", "ExecutionResult", "/api-v17/execution#executionresult"], " \u007c ", ["link", "ExperimentalIncrementalExecutionResults", "/api-v17/execution#experimentalincrementalexecutionresults"]]} /></td>
+      <td>Execution result returned from the root selection set.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLExecuteVariableCoercionContext
+
+**Interface.** Context published on `graphql:execute:variableCoercion`.
+
+Coercion runs synchronously inside argument validation, so only the
+`start`/`end` (and, on a thrown error, [`error`](/api-v17/error)) lifecycle fires. When
+coercion produces variable errors it does not throw; instead `result`
+carries the `errors` array, mirroring `graphql:validate`.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
+      <td>Schema used for variable coercion.</td>
+    </tr>
+    <tr>
+      <td>document</td>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v17/language#documentnode"]]} /></td>
+      <td>Parsed document being executed.</td>
+    </tr>
+    <tr>
+      <td>operation</td>
+      <td><ApiType parts={[["link", "OperationDefinitionNode", "/api-v17/language#operationdefinitionnode"]]} /></td>
+      <td>Operation definition whose variables are being coerced.</td>
+    </tr>
+    <tr>
+      <td>rawVariableValues</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c\u007b\n  ", ["keyword", "readonly"], " [", ["parameter", "variable"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], ";\n\u007d\u003e"]} /></td>
+      <td>Raw variable values provided by the caller before coercion.</td>
+    </tr>
+    <tr>
+      <td>operationName</td>
+      <td><ApiType parts={[["keyword", "string"], " \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>Selected operation name, if one is available.</td>
+    </tr>
+    <tr>
+      <td>operationType</td>
+      <td><ApiType parts={[["link", "OperationTypeNode", "/api-v17/language#operationtypenode"]]} /></td>
+      <td>Selected operation type.</td>
+    </tr>
+    <tr>
+      <td>error?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Error thrown while coercing variables, when coercion fails abruptly.</td>
+    </tr>
+    <tr>
+      <td>result?</td>
+      <td><ApiType parts={["\u007c \u007b ", ["property", "variableValues"], ": ", ["link", "VariableValues", "/api-v17/execution#variablevalues"], " \u007d\n\u007c \u007b ", ["property", "errors"], ": ", ["keyword", "readonly"], " ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], "[] \u007d"]} /></td>
+      <td>Coerced variable values or coercion errors returned by coercion.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLSubscribeContext
+
+**Interface.** * Context published on `graphql:subscribe`.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
+      <td>Schema used for subscription execution.</td>
+    </tr>
+    <tr>
+      <td>document</td>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v17/language#documentnode"]]} /></td>
+      <td>Parsed subscription document.</td>
+    </tr>
+    <tr>
+      <td>rawVariableValues</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c\u007b\n  ", ["keyword", "readonly"], " [", ["parameter", "variable"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], ";\n\u007d\u003e"]} /></td>
+      <td>Raw variable values provided by the caller before coercion.</td>
+    </tr>
+    <tr>
+      <td>operationName</td>
+      <td><ApiType parts={[["keyword", "string"], " \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>Selected operation name, if one is available.</td>
+    </tr>
+    <tr>
+      <td>operationType</td>
+      <td><ApiType parts={[["link", "OperationTypeNode", "/api-v17/language#operationtypenode"], " \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>Selected operation type, if one is available.</td>
+    </tr>
+    <tr>
+      <td>error?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Error thrown while subscribing, when subscription setup fails abruptly.</td>
+    </tr>
+    <tr>
+      <td>result?</td>
+      <td><ApiType parts={["\u007c ", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], "\n\u007c ", ["type", "AsyncGenerator"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], ", ", ["keyword", "void"], ", ", ["keyword", "void"], "\u003e"]} /></td>
+      <td>Subscription response stream or execution result returned by subscribe.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLResolveContext
+
+**Interface.** * Context published on `graphql:resolve`.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>fieldName</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Field name being resolved.</td>
+    </tr>
+    <tr>
+      <td>alias</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Response alias for the field being resolved.</td>
+    </tr>
+    <tr>
+      <td>parentType</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Parent type name for the field being resolved.</td>
+    </tr>
+    <tr>
+      <td>fieldType</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Return type string for the field being resolved.</td>
+    </tr>
+    <tr>
+      <td>args</td>
+      <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Argument values passed to the resolver.</td>
+    </tr>
+    <tr>
+      <td>isDefaultResolver</td>
+      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
+      <td>Whether the field is using the default resolver.</td>
+    </tr>
+    <tr>
+      <td>fieldPath</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Response path for the field being resolved.</td>
+    </tr>
+    <tr>
+      <td>error?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Error thrown by the resolver, when resolution fails.</td>
+    </tr>
+    <tr>
+      <td>result?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Value returned by the resolver.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLChannelContextByName
+
+**Interface.** * Mapping from tracing channel name to the context type published on it.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>graphql:parse</td>
+      <td><ApiType parts={[["link", "GraphQLParseContext", "/api-v17/graphql#graphqlparsecontext"]]} /></td>
+      <td>Context published on <code>{"graphql:parse"}</code>.</td>
+    </tr>
+    <tr>
+      <td>graphql:validate</td>
+      <td><ApiType parts={[["link", "GraphQLValidateContext", "/api-v17/graphql#graphqlvalidatecontext"]]} /></td>
+      <td>Context published on <code>{"graphql:validate"}</code>.</td>
+    </tr>
+    <tr>
+      <td>graphql:execute</td>
+      <td><ApiType parts={[["link", "GraphQLExecuteContext", "/api-v17/graphql#graphqlexecutecontext"]]} /></td>
+      <td>Context published on <code>{"graphql:execute"}</code>.</td>
+    </tr>
+    <tr>
+      <td>graphql:execute:variableCoercion</td>
+      <td><ApiType parts={[["link", "GraphQLExecuteVariableCoercionContext", "/api-v17/graphql#graphqlexecutevariablecoercioncontext"]]} /></td>
+      <td>Context published on <code>{"graphql:execute:variableCoercion"}</code>.</td>
+    </tr>
+    <tr>
+      <td>graphql:execute:rootSelectionSet</td>
+      <td><ApiType parts={[["link", "GraphQLExecuteRootSelectionSetContext", "/api-v17/graphql#graphqlexecuterootselectionsetcontext"]]} /></td>
+      <td>Context published on <code>{"graphql:execute:rootSelectionSet"}</code>.</td>
+    </tr>
+    <tr>
+      <td>graphql:subscribe</td>
+      <td><ApiType parts={[["link", "GraphQLSubscribeContext", "/api-v17/graphql#graphqlsubscribecontext"]]} /></td>
+      <td>Context published on <code>{"graphql:subscribe"}</code>.</td>
+    </tr>
+    <tr>
+      <td>graphql:resolve</td>
+      <td><ApiType parts={[["link", "GraphQLResolveContext", "/api-v17/graphql#graphqlresolvecontext"]]} /></td>
+      <td>Context published on <code>{"graphql:resolve"}</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLChannels
+
+**Interface.** The collection of tracing channels graphql-js emits on. Application
+performance monitoring (APM) tools subscribe to these by name on their own
+`node:diagnostics_channel` import; both paths land on the same channel
+instance because `tracingChannel(name)` is cached by name.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>execute</td>
+      <td><ApiType parts={[["type", "MinimalTracingChannel"], "\u003c", ["link", "GraphQLExecuteContext", "/api-v17/graphql#graphqlexecutecontext"], "\u003e"]} /></td>
+      <td>Tracing channel for <code>{"graphql:execute"}</code>.</td>
+    </tr>
+    <tr>
+      <td>executeVariableCoercion</td>
+      <td><ApiType parts={[["type", "MinimalTracingChannel"], "\u003c", ["link", "GraphQLExecuteVariableCoercionContext", "/api-v17/graphql#graphqlexecutevariablecoercioncontext"], "\u003e"]} /></td>
+      <td>Tracing channel for <code>{"graphql:execute:variableCoercion"}</code>.</td>
+    </tr>
+    <tr>
+      <td>executeRootSelectionSet</td>
+      <td><ApiType parts={[["type", "MinimalTracingChannel"], "\u003c", ["link", "GraphQLExecuteRootSelectionSetContext", "/api-v17/graphql#graphqlexecuterootselectionsetcontext"], "\u003e"]} /></td>
+      <td>Tracing channel for <code>{"graphql:execute:rootSelectionSet"}</code>.</td>
+    </tr>
+    <tr>
+      <td>parse</td>
+      <td><ApiType parts={[["type", "MinimalTracingChannel"], "\u003c", ["link", "GraphQLParseContext", "/api-v17/graphql#graphqlparsecontext"], "\u003e"]} /></td>
+      <td>Tracing channel for <code>{"graphql:parse"}</code>.</td>
+    </tr>
+    <tr>
+      <td>validate</td>
+      <td><ApiType parts={[["type", "MinimalTracingChannel"], "\u003c", ["link", "GraphQLValidateContext", "/api-v17/graphql#graphqlvalidatecontext"], "\u003e"]} /></td>
+      <td>Tracing channel for <code>{"graphql:validate"}</code>.</td>
+    </tr>
+    <tr>
+      <td>resolve</td>
+      <td><ApiType parts={[["type", "MinimalTracingChannel"], "\u003c", ["link", "GraphQLResolveContext", "/api-v17/graphql#graphqlresolvecontext"], "\u003e"]} /></td>
+      <td>Tracing channel for <code>{"graphql:resolve"}</code>.</td>
+    </tr>
+    <tr>
+      <td>subscribe</td>
+      <td><ApiType parts={[["type", "MinimalTracingChannel"], "\u003c", ["link", "GraphQLSubscribeContext", "/api-v17/graphql#graphqlsubscribecontext"], "\u003e"]} /></td>
+      <td>Tracing channel for <code>{"graphql:subscribe"}</code>.</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Category: Request Pipeline
 
