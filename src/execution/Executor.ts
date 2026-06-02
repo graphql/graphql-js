@@ -266,8 +266,8 @@ export class Executor<
   }
 
   /**
-   * Build an operation-scoped diagnostics context from ValidatedExecutionArgs.
-   * Used after the operation has already been resolved during argument
+   * Build a root-selection-set tracing context from validated execution
+   * arguments. The operation has already been selected during argument
    * validation.
    * @internal
    */

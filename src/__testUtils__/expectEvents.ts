@@ -28,7 +28,7 @@ type ExpectedEventsFactory<TResult, TContext = unknown> = (
 ) => ReadonlyArray<CollectedEventFor<TContext>>;
 
 /**
- * Collect graphql tracing events while `fn` runs, build the expected event
+ * Collect GraphQL tracing events while `fn` runs, build the expected event
  * list from the callback result, and always unsubscribe before returning.
  */
 export async function expectEvents<TContext = unknown, TResult = unknown>(

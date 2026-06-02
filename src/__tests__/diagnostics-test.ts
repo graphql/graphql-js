@@ -19,7 +19,7 @@ import {
 } from '../diagnostics.ts';
 
 describe('diagnostics', () => {
-  it('auto-registers the graphql tracing channels', () => {
+  it('auto-registers the GraphQL tracing channels', () => {
     invariant(parseChannel !== undefined);
     invariant(validateChannel !== undefined);
     invariant(executeChannel !== undefined);
@@ -28,7 +28,7 @@ describe('diagnostics', () => {
     invariant(subscribeChannel !== undefined);
     invariant(resolveChannel !== undefined);
 
-    // Node's `tracingChannel(name)` returns a fresh wrapper per call but
+    // Node.js `tracingChannel(name)` returns a fresh wrapper per call but
     // the underlying sub-channels are cached by name, so compare those.
     expect(parseChannel.start).to.equal(
       dc.channel('tracing:graphql:parse:start'),

@@ -7,7 +7,7 @@ import type { MethodSpy } from './spyOn.ts';
 import { spyOnMethod } from './spyOn.ts';
 
 /**
- * Assert that a graphql tracing channel stays on its zero-subscriber fast path.
+ * Assert that a GraphQL tracing channel stays on its zero-subscriber fast path.
  * The test installs spies around the real tracing methods and verifies none
  * of them were touched while `fn` ran.
  */

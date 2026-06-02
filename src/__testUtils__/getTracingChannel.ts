@@ -6,8 +6,8 @@ import type { GraphQLChannelContextByName } from '../diagnostics.ts';
 import type { TestTracingChannel } from './diagnosticsTracing.ts';
 
 /**
- * Resolve a graphql tracing channel by name on the real
- * `node:diagnostics_channel`. graphql-js publishes on the same channels at
+ * Resolve a GraphQL tracing channel by name on the real
+ * `node:diagnostics_channel`. GraphQL.js publishes on the same channels at
  * module load.
  */
 export function getTracingChannel<

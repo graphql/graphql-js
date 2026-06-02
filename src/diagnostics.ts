@@ -1,14 +1,22 @@
 /**
  * TracingChannel integration.
  *
- * graphql-js publishes lifecycle events on a set of named tracing channels
- * that Application performance monitoring (APM) tools can subscribe to in
+ * GraphQL.js publishes lifecycle events on a set of named tracing channels
+ * that application performance monitoring (APM) tools can subscribe to in
  * order to observe parse, validate, execute, subscribe, and resolver behavior,
- * plus selected executor internals. At module load time graphql-js resolves
+ * plus selected executor internals. At module load time GraphQL.js resolves
  * `node:diagnostics_channel` itself so APMs do not need to interact with the
- * graphql API to enable tracing. On runtimes that do not expose
+ * GraphQL API to enable tracing. On runtimes that do not expose
  * `node:diagnostics_channel` (e.g., browsers) the load silently no-ops and
  * emission sites short-circuit.
+ *
+ * Within the tracing context types, `error` means the traced JavaScript call
+ * threw or rejected; it does not mean every `GraphQLError` returned by
+ * GraphQL.js. Some channels complete normally and publish GraphQL errors on
+ * `result`. Resolver errors can appear both as `message.error` on
+ * `graphql:resolve` and as formatted errors in an enclosing execution or
+ * subscription result. `graphql:parse`, `graphql:validate`, and
+ * `graphql:execute:variableCoercion` are sync-only channels.
  * @category Diagnostics
  */
 
@@ -33,7 +41,7 @@ import type { VariableValues } from './execution/values.ts';
 
 /**
  * Structural subset of `DiagnosticsChannel` sufficient for publishing and
- * subscriber gating. `node:diagnostics_channel`'s `Channel` satisfies this.
+ * subscriber gating. The `node:diagnostics_channel` `Channel` satisfies this.
  *
  * @internal
  */
@@ -49,9 +57,10 @@ export interface MinimalChannel<TMessage = unknown> {
 }
 
 /**
- * Structural subset of Node's `TracingChannel`. The `node:diagnostics_channel`
- * `TracingChannel` satisfies this by duck typing, so graphql-js does not need
- * a dependency on `@types/node` or on the runtime itself.
+ * Structural subset of the Node.js `TracingChannel` API. The
+ * `node:diagnostics_channel` `TracingChannel` satisfies this by duck typing,
+ * so GraphQL.js does not need a dependency on `@types/node` or on the runtime
+ * itself.
  *
  * @internal
  */
@@ -79,7 +88,7 @@ interface DiagnosticsChannelModule {
   ) => MinimalTracingChannel<TContext>;
 }
 
-/** Context published on `graphql:parse`. */
+/** Context published on the sync-only `graphql:parse` channel. */
 export interface GraphQLParseContext {
   /** Source text or source object passed to the parser. */
   source: string | Source;
@@ -89,7 +98,7 @@ export interface GraphQLParseContext {
   result?: DocumentNode;
 }
 
-/** Context published on `graphql:validate`. */
+/** Context published on the sync-only `graphql:validate` channel. */
 export interface GraphQLValidateContext {
   /** Schema used for validation. */
   schema: GraphQLSchema;
@@ -101,7 +110,11 @@ export interface GraphQLValidateContext {
   result?: ReadonlyArray<GraphQLError>;
 }
 
-/** Context published on `graphql:execute`. */
+/**
+ * Context published on `graphql:execute`.
+ *
+ * Returned results may contain GraphQL errors collected during execution.
+ */
 export interface GraphQLExecuteContext {
   /** Schema used for execution. */
   schema: GraphQLSchema;
@@ -113,13 +126,17 @@ export interface GraphQLExecuteContext {
   operationName: string | undefined;
   /** Selected operation type, if one is available. */
   operationType: OperationTypeNode | undefined;
-  /** Error thrown while executing, when execution fails abruptly. */
+  /** Error thrown or rejected while executing, when execution fails abruptly. */
   error?: unknown;
-  /** Execution result returned by execution. */
+  /** Execution result returned by execution, including GraphQL errors. */
   result?: ExecutionResult | ExperimentalIncrementalExecutionResults;
 }
 
-/** Context published on `graphql:execute:rootSelectionSet`. */
+/**
+ * Context published on `graphql:execute:rootSelectionSet`.
+ *
+ * Returned results may contain GraphQL errors collected during execution.
+ */
 export interface GraphQLExecuteRootSelectionSetContext {
   /** Schema used for execution. */
   schema: GraphQLSchema;
@@ -133,19 +150,24 @@ export interface GraphQLExecuteRootSelectionSetContext {
   operationName: string | undefined;
   /** Selected operation type. */
   operationType: OperationTypeNode;
-  /** Error thrown while executing the root selection set. */
+  /** Error thrown or rejected while executing the root selection set. */
   error?: unknown;
-  /** Execution result returned from the root selection set. */
+  /**
+   * Execution result returned from the root selection set, including GraphQL
+   * errors.
+   */
   result?: ExecutionResult | ExperimentalIncrementalExecutionResults;
 }
 
 /**
  * Context published on `graphql:execute:variableCoercion`.
  *
- * Coercion runs synchronously inside argument validation, so only the
- * `start`/`end` (and, on a thrown error, `error`) lifecycle fires. When
- * coercion produces variable errors it does not throw; instead `result`
- * carries the `errors` array, mirroring `graphql:validate`.
+ * Coercion runs synchronously while execution arguments are validated, so only
+ * the `start`/`end` (and, on an abrupt throw, `error`) lifecycle fires.
+ * Ordinary variable coercion failures are returned on `result.errors`; when
+ * execution is invoked through APIs such as `execute()` or `subscribe()`, they
+ * surface as GraphQL result errors rather than as the tracing `error`
+ * lifecycle event.
  */
 export interface GraphQLExecuteVariableCoercionContext {
   /** Schema used for variable coercion. */
@@ -168,7 +190,14 @@ export interface GraphQLExecuteVariableCoercionContext {
     | { errors: ReadonlyArray<GraphQLError> };
 }
 
-/** Context published on `graphql:subscribe`. */
+/**
+ * Context published on `graphql:subscribe`.
+ *
+ * Subscription source resolver errors and invalid source stream results are
+ * returned on `result` as ExecutionResult errors; they do not publish the
+ * `error` lifecycle event unless subscription setup fails abruptly before
+ * GraphQL can form a result.
+ */
 export interface GraphQLSubscribeContext {
   /** Schema used for subscription execution. */
   schema: GraphQLSchema;
@@ -180,13 +209,22 @@ export interface GraphQLSubscribeContext {
   operationName: string | undefined;
   /** Selected operation type, if one is available. */
   operationType: OperationTypeNode | undefined;
-  /** Error thrown while subscribing, when subscription setup fails abruptly. */
+  /** Error thrown or rejected while subscribing, when setup fails abruptly. */
   error?: unknown;
-  /** Subscription response stream or execution result returned by subscribe. */
+  /**
+   * Subscription response stream, or an ExecutionResult containing GraphQL
+   * errors.
+   */
   result?: AsyncGenerator<ExecutionResult, void, void> | ExecutionResult;
 }
 
-/** Context published on `graphql:resolve`. */
+/**
+ * Context published on `graphql:resolve`.
+ *
+ * Resolver throws and rejections publish the `error` lifecycle event here.
+ * The same failure may also be formatted into the enclosing execution or
+ * subscription result.
+ */
 export interface GraphQLResolveContext {
   /** Field name being resolved. */
   fieldName: string;
@@ -202,9 +240,9 @@ export interface GraphQLResolveContext {
   isDefaultResolver: boolean;
   /** Response path for the field being resolved. */
   fieldPath: string;
-  /** Error thrown by the resolver, when resolution fails. */
+  /** Error thrown or rejected by the resolver, when resolution fails. */
   error?: unknown;
-  /** Value returned by the resolver. */
+  /** Value returned by the resolver, when resolution succeeds. */
   result?: unknown;
 }
 
@@ -227,7 +265,7 @@ export interface GraphQLChannelContextByName {
 }
 
 /**
- * The collection of tracing channels graphql-js emits on. Application
+ * The collection of tracing channels GraphQL.js emits on. Application
  * performance monitoring (APM) tools subscribe to these by name on their own
  * `node:diagnostics_channel` import; both paths land on the same channel
  * instance because `tracingChannel(name)` is cached by name.
@@ -355,8 +393,12 @@ type TraceStartContext<TContext extends TraceLifecycleContext> = Omit<
 >;
 
 /**
- * Publish a mixed sync-or-promise operation through `channel`. Caller has
- * already verified that a subscriber is attached.
+ * Publish a traced call that may complete synchronously or with a promise.
+ * Caller has already verified that a subscriber is attached. On normal
+ * completion, `result` is attached before the terminal `end` or `asyncEnd`
+ * event. When the traced call throws or rejects, `error` is attached, the
+ * `error` sub-channel fires, and the terminal `end` or `asyncEnd` event is
+ * published before the original failure is propagated.
  *
  * @internal
  */
