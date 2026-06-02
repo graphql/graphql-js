@@ -15,10 +15,16 @@ JavaScript and TypeScript.
 | Version area | Start here |
 | --- | --- |
 | Stable v16 API | [v16 API reference](/api-v16/graphql) |
-| v17 beta API | [v17 API reference](/api-v17/graphql) |
+| v17 release candidate API | [v17 API reference](/api-v17/graphql) |
 | v16 to v17 changes | [What changed in GraphQL.js v17](/upgrade-guides/v16-v17) |
 | v17 specification experiments | [Experimental Specification Features](/docs/experimental-specification-features) |
-| v17 runtime features | [GraphQL Harness](/docs/graphql-harness), [Abort Signals](/docs/abort-signals), [Execution Hooks](/docs/execution-hooks) |
+| v17 runtime features | [GraphQL Harness](/docs/graphql-harness), [Abort Signals](/docs/abort-signals), [Execution Hooks](/docs/execution-hooks), [Node.js tracing channels](/api-v17/graphql#category-diagnostics) |
 
 The guides in this section describe GraphQL concepts and GraphQL.js behavior.
 The API sections document the public exports by package module.
+
+GraphQL.js v17 also publishes Node.js `node:diagnostics_channel` tracing
+events, mainly for application performance monitoring (APM) integrations that
+observe parse, validate, execute, subscribe, and resolver lifecycle boundaries.
+See the [Diagnostics API reference](/api-v17/graphql#category-diagnostics) for
+the channel names and payload shapes.

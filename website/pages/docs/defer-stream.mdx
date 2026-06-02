@@ -165,11 +165,14 @@ increase concurrent work. Measure before enabling it broadly.
 
 GraphQL.js validates the current incremental delivery rules:
 
-- `@defer` and `@stream` are not supported on subscription operations.
+- Active `@defer` and `@stream` are not supported on subscription operations,
+  including through named fragments.
 - `@stream` must be used on list fields.
 - `@stream(initialCount:)` must be non-null.
 - Active `@defer` and `@stream` labels must be unique.
-- Root field usage must follow the current proposal rules.
+- Root-field restrictions apply only to mutation and subscription root
+  selections, including through fragments whose type condition matches the root
+  type through an interface. Query root selections may use incremental delivery.
 - Multiple active `@stream` instances cannot target the same field instance.
 
 Those checks are exposed through the validation rules
@@ -177,8 +180,9 @@ Those checks are exposed through the validation rules
 `DeferStreamDirectiveOnValidOperationsRule`, and
 `StreamDirectiveOnListFieldRule`.
 
-If a fragment is shared between query and subscription operations, use the
-directive `if` argument to disable incremental behavior in the subscription.
+If a fragment is shared between query and subscription operations, use a
+variable-backed `if` argument on `@defer` or `@stream`, or applicable `@skip`
+and `@include` directives, to disable incremental behavior in the subscription.
 
 ```graphql
 subscription Events($incremental: Boolean! = false) {

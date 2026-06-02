@@ -235,6 +235,13 @@ GraphQL.js allows you to hook into the execution pipeline using:
 - `parse` and `validate`: Trace early steps
 - `formatResponse`: Attach metadata
 
+Starting in v17, GraphQL.js also publishes lifecycle events on Node.js
+`node:diagnostics_channel` tracing channels for parse, validation, execution,
+subscription setup, variable coercion, root selection set execution, and field
+resolution. These channels are mainly for application performance monitoring
+(APM) tools and other tracing integrations, which can subscribe to the
+`graphql:*` channels without changing application request code.
+
 Tracing tools that work with GraphQL include:
 
 - [Apollo Studio](https://www.apollographql.com/docs/studio/)

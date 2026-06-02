@@ -76,7 +76,7 @@ throw new GraphQLError('Invalid input', {
   source,
   positions,
   path,
-  originalError,
+  cause,
   extensions,
 });
 ```
@@ -86,7 +86,9 @@ Each option helps tie the error to specific parts of the GraphQL execution:
 - `nodes`: The AST nodes associated with the error.
 - `source` and `positions`: The source document and character offsets.
 - `path`: The field path leading to the error.
-- `originalError`: The underlying JavaScript error, if available.
+- `cause`: The underlying JavaScript error or other value, if available.
+- `originalError`: The legacy v16 name for an underlying JavaScript error. In
+  v17 and newer, prefer `cause`.
 - `extensions`: Any custom metadata you want to include.
 
 When a resolver throws an error:

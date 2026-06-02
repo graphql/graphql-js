@@ -1202,6 +1202,11 @@ and the fragments defined in the query document
       <td>Schema used for execution.</td>
     </tr>
     <tr>
+      <td>document</td>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v17/language#documentnode"]]} /></td>
+      <td>Parsed GraphQL document being executed.</td>
+    </tr>
+    <tr>
       <td>fragmentDefinitions</td>
       <td><ApiType parts={[["type", "ObjMap"], "\u003c", ["link", "FragmentDefinitionNode", "/api-v17/language#fragmentdefinitionnode"], "\u003e"]} /></td>
       <td>Fragment definitions keyed by fragment name.</td>
@@ -1230,6 +1235,11 @@ and the fragments defined in the query document
       <td>variableValues</td>
       <td><ApiType parts={[["link", "VariableValues", "/api-v17/execution#variablevalues"]]} /></td>
       <td>Operation variable values with source metadata and coerced runtime values.</td>
+    </tr>
+    <tr>
+      <td>rawVariableValues</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c\u007b\n  ", ["keyword", "readonly"], " [", ["parameter", "variable"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], ";\n\u007d\u003e"]} /></td>
+      <td>Raw variable values provided by the caller before coercion.</td>
     </tr>
     <tr>
       <td>fieldResolver</td>

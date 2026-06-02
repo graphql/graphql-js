@@ -14,12 +14,19 @@ import { Callout } from 'nextra/components';
 
 GraphQL operation variables are defined at the operation level. That works for
 many documents, but reusable fragments sometimes need local parameters. Fragment
-arguments let a fragment define its own variables and let each fragment spread
-provide values for those variables.
+arguments let a named fragment define its own variables and let each named
+fragment spread provide values for those variables.
 
-The feature is also called fragment variables because the fragment-level
-parameters are conceptually "variables" scoped to that fragment. They are passed
-as arguments on the fragment spread, using syntax similar to field arguments.
+Earlier GraphQL.js versions used the name "fragment variables" for experimental
+syntax that allowed fragment definitions to declare local variables. That syntax
+could be parsed, printed, and traversed by GraphQL.js consumers, but GraphQL.js
+did not provide the runtime machinery to execute operations with values for
+those variables.
+
+GraphQL.js v17 uses the name "fragment arguments" for the end-to-end feature:
+named fragments can define local variables, named fragment spreads can pass
+values for those variables, and execution applies those values with coercion and
+default handling.
 
 ## Changed from legacy fragment variables
 
@@ -113,7 +120,8 @@ distinct names are easier for humans and tools to follow.
 
 Resolvers do not need a separate API for fragment arguments. By the time a
 field resolver runs, GraphQL.js has applied the fragment argument values to the
-field arguments, directives, and nested fragment spreads that reference them.
+field arguments, directives, and nested named fragment spreads that reference
+them.
 
 ## AST and tooling changes
 
@@ -127,7 +135,7 @@ When enabled, GraphQL.js adds:
 
 The printer and visitor understand these nodes in v17. Tooling that uses custom
 visitors should include the new node kind when it needs to inspect or transform
-fragment spread arguments.
+arguments on named fragment spreads.
 
 ```js
 import { Kind, visit } from 'graphql';
