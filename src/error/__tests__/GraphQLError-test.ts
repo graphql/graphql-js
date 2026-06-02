@@ -137,6 +137,20 @@ describe('GraphQLError', () => {
     });
   });
 
+  it('creates new stack if cause has no stack', () => {
+    const cause = new Error('cause');
+    delete cause.stack;
+    const e = new GraphQLError('msg', { cause });
+
+    expect(e).to.include({
+      name: 'GraphQLError',
+      message: 'msg',
+      cause,
+      originalError: cause,
+    });
+    expect(e.stack).to.be.a('string');
+  });
+
   it('creates new stack if original error has no stack', () => {
     const original = new Error('original');
     delete original.stack;
