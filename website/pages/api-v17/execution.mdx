@@ -47,21 +47,21 @@ For documentation purposes, these exports are grouped into the following categor
   </p>
   <p>
     <strong>Types:</strong><br />
+    <a href="/api-v17/execution#executionargs">ExecutionArgs</a>
+    <span aria-hidden="true">&middot;</span>
     <a href="/api-v17/execution#validatedexecutionargs">ValidatedExecutionArgs</a>
     <span aria-hidden="true">&middot;</span>
     <a href="/api-v17/execution#validatedsubscriptionargs">ValidatedSubscriptionArgs</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#asyncworkfinishedinfo">AsyncWorkFinishedInfo</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/execution#executionhooks">ExecutionHooks</a>
     <span aria-hidden="true">&middot;</span>
     <a href="/api-v17/execution#executionresult">ExecutionResult</a>
     <span aria-hidden="true">&middot;</span>
     <a href="/api-v17/execution#formattedexecutionresult">FormattedExecutionResult</a>
     <span aria-hidden="true">&middot;</span>
     <a href="/api-v17/execution#rootselectionsetexecutor">RootSelectionSetExecutor</a>
-    <span aria-hidden="true">&middot;</span>
-    <a href="/api-v17/execution#executionargs">ExecutionArgs</a>
-    <span aria-hidden="true">&middot;</span>
-    <a href="/api-v17/execution#asyncworkfinishedinfo">AsyncWorkFinishedInfo</a>
-    <span aria-hidden="true">&middot;</span>
-    <a href="/api-v17/execution#executionhooks">ExecutionHooks</a>
   </p>
 </div>
 
@@ -1084,6 +1084,98 @@ of calling that function while passing along args and context value.
 
 ### Types
 
+#### ExecutionArgs
+
+**Interface.** Arguments accepted by execute and executeSync.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
+      <td>The schema used for validation or execution.</td>
+    </tr>
+    <tr>
+      <td>document</td>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v17/language#documentnode"]]} /></td>
+      <td>The parsed GraphQL document to execute.</td>
+    </tr>
+    <tr>
+      <td>rootValue?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Initial root value passed to the operation.</td>
+    </tr>
+    <tr>
+      <td>contextValue?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Application context value passed to every resolver.</td>
+    </tr>
+    <tr>
+      <td>variableValues?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c\u007b\n  ", ["keyword", "readonly"], " [", ["parameter", "variable"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], ";\n\u007d\u003e"]} /></td>
+      <td>Runtime variable values keyed by variable name.</td>
+    </tr>
+    <tr>
+      <td>operationName?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "string"], "\u003e"]} /></td>
+      <td>Name of the operation to execute when the document contains multiple operations.</td>
+    </tr>
+    <tr>
+      <td>fieldResolver?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLFieldResolver", "/api-v17/type#graphqlfieldresolver"], "\u003c", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\u003e"]} /></td>
+      <td>Resolver used when a field does not define its own resolver.</td>
+    </tr>
+    <tr>
+      <td>typeResolver?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLTypeResolver", "/api-v17/type#graphqltyperesolver"], "\u003c", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\u003e"]} /></td>
+      <td>Resolver used when an abstract type does not define its own resolver.</td>
+    </tr>
+    <tr>
+      <td>subscribeFieldResolver?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLFieldResolver", "/api-v17/type#graphqlfieldresolver"], "\u003c", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\u003e"]} /></td>
+      <td>Resolver used for the root subscription field.</td>
+    </tr>
+    <tr>
+      <td>hideSuggestions?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e"]} /></td>
+      <td>Whether suggestion text should be omitted from request errors.</td>
+    </tr>
+    <tr>
+      <td>abortSignal?</td>
+      <td><ApiType parts={[["keyword", "any"]]} /></td>
+      <td>AbortSignal used to cancel execution.</td>
+    </tr>
+    <tr>
+      <td>enableEarlyExecution?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e"]} /></td>
+      <td>Whether incremental execution may begin eligible work early.</td>
+    </tr>
+    <tr>
+      <td>hooks?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "ExecutionHooks", "/api-v17/execution#executionhooks"], "\u003e"]} /></td>
+      <td>Execution hooks invoked during this operation.</td>
+    </tr>
+    <tr>
+      <td>options?</td>
+      <td><ApiType parts={[["type", "object"]]} /></td>
+      <td>Additional execution options.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
 #### ValidatedExecutionArgs
 
 **Interface.** Data that must be available at all points during query execution.
@@ -1207,6 +1299,60 @@ and the fragments defined in the query document
       <td>operation</td>
       <td><ApiType parts={[["link", "SubscriptionOperationDefinitionNode", "/api-v17/language#subscriptionoperationdefinitionnode"]]} /></td>
       <td>Subscription operation definition selected for execution.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### AsyncWorkFinishedInfo
+
+**Interface.** Information passed to hooks after asynchronous execution work has finished.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>validatedExecutionArgs</td>
+      <td><ApiType parts={[["link", "ValidatedExecutionArgs", "/api-v17/execution#validatedexecutionargs"]]} /></td>
+      <td>Validated execution arguments for the operation that finished async work.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ExecutionHooks
+
+**Interface.** Optional hooks invoked during GraphQL execution.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>asyncWorkFinished?</td>
+      <td><ApiType parts={["(", ["parameter", "info"], ": ", ["link", "AsyncWorkFinishedInfo", "/api-v17/execution#asyncworkfinishedinfo"], ") =\u003e ", ["keyword", "void"]]} /></td>
+      <td>Called after all tracked asynchronous execution work has settled.</td>
     </tr>
   </tbody>
 </table>
@@ -1350,152 +1496,6 @@ and the fragments defined in the query document
 **Type alias.** Function used to execute a validated root selection set for a subscription event.
 
 <ApiSignature parts={[["keyword", "type"], " ", ["name", "RootSelectionSetExecutor"], " = (\n  ", ["parameter", "validatedExecutionArgs"], ": ", ["link", "ValidatedSubscriptionArgs", "/api-v17/execution#validatedsubscriptionargs"], ",\n) =\u003e ", ["type", "PromiseOrValue"], "\u003c", ["link", "ExecutionResult", "/api-v17/execution#executionresult"], "\u003e;"]} />
-
-<hr className="api-item-divider" />
-
-#### ExecutionArgs
-
-**Interface.** Arguments accepted by execute and executeSync.
-
-<hr className="api-subsection-divider" />
-
-<div className="api-subsection-title">Members</div>
-
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>schema</td>
-      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
-      <td>The schema used for validation or execution.</td>
-    </tr>
-    <tr>
-      <td>document</td>
-      <td><ApiType parts={[["link", "DocumentNode", "/api-v17/language#documentnode"]]} /></td>
-      <td>The parsed GraphQL document to execute.</td>
-    </tr>
-    <tr>
-      <td>rootValue?</td>
-      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
-      <td>Initial root value passed to the operation.</td>
-    </tr>
-    <tr>
-      <td>contextValue?</td>
-      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
-      <td>Application context value passed to every resolver.</td>
-    </tr>
-    <tr>
-      <td>variableValues?</td>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c\u007b\n  ", ["keyword", "readonly"], " [", ["parameter", "variable"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], ";\n\u007d\u003e"]} /></td>
-      <td>Runtime variable values keyed by variable name.</td>
-    </tr>
-    <tr>
-      <td>operationName?</td>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "string"], "\u003e"]} /></td>
-      <td>Name of the operation to execute when the document contains multiple operations.</td>
-    </tr>
-    <tr>
-      <td>fieldResolver?</td>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLFieldResolver", "/api-v17/type#graphqlfieldresolver"], "\u003c", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\u003e"]} /></td>
-      <td>Resolver used when a field does not define its own resolver.</td>
-    </tr>
-    <tr>
-      <td>typeResolver?</td>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLTypeResolver", "/api-v17/type#graphqltyperesolver"], "\u003c", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\u003e"]} /></td>
-      <td>Resolver used when an abstract type does not define its own resolver.</td>
-    </tr>
-    <tr>
-      <td>subscribeFieldResolver?</td>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLFieldResolver", "/api-v17/type#graphqlfieldresolver"], "\u003c", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\u003e"]} /></td>
-      <td>Resolver used for the root subscription field.</td>
-    </tr>
-    <tr>
-      <td>hideSuggestions?</td>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e"]} /></td>
-      <td>Whether suggestion text should be omitted from request errors.</td>
-    </tr>
-    <tr>
-      <td>abortSignal?</td>
-      <td><ApiType parts={[["keyword", "any"]]} /></td>
-      <td>AbortSignal used to cancel execution.</td>
-    </tr>
-    <tr>
-      <td>enableEarlyExecution?</td>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e"]} /></td>
-      <td>Whether incremental execution may begin eligible work early.</td>
-    </tr>
-    <tr>
-      <td>hooks?</td>
-      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "ExecutionHooks", "/api-v17/execution#executionhooks"], "\u003e"]} /></td>
-      <td>Execution hooks invoked during this operation.</td>
-    </tr>
-    <tr>
-      <td>options?</td>
-      <td><ApiType parts={[["type", "object"]]} /></td>
-      <td>Additional execution options.</td>
-    </tr>
-  </tbody>
-</table>
-
-<hr className="api-item-divider" />
-
-#### AsyncWorkFinishedInfo
-
-**Interface.** Information passed to hooks after asynchronous execution work has finished.
-
-<hr className="api-subsection-divider" />
-
-<div className="api-subsection-title">Members</div>
-
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>validatedExecutionArgs</td>
-      <td><ApiType parts={[["link", "ValidatedExecutionArgs", "/api-v17/execution#validatedexecutionargs"]]} /></td>
-      <td>Validated execution arguments for the operation that finished async work.</td>
-    </tr>
-  </tbody>
-</table>
-
-<hr className="api-item-divider" />
-
-#### ExecutionHooks
-
-**Interface.** Optional hooks invoked during GraphQL execution.
-
-<hr className="api-subsection-divider" />
-
-<div className="api-subsection-title">Members</div>
-
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>asyncWorkFinished?</td>
-      <td><ApiType parts={["(", ["parameter", "info"], ": ", ["link", "AsyncWorkFinishedInfo", "/api-v17/execution#asyncworkfinishedinfo"], ") =\u003e ", ["keyword", "void"]]} /></td>
-      <td>Called after all tracked asynchronous execution work has settled.</td>
-    </tr>
-  </tbody>
-</table>
 
 ## Category: Incremental Execution
 
