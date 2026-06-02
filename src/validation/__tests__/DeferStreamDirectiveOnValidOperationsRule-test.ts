@@ -243,6 +243,60 @@ describe('Validate: Defer/Stream directive on valid operations', () => {
       },
     ]);
   });
+  it('Defer in fragment spread nested under @skip(if: true) directive', () => {
+    expectValid(`
+      subscription MySubscription {
+        subscriptionField {
+          ...outerFragment @skip(if: true)
+        }
+      }
+      fragment outerFragment on Message {
+        ...myFragment @defer
+      }
+      fragment myFragment on Message {
+        body
+      }
+    `);
+  });
+  it('Defer in fragment spread nested under @skip(if: false) directive', () => {
+    expectErrors(`
+      subscription MySubscription {
+        subscriptionField {
+          ...outerFragment @skip(if: false)
+        }
+      }
+      fragment outerFragment on Message {
+        ...myFragment @defer
+      }
+      fragment myFragment on Message {
+        body
+      }
+    `).toDeepEqual([
+      {
+        locations: [
+          { column: 23, line: 8 },
+          { column: 11, line: 4 },
+        ],
+        message:
+          'Defer directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
+      },
+    ]);
+  });
+  it('Defer in fragment spread nested under @skip(if: $variable) directive', () => {
+    expectValid(`
+      subscription MySubscription($variable: Boolean) {
+        subscriptionField {
+          ...outerFragment @skip(if: $variable)
+        }
+      }
+      fragment outerFragment on Message {
+        ...myFragment @defer
+      }
+      fragment myFragment on Message {
+        body
+      }
+    `);
+  });
   it('Defer fragment spread with @skip(if: $variable) directive', () => {
     expectValid(`
       subscription MySubscription($variable: Boolean) {
@@ -297,6 +351,60 @@ describe('Validate: Defer/Stream directive on valid operations', () => {
         subscriptionField {
           ...myFragment @include(if: false) @defer
         }
+      }
+      fragment myFragment on Message {
+        body
+      }
+    `);
+  });
+  it('Defer in fragment spread nested under @include(if: true) directive', () => {
+    expectErrors(`
+      subscription MySubscription {
+        subscriptionField {
+          ...outerFragment @include(if: true)
+        }
+      }
+      fragment outerFragment on Message {
+        ...myFragment @defer
+      }
+      fragment myFragment on Message {
+        body
+      }
+    `).toDeepEqual([
+      {
+        locations: [
+          { column: 23, line: 8 },
+          { column: 11, line: 4 },
+        ],
+        message:
+          'Defer directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
+      },
+    ]);
+  });
+  it('Defer in fragment spread nested under @include(if: false) directive', () => {
+    expectValid(`
+      subscription MySubscription {
+        subscriptionField {
+          ...outerFragment @include(if: false)
+        }
+      }
+      fragment outerFragment on Message {
+        ...myFragment @defer
+      }
+      fragment myFragment on Message {
+        body
+      }
+    `);
+  });
+  it('Defer in fragment spread nested under @include(if: $variable) directive', () => {
+    expectValid(`
+      subscription MySubscription($variable: Boolean) {
+        subscriptionField {
+          ...outerFragment @include(if: $variable)
+        }
+      }
+      fragment outerFragment on Message {
+        ...myFragment @defer
       }
       fragment myFragment on Message {
         body
