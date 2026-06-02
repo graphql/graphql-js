@@ -3094,7 +3094,7 @@ function addCategory(comment, category) {
 
   const trailing = comment.match(/\s*$/)?.[0] ?? '';
   const body = comment.slice(0, comment.length - trailing.length);
-  const oneLine = /^(\s*)\/\*\*\s*(.*?)\s*\*\/$/.exec(body);
+  const oneLine = /^(\s*)\/\*\*[^\S\r\n]*(.*?)[^\S\r\n]*\*\/$/.exec(body);
   if (oneLine != null) {
     const [, indent, text] = oneLine;
     return `${indent}/**\n${indent} * ${text}\n${indent} *\n${indent} * @category ${category}\n${indent} */${trailing}`;
