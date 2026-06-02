@@ -63,7 +63,7 @@ describe('GraphQLError', () => {
     ]);
   });
 
-  it('uses the stack of cause when possible', () => {
+  it('does not copy over the stack of cause', () => {
     const original = new Error('original');
     const e = new GraphQLError('msg', {
       cause: original,
@@ -72,9 +72,9 @@ describe('GraphQLError', () => {
     expect(e).to.include({
       name: 'GraphQLError',
       message: 'msg',
-      stack: original.stack,
       cause: original,
     });
+    expect(e.stack).to.not.equal(original.stack);
   });
 
   it('uses the stack of an original error via originalError', () => {
@@ -107,7 +107,6 @@ describe('GraphQLError', () => {
     expect(e).to.deep.include({
       name: 'GraphQLError',
       message: 'msg',
-      stack: cause.stack,
       cause,
       originalError: cause,
       extensions: { original: 'extensions' },
@@ -136,19 +135,6 @@ describe('GraphQLError', () => {
       originalError,
       stack: originalError.stack,
     });
-  });
-
-  it('creates new stack if cause has no stack', () => {
-    const original = new Error('original');
-    delete original.stack;
-    const e = new GraphQLError('msg', { originalError: original });
-
-    expect(e).to.include({
-      name: 'GraphQLError',
-      message: 'msg',
-      cause: original,
-    });
-    expect(e.stack).to.be.a('string');
   });
 
   it('creates new stack if original error has no stack', () => {

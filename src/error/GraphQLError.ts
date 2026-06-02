@@ -167,10 +167,8 @@ export class GraphQLError extends Error {
 
     this.name = 'GraphQLError';
     this.path = path ?? undefined;
-    const underlyingError:
-      | (Error & { readonly extensions?: unknown })
-      | undefined =
-      originalError ?? (errorCause instanceof Error ? errorCause : undefined);
+    const underlyingError: typeof originalError =
+      originalError ?? (cause instanceof Error ? cause : undefined);
     this.originalError = underlyingError;
 
     // Compute list of blame nodes.
@@ -214,9 +212,13 @@ export class GraphQLError extends Error {
     });
 
     // Include (non-enumerable) stack trace.
-    if (underlyingError?.stack != null) {
+    // Do not copy over the stack trace of the Error.cause, since the tooling
+    // already nicely prints/reports the cause chains.
+    // Preserve the copy-over behavior of the `originalError`, since users may
+    // expect it to work the way it did originally.
+    if (originalError?.stack != null) {
       Object.defineProperty(this, 'stack', {
-        value: underlyingError.stack,
+        value: originalError.stack,
         writable: true,
         configurable: true,
       });
