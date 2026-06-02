@@ -1,4 +1,4 @@
-import { ApiSignature } from '../../components/ApiCode';
+import { ApiSignature, ApiType } from '../../components/ApiCode';
 
 # <span className="api-deprecated-title">graphql/subscription</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
@@ -14,10 +14,437 @@ These exports are also available from the root `graphql` package.
 
 <div className="api-category-toc">
   <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v16/subscription#subscribe">subscribe()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/subscription#createsourceeventstream">createSourceEventStream()</a>
+  </p>
+  <p>
     <strong>Types:</strong><br />
     <a className="api-deprecated-link" href="/api-v16/subscription#subscriptionargs">SubscriptionArgs</a>
   </p>
 </div>
+
+## Functions
+
+### subscribe()
+
+Implements the "Subscribe" algorithm described in the GraphQL specification.
+
+Returns a Promise that resolves to either an AsyncIterator (if successful)
+or an ExecutionResult (error). The promise will be rejected if the schema or
+other arguments to this function are invalid, or if the resolved event stream
+is not an async iterable.
+
+If the client-provided arguments to this function do not result in a
+compliant subscription, a GraphQL Response (ExecutionResult) with
+descriptive errors and no data will be returned.
+
+If the source stream could not be created due to faulty subscription
+resolver logic or underlying systems, the promise will resolve to a single
+ExecutionResult containing `errors` and no `data`.
+
+If the operation succeeded, the promise resolves to an AsyncIterator, which
+yields a stream of ExecutionResults representing the response stream.
+
+Each payload yielded by the source event stream is executed with the payload
+as the root value. This maps the subscription source stream into the response
+stream described by the GraphQL specification.
+
+Accepts an object with named arguments.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "subscribe"], "(\n  ", ["parameter", "args"], ": ", ["link", "ExecutionArgs", "/api-v16/execution#executionargs"], ",\n): ", ["type", "Promise"], "\u003c\n  ", ["link", "ExecutionResult", "/api-v16/execution#executionresult"], " \u007c ", ["type", "AsyncGenerator"], "\u003c", ["link", "ExecutionResult", "/api-v16/execution#executionresult"], ", ", ["keyword", "void"], ", ", ["keyword", "void"], "\u003e\n\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>args</td>
+      <td><ApiType parts={[["link", "ExecutionArgs", "/api-v16/execution#executionargs"]]} /></td>
+      <td>The arguments used to perform the operation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "Promise"], "\u003c\n  ", ["link", "ExecutionResult", "/api-v16/execution#executionresult"], " \u007c ", ["type", "AsyncGenerator"], "\u003c", ["link", "ExecutionResult", "/api-v16/execution#executionresult"], ", ", ["keyword", "void"], ", ", ["keyword", "void"], "\u003e\n\u003e"]} /></td>
+      <td>A source stream mapped to execution results, or an execution result<br />
+containing subscription errors.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Use a same-named rootValue function to provide the source event stream.
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { subscribe } from 'graphql/execution';
+
+async function* greetings() {
+  yield { greeting: 'Hello' };
+  yield { greeting: 'Bonjour' };
+}
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+
+  type Subscription {
+    greeting: String
+  }
+`);
+
+const result = await subscribe({
+  schema,
+  document: parse('subscription { greeting }'),
+  rootValue: { greeting: () => greetings() },
+});
+
+assert('next' in result);
+
+const firstPayload = await result.next();
+firstPayload.value; // => { data: { greeting: 'Hello' } }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant supplies events through a custom subscribeFieldResolver.
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { subscribe } from 'graphql/execution';
+
+async function* defaultGreetings() {
+  yield { greeting: 'Hello' };
+}
+
+async function* frenchGreetings() {
+  yield { greeting: 'Bonjour' };
+}
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+
+  type Subscription {
+    greeting(locale: String): String
+  }
+`);
+
+const result = await subscribe({
+  schema,
+  document: parse(
+    'subscription Greeting($locale: String) { greeting(locale: $locale) }',
+  ),
+  rootValue: {
+    greeting: (args, contextValue) => {
+      const locale = args.locale ?? contextValue.defaultLocale;
+      return locale === 'fr' ? frenchGreetings() : defaultGreetings();
+    },
+  },
+  contextValue: { defaultLocale: 'fr' },
+  variableValues: { locale: 'fr' },
+  operationName: 'Greeting',
+  subscribeFieldResolver: (rootValue, args, contextValue, info) => {
+    args.locale; // => 'fr'
+    return rootValue[info.fieldName](args, contextValue);
+  },
+});
+
+assert('next' in result);
+
+const firstPayload = await result.next();
+firstPayload.value; // => { data: { greeting: 'Bonjour' } }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 3</div>
+
+```ts
+// This variant shows the error result when the schema has no subscription root.
+import assert from 'node:assert';
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { subscribe } from 'graphql/execution';
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+`);
+
+const result = await subscribe({
+  schema,
+  document: parse('subscription { greeting }'),
+});
+
+assert('errors' in result);
+
+result.errors[0].message; // => 'Schema is not configured to execute subscription operation.'
+```
+
+<hr className="api-item-divider" />
+
+### createSourceEventStream()
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 1</div>
+
+Implements the "CreateSourceEventStream" algorithm described in the
+GraphQL specification, resolving the subscription source event stream.
+
+Returns a Promise that resolves to either an AsyncIterable (if successful)
+or an ExecutionResult (error). The promise will be rejected if the schema or
+other arguments to this function are invalid, or if the resolved event stream
+is not an async iterable.
+
+If the client-provided arguments to this function do not result in a
+compliant subscription, a GraphQL Response (ExecutionResult) with
+descriptive errors and no data will be returned.
+
+If the source stream could not be created due to faulty subscription
+resolver logic or underlying systems, the promise will resolve to a single
+ExecutionResult containing `errors` and no `data`.
+
+If the operation succeeded, the promise resolves to the AsyncIterable for the
+event stream returned by the resolver.
+
+A Source Event Stream represents a sequence of events, each of which triggers
+a GraphQL execution for that event.
+
+This may be useful when hosting the stateful subscription service in a
+different process or machine than the stateless GraphQL execution engine,
+or otherwise separating these two steps. For more on this, see the
+"Supporting Subscriptions at Scale" information in the GraphQL specification.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "createSourceEventStream"], "(\n  ", ["parameter", "args"], ": ", ["link", "ExecutionArgs", "/api-v16/execution#executionargs"], ",\n): ", ["type", "Promise"], "\u003c\n  ", ["link", "ExecutionResult", "/api-v16/execution#executionresult"], " \u007c ", ["type", "AsyncIterable"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\n\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>args</td>
+      <td><ApiType parts={[["link", "ExecutionArgs", "/api-v16/execution#executionargs"]]} /></td>
+      <td>The arguments used to perform the operation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "Promise"], "\u003c\n  ", ["link", "ExecutionResult", "/api-v16/execution#executionresult"], " \u007c ", ["type", "AsyncIterable"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\n\u003e"]} /></td>
+      <td>The source event stream, or an execution result containing subscription errors.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { createSourceEventStream } from 'graphql/execution';
+
+async function* greetings() {
+  yield { greeting: 'Hello' };
+}
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+
+  type Subscription {
+    greeting: String
+  }
+`);
+
+const stream = await createSourceEventStream({
+  schema,
+  document: parse('subscription { greeting }'),
+  rootValue: { greeting: () => greetings() },
+});
+
+Symbol.asyncIterator in stream; // => true
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 2 <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></div>
+
+Creates the source event stream for a subscription operation using the legacy
+positional argument overload. This deprecated overload will be removed in the
+next major version; use the args object overload instead.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "createSourceEventStream"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n  ", ["parameter", "document"], ": ", ["link", "DocumentNode", "/api-v16/language#documentnode"], ",\n  ", ["parameter", "rootValue"], "?: ", ["keyword", "unknown"], ",\n  ", ["parameter", "contextValue"], "?: ", ["keyword", "unknown"], ",\n  ", ["parameter", "variableValues"], "?: ", ["type", "Maybe"], "\u003c\u007b\n    ", ["keyword", "readonly"], " [", ["parameter", "variable"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], ";\n  \u007d\u003e,\n  ", ["parameter", "operationName"], "?: ", ["type", "Maybe"], "\u003c", ["keyword", "string"], "\u003e,\n  ", ["parameter", "subscribeFieldResolver"], "?: ", ["type", "Maybe"], "\u003c", ["link", "GraphQLFieldResolver", "/api-v16/type#graphqlfieldresolver"], "\u003c", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\u003e,\n): ", ["type", "Promise"], "\u003c\n  ", ["link", "ExecutionResult", "/api-v16/execution#executionresult"], " \u007c ", ["type", "AsyncIterable"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\n\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td>GraphQL schema to use.</td>
+    </tr>
+    <tr>
+      <td>document</td>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v16/language#documentnode"]]} /></td>
+      <td>The parsed GraphQL document containing the subscription<br />
+operation.</td>
+    </tr>
+    <tr>
+      <td>rootValue?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Initial root value passed to the subscription resolver.</td>
+    </tr>
+    <tr>
+      <td>contextValue?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Application context value passed to resolvers.</td>
+    </tr>
+    <tr>
+      <td>variableValues?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c\u007b\n  ", ["keyword", "readonly"], " [", ["parameter", "variable"], ": ", ["keyword", "string"], "]: ", ["keyword", "unknown"], ";\n\u007d\u003e"]} /></td>
+      <td>Runtime variable values keyed by variable name.</td>
+    </tr>
+    <tr>
+      <td>operationName?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "string"], "\u003e"]} /></td>
+      <td>Name of the subscription operation to execute when<br />
+the document contains multiple operations.</td>
+    </tr>
+    <tr>
+      <td>subscribeFieldResolver?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLFieldResolver", "/api-v16/type#graphqlfieldresolver"], "\u003c", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\u003e"]} /></td>
+      <td>Resolver used for the root subscription<br />
+field.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "Promise"], "\u003c\n  ", ["link", "ExecutionResult", "/api-v16/execution#executionresult"], " \u007c ", ["type", "AsyncIterable"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "any"], ", ", ["keyword", "any"], "\u003e\n\u003e"]} /></td>
+      <td>The source event stream, or an execution result containing<br />
+subscription errors.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { createSourceEventStream } from 'graphql/execution';
+
+async function* greetings() {
+  yield { greeting: 'Hello' };
+}
+
+const schema = buildSchema(`
+  type Query {
+    noop: String
+  }
+
+  type Subscription {
+    greeting: String
+  }
+`);
+const document = parse('subscription { greeting }');
+
+const stream = await createSourceEventStream(schema, document, {
+  greeting: () => greetings(),
+});
+
+Symbol.asyncIterator in stream; // => true
+```
 
 ## Types
 

@@ -969,6 +969,8 @@ error.message; // => 'Name "__typename" must not begin with "__", which is reser
     <span aria-hidden="true">&middot;</span>
     <a href="/api-v16/utilities#coerceinputvalue">coerceInputValue()</a>
     <span aria-hidden="true">&middot;</span>
+    <a href="/api-v16/utilities#typefromast">typeFromAST()</a>
+    <span aria-hidden="true">&middot;</span>
     <a href="/api-v16/utilities#valuefromast">valueFromAST()</a>
     <span aria-hidden="true">&middot;</span>
     <a href="/api-v16/utilities#valuefromastuntyped">valueFromASTUntyped()</a>
@@ -1189,6 +1191,314 @@ const value = coerceInputValue(
 
 value; // => undefined
 errors; // => [ { path: [], invalidValue: null, message: 'Expected non-nullable type "Int!" not to be null.' } ]
+```
+
+<hr className="api-item-divider" />
+
+#### typeFromAST()
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 1</div>
+
+Given a Schema and an AST node describing a type, return a GraphQLType
+definition which applies to that type. For example, if provided the parsed
+AST node for `[User]`, a GraphQLList instance will be returned, containing
+the type called "User" found in the schema. If a type called "User" is not
+found in the schema, then undefined will be returned.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "typeFromAST"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n  ", ["parameter", "typeNode"], ": ", ["link", "NamedTypeNode", "/api-v16/language#namedtypenode"], ",\n): ", ["link", "GraphQLNamedType", "/api-v16/type#graphqlnamedtype"], " \u007c ", ["keyword", "undefined"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td>GraphQL schema to use.</td>
+    </tr>
+    <tr>
+      <td>typeNode</td>
+      <td><ApiType parts={[["link", "NamedTypeNode", "/api-v16/language#namedtypenode"]]} /></td>
+      <td>The GraphQL type AST node to resolve.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "GraphQLNamedType", "/api-v16/type#graphqlnamedtype"], " \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>The GraphQL type referenced by the AST node, or undefined if it cannot be resolved.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parseType } from 'graphql/language';
+import { buildSchema, typeFromAST } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+typeFromAST(schema, parseType('String'))?.toString(); // => 'String'
+typeFromAST(schema, parseType('Missing')); // => undefined
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 2</div>
+
+Resolves a list type AST node against a schema.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "typeFromAST"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n  ", ["parameter", "typeNode"], ": ", ["link", "ListTypeNode", "/api-v16/language#listtypenode"], ",\n): ", ["link", "GraphQLList", "/api-v16/type#graphqllist"], "\u003c", ["keyword", "any"], "\u003e \u007c ", ["keyword", "undefined"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td>GraphQL schema to use.</td>
+    </tr>
+    <tr>
+      <td>typeNode</td>
+      <td><ApiType parts={[["link", "ListTypeNode", "/api-v16/language#listtypenode"]]} /></td>
+      <td>The list type AST node to resolve.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "GraphQLList", "/api-v16/type#graphqllist"], "\u003c", ["keyword", "any"], "\u003e \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>The GraphQL list type referenced by the AST node, or undefined if<br />
+it cannot be resolved.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parseType } from 'graphql/language';
+import { buildSchema, typeFromAST } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    tags: [String]
+  }
+`);
+
+typeFromAST(schema, parseType('[String]'))?.toString(); // => '[String]'
+typeFromAST(schema, parseType('[Missing]')); // => undefined
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 3</div>
+
+Resolves a non-null type AST node against a schema.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "typeFromAST"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n  ", ["parameter", "typeNode"], ": ", ["link", "NonNullTypeNode", "/api-v16/language#nonnulltypenode"], ",\n): ", ["link", "GraphQLNonNull", "/api-v16/type#graphqlnonnull"], "\u003c", ["keyword", "any"], "\u003e \u007c ", ["keyword", "undefined"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td>GraphQL schema to use.</td>
+    </tr>
+    <tr>
+      <td>typeNode</td>
+      <td><ApiType parts={[["link", "NonNullTypeNode", "/api-v16/language#nonnulltypenode"]]} /></td>
+      <td>The non-null type AST node to resolve.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "GraphQLNonNull", "/api-v16/type#graphqlnonnull"], "\u003c", ["keyword", "any"], "\u003e \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>The GraphQL non-null type referenced by the AST node, or undefined<br />
+if it cannot be resolved.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parseType } from 'graphql/language';
+import { buildSchema, typeFromAST } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    name: String!
+  }
+`);
+
+typeFromAST(schema, parseType('String!'))?.toString(); // => 'String!'
+typeFromAST(schema, parseType('[String!]!'))?.toString(); // => '[String!]!'
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 4</div>
+
+Resolves a type AST node against a schema.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "typeFromAST"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n  ", ["parameter", "typeNode"], ": ", ["link", "TypeNode", "/api-v16/language#typenode"], ",\n): ", ["link", "GraphQLType", "/api-v16/type#graphqltype"], " \u007c ", ["keyword", "undefined"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
+      <td>GraphQL schema to use.</td>
+    </tr>
+    <tr>
+      <td>typeNode</td>
+      <td><ApiType parts={[["link", "TypeNode", "/api-v16/language#typenode"]]} /></td>
+      <td>The GraphQL type AST node to resolve.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "GraphQLType", "/api-v16/type#graphqltype"], " \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>The GraphQL type referenced by the AST node, or undefined if it<br />
+cannot be resolved.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parseType } from 'graphql/language';
+import { buildSchema, typeFromAST } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type User {
+    name: String
+  }
+
+  type Query {
+    users: [User!]!
+  }
+`);
+
+typeFromAST(schema, parseType('User'))?.toString(); // => 'User'
+typeFromAST(schema, parseType('[User!]!'))?.toString(); // => '[User!]!'
+typeFromAST(schema, parseType('Missing')); // => undefined
 ```
 
 <hr className="api-item-divider" />

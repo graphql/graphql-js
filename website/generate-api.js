@@ -290,6 +290,7 @@ function emptyRenderContext() {
   return {
     docsBasePath: '',
     docsIndex: emptyDocsIndex(),
+    reflectionsById: new Map(),
   };
 }
 
@@ -568,25 +569,31 @@ function summary(node) {
 }
 
 function directCategory(node) {
+  const declaration = documentationNode(node);
   return (
     tagText(node.comment, '@category') ||
     tagText(node.signatures?.[0]?.comment, '@category') ||
+    (declaration === node
+      ? ''
+      : tagText(declaration.comment, '@category') ||
+        tagText(declaration.signatures?.[0]?.comment, '@category')) ||
     null
   );
 }
 
 function resolveItemCategory(node, siblings = []) {
+  const declaration = documentationNode(node);
   const ownCategory = directCategory(node);
   if (ownCategory != null && ownCategory !== '') {
     return ownCategory;
   }
 
-  if (isEnumNamespace(node)) {
-    return commonCategory(enumLikeMembers(node).map(directCategory));
+  if (isEnumNamespace(declaration)) {
+    return commonCategory(enumLikeMembers(declaration).map(directCategory));
   }
 
-  for (const sibling of siblings) {
-    if (sibling === node || sibling.name !== node.name) {
+  for (const sibling of documentationSiblings(siblings)) {
+    if (sibling === declaration || sibling.name !== declaration.name) {
       continue;
     }
     const siblingCategory = directCategory(sibling);
@@ -667,7 +674,11 @@ function heading(level, label) {
 }
 
 function isDeprecated(node) {
-  return hasCommentTag(node?.comment, '@deprecated');
+  const declaration = documentationNode(node);
+  return (
+    hasCommentTag(node?.comment, '@deprecated') ||
+    (declaration !== node && hasCommentTag(declaration?.comment, '@deprecated'))
+  );
 }
 
 function deprecatedTag(node) {
@@ -675,9 +686,12 @@ function deprecatedTag(node) {
 }
 
 function isCallableDeprecated(node, signatures) {
+  const declaration = documentationNode(node);
+  const declarationSignatures = declaration.signatures ?? signatures;
   return (
     isDeprecated(node) ||
-    (signatures.length === 1 && isDeprecated(signatures[0]))
+    (declarationSignatures.length === 1 &&
+      isDeprecated(declarationSignatures[0]))
   );
 }
 
@@ -873,6 +887,38 @@ function targetId(type) {
     : typeof type.target?.id === 'number'
       ? type.target.id
       : null;
+}
+
+function isReflectionReference(node) {
+  return (
+    node?.kind === ReflectionKind.Reference && node.variant === 'reference'
+  );
+}
+
+function documentationNode(node) {
+  let current = node;
+  const seen = new Set();
+
+  while (isReflectionReference(current)) {
+    const target = targetId(current);
+    if (target == null || seen.has(target)) {
+      break;
+    }
+
+    const next = renderContext.reflectionsById.get(target);
+    if (next == null) {
+      break;
+    }
+
+    seen.add(target);
+    current = next;
+  }
+
+  return current;
+}
+
+function documentationSiblings(siblings) {
+  return siblings.map(documentationNode);
 }
 
 function rawTypeName(type) {
@@ -2139,25 +2185,28 @@ function renderTypeAliasDeclaration(node, options = {}) {
 }
 
 function declarationKind(node, siblings = []) {
-  if (isEnumLikeDeclaration(node, siblings)) {
+  const declaration = documentationNode(node);
+  const declarationSiblings = documentationSiblings(siblings);
+  if (isEnumLikeDeclaration(declaration, declarationSiblings)) {
     return 'Enumerations';
   }
-  if (node.kind === ReflectionKind.Class) {
+  if (declaration.kind === ReflectionKind.Class) {
     return 'Classes';
   }
-  if (node.kind === ReflectionKind.Function) {
+  if (declaration.kind === ReflectionKind.Function) {
     return 'Functions';
   }
-  if (node.kind === ReflectionKind.Variable) {
+  if (declaration.kind === ReflectionKind.Variable) {
     return 'Constants';
   }
-  if (node.kind === ReflectionKind.Enum) {
+  if (declaration.kind === ReflectionKind.Enum) {
     return 'Enumerations';
   }
   if (
-    node.kind === ReflectionKind.TypeAlias ||
-    node.kind === ReflectionKind.Interface ||
-    (node.kind === ReflectionKind.Reference && node.variant === 'declaration')
+    declaration.kind === ReflectionKind.TypeAlias ||
+    declaration.kind === ReflectionKind.Interface ||
+    (declaration.kind === ReflectionKind.Reference &&
+      declaration.variant === 'declaration')
   ) {
     return 'Types';
   }
@@ -2165,25 +2214,34 @@ function declarationKind(node, siblings = []) {
 }
 
 function isEnumLikeDeclaration(node, siblings = []) {
-  return isEnumNamespace(node) || isEnumLikeConstObject(node, siblings);
+  const declaration = documentationNode(node);
+  const declarationSiblings = documentationSiblings(siblings);
+  return (
+    isEnumNamespace(declaration) ||
+    isEnumLikeConstObject(declaration, declarationSiblings)
+  );
 }
 
 function isEnumLikeConstObject(node, siblings = []) {
+  const declaration = documentationNode(node);
+  const declarationSiblings = documentationSiblings(siblings);
   return (
-    node.kind === ReflectionKind.Variable &&
-    hasMatchingTypeAlias(node, siblings) &&
-    enumLikeMembers(node).length > 0
+    declaration.kind === ReflectionKind.Variable &&
+    hasMatchingTypeAlias(declaration, declarationSiblings) &&
+    enumLikeMembers(declaration).length > 0
   );
 }
 
 function isEnumLikeTypeAlias(node, siblings = []) {
+  const declaration = documentationNode(node);
+  const declarationSiblings = documentationSiblings(siblings);
   return (
-    node.kind === ReflectionKind.TypeAlias &&
-    siblings.some(
+    declaration.kind === ReflectionKind.TypeAlias &&
+    declarationSiblings.some(
       (sibling) =>
-        sibling !== node &&
-        sibling.name === node.name &&
-        isEnumLikeConstObject(sibling, siblings),
+        sibling !== declaration &&
+        sibling.name === declaration.name &&
+        isEnumLikeConstObject(sibling, declarationSiblings),
     )
   );
 }
@@ -2222,22 +2280,30 @@ function enumLikeMembers(node) {
   return visibleChildren(node.type?.declaration);
 }
 
-function visibleChildren(node) {
+function visibleChildren(node, options = {}) {
   if (node == null) {
     return [];
   }
 
+  if (options.includeReferences) {
+    return (node.children ?? []).filter((child) =>
+      isVisibleChild(child, options),
+    );
+  }
+
   let children = visibleChildrenCache.get(node);
   if (children == null) {
-    children = (node.children ?? []).filter(isVisibleChild);
+    children = (node.children ?? []).filter((child) =>
+      isVisibleChild(child, options),
+    );
     visibleChildrenCache.set(node, children);
   }
   return children;
 }
 
-function isVisibleChild(child) {
+function isVisibleChild(child, options = {}) {
   return (
-    child.variant !== 'reference' &&
+    (options.includeReferences || !isReflectionReference(child)) &&
     child.kind !== ReflectionKind.IndexSignature &&
     !child.flags?.isExternal &&
     !child.flags?.isInherited &&
@@ -2477,6 +2543,15 @@ function renderCallable(
 }
 
 function renderDeclaration(node, level = 3, siblings = []) {
+  const declaration = documentationNode(node);
+  if (declaration !== node) {
+    return renderDeclaration(
+      declaration,
+      level,
+      documentationSiblings(siblings),
+    );
+  }
+
   const lines = [];
   const options = sourceOptions(node);
   const title =
@@ -2622,18 +2697,21 @@ function sourceFileName(node) {
 }
 
 function typeLabel(node, siblings = []) {
+  const declaration = documentationNode(node);
+  const declarationSiblings = documentationSiblings(siblings);
   if (
-    node.kind === ReflectionKind.Enum ||
-    isEnumLikeDeclaration(node, siblings)
+    declaration.kind === ReflectionKind.Enum ||
+    isEnumLikeDeclaration(declaration, declarationSiblings)
   ) {
     return 'Enumeration';
   }
-  if (node.kind === ReflectionKind.Interface) {
+  if (declaration.kind === ReflectionKind.Interface) {
     return 'Interface';
   }
   if (
-    node.kind === ReflectionKind.TypeAlias ||
-    (node.kind === ReflectionKind.Reference && node.variant === 'declaration')
+    declaration.kind === ReflectionKind.TypeAlias ||
+    (declaration.kind === ReflectionKind.Reference &&
+      declaration.variant === 'declaration')
   ) {
     return 'Type alias';
   }
@@ -2649,7 +2727,9 @@ function moduleTitle(name) {
 }
 
 function moduleItems(module, name) {
-  return visibleChildren(module).filter(
+  return visibleChildren(module, {
+    includeReferences: name !== 'graphql',
+  }).filter(
     (item) =>
       name !== 'graphql' || sourceContext.rootExportNames.has(item.name),
   );
@@ -2702,6 +2782,27 @@ function moduleDocs(module) {
   };
 }
 
+function createReflectionIndex(doc) {
+  const reflectionsById = new Map();
+  collectReflection(reflectionsById, doc);
+  return reflectionsById;
+}
+
+function collectReflection(reflectionsById, node) {
+  if (node == null) {
+    return;
+  }
+  if (typeof node.id === 'number') {
+    reflectionsById.set(node.id, node);
+  }
+  for (const child of node.children ?? []) {
+    collectReflection(reflectionsById, child);
+  }
+  for (const signature of node.signatures ?? []) {
+    collectReflection(reflectionsById, signature);
+  }
+}
+
 function createDocsIndex(modules) {
   const index = emptyDocsIndex();
 
@@ -2709,12 +2810,18 @@ function createDocsIndex(modules) {
     addSymbolDoc(index, docs.name, { page: docs.name });
     for (const child of docs.items) {
       const childDoc = { page: docs.name, anchor: slug(child.name) };
+      const declaration = documentationNode(child);
       index.docsById.set(child.id, childDoc);
       addSymbolDoc(index, child.name, childDoc);
       index.typeParameterDefaultsById.set(
         child.id,
-        (child.typeParameters ?? []).map((param) => param.default ?? null),
+        (declaration.typeParameters ?? []).map(
+          (param) => param.default ?? null,
+        ),
       );
+      if (isReflectionReference(child)) {
+        continue;
+      }
       for (const member of visibleChildren(child)) {
         const memberDoc = { page: docs.name, anchor: slug(member.name) };
         index.docsById.set(member.id, memberDoc);
@@ -2802,11 +2909,12 @@ function renderItemToc(groups, page) {
 }
 
 function tocLink(item, page) {
+  const declaration = documentationNode(item);
   const label =
-    item.kind === ReflectionKind.Function ? `${item.name}()` : item.name;
+    declaration.kind === ReflectionKind.Function ? `${item.name}()` : item.name;
   const className =
-    item.kind === ReflectionKind.Function &&
-    isCallableDeprecated(item, item.signatures ?? [])
+    declaration.kind === ReflectionKind.Function &&
+    isCallableDeprecated(item, declaration.signatures ?? [])
       ? ' className="api-deprecated-link"'
       : isDeprecated(item)
         ? ' className="api-deprecated-link"'
@@ -2948,16 +3056,20 @@ function writeCategoryMeta(docs) {
 }
 
 function buildApiReference(doc) {
+  const reflectionsById = createReflectionIndex(doc);
+  renderContext.reflectionsById = reflectionsById;
   const modules = (doc.children ?? []).map(moduleDocs);
   return {
     index: createDocsIndex(modules),
     modules,
+    reflectionsById,
   };
 }
 
 function writeApiReference(reference) {
   renderContext.docsBasePath = generation.docsBasePath;
   renderContext.docsIndex = reference.index;
+  renderContext.reflectionsById = reference.reflectionsById;
 
   rmSync(generation.outputDir, { recursive: true, force: true });
   mkdirSync(generation.outputDir, { recursive: true });
@@ -2992,6 +3104,23 @@ function addCategory(comment, category) {
   return (
     body.replace(/\n\s*\*\/$/, `\n *\n * @category ${category}\n */`) + trailing
   );
+}
+
+function leadingJSDocRange(content, node) {
+  const index = node.getStart();
+  const before = content.slice(0, index);
+  const start = before.lastIndexOf('/**');
+  const end = start === -1 ? -1 : before.indexOf('*/', start);
+  const jsdocEnd = end === -1 ? -1 : end + 2;
+
+  if (
+    start === -1 ||
+    jsdocEnd < start ||
+    !isLeadingLineCommentTrivia(before.slice(jsdocEnd))
+  ) {
+    return null;
+  }
+  return { start, end: jsdocEnd };
 }
 
 function isLeadingLineCommentTrivia(value) {
@@ -3095,6 +3224,78 @@ function inheritFileCategories(dir) {
   });
 }
 
+function exposePublicOverloadSignatures(dir) {
+  // TypeDoc applies @internal on an overload implementation to the whole
+  // function reflection. Keep public overload signatures visible, but remove
+  // the implementation's own JSDoc from the generated snapshot.
+  walkFiles(dir, (path) => {
+    if (!path.endsWith('.ts')) {
+      return;
+    }
+
+    let content = readFileSync(path, 'utf8');
+    const ranges = publicOverloadImplementationJSDocRanges(
+      sourceFile(path, content),
+      content,
+    );
+    for (let i = ranges.length - 1; i >= 0; i--) {
+      const range = ranges[i];
+      content =
+        content.slice(0, range.start) +
+        content.slice(range.end).replace(/^\r?\n/, '');
+    }
+
+    if (ranges.length > 0) {
+      writeFileSync(path, content);
+    }
+  });
+}
+
+function publicOverloadImplementationJSDocRanges(ast, content) {
+  const localExports = localExportNames(ast);
+  const declarationsByName = new Map();
+
+  for (const statement of ast.statements) {
+    if (
+      !ts.isFunctionDeclaration(statement) ||
+      statement.name == null ||
+      (!isExported(statement) && !localExports.has(statement.name.text))
+    ) {
+      continue;
+    }
+
+    const declarations = declarationsByName.get(statement.name.text) ?? [];
+    declarations.push(statement);
+    declarationsByName.set(statement.name.text, declarations);
+  }
+
+  const ranges = [];
+  for (const declarations of declarationsByName.values()) {
+    const hasPublicOverload = declarations.some(
+      (declaration) =>
+        declaration.body == null &&
+        !hasJSDocTag(declaration, 'internal') &&
+        !hasJSDocTag(declaration, 'private'),
+    );
+    if (!hasPublicOverload) {
+      continue;
+    }
+
+    for (const declaration of declarations) {
+      if (declaration.body == null || !hasJSDocTag(declaration, 'internal')) {
+        continue;
+      }
+
+      const range = leadingJSDocRange(content, declaration);
+      if (range != null) {
+        ranges.push(range);
+      }
+    }
+  }
+
+  return ranges;
+}
+
 function prepareSourceSnapshot() {
   // Snapshot the source before running TypeDoc so generation-only compatibility
   // fixes never mutate the working tree.
@@ -3111,6 +3312,7 @@ function copySourceSnapshot(sourceDir, tmpSourceDir) {
   });
   stripCoverageIgnoreComments(join(tmpSourceDir, 'src'));
   inheritFileCategories(join(tmpSourceDir, 'src'));
+  exposePublicOverloadSignatures(join(tmpSourceDir, 'src'));
 }
 
 function stripCoverageIgnoreComments(dir) {

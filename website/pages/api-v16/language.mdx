@@ -5418,6 +5418,8 @@ text; // => '{\n  hero {\n    name\n  }\n}'
 <div className="api-category-toc">
   <p>
     <strong>Functions:</strong><br />
+    <a href="/api-v16/language#visit">visit()</a>
+    <span aria-hidden="true">&middot;</span>
     <a href="/api-v16/language#visitinparallel">visitInParallel()</a>
     <span aria-hidden="true">&middot;</span>
     <a href="/api-v16/language#getenterleaveforkind">getEnterLeaveForKind()</a>
@@ -5439,6 +5441,334 @@ text; // => '{\n  hero {\n    name\n  }\n}'
 </div>
 
 ### Functions
+
+#### visit()
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 1</div>
+
+visit() will walk through an AST using a depth-first traversal, calling
+the visitor's enter function at each node in the traversal, and calling the
+leave function after visiting that node and all of its child nodes.
+
+By returning different values from the enter and leave functions, the
+behavior of the visitor can be altered, including skipping over a sub-tree of
+the AST (by returning false), editing the AST by returning a value or null
+to remove the value, or to stop the whole traversal by returning BREAK.
+
+When using visit() to edit an AST, the original AST will not be modified, and
+a new version of the AST with the changes applied will be returned from the
+visit function.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>N</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v16/language#astnode"]]} /></td>
+      <td></td>
+      <td>The root AST node type returned when visiting without reducing.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Signature:**
+
+<ApiSignature parts={[["name", "visit"], "\u003c", ["type", "N"], " ", ["keyword", "extends"], " ", ["link", "ASTNode", "/api-v16/language#astnode"], "\u003e(\n  ", ["parameter", "root"], ": ", ["type", "N"], ",\n  ", ["parameter", "visitor"], ": ", ["link", "ASTVisitor", "/api-v16/language#astvisitor"], ",\n  ", ["parameter", "visitorKeys"], "?: ", ["link", "ASTVisitorKeyMap", "/api-v16/language#astvisitorkeymap"], " = QueryDocumentKeys,\n): ", ["type", "N"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>root</td>
+      <td><ApiType parts={[["type", "N"]]} /></td>
+      <td></td>
+      <td>The AST node at which to start traversal.</td>
+    </tr>
+    <tr>
+      <td>visitor</td>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v16/language#astvisitor"]]} /></td>
+      <td></td>
+      <td>The visitor or reducer functions to call while traversing.</td>
+    </tr>
+    <tr>
+      <td>visitorKeys?</td>
+      <td><ApiType parts={[["link", "ASTVisitorKeyMap", "/api-v16/language#astvisitorkeymap"]]} /></td>
+      <td><ApiType parts={["QueryDocumentKeys"]} /></td>
+      <td>Optional map of child keys to visit for each AST node kind.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "N"]]} /></td>
+      <td>The original AST, an edited AST, or a reduced value depending on the visitor.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Return values control traversal: undefined makes no change, false skips
+// a subtree, BREAK stops traversal, null removes a node, and any other
+// value replaces the current node.
+import { Kind, parse, print, visit } from 'graphql/language';
+
+const document = parse('{ hero { name } }');
+const editedAST = visit(document, {
+  Field: (node) => {
+    if (node.name.value === 'hero') {
+      return {
+        ...node,
+        name: { kind: Kind.NAME, value: 'human' },
+      };
+    }
+  },
+});
+
+print(editedAST); // => '{\n  human {\n    name\n  }\n}'
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// A named visitor function runs when entering nodes of that kind.
+import { parse, visit } from 'graphql/language';
+
+const document = parse('{ hero { name } }');
+const fieldNames = [];
+
+visit(document, {
+  Field: (node) => {
+    fieldNames.push(node.name.value);
+  },
+});
+
+fieldNames; // => ['hero', 'name']
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 3</div>
+
+```ts
+// A named visitor object can provide separate enter and leave handlers for
+// nodes of that kind.
+import { parse, visit } from 'graphql/language';
+
+const document = parse('{ hero { name } }');
+const events = [];
+
+visit(document, {
+  Field: {
+    enter: (node) => {
+      events.push(`enter:${node.name.value}`);
+    },
+    leave: (node) => {
+      events.push(`leave:${node.name.value}`);
+    },
+  },
+});
+
+events; // => ['enter:hero', 'enter:name', 'leave:name', 'leave:hero']
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 4</div>
+
+```ts
+// Generic enter and leave handlers run for every node.
+import { parse, visit } from 'graphql/language';
+
+const document = parse('{ hero { name } }');
+let enterCount = 0;
+let leaveCount = 0;
+
+visit(document, {
+  enter: (node) => {
+    enterCount += 1;
+  },
+  leave: (node) => {
+    leaveCount += 1;
+  },
+});
+
+enterCount; // => leaveCount
+enterCount > 0; // => true
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 2</div>
+
+Traverses an AST with reducer callbacks and returns the reduced value.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>R</td>
+      <td></td>
+      <td></td>
+      <td>The value produced by reducer visitor callbacks.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Signature:**
+
+<ApiSignature parts={[["name", "visit"], "\u003c", ["type", "R"], "\u003e(\n  ", ["parameter", "root"], ": ", ["link", "ASTNode", "/api-v16/language#astnode"], ",\n  ", ["parameter", "visitor"], ": ", ["type", "ASTReducer"], "\u003c", ["type", "R"], "\u003e,\n  ", ["parameter", "visitorKeys"], "?: ", ["link", "ASTVisitorKeyMap", "/api-v16/language#astvisitorkeymap"], " = QueryDocumentKeys,\n): ", ["type", "R"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>root</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v16/language#astnode"]]} /></td>
+      <td></td>
+      <td>The AST node where traversal starts.</td>
+    </tr>
+    <tr>
+      <td>visitor</td>
+      <td><ApiType parts={[["type", "ASTReducer"], "\u003c", ["type", "R"], "\u003e"]} /></td>
+      <td></td>
+      <td>Reducer callbacks to invoke during traversal.</td>
+    </tr>
+    <tr>
+      <td>visitorKeys?</td>
+      <td><ApiType parts={[["link", "ASTVisitorKeyMap", "/api-v16/language#astvisitorkeymap"]]} /></td>
+      <td><ApiType parts={["QueryDocumentKeys"]} /></td>
+      <td>Optional mapping of child keys for each AST node kind.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "R"]]} /></td>
+      <td>The value produced by the reducer visitor.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+// A reducer visitor returns values from leave handlers to build a reduced
+// result instead of returning an edited AST.
+import { parse, visit } from 'graphql/language';
+
+const document = parse('{ hero { name } }');
+const printed = visit(document, {
+  Name: {
+    leave: (node) => {
+      return node.value;
+    },
+  },
+  Field: {
+    leave: (node) => {
+      return node.selectionSet == null
+        ? node.name
+        : `${node.name} { ${node.selectionSet} }`;
+    },
+  },
+  SelectionSet: {
+    leave: (node) => {
+      return node.selections.join(' ');
+    },
+  },
+  OperationDefinition: {
+    leave: (node) => {
+      return node.selectionSet;
+    },
+  },
+  Document: {
+    leave: (node) => {
+      return node.definitions.join('\n');
+    },
+  },
+});
+
+printed; // => 'hero { name }'
+```
+
+<hr className="api-item-divider" />
 
 #### visitInParallel()
 
