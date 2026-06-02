@@ -1040,7 +1040,7 @@ token; // => { kind: '{', value: undefined, line: 1, column: 1 }
       <td>Name node identifying this AST node.</td>
     </tr>
     <tr>
-      <td>variableDefinitions?</td>
+      <td>variableDefinitions? <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
       <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "VariableDefinitionNode", "/api-v16/language#variabledefinitionnode"], "[]"]} /></td>
       <td>Deprecated variable definitions declared by this legacy fragment<br />
 definition. This legacy fragment variable syntax will be removed in v17.<br />
@@ -2997,9 +2997,9 @@ complete experimental fragment-arguments feature.</td>
   </p>
   <p>
     <strong>Types:</strong><br />
-    <a href="/api-v16/language#directivelocationenum">DirectiveLocationEnum</a>
+    <a className="api-deprecated-link" href="/api-v16/language#directivelocationenum">DirectiveLocationEnum</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/language#kindenum">KindEnum</a>
+    <a className="api-deprecated-link" href="/api-v16/language#kindenum">KindEnum</a>
   </p>
 </div>
 
@@ -3431,7 +3431,7 @@ complete experimental fragment-arguments feature.</td>
 
 ### Types
 
-#### DirectiveLocationEnum <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+#### <span className="api-deprecated-title">DirectiveLocationEnum</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
 **Type alias.** Deprecated legacy alias for the enum type representing directive location
 values. This alias will be removed in v17. In v17, [`DirectiveLocation`](/api-v16/language#directivelocation) is
@@ -3442,7 +3442,7 @@ corresponding TypeScript type.
 
 <hr className="api-item-divider" />
 
-#### KindEnum <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+#### <span className="api-deprecated-title">KindEnum</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
 **Type alias.** Deprecated legacy alias for the enum type representing the possible kind
 values of AST nodes. This alias will be removed in v17. In v17, [`Kind`](/api-v16/language#kind) is
@@ -3464,7 +3464,7 @@ corresponding TypeScript type.
   </p>
   <p>
     <strong>Types:</strong><br />
-    <a href="/api-v16/language#tokenkindenum">TokenKindEnum</a>
+    <a className="api-deprecated-link" href="/api-v16/language#tokenkindenum">TokenKindEnum</a>
   </p>
 </div>
 
@@ -3778,7 +3778,7 @@ lexer emits.
 
 ### Types
 
-#### TokenKindEnum <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+#### <span className="api-deprecated-title">TokenKindEnum</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
 **Type alias.** Deprecated legacy alias for the enum type representing token kind values.
 This alias will be removed in v17. In v17, [`TokenKind`](/api-v16/language#tokenkind) is exported as the
@@ -4566,7 +4566,7 @@ CPU time and memory.<br />
 To prevent this you can set a maximum number of tokens allowed within a document.</td>
     </tr>
     <tr>
-      <td>allowLegacyFragmentVariables?</td>
+      <td>allowLegacyFragmentVariables? <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
       <td><ApiType parts={[["keyword", "boolean"]]} /></td>
       <td>Deprecated option that allows legacy fragment variable definitions to be<br />
 parsed. This legacy fragment variable syntax will be removed in v17. Move<br />
@@ -5422,7 +5422,7 @@ text; // => '{\n  hero {\n    name\n  }\n}'
     <span aria-hidden="true">&middot;</span>
     <a href="/api-v16/language#getenterleaveforkind">getEnterLeaveForKind()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/language#getvisitfn">getVisitFn()</a>
+    <a className="api-deprecated-link" href="/api-v16/language#getvisitfn">getVisitFn()</a>
   </p>
   <p>
     <strong>Constants:</strong><br />
@@ -5434,7 +5434,7 @@ text; // => '{\n  hero {\n    name\n  }\n}'
     <span aria-hidden="true">&middot;</span>
     <a href="/api-v16/language#astvisitfn">ASTVisitFn</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/language#astvisitorkeymap">ASTVisitorKeyMap</a>
+    <a className="api-deprecated-link" href="/api-v16/language#astvisitorkeymap">ASTVisitorKeyMap</a>
   </p>
 </div>
 
@@ -5582,7 +5582,7 @@ handlers.leave; // => undefined
 
 <hr className="api-item-divider" />
 
-#### getVisitFn() <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+#### <span className="api-deprecated-title">getVisitFn()</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
 Given a visitor instance, if it is leaving or not, and a node kind, return
 the function the visitor runtime should call. This deprecated compatibility
@@ -5710,7 +5710,7 @@ A value that can be returned from a visitor function to stop traversal.
 
 <hr className="api-item-divider" />
 
-#### ASTVisitorKeyMap <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+#### <span className="api-deprecated-title">ASTVisitorKeyMap</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
 **Type alias.** Deprecated visitor key map type retained for compatibility. Inline this
 mapped type at use sites because ASTVisitorKeyMap will be removed in v17.

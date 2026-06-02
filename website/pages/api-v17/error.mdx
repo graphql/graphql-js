@@ -124,7 +124,7 @@ represent nodes after the first node.</td>
 which correspond to this error.</td>
     </tr>
     <tr>
-      <td>originalError</td>
+      <td>originalError <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
       <td><ApiType parts={[["type", "Error"], " \u007c ", ["keyword", "undefined"]]} /></td>
       <td>Original error that caused this GraphQLError, if one exists.<br />
 Deprecated in favor of <code>{"cause"}</code> to better align with JavaScript standards.</td>
@@ -444,7 +444,7 @@ an object which can contain all the values you need.
       <td>Response path where this error occurred during execution.</td>
     </tr>
     <tr>
-      <td>originalError?</td>
+      <td>originalError? <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
       <td><ApiType parts={[["type", "Maybe"], "\u003c\n  ", ["type", "Error"], " & \u007b ", ["property", "extensions"], "?: ", ["keyword", "unknown"], " \u007d\n\u003e"]} /></td>
       <td>Original error that caused this GraphQLError, if one exists.<br />
 Deprecated in favor of <code>{"cause"}</code> to better align with JavaScript standards.</td>

@@ -339,15 +339,15 @@ assertEnumValueName('true'); // throws an error
     <span aria-hidden="true">&middot;</span>
     <a href="/api-v17/type#graphqlscalartypeextensions">GraphQLScalarTypeExtensions</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v17/type#graphqlscalarserializer">GraphQLScalarSerializer</a>
+    <a className="api-deprecated-link" href="/api-v17/type#graphqlscalarserializer">GraphQLScalarSerializer</a>
     <span aria-hidden="true">&middot;</span>
     <a href="/api-v17/type#graphqlscalaroutputvaluecoercer">GraphQLScalarOutputValueCoercer</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v17/type#graphqlscalarvalueparser">GraphQLScalarValueParser</a>
+    <a className="api-deprecated-link" href="/api-v17/type#graphqlscalarvalueparser">GraphQLScalarValueParser</a>
     <span aria-hidden="true">&middot;</span>
     <a href="/api-v17/type#graphqlscalarinputvaluecoercer">GraphQLScalarInputValueCoercer</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v17/type#graphqlscalarliteralparser">GraphQLScalarLiteralParser</a>
+    <a className="api-deprecated-link" href="/api-v17/type#graphqlscalarliteralparser">GraphQLScalarLiteralParser</a>
     <span aria-hidden="true">&middot;</span>
     <a href="/api-v17/type#graphqlscalarinputliteralcoercer">GraphQLScalarInputLiteralCoercer</a>
     <span aria-hidden="true">&middot;</span>
@@ -969,19 +969,19 @@ Creates a GraphQLScalarType instance.
       <td>URL identifying the behavior specified for this custom scalar.</td>
     </tr>
     <tr>
-      <td>serialize</td>
+      <td>serialize <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
       <td><ApiType parts={[["link", "GraphQLScalarSerializer", "/api-v17/type#graphqlscalarserializer"], "\u003c", ["type", "TExternal"], "\u003e"]} /></td>
       <td>Deprecated legacy serializer used to convert internal values for response<br />
 output. Use <code>{"coerceOutputValue()"}</code> instead.</td>
     </tr>
     <tr>
-      <td>parseValue</td>
+      <td>parseValue <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
       <td><ApiType parts={[["link", "GraphQLScalarValueParser", "/api-v17/type#graphqlscalarvalueparser"], "\u003c", ["type", "TInternal"], "\u003e"]} /></td>
       <td>Deprecated legacy parser used to convert externally provided input values.<br />
 Use <code>{"coerceInputValue()"}</code> instead.</td>
     </tr>
     <tr>
-      <td>parseLiteral</td>
+      <td>parseLiteral <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
       <td><ApiType parts={[["link", "GraphQLScalarLiteralParser", "/api-v17/type#graphqlscalarliteralparser"], "\u003c", ["type", "TInternal"], "\u003e"]} /></td>
       <td>Deprecated legacy parser used to convert externally provided input<br />
 literals. Use <code>{"replaceVariables()"}</code> and <code>{"coerceInputLiteral()"}</code> instead.</td>
@@ -2562,7 +2562,7 @@ Episode.getValue('JEDI'); // => undefined
 
 <hr className="api-subsection-divider" />
 
-##### serialize() <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+##### <span className="api-deprecated-title">serialize()</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
 Serializes a runtime enum value as a GraphQL enum name.
 
@@ -2704,7 +2704,7 @@ RGB.coerceOutputValue(3); // throws an error
 
 <hr className="api-subsection-divider" />
 
-##### parseValue() <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+##### <span className="api-deprecated-title">parseValue()</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
 Deprecated legacy enum parser for externally provided input values. Use
 `coerceInputValue()` instead.
@@ -2856,7 +2856,7 @@ RGB.coerceInputValue(2); // throws an error
 
 <hr className="api-subsection-divider" />
 
-##### parseLiteral() <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+##### <span className="api-deprecated-title">parseLiteral()</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
 Deprecated legacy enum parser for externally provided input literals. Use
 `coerceInputLiteral()` instead.
@@ -6932,7 +6932,7 @@ an object which can contain all the values you need.
 
 <hr className="api-item-divider" />
 
-#### GraphQLScalarSerializer <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+#### <span className="api-deprecated-title">GraphQLScalarSerializer</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
 **Type alias.** Deprecated function type that serializes a runtime value as a scalar output
 value. Use [`GraphQLScalarOutputValueCoercer`](/api-v17/type#graphqlscalaroutputvaluecoercer) instead.
@@ -6995,7 +6995,7 @@ value. Use [`GraphQLScalarOutputValueCoercer`](/api-v17/type#graphqlscalaroutput
 
 <hr className="api-item-divider" />
 
-#### GraphQLScalarValueParser <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+#### <span className="api-deprecated-title">GraphQLScalarValueParser</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
 **Type alias.** Deprecated function type that parses a runtime input value as a scalar input
 value. Use [`GraphQLScalarInputValueCoercer`](/api-v17/type#graphqlscalarinputvaluecoercer) instead.
@@ -7058,7 +7058,7 @@ value. Use [`GraphQLScalarInputValueCoercer`](/api-v17/type#graphqlscalarinputva
 
 <hr className="api-item-divider" />
 
-#### GraphQLScalarLiteralParser <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+#### <span className="api-deprecated-title">GraphQLScalarLiteralParser</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
 **Type alias.** Deprecated function type that parses a GraphQL value literal as a scalar
 input value. Use [`GraphQLScalarInputLiteralCoercer`](/api-v17/type#graphqlscalarinputliteralcoercer) instead.
@@ -7183,19 +7183,19 @@ input value. Use [`GraphQLScalarInputLiteralCoercer`](/api-v17/type#graphqlscala
       <td>URL identifying the behavior specified for this custom scalar.</td>
     </tr>
     <tr>
-      <td>serialize?</td>
+      <td>serialize? <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
       <td><ApiType parts={[["link", "GraphQLScalarSerializer", "/api-v17/type#graphqlscalarserializer"], "\u003c", ["type", "TExternal"], "\u003e"]} /></td>
       <td>Deprecated legacy serializer used to convert internal values for response<br />
 output. Use <code>{"coerceOutputValue()"}</code> instead.</td>
     </tr>
     <tr>
-      <td>parseValue?</td>
+      <td>parseValue? <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
       <td><ApiType parts={[["link", "GraphQLScalarValueParser", "/api-v17/type#graphqlscalarvalueparser"], "\u003c", ["type", "TInternal"], "\u003e"]} /></td>
       <td>Deprecated legacy parser used to convert externally provided input values.<br />
 Use <code>{"coerceInputValue()"}</code> instead.</td>
     </tr>
     <tr>
-      <td>parseLiteral?</td>
+      <td>parseLiteral? <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
       <td><ApiType parts={[["link", "GraphQLScalarLiteralParser", "/api-v17/type#graphqlscalarliteralparser"], "\u003c", ["type", "TInternal"], "\u003e"]} /></td>
       <td>Deprecated legacy parser used to convert externally provided input<br />
 literals. Use <code>{"replaceVariables()"}</code> and <code>{"coerceInputLiteral()"}</code> instead.</td>
@@ -7823,7 +7823,7 @@ an object which can contain all the values you need.
       <td>The GraphQL type reference or runtime type for this element.</td>
     </tr>
     <tr>
-      <td>defaultValue?</td>
+      <td>defaultValue? <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
       <td><ApiType parts={[["keyword", "unknown"]]} /></td>
       <td>Deprecated legacy default value for this argument. Use <code>{"default"}</code> instead.</td>
     </tr>
@@ -8164,7 +8164,7 @@ JSON.stringify(field); // => '"Query.greeting"'
       <td>The GraphQL type reference or runtime type for this element.</td>
     </tr>
     <tr>
-      <td>defaultValue</td>
+      <td>defaultValue <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
       <td><ApiType parts={[["keyword", "unknown"]]} /></td>
       <td>Deprecated legacy default value used when no explicit value is supplied.<br />
 Use <code>{"default"}</code> instead.</td>
@@ -9020,7 +9020,7 @@ an object which can contain all the values you need.
       <td>The GraphQL type reference or runtime type for this element.</td>
     </tr>
     <tr>
-      <td>defaultValue?</td>
+      <td>defaultValue? <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
       <td><ApiType parts={[["keyword", "unknown"]]} /></td>
       <td>Deprecated legacy default value for this input field. Use <code>{"default"}</code><br />
 instead.</td>
@@ -9096,7 +9096,7 @@ instead.</td>
       <td>The GraphQL type reference or runtime type for this element.</td>
     </tr>
     <tr>
-      <td>defaultValue</td>
+      <td>defaultValue <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
       <td><ApiType parts={[["keyword", "unknown"]]} /></td>
       <td>Deprecated legacy default value used when no explicit value is supplied.<br />
 Use <code>{"default"}</code> instead.</td>

@@ -826,15 +826,15 @@ fields; // => [{ name: 'greeting', parentType: 'Query', type: 'String' }]
 <div className="api-category-toc">
   <p>
     <strong>Functions:</strong><br />
-    <a href="/api-v16/utilities#assertvalidname">assertValidName()</a>
+    <a className="api-deprecated-link" href="/api-v16/utilities#assertvalidname">assertValidName()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#isvalidnameerror">isValidNameError()</a>
+    <a className="api-deprecated-link" href="/api-v16/utilities#isvalidnameerror">isValidNameError()</a>
   </p>
 </div>
 
 ### Functions
 
-#### assertValidName() <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+#### <span className="api-deprecated-title">assertValidName()</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
 Upholds the spec rules about naming. This deprecated helper is retained for
 backwards compatibility; call [`assertName`](/api-v16/type#assertname) instead because assertValidName
@@ -897,7 +897,7 @@ assertValidName('__typename'); // throws an error
 
 <hr className="api-item-divider" />
 
-#### isValidNameError() <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+#### <span className="api-deprecated-title">isValidNameError()</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
 Returns an Error if a name is invalid. This deprecated helper is retained for
 backwards compatibility; call [`assertName`](/api-v16/type#assertname) and catch the thrown GraphQLError
@@ -3738,7 +3738,7 @@ changes[0].description; // matches /EMPIRE was added/
     <strong>Functions:</strong><br />
     <a href="/api-v16/utilities#getoperationast">getOperationAST()</a>
     <span aria-hidden="true">&middot;</span>
-    <a href="/api-v16/utilities#getoperationroottype">getOperationRootType()</a>
+    <a className="api-deprecated-link" href="/api-v16/utilities#getoperationroottype">getOperationRootType()</a>
   </p>
 </div>
 
@@ -3816,7 +3816,7 @@ getOperationAST(document, 'Missing'); // => undefined
 
 <hr className="api-item-divider" />
 
-#### getOperationRootType() <span aria-label="Deprecated" className="api-tag" title="Deprecated">Deprecated</span>
+#### <span className="api-deprecated-title">getOperationRootType()</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
 Extracts the root type of the operation from the schema. This deprecated
 helper is retained for backwards compatibility; call
