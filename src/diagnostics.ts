@@ -2,12 +2,13 @@
  * TracingChannel integration.
  *
  * graphql-js publishes lifecycle events on a set of named tracing channels
- * that APM tools can subscribe to in order to observe parse, validate,
- * execute, subscribe, and resolver behavior, plus selected executor internals.
- * At module load time graphql-js resolves `node:diagnostics_channel` itself so
- * APMs do not need to interact with the graphql API to enable tracing. On
- * runtimes that do not expose `node:diagnostics_channel` (e.g., browsers) the
- * load silently no-ops and emission sites short-circuit.
+ * that Application performance monitoring (APM) tools can subscribe to in
+ * order to observe parse, validate, execute, subscribe, and resolver behavior,
+ * plus selected executor internals. At module load time graphql-js resolves
+ * `node:diagnostics_channel` itself so APMs do not need to interact with the
+ * graphql API to enable tracing. On runtimes that do not expose
+ * `node:diagnostics_channel` (e.g., browsers) the load silently no-ops and
+ * emission sites short-circuit.
  * @category Diagnostics
  */
 
@@ -118,7 +119,7 @@ export interface GraphQLExecuteContext {
   result?: ExecutionResult | ExperimentalIncrementalExecutionResults;
 }
 
-/** Context published on `graphql:execute:variableCoercion`. */
+/** Context published on `graphql:execute:rootSelectionSet`. */
 export interface GraphQLExecuteRootSelectionSetContext {
   /** Schema used for execution. */
   schema: GraphQLSchema;
@@ -229,7 +230,7 @@ export interface GraphQLChannelContextByName {
  * The collection of tracing channels graphql-js emits on. Application
  * performance monitoring (APM) tools subscribe to these by name on their own
  * `node:diagnostics_channel` import; both paths land on the same channel
- * instance because `tracingChannel(name)` is cached by name
+ * instance because `tracingChannel(name)` is cached by name.
  */
 export interface GraphQLChannels {
   /** Tracing channel for `graphql:execute`. */
