@@ -159,8 +159,8 @@ function validateImpl(
     hideSuggestions,
   );
 
-  // This uses a specialized visitor which runs multiple visitors in
-  // parallel, while maintaining the visitor skip and break API.
+  // This uses a specialized visitor which runs multiple visitors in parallel,
+  // while maintaining the visitor skip and break API.
   const visitor = visitInParallel(rules.map((rule) => rule(context)));
 
   // Visit the whole document with each instance of all provided rules.
@@ -180,9 +180,7 @@ function validateImpl(
   return errors;
 }
 
-/**
- * @internal
- */
+/** @internal */
 export function validateSDL(
   documentAST: DocumentNode,
   schemaToExtend?: Maybe<GraphQLSchema>,

@@ -774,7 +774,7 @@ function validateOneOfInputObjectField(
 function createInputObjectNonNullCircularRefsValidator(
   context: SchemaValidationContext,
 ): (inputObj: GraphQLInputObjectType) => void {
-  // Modified copy of algorithm from 'src/validation/rules/NoFragmentCycles.ts'.
+  // Modified copy of algorithm from 'src/validation/rules/NoFragmentCycles.js'.
   // Tracks already visited types to maintain O(N) and to ensure that cycles
   // are not redundantly reported.
   const visitedTypes = new Set<GraphQLInputObjectType>();
@@ -836,7 +836,7 @@ function createInputObjectNonNullCircularRefsValidator(
 function createInputObjectDefaultValueCircularRefsValidator(
   context: SchemaValidationContext,
 ): (inputObj: GraphQLInputObjectType) => void {
-  // Modified copy of algorithm from 'src/validation/rules/NoFragmentCycles.ts'.
+  // Modified copy of algorithm from 'src/validation/rules/NoFragmentCycles.js'.
   // Tracks already visited types to maintain O(N) and to ensure that cycles
   // are not redundantly reported.
   const visitedFields = Object.create(null);

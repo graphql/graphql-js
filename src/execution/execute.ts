@@ -154,6 +154,7 @@ function executeImpl(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   }
 
   const validatedExecutionArgs = validateExecutionArgs(args);
+
   // Return early errors if execution context failed.
   if (!('schema' in validatedExecutionArgs)) {
     return { errors: validatedExecutionArgs };
@@ -211,9 +212,10 @@ export function experimentalExecuteIncrementally(
 function experimentalExecuteIncrementallyImpl(
   args: ExecutionArgs,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
-  // If a valid execution context cannot be created due to incorrect
-  // arguments, a "Response" with only errors is returned.
+  // If a valid execution context cannot be created due to incorrect arguments,
+  // a "Response" with only errors is returned.
   const validatedExecutionArgs = validateExecutionArgs(args);
+
   // Return early errors if execution context failed.
   if (!('schema' in validatedExecutionArgs)) {
     return { errors: validatedExecutionArgs };
@@ -237,9 +239,10 @@ export function executeIgnoringIncremental(
 function executeIgnoringIncrementalImpl(
   args: ExecutionArgs,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
-  // If a valid execution context cannot be created due to incorrect
-  // arguments, a "Response" with only errors is returned.
+  // If a valid execution context cannot be created due to incorrect arguments,
+  // a "Response" with only errors is returned.
   const validatedExecutionArgs = validateExecutionArgs(args);
+
   // Return early errors if execution context failed.
   if (!('schema' in validatedExecutionArgs)) {
     return { errors: validatedExecutionArgs };
@@ -540,8 +543,8 @@ function subscribeImpl(
 ): PromiseOrValue<
   AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
 > {
-  // If a valid execution context cannot be created due to incorrect
-  // arguments, a "Response" with only errors is returned.
+  // If a valid execution context cannot be created due to incorrect arguments,
+  // a "Response" with only errors is returned.
   const validatedExecutionArgs = validateSubscriptionArgs(args);
 
   // Return early errors if execution context failed.
@@ -1016,6 +1019,8 @@ export function mapSourceToResponseEvent(
   sourceEventStream: AsyncIterable<unknown>,
   rootSelectionSetExecutor: RootSelectionSetExecutor = executeSubscriptionEvent,
 ): AsyncGenerator<ExecutionResult, void, void> {
+  // For each payload yielded from a subscription, map it over the normal
+  // GraphQL `execute` function, with `payload` as the rootValue.
   function mapFn(payload: unknown): PromiseOrValue<ExecutionResult> {
     const perEventExecutionArgs: ValidatedSubscriptionArgs = {
       ...validatedExecutionArgs,
