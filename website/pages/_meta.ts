@@ -11,6 +11,14 @@ const meta = {
         title: 'v16 to v17',
         href: '/upgrade-guides/v16-v17',
       },
+      'v15-v16': {
+        title: 'v15 to v16',
+        href: '/upgrade-guides/v15-v16',
+      },
+      'v14-v15': {
+        title: 'v14 to v15',
+        href: '/upgrade-guides/v14-v15',
+      },
     },
   },
   api: {

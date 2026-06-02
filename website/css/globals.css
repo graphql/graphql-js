@@ -129,6 +129,73 @@ div[id^='headlessui-menu-items'] {
   margin: 0 0.35rem;
 }
 
+.upgrade-guide-toc {
+  margin: 1rem 0 2rem;
+  padding: 1rem;
+  border: 1px solid rgb(229 231 235);
+  border-radius: 0.5rem;
+  background: rgb(249 250 251);
+}
+
+.dark .upgrade-guide-toc {
+  border-color: rgb(55 65 81);
+  background: rgb(17 24 39 / 0.35);
+}
+
+.upgrade-guide-toc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr));
+  gap: 0.75rem 1rem;
+}
+
+.upgrade-guide-toc-group {
+  display: grid;
+  align-content: start;
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 0.6rem 0.75rem;
+  border-left: 2px solid rgb(209 213 219);
+  border-radius: 0.375rem;
+  background: rgb(255 255 255 / 0.7);
+}
+
+.dark .upgrade-guide-toc-group {
+  border-left-color: rgb(75 85 99);
+  background: rgb(31 41 55 / 0.38);
+}
+
+.upgrade-guide-toc-title {
+  font-size: 0.875rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.upgrade-guide-toc-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.65rem;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+.upgrade-guide-toc a {
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.upgrade-guide-toc a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.upgrade-guide-toc-links a {
+  color: rgb(75 85 99);
+}
+
+.dark .upgrade-guide-toc-links a {
+  color: rgb(209 213 219);
+}
+
 .api-item-divider {
   margin: 2rem 0;
   border: 0;
