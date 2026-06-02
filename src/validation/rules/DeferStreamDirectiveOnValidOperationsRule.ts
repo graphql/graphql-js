@@ -22,6 +22,8 @@ import {
 import type { ValidationContext } from '../ValidationContext.ts';
 
 function ifArgumentCanBeFalse(node: DirectiveNode): boolean {
+  // @defer(if: false) / @stream(if: false)
+  // @defer(if: $shouldDefer) / @stream(if: $shouldStream)
   const ifArgument = node.arguments?.find((arg) => arg.name.value === 'if');
   if (!ifArgument) {
     return false;
@@ -37,11 +39,12 @@ function ifArgumentCanBeFalse(node: DirectiveNode): boolean {
 }
 
 function canBeSkippedViaSkipDirective(node: DirectiveNode): boolean {
-  // @skip
   // @skip(if: true)
+  // @skip(if: $shouldSkip)
   const ifArgument = node.arguments?.find((arg) => arg.name.value === 'if');
   if (!ifArgument) {
-    // no if argument on @skip, always skipped
+    // Missing `if` is reported by ProvidedRequiredArgumentsRule. For this rule,
+    // treat malformed @skip as potentially skipped to avoid duplicate errors.
     return true;
   }
 
@@ -60,18 +63,21 @@ function canBeSkippedViaSkipDirective(node: DirectiveNode): boolean {
 }
 
 function canBeSkippedViaIncludeDirective(node: DirectiveNode): boolean {
+  // @include(if: false)
+  // @include(if: $shouldInclude)
   const ifArgument = node.arguments?.find((arg) => arg.name.value === 'if');
   if (!ifArgument) {
-    // no if argument on include, always included
+    // Missing `if` is reported by ProvidedRequiredArgumentsRule. For this rule,
+    // treat malformed @include as not skippable.
     return false;
   }
   if (ifArgument?.value.kind === Kind.BOOLEAN) {
     // If argument is a Static boolean
     if (ifArgument.value.value) {
-      // always included
+      // Never skipped
       return false;
     }
-    // Never included
+    // Always skipped
     return true;
   }
 
@@ -82,7 +88,7 @@ function canBeSkippedViaIncludeDirective(node: DirectiveNode): boolean {
 /**
  * Defer And Stream Directives Are Used On Valid Operations
  *
- * A GraphQL document is only valid if defer directives are not used on root mutation or subscription types.
+ * A GraphQL document is only valid if defer and stream directives are not used on root mutation or subscription types.
  * @param context - The validation context used while checking the document.
  * @returns A visitor that reports validation errors for this rule.
  * @example

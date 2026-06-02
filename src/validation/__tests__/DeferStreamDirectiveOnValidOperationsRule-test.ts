@@ -432,7 +432,7 @@ describe('Validate: Defer/Stream directive on valid operations', () => {
         subscriptionField {
           message {
             ...myOtherFragment
-            ...myFragment
+            ...myFragment  # not visited twice
           }
         }
       }
