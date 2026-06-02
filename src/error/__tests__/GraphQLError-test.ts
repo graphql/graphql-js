@@ -1,4 +1,5 @@
 import { describe, it } from 'node:test';
+import { inspect as nodeInspect } from 'node:util';
 
 import { assert, expect } from 'chai';
 
@@ -64,10 +65,17 @@ describe('GraphQLError', () => {
   });
 
   it('does not copy over the stack of cause', () => {
-    const original = new Error('original');
+    function createOriginalError(): Error {
+      return new Error('original');
+    }
+    const original = createOriginalError();
     const e = new GraphQLError('msg', {
       cause: original,
     });
+    const originalStackFrame = original.stack
+      ?.split('\n')
+      .find((line) => line.includes('createOriginalError'));
+    assert(originalStackFrame != null);
 
     expect(e).to.include({
       name: 'GraphQLError',
@@ -75,6 +83,10 @@ describe('GraphQLError', () => {
       cause: original,
     });
     expect(e.stack).to.not.equal(original.stack);
+
+    const inspectedError = nodeInspect(e);
+    expect(inspectedError).to.include('[cause]: Error: original');
+    expect(inspectedError).to.include(originalStackFrame.trim());
   });
 
   it('uses the stack of an original error via originalError', () => {
