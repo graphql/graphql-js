@@ -125,6 +125,10 @@ div[id^='headlessui-menu-items'] {
   text-decoration-line: underline line-through;
 }
 
+.api-category-toc span[aria-hidden='true'] {
+  margin: 0 0.35rem;
+}
+
 .api-item-divider {
   margin: 2rem 0;
   border: 0;
