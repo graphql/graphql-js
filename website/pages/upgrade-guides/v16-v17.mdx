@@ -464,9 +464,11 @@ such as `graphql:parse`, `graphql:validate`, `graphql:execute`,
 execution code.
 
 The channels are resolved at module load and no-op on runtimes that do not
-provide `node:diagnostics_channel`. Import `graphql/diagnostics` for the
-channel objects and TypeScript context types for strongly typed subscribers.
-See the [Diagnostics API reference](/api-v17/graphql#category-diagnostics) for
+provide `node:diagnostics_channel`. GraphQL.js also exports TypeScript context
+types for strongly typed subscribers.
+
+See the [Tracing Channels guide](/docs/tracing-channels) for a full walkthrough,
+and the [Diagnostics API reference](/api-v17/graphql#category-diagnostics) for
 the channel names and payload shapes.
 
 ## Input Coercion, Defaults, and Custom Scalars
