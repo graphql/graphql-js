@@ -44,6 +44,7 @@ const meta = {
   'advanced-execution-pipelines': '',
   'abort-signals': '',
   'execution-hooks': '',
+  'tracing-channels': '',
   '-- 5': {
     type: 'separator',
     title: 'Advanced Guides',

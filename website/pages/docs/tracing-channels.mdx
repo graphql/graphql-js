@@ -1,0 +1,345 @@
+---
+title: Tracing with Diagnostics Channels
+sidebarTitle: Tracing Channels
+---
+
+import { Callout } from 'nextra/components';
+
+# Tracing with Diagnostics Channels
+
+<Callout type="info">
+  Tracing channels are available in GraphQL.js v17. They build on Node.js
+  [`diagnostics_channel`](https://nodejs.org/api/diagnostics_channel.html)
+  `TracingChannel` API.
+</Callout>
+
+GraphQL.js publishes lifecycle events on a set of named tracing channels that
+observability tools (APM agents, tracers, custom logging) can subscribe to in
+order to watch parsing, validation, variable coercion, execution, subscription
+setup, and individual resolver calls.
+
+Tracing is built on `node:diagnostics_channel`, so it is decoupled from the
+GraphQL.js API surface. You do not pass a tracer into `execute()` or wrap your
+schema. Instead, a subscriber attaches to a channel by name and GraphQL.js
+publishes to it whenever work happens.
+
+Typical uses include:
+
+- **Distributed tracing**: open a span per operation, root field, or resolver
+  and export it to your APM or tracing backend.
+- **Performance monitoring**: time resolvers to surface slow fields and N+1
+  access patterns.
+- **Metrics**: count operations and record latency or error rates per
+  operation, field, or stage.
+- **Error tracking**: capture parse, validation, coercion, and resolver errors
+  along with their payloads.
+- **Structured logging and auditing**: log each operation with its outcome.
+
+## Subscribing to a Channel
+
+GraphQL.js resolves `node:diagnostics_channel` itself at module load and
+publishes automatically, so there is no tracer to install or schema to wrap. A
+subscriber just imports `node:diagnostics_channel` and attaches to a channel by
+name:
+
+```js
+import dc from 'node:diagnostics_channel';
+
+const channel = dc.tracingChannel('graphql:execute');
+
+channel.subscribe({
+  start(message) {
+    // Runs when execution begins.
+  },
+  end(message) {
+    // Runs when the synchronous portion of execution finishes.
+  },
+  asyncStart(message) {
+    // Runs when an asynchronous execution continuation begins.
+  },
+  asyncEnd(message) {
+    // Runs when asynchronous execution settles.
+  },
+  error(message) {
+    // Runs when the traced call throws or rejects. `message.error` is the cause.
+  },
+});
+```
+
+On runtimes that do not expose `node:diagnostics_channel` (browsers, for
+example) the module load silently no-ops and every emission site
+short-circuits, so bundling GraphQL.js for the browser carries no tracing
+overhead and no error.
+
+## The Channels
+
+| Channel | Fires for | Context type |
+| --- | --- | --- |
+| `graphql:parse` | Each `parse()` call | [`GraphQLParseContext`](/api-v17/graphql#graphqlparsecontext) |
+| `graphql:validate` | Each `validate()` call | [`GraphQLValidateContext`](/api-v17/graphql#graphqlvalidatecontext) |
+| `graphql:execute` | Each `execute()` / `graphql()` operation | [`GraphQLExecuteContext`](/api-v17/graphql#graphqlexecutecontext) |
+| `graphql:execute:variableCoercion` | Variable coercion within an operation | [`GraphQLExecuteVariableCoercionContext`](/api-v17/graphql#graphqlexecutevariablecoercioncontext) |
+| `graphql:execute:rootSelectionSet` | Root selection set execution (also once per emitted subscription event) | [`GraphQLExecuteRootSelectionSetContext`](/api-v17/graphql#graphqlexecuterootselectionsetcontext) |
+| `graphql:subscribe` | Each `subscribe()` setup | [`GraphQLSubscribeContext`](/api-v17/graphql#graphqlsubscribecontext) |
+| `graphql:resolve` | Each field resolver invocation | [`GraphQLResolveContext`](/api-v17/graphql#graphqlresolvecontext) |
+
+<Callout type="warning">
+  `graphql:resolve` fires for every resolved field, including fields served by
+  the default resolver, so a single response can produce a large number of
+  events. There is no way to subscribe to a subset of fields, so keep the
+  handlers cheap and do any heavy work off the hot path.
+</Callout>
+
+### Context Payloads
+
+Every context object receives its channel-specific fields at `start`. When the
+traced call completes normally, the terminal event receives a `result`
+property. When the traced call throws or rejects, the `error` sub-channel fires
+and the terminal event receives an `error` property.
+
+Here, "traced call" means the JavaScript unit wrapped by the channel, not
+necessarily a GraphQL operation. It may be a parser call, validation call,
+execution call, variable coercion step, subscription setup, root selection set,
+or individual resolver call.
+
+See the [Diagnostics
+reference](/api-v17/graphql#category-diagnostics) for the complete set of
+fields on each context type. The context types are also exported from the
+`graphql` package if you want to type message payloads in TypeScript.
+
+### GraphQL Errors and Tracing Errors
+
+The tracing `error` lifecycle event is not the same thing as a `GraphQLError`
+returned by GraphQL.js. It fires when the traced call throws or rejects.
+Several GraphQL.js channels can instead complete normally and put
+`GraphQLError` values in the context `result`:
+
+- `graphql:validate` returns its validation error array as `result`.
+- `graphql:execute`, `graphql:execute:rootSelectionSet`, and
+  `graphql:subscribe` may return an `ExecutionResult` with `errors`.
+- `graphql:execute:variableCoercion` may return a coercion result with
+  `errors`.
+
+A resolver error is the main wrinkle. If a resolver throws or rejects, the
+`graphql:resolve` event for that resolver emits the tracing `error` lifecycle
+event. Execution may still catch that resolver error, format it as a GraphQL
+field error, and include it in the result reported by `graphql:execute`,
+`graphql:execute:rootSelectionSet`, or a subscription response event. The same
+underlying resolver failure can therefore appear both as `message.error` on
+`graphql:resolve` and as a formatted GraphQL error in an enclosing result.
+Likewise, a subscription source resolver that throws or rejects is reported as
+an error result on `graphql:subscribe`, not as the `graphql:subscribe` tracing
+`error` lifecycle event.
+
+## The Lifecycle Events
+
+Each tracing channel exposes five sub-channels. GraphQL.js publishes them in a
+fixed order depending on whether the traced call is synchronous or returns a
+promise.
+
+- **Synchronous success:** `start` → `end`
+- **Synchronous failure:** `start` → `error` → `end`
+- **Asynchronous success:** `start` → `end` → `asyncStart` → `asyncEnd`
+- **Asynchronous failure:** `start` → `end` → `asyncStart` → `error` → `asyncEnd`
+
+`start` and `end` bracket the synchronous portion of the call. When the
+traced call continues asynchronously, `asyncStart` fires as the async
+continuation begins and `asyncEnd` fires once it settles. When the traced call
+throws or rejects, `error` fires before the terminal `end`/`asyncEnd` and
+carries the cause on `message.error`.
+
+GraphQL.js runs the traced work inside the `start` channel's `runStores`, so an
+`AsyncLocalStorage` bound to that channel with `channel.start.bindStore()`
+stays entered across the full async lifecycle. This is what lets a tracer open
+a span in `start` and close it in `asyncEnd`.
+
+<Callout type="info">
+  A subscriber that attaches partway through an in-flight operation will not
+  see a matching `start`, and any `AsyncLocalStorage` context it expects will be
+  missing. Attach subscribers before the operations you want to observe.
+</Callout>
+
+<Callout type="warning">
+  For incremental delivery (`@defer` and `@stream`), `graphql:execute`
+  completes when the initial result is ready, not when the deferred and
+  streamed payloads finish. Those later payloads are not `graphql:execute`
+  events; the deferred fields still fire `graphql:resolve` as they execute. Do
+  not treat the `graphql:execute` duration as the full request lifetime for
+  incremental responses.
+</Callout>
+
+## How the Channels Fit Together
+
+A single request moves through the channels in a fixed order. `parse` and
+`validate` run first and independently, and they only fire if you call
+`parse()` and `validate()` (the `graphql()` harness does, but calling
+`execute()` with an already-parsed document fires only `execute` and below).
+Everything else nests inside `graphql:execute`.
+
+For this operation:
+
+```graphql
+query Q($id: ID!) {
+  user(id: $id) {
+    name
+    posts {
+      title
+    }
+  }
+}
+```
+
+the channels fire like this, shown by their full lifecycle:
+
+```text
+graphql:parse                          parse the document
+graphql:validate                       validate against the schema
+graphql:execute                        the operation
+├─ graphql:execute:variableCoercion    coerce $id
+└─ graphql:execute:rootSelectionSet    execute the root selection set
+   ├─ graphql:resolve   user
+   ├─ graphql:resolve   user.name
+   ├─ graphql:resolve   user.posts
+   ├─ graphql:resolve   user.posts.0.title
+   └─ graphql:resolve   user.posts.1.title
+```
+
+`variableCoercion` and `rootSelectionSet` nest inside `execute`, and a
+`graphql:resolve` event fires for every resolved field within
+`rootSelectionSet`. The resolve events are siblings, not nested in one another:
+`graphql:resolve` traces the resolver call itself, not the execution of that
+field's children. Reconstruct the field hierarchy from each event's
+`fieldPath`, shown above, not from channel nesting.
+
+Because each level follows the [lifecycle above](#the-lifecycle-events), the
+synchronous `end` of `execute` and `rootSelectionSet` fires before the
+resolvers settle; their full duration runs from `start` to `asyncEnd`.
+
+## Example: Timing Every Resolver
+
+```js
+import dc from 'node:diagnostics_channel';
+import { AsyncLocalStorage } from 'node:async_hooks';
+
+const store = new AsyncLocalStorage();
+const channel = dc.tracingChannel('graphql:resolve');
+const timings = [];
+
+// Scoped to a single resolver call: available in `end`/`asyncEnd`, cleaned up
+// afterward, and safe across concurrent resolvers.
+channel.start.bindStore(store, (message) => {
+  const record = {
+    field: `${message.parentType}.${message.fieldName}`,
+    startedAt: performance.now(),
+  };
+  timings.push(record);
+  return record;
+});
+
+channel.subscribe({
+  end(message) {
+    // Fires for both synchronous and asynchronous resolvers.
+    update(message.error);
+  },
+  asyncEnd(message) {
+    update(message.error);
+  },
+});
+
+function update(error) {
+  const record = store.getStore();
+  if (record === undefined) return;
+  record.duration = performance.now() - record.startedAt;
+  record.error = error;
+}
+```
+
+Binding the store to `start` lets GraphQL.js scope the store to each resolver
+call and clean it up afterward. `end` fires for every resolver, while
+`asyncEnd` fires only for resolvers that return a promise, and always after
+`end`. Recording the duration in place (rather than pushing a new entry from
+each handler) is what keeps the asynchronous path from being counted twice.
+
+## Tracing Subscriptions
+
+`graphql:subscribe` wraps the subscription *setup*: building the event source
+from the subscription's root field. The result on success is the response
+stream.
+
+Each event that flows through the subscription is executed separately, so
+`graphql:execute:rootSelectionSet` fires once **per emitted event**. The two
+channels describe different units of work:
+
+- `graphql:subscribe` fires **once per subscription**. Subscribe to it to
+  observe the subscription's lifetime and any failure setting it up.
+- `graphql:execute:rootSelectionSet` fires **once per delivered payload**.
+  Subscribe to it to time and trace the execution of each individual event.
+
+```js
+import dc from 'node:diagnostics_channel';
+
+// Subscription setup and overall lifetime.
+dc.tracingChannel('graphql:subscribe').subscribe({
+  start(message) {
+    openSubscriptionSpan(message.operationName);
+  },
+  end(message) {
+    // Synchronous setup finished. `result` may be the response stream or an
+    // ExecutionResult with setup errors.
+    if ('result' in message) {
+      closeSubscriptionSpan(message.result);
+    }
+  },
+  asyncEnd(message) {
+    // Asynchronous setup finished. `result` may be the response stream or an
+    // ExecutionResult with setup errors.
+    if ('result' in message) {
+      closeSubscriptionSpan(message.result);
+    }
+  },
+  error(message) {
+    // The subscribe call failed abruptly, e.g. an unexpected runtime error.
+    failSubscriptionSpan(message.error);
+  },
+  // ...
+});
+
+// Per-payload execution. `rootSelectionSet` also fires for queries and
+// mutations, so filter on the operation type.
+dc.tracingChannel('graphql:execute:rootSelectionSet').subscribe({
+  start(message) {
+    if (message.operationType === 'subscription') {
+      openEventSpan(message.operationName);
+    }
+  },
+  end(message) {
+    if (message.operationType === 'subscription' && 'result' in message) {
+      closeEventSpan(message.result);
+    }
+  },
+  asyncEnd(message) {
+    if (message.operationType === 'subscription' && 'result' in message) {
+      closeEventSpan(message.result);
+    }
+  },
+  // ...
+});
+```
+
+Listen to both when you want the subscribe event as the parent span and each
+delivered payload as a child; listen to just one when you only care about the
+subscription's lifetime or only about per-event execution.
+
+## Notes and Limitations
+
+- Tracing relies on `node:diagnostics_channel`. Node, Deno, and Bun expose it;
+  browsers do not, where tracing is a no-op.
+- `graphql:parse`, `graphql:validate`, and
+  `graphql:execute:variableCoercion` are sync-only channels. They only emit
+  `start`/`end`, plus `error` if the traced call throws.
+- Some GraphQL errors are returned in a context `result` rather than through
+  the tracing `error` lifecycle event. See
+  [GraphQL Errors and Tracing Errors](#graphql-errors-and-tracing-errors) for
+  the returned-error channels and the resolver-error wrinkle.
+- These channels report observability events. They are not hooks for altering
+  execution; mutating a context payload does not change GraphQL.js behavior.
