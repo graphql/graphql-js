@@ -18,7 +18,7 @@ jobs:
       environment: npm-branch
       artifact_name: npmDist
       target_branch: npm
-      commit_message: "Deploy ${{github.event.workflow_run.head_sha}} to 'npm' branch"
+      commit_message: "Deploy ${{ github.sha }} to 'npm' branch"
 
   deploy-to-deno-branch:
     name: Deploy to `deno` branch
@@ -31,4 +31,4 @@ jobs:
       environment: deno-branch
       artifact_name: denoDist
       target_branch: deno
-      commit_message: "Deploy ${{github.event.workflow_run.head_sha}} to 'deno' branch"
+      commit_message: "Deploy ${{ github.sha }} to 'deno' branch"
