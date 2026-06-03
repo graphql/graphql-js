@@ -10,7 +10,7 @@ jobs:
   deploy-to-npm-branch:
     name: Deploy to `npm` branch
     needs: ci
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/17.x.x'
     permissions:
       contents: write # for actions/checkout and to push branch
     uses: ./.github/workflows/deploy-artifact-as-branch.yml
@@ -23,7 +23,7 @@ jobs:
   deploy-to-deno-branch:
     name: Deploy to `deno` branch
     needs: ci
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/17.x.x'
     permissions:
       contents: write # for actions/checkout and to push branch
     uses: ./.github/workflows/deploy-artifact-as-branch.yml
