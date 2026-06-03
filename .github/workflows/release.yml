@@ -22,7 +22,7 @@ jobs:
       contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # Keep checkout fast: we should only need to scroll back a few
           # commits for release notes. If the release commit is older than
@@ -31,7 +31,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           cache: npm
           node-version-file: '.node-version'
@@ -67,7 +67,7 @@ jobs:
 
       - name: Upload npmDist package
         if: steps.release_metadata.outputs.should_publish == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: npmDist
           path: ./npmDist
@@ -78,14 +78,14 @@ jobs:
 
       - name: Upload denoDist package
         if: steps.release_metadata.outputs.should_publish == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: denoDist
           path: ./denoDist
 
       - name: Upload release notes
         if: steps.release_metadata.outputs.should_publish == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-notes
           path: ./release-notes.md
@@ -102,17 +102,17 @@ jobs:
       id-token: write # for npm trusted publishing via OIDC
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: '.node-version'
 
       - name: Download npmDist package
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: npmDist
           path: ./npmDist
@@ -138,7 +138,7 @@ jobs:
       id-token: write # for JSR trusted publishing via OIDC
     steps:
       - name: Download denoDist package
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: denoDist
           path: ./denoDist
@@ -163,12 +163,12 @@ jobs:
       contents: write # for creating GitHub release
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
 
       - name: Download release notes
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-notes
           path: ./artifacts

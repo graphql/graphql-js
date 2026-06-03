@@ -15,12 +15,12 @@ jobs:
       contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
 
       - name: Dependency review
-        uses: actions/dependency-review-action@v2
+        uses: actions/dependency-review-action@v5
 
   diff-npm-package:
     name: Diff content of NPM package
@@ -29,7 +29,7 @@ jobs:
       contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
 
@@ -39,7 +39,7 @@ jobs:
         run: 'git fetch --depth=1 origin "$BASE_SHA:refs/tags/BASE"'
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           cache: npm
           node-version-file: '.node-version'
@@ -51,7 +51,7 @@ jobs:
         run: 'npm run diff:npm BASE HEAD'
 
       - name: Upload generated report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: npm-dist-diff.html
           path: ./reports/npm-dist-diff.html
