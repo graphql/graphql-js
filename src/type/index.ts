@@ -207,7 +207,12 @@ export {
 } from './introspection.ts';
 
 // Validate GraphQL schema.
-export { validateSchema, assertValidSchema } from './validate.ts';
+export {
+  validateSchema,
+  assertValidSchema,
+  validateFullSchema,
+  assertValidFullSchema,
+} from './validate.ts';
 
 // Upholds the spec rules about naming.
 export { assertName, assertEnumValueName } from './assertName.ts';

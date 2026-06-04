@@ -208,6 +208,11 @@ export class GraphQLSchema {
    * @private
    */
   __validationErrors: Maybe<ReadonlyArray<GraphQLError>>;
+  /**
+   * Cached full schema validation errors, if validation has already run.
+   * @private
+   */
+  __fullSchemaValidationErrors: Maybe<ReadonlyArray<GraphQLError>>;
 
   private _queryType: Maybe<GraphQLObjectType>;
   private _mutationType: Maybe<GraphQLObjectType>;
@@ -323,6 +328,9 @@ export class GraphQLSchema {
     this.assumeValid = config.assumeValid ?? false;
     // Used as a cache for validateSchema().
     this.__validationErrors = config.assumeValid === true ? [] : undefined;
+    // Used as a cache for validateFullSchema().
+    this.__fullSchemaValidationErrors =
+      config.assumeValid === true ? [] : undefined;
 
     this.description = config.description;
     this.extensions = toObjMapWithSymbols(config.extensions);

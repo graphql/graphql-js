@@ -103,16 +103,79 @@ export function validateSchema(
   }
 
   // Validate the schema, producing a list of errors.
-  const context = new SchemaValidationContext(schema);
-  validateRootTypes(context);
-  validateDirectives(context);
-  validateTypes(context);
+  const errors = validateSchemaImpl(schema, false);
 
   // Persist the results of validation before returning to ensure validation
   // does not run multiple times for this schema.
-  const errors = context.getErrors();
   schema.__validationErrors = errors;
   return errors;
+}
+
+/**
+ * Implements the "Type Validation" sub-sections of the specification's
+ * "Type System" section, with the exception that names reserved by GraphQL
+ * introspection (those beginning with `__`) are permitted.
+ *
+ * Unlike `validateSchema`, this validates a "full schema": one that includes
+ * the built-in definitions and service capabilities added by an implementation,
+ * such as a schema reconstructed from an introspection result. Such a schema may
+ * legitimately contain reserved names, including ones added by a newer version
+ * of GraphQL than this library implements, so those names are not rejected.
+ *
+ * Validation runs synchronously, returning an array of encountered errors, or
+ * an empty array if no errors were encountered and the Schema is valid.
+ * @param schema - GraphQL full schema to use.
+ * @returns Schema validation errors, or an empty array when the schema is valid.
+ * @example
+ * ```ts
+ * import { validateFullSchema } from 'graphql/type';
+ * import { buildSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ *
+ *   enum __ErrorBehavior {
+ *     NULL
+ *     PROPAGATE
+ *     HALT
+ *   }
+ * `);
+ * const errors = validateFullSchema(schema);
+ *
+ * errors; // => []
+ * ```
+ */
+export function validateFullSchema(
+  schema: GraphQLSchema,
+): ReadonlyArray<GraphQLError> {
+  // First check to ensure the provided value is in fact a GraphQLSchema.
+  assertSchema(schema);
+
+  // If this Schema has already been validated, return the previous results.
+  if (schema.__fullSchemaValidationErrors) {
+    return schema.__fullSchemaValidationErrors;
+  }
+
+  // Validate the schema, producing a list of errors.
+  const errors = validateSchemaImpl(schema, true);
+
+  // Persist the results of validation before returning to ensure validation
+  // does not run multiple times for this schema.
+  schema.__fullSchemaValidationErrors = errors;
+  return errors;
+}
+
+function validateSchemaImpl(
+  schema: GraphQLSchema,
+  allowReservedNames: boolean,
+): ReadonlyArray<GraphQLError> {
+  const context = new SchemaValidationContext(schema, allowReservedNames);
+  validateRootTypes(context);
+  validateDirectives(context);
+  validateTypes(context);
+  return context.getErrors();
 }
 
 /**
@@ -140,13 +203,46 @@ export function assertValidSchema(schema: GraphQLSchema): void {
   }
 }
 
+/**
+ * Utility function which asserts a full schema is valid by throwing an error if
+ * it is invalid.
+ * @param schema - GraphQL full schema to use.
+ * @example
+ * ```ts
+ * import { assertValidFullSchema } from 'graphql/type';
+ * import { buildSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ *
+ *   enum __ErrorBehavior {
+ *     NULL
+ *     PROPAGATE
+ *     HALT
+ *   }
+ * `);
+ *
+ * assertValidFullSchema(schema); // does not throw
+ * ```
+ */
+export function assertValidFullSchema(schema: GraphQLSchema): void {
+  const errors = validateFullSchema(schema);
+  if (errors.length !== 0) {
+    throw new Error(errors.map((error) => error.message).join('\n\n'));
+  }
+}
+
 class SchemaValidationContext {
   readonly _errors: Array<GraphQLError>;
   readonly schema: GraphQLSchema;
+  readonly allowReservedNames: boolean;
 
-  constructor(schema: GraphQLSchema) {
+  constructor(schema: GraphQLSchema, allowReservedNames: boolean) {
     this._errors = [];
     this.schema = schema;
+    this.allowReservedNames = allowReservedNames;
   }
 
   reportError(
@@ -395,8 +491,9 @@ function validateName(
   context: SchemaValidationContext,
   node: { readonly name: string; readonly astNode: Maybe<ASTNode> },
 ): void {
-  // Ensure names are valid, however introspection types opt out.
-  if (node.name.startsWith('__')) {
+  // Ensure names are valid, however introspection types opt out, as do all
+  // reserved names when validating a full schema.
+  if (!context.allowReservedNames && node.name.startsWith('__')) {
     context.reportError(
       `Name "${node.name}" must not begin with "__", which is reserved by GraphQL introspection.`,
       node.astNode,

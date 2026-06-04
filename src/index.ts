@@ -172,6 +172,8 @@ export {
   // Validate GraphQL schema.
   validateSchema,
   assertValidSchema,
+  validateFullSchema,
+  assertValidFullSchema,
   // Upholds the spec rules about naming.
   assertName,
   assertEnumValueName,
