@@ -210,8 +210,8 @@ export {
 export {
   validateSchema,
   assertValidSchema,
-  validateFullSchema,
-  assertValidFullSchema,
+  experimentalValidateFullSchema,
+  experimentalAssertValidFullSchema,
 } from './validate.ts';
 
 // Upholds the spec rules about naming.

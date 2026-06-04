@@ -41,9 +41,9 @@ import { assertDirective, GraphQLDirective } from '../directives.ts';
 import { GraphQLInt, GraphQLString } from '../scalars.ts';
 import { GraphQLSchema } from '../schema.ts';
 import {
-  assertValidFullSchema,
   assertValidSchema,
-  validateFullSchema,
+  experimentalAssertValidFullSchema,
+  experimentalValidateFullSchema,
   validateSchema,
 } from '../validate.ts';
 
@@ -3433,8 +3433,8 @@ describe('Type System: A full schema may contain reserved names', () => {
       },
     ]);
 
-    // validateFullSchema permits it.
-    expectJSON(validateFullSchema(schema)).toDeepEqual([]);
+    // experimentalValidateFullSchema permits it.
+    expectJSON(experimentalValidateFullSchema(schema)).toDeepEqual([]);
   });
 
   it('accepts reserved names on types, fields, args, enum values and input fields', () => {
@@ -3453,7 +3453,7 @@ describe('Type System: A full schema may contain reserved names', () => {
     );
 
     expect(validateSchema(schema)).to.not.deep.equal([]);
-    expectJSON(validateFullSchema(schema)).toDeepEqual([]);
+    expectJSON(experimentalValidateFullSchema(schema)).toDeepEqual([]);
   });
 
   it('still reports non-name errors when validating a full schema', () => {
@@ -3467,7 +3467,7 @@ describe('Type System: A full schema may contain reserved names', () => {
       }
     `);
 
-    expectJSON(validateFullSchema(schema)).toDeepEqual([
+    expectJSON(experimentalValidateFullSchema(schema)).toDeepEqual([
       {
         message: 'Query root type must be provided.',
       },
@@ -3491,18 +3491,18 @@ describe('Type System: A full schema may contain reserved names', () => {
 
     // Populate the regular cache first, then the full schema cache.
     const regularErrors = validateSchema(schema);
-    const fullErrors = validateFullSchema(schema);
+    const fullErrors = experimentalValidateFullSchema(schema);
 
     expect(regularErrors).to.have.lengthOf(1);
     expect(fullErrors).to.deep.equal([]);
 
     // Repeated calls return the cached results for each mode.
     expect(validateSchema(schema)).to.equal(regularErrors);
-    expect(validateFullSchema(schema)).to.equal(fullErrors);
+    expect(experimentalValidateFullSchema(schema)).to.equal(fullErrors);
   });
 });
 
-describe('assertValidFullSchema', () => {
+describe('experimentalAssertValidFullSchema', () => {
   it('does not throw on a full schema containing reserved names', () => {
     const schema = buildSchema(`
       type Query {
@@ -3515,12 +3515,12 @@ describe('assertValidFullSchema', () => {
         HALT
       }
     `);
-    expect(() => assertValidFullSchema(schema)).to.not.throw();
+    expect(() => experimentalAssertValidFullSchema(schema)).to.not.throw();
   });
 
   it('combines multiple errors', () => {
     const schema = buildSchema('type SomeType');
-    expect(() => assertValidFullSchema(schema)).to.throw(dedent`
+    expect(() => experimentalAssertValidFullSchema(schema)).to.throw(dedent`
       Query root type must be provided.
 
       Type SomeType must define one or more fields.`);

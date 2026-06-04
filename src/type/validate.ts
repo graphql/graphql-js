@@ -122,13 +122,17 @@ export function validateSchema(
  * legitimately contain reserved names, including ones added by a newer version
  * of GraphQL than this library implements, so those names are not rejected.
  *
+ * Note: This API is experimental and may change or be removed in a future
+ * version while the behavior and test coverage for full schemas converge.
+ *
  * Validation runs synchronously, returning an array of encountered errors, or
  * an empty array if no errors were encountered and the Schema is valid.
  * @param schema - GraphQL full schema to use.
  * @returns Schema validation errors, or an empty array when the schema is valid.
+ * @experimental
  * @example
  * ```ts
- * import { validateFullSchema } from 'graphql/type';
+ * import { experimentalValidateFullSchema } from 'graphql/type';
  * import { buildSchema } from 'graphql/utilities';
  *
  * const schema = buildSchema(`
@@ -142,12 +146,12 @@ export function validateSchema(
  *     HALT
  *   }
  * `);
- * const errors = validateFullSchema(schema);
+ * const errors = experimentalValidateFullSchema(schema);
  *
  * errors; // => []
  * ```
  */
-export function validateFullSchema(
+export function experimentalValidateFullSchema(
   schema: GraphQLSchema,
 ): ReadonlyArray<GraphQLError> {
   // First check to ensure the provided value is in fact a GraphQLSchema.
@@ -206,10 +210,14 @@ export function assertValidSchema(schema: GraphQLSchema): void {
 /**
  * Utility function which asserts a full schema is valid by throwing an error if
  * it is invalid.
+ *
+ * Note: This API is experimental and may change or be removed in a future
+ * version while the behavior and test coverage for full schemas converge.
  * @param schema - GraphQL full schema to use.
+ * @experimental
  * @example
  * ```ts
- * import { assertValidFullSchema } from 'graphql/type';
+ * import { experimentalAssertValidFullSchema } from 'graphql/type';
  * import { buildSchema } from 'graphql/utilities';
  *
  * const schema = buildSchema(`
@@ -224,11 +232,11 @@ export function assertValidSchema(schema: GraphQLSchema): void {
  *   }
  * `);
  *
- * assertValidFullSchema(schema); // does not throw
+ * experimentalAssertValidFullSchema(schema); // does not throw
  * ```
  */
-export function assertValidFullSchema(schema: GraphQLSchema): void {
-  const errors = validateFullSchema(schema);
+export function experimentalAssertValidFullSchema(schema: GraphQLSchema): void {
+  const errors = experimentalValidateFullSchema(schema);
   if (errors.length !== 0) {
     throw new Error(errors.map((error) => error.message).join('\n\n'));
   }
