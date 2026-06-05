@@ -28,6 +28,7 @@ import type { ExecutionArgs } from '../ExecutionArgs.ts';
 import type { ExecutionResult } from '../Executor.ts';
 
 import {
+  COMPARISON_COUNT,
   createSourceEventStream,
   executeSubscriptionEvent,
   mapSourceToResponseEvent,
@@ -537,8 +538,7 @@ describe('Subscription Initialization Phase', () => {
       done: true,
       value: undefined,
     });
-    // Doubled counts reflect original and compiled execution.
-    expect(count).to.equal(2);
+    expect(count).to.equal(COMPARISON_COUNT);
   });
 
   it('executes subscription events directly', () => {
@@ -597,8 +597,7 @@ describe('Subscription Initialization Phase', () => {
     });
     assert(isAsyncIterable(subscription));
 
-    // Doubled counts reflect original and compiled execution.
-    expect(fooSpy.callCount).to.equal(2);
+    expect(fooSpy.callCount).to.equal(COMPARISON_COUNT);
     expect(barSpy.callCount).to.equal(0);
 
     expect(await subscription.next()).to.have.property('done', false);

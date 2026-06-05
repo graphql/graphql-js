@@ -23,6 +23,7 @@ import { GraphQLID, GraphQLString } from '../../../type/scalars.ts';
 import { GraphQLSchema } from '../../../type/schema.ts';
 
 import {
+  COMPARISON_COUNT,
   completeDirectly,
   completeExecution,
   executeIncrementally,
@@ -2297,8 +2298,7 @@ describe('Execute: stream directive', () => {
     const result3 = await iterator.next();
     expectJSON(result3).toDeepEqual({ done: true, value: undefined });
 
-    // Doubled counts reflect original and compiled execution.
-    expect(returnCallCount).to.equal(2);
+    expect(returnCallCount).to.equal(COMPARISON_COUNT);
   });
   it('Handles promises returned by completeValue after initialCount is reached', async () => {
     const document = parse(`
@@ -2907,8 +2907,7 @@ describe('Execute: stream directive', () => {
       value: undefined,
     });
     await returnPromise;
-    // Doubled counts reflect original and compiled execution.
-    assert(returnSpy.callCount === 2);
+    assert(returnSpy.callCount === COMPARISON_COUNT);
   });
   it('Awaits stream source async iterable return before iterator return settles', async () => {
     const { promise: returnCleanup, resolve: resolveReturnCleanup } =
@@ -2972,8 +2971,7 @@ describe('Execute: stream directive', () => {
     );
 
     await resolveOnNextTick();
-    // Doubled counts reflect original and compiled execution.
-    expect(returnSpy.callCount).to.equal(2);
+    expect(returnSpy.callCount).to.equal(COMPARISON_COUNT);
     expect(returnSettled).to.equal(false);
 
     resolveReturnCleanup();
@@ -3107,8 +3105,7 @@ describe('Execute: stream directive', () => {
       value: undefined,
     });
 
-    // Doubled counts reflect original and compiled execution.
-    assert(returnSpy.callCount === 2);
+    assert(returnSpy.callCount === COMPARISON_COUNT);
   });
   it('Returns underlying async iterables when resource is disposed before source completion', async () => {
     const iterable = {
@@ -3159,8 +3156,7 @@ describe('Execute: stream directive', () => {
       },
     );
 
-    // Doubled counts reflect original and compiled execution.
-    assert(returnSpy.callCount === 2);
+    assert(returnSpy.callCount === COMPARISON_COUNT);
   });
 
   it('Does not return underlying async iterables when resource is disposed after source completion', async () => {
@@ -3686,8 +3682,7 @@ describe('Execute: stream directive (cancellation)', () => {
     await secondNextStarted;
     await expectPromise(iterator.return()).toResolve();
     await expectPromise(nextPromise).toResolve();
-    // Doubled counts reflect original and compiled execution.
-    expect(sourceReturnSpy.callCount).to.equal(2);
+    expect(sourceReturnSpy.callCount).to.equal(COMPARISON_COUNT);
 
     const todo = {
       id: 'todo',
@@ -3875,8 +3870,7 @@ describe('Execute: stream directive (cancellation)', () => {
     abortController.abort();
     await resolveOnNextTick();
 
-    // Doubled counts reflect original and compiled execution.
-    expect(sourceReturnSpy.callCount).to.equal(2);
+    expect(sourceReturnSpy.callCount).to.equal(COMPARISON_COUNT);
     await expectPromise(resultPromise).toRejectWith(
       'This operation was aborted',
     );

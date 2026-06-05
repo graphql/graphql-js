@@ -13,22 +13,72 @@ import {
 } from '../../__testUtils__/expectMatchingValues.ts';
 import { createReplayableAsyncIterablePair } from '../../__testUtils__/replayableIterables.ts';
 
+import { inspect } from '../../jsutils/inspect.ts';
 import { isAsyncIterable } from '../../jsutils/isAsyncIterable.ts';
-import { isPromise } from '../../jsutils/isPromise.ts';
+import { isIterableObject } from '../../jsutils/isIterableObject.ts';
+import { isObjectLike } from '../../jsutils/isObjectLike.ts';
+import { isPromise, isPromiseLike } from '../../jsutils/isPromise.ts';
+import { pathToArray } from '../../jsutils/Path.ts';
+import { printPathArray } from '../../jsutils/printPathArray.ts';
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 
-import type { GraphQLError } from '../../error/GraphQLError.ts';
+import { ensureGraphQLError } from '../../error/ensureGraphQLError.ts';
+import { GraphQLError } from '../../error/GraphQLError.ts';
+import { locatedError } from '../../error/locatedError.ts';
 
 import type { VariableDefinitionNode } from '../../language/ast.ts';
+import { parse } from '../../language/parser.ts';
 
+import {
+  GraphQLNonNull,
+  isAbstractType,
+  isLeafType,
+  isListType,
+  isNonNullType,
+  isObjectType,
+} from '../../type/definition.ts';
+import {
+  SchemaMetaFieldDef,
+  TypeMetaFieldDef,
+  TypeNameMetaFieldDef,
+} from '../../type/introspection.ts';
+import {
+  GraphQLBoolean,
+  GraphQLFloat,
+  GraphQLID,
+  GraphQLInt,
+  GraphQLString,
+} from '../../type/scalars.ts';
 import type { GraphQLSchema } from '../../type/schema.ts';
+import { validateDefaultInput } from '../../type/validate.ts';
 
+import { validateInputValue } from '../../utilities/validateInputValue.ts';
+
+import { cancellablePromise } from '../cancellablePromise.ts';
+import { collectIteratorPromises } from '../collectIteratorPromises.ts';
+import { compileArgumentValues } from '../compile/compileArgumentValues.ts';
+import { compileCollectFields } from '../compile/compileCollectFields.ts';
+import {
+  CompiledExecutionRunner,
+  CompiledExecutor,
+} from '../compile/CompiledExecutor.ts';
+import {
+  compileExecutionState,
+  isExecutionErrors,
+} from '../compile/compileExecutionState.ts';
+import {
+  compileFieldExecutionPlan,
+  compileFieldResolver,
+} from '../compile/compileFieldExecutionPlan.ts';
 import { compileVariableValues } from '../compile/compileVariableValues.ts';
+import { getCompiledArgumentValues } from '../compile/getCompiledArgumentValues.ts';
 import { getCompiledVariableValues } from '../compile/getCompiledVariableValues.ts';
 import { compileExecution, compileSubscription } from '../compile/index.ts';
-import type { ExecutionArgs } from '../execute.ts';
+import { createSharedExecutionContext } from '../createSharedExecutionContext.ts';
 import {
   createSourceEventStream as originalCreateSourceEventStream,
+  defaultFieldResolver,
+  defaultTypeResolver,
   execute as originalExecute,
   executeIgnoringIncremental as originalExecuteIgnoringIncremental,
   executeSubscriptionEvent as originalExecuteSubscriptionEvent,
@@ -38,14 +88,21 @@ import {
   subscribe as originalSubscribe,
   validateSubscriptionArgs as originalValidateSubscriptionArgs,
 } from '../execute.ts';
-import type { ValidatedSubscriptionArgs } from '../ExecutionArgs.ts';
+import type {
+  ExecutionArgs,
+  ValidatedSubscriptionArgs,
+} from '../ExecutionArgs.ts';
+import { EMPTY_VARIABLE_VALUES } from '../ExecutionArgs.ts';
 import type { ExecutionResult } from '../Executor.ts';
+import { generateExecution, generateSubscription } from '../generate/index.ts';
 import type {
   ExperimentalIncrementalExecutionResults,
   InitialIncrementalExecutionResult,
   SubsequentIncrementalExecutionResult,
 } from '../incremental/IncrementalExecutor.ts';
 import { legacyExecuteIncrementally } from '../legacyIncremental/legacyExecuteIncrementally.ts';
+import { mapAsyncIterable } from '../mapAsyncIterable.ts';
+import { returnIteratorCatchingErrors } from '../returnIteratorCatchingErrors.ts';
 import type { VariableValuesOrErrors } from '../values.ts';
 import { getVariableValues as originalGetVariableValues } from '../values.ts';
 
@@ -81,12 +138,16 @@ const subscriptionExecutionArgs = new WeakMap<
   ExecutionArgs
 >();
 
+// Number of implementations compared by these test helpers.
+export const COMPARISON_COUNT = 3;
+
 export function execute(
   args: ExecutionArgsInput,
 ): PromiseOrValue<ExecutionResult> {
   return expectMatchingExecutionResults([
     () => originalExecute(getExecutionArgs(args)),
     () => executeCompiled(getExecutionArgs(args), 'execute'),
+    () => executeGenerated(getExecutionArgs(args), 'execute'),
   ]);
 }
 
@@ -94,6 +155,7 @@ export function executeSync(args: ExecutionArgsInput): ExecutionResult {
   return expectMatchingExecutionResults([
     () => originalExecuteSync(getExecutionArgs(args)),
     () => executeCompiled(getExecutionArgs(args), 'execute'),
+    () => executeGenerated(getExecutionArgs(args), 'execute'),
   ]) as ExecutionResult;
 }
 
@@ -103,11 +165,19 @@ export function executeWithAllMethods(
   return expectMatchingExecutionResults([
     () => originalExecute(getExecutionArgs(args)),
     () => executeCompiled(getExecutionArgs(args), 'execute'),
+    () => executeGenerated(getExecutionArgs(args), 'execute'),
     () => originalExecuteIgnoringIncremental(getExecutionArgs(args)),
     () => executeCompiled(getExecutionArgs(args), 'executeIgnoringIncremental'),
+    () =>
+      executeGenerated(getExecutionArgs(args), 'executeIgnoringIncremental'),
     () => originalExperimentalExecuteIncrementally(getExecutionArgs(args)),
     () =>
       executeCompiled(
+        getExecutionArgs(args),
+        'experimentalExecuteIncrementally',
+      ),
+    () =>
+      executeGenerated(
         getExecutionArgs(args),
         'experimentalExecuteIncrementally',
       ),
@@ -121,11 +191,19 @@ export function executeSyncWithAllMethods(
   return expectMatchingExecutionResults([
     () => originalExecuteSync(getExecutionArgs(args)),
     () => executeCompiled(getExecutionArgs(args), 'execute'),
+    () => executeGenerated(getExecutionArgs(args), 'execute'),
     () => originalExecuteIgnoringIncremental(getExecutionArgs(args)),
     () => executeCompiled(getExecutionArgs(args), 'executeIgnoringIncremental'),
+    () =>
+      executeGenerated(getExecutionArgs(args), 'executeIgnoringIncremental'),
     () => originalExperimentalExecuteIncrementally(getExecutionArgs(args)),
     () =>
       executeCompiled(
+        getExecutionArgs(args),
+        'experimentalExecuteIncrementally',
+      ),
+    () =>
+      executeGenerated(
         getExecutionArgs(args),
         'experimentalExecuteIncrementally',
       ),
@@ -155,6 +233,7 @@ export function subscribe(
         return { errors: [error] } as ExecutionResult;
       }
     },
+    () => subscribeGenerated(getExecutionArgs(args)),
   ]);
 }
 
@@ -184,6 +263,18 @@ export function createSourceEventStream(
           )
         : { errors: compiledSubscription };
     },
+    () => {
+      const subscriptionArgs = getSubscriptionExecutionArgs(
+        validatedSubscriptionArgs,
+      );
+      const generatedSubscription =
+        createGeneratedSubscription(subscriptionArgs);
+      return 'createSourceEventStream' in generatedSubscription
+        ? generatedSubscription.createSourceEventStream(
+            validatedSubscriptionArgs,
+          )
+        : { errors: generatedSubscription };
+    },
   ]) as PromiseOrValue<SourceEventStreamResult>;
 }
 
@@ -199,6 +290,13 @@ export function executeSubscriptionEvent(
       return 'executeSubscriptionEvent' in compiledSubscription
         ? compiledSubscription.executeSubscriptionEvent(args)
         : { errors: compiledSubscription };
+    },
+    () => {
+      const generatedSubscription =
+        createGeneratedSubscription(subscriptionArgs);
+      return 'executeSubscriptionEvent' in generatedSubscription
+        ? generatedSubscription.executeSubscriptionEvent(args)
+        : { errors: generatedSubscription };
     },
   ]);
 }
@@ -238,19 +336,35 @@ export function mapSourceToResponseEvent(
           wrappedRootSelectionSetExecutor,
         )
       : { errors: compiledSubscription };
+  const generatedSubscription = createGeneratedSubscription(subscriptionArgs);
+  const generatedResult =
+    'mapSourceToResponseEvent' in generatedSubscription
+      ? generatedSubscription.mapSourceToResponseEvent(
+          validatedSubscriptionArgs,
+          replaySourceEventStream,
+          wrappedRootSelectionSetExecutor,
+        )
+      : { errors: generatedSubscription };
 
   if (!isAsyncIterable(result)) {
     assert(!isAsyncIterable(compiledResult));
+    assert(!isAsyncIterable(generatedResult));
     const comparedResult = expectMatchingExecutionResults([
       () => result,
       () => compiledResult,
+      () => generatedResult,
     ]);
     assert(!isPromise(comparedResult));
     return comparedResult;
   }
 
   assert(isAsyncIterable(compiledResult));
-  return expectMatchingAsyncIterables([result, compiledResult]);
+  assert(isAsyncIterable(generatedResult));
+  return expectMatchingAsyncIterables([
+    result,
+    compiledResult,
+    generatedResult,
+  ]);
 }
 
 function setSubscriptionExecutionArgs(
@@ -281,34 +395,40 @@ export function experimentalExecuteIncrementally(
     getExecutionArgs(args),
     'experimentalExecuteIncrementally',
   );
+  const generatedResult = executeGenerated(
+    getExecutionArgs(args),
+    'experimentalExecuteIncrementally',
+  );
+  const results = [result, compiledResult, generatedResult];
 
-  if (isPromise(result) || isPromise(compiledResult)) {
-    return Promise.allSettled([
-      Promise.resolve(result),
-      Promise.resolve(compiledResult),
-    ]).then(([settledResult, settledCompiledResult]) => {
-      const resultOutcome: MatchingOutcome<IncrementalExecutionResult> =
-        settledResult.status === 'fulfilled'
-          ? { kind: 'value', value: settledResult.value }
-          : { kind: 'error', error: settledResult.reason };
-      const compiledResultOutcome: MatchingOutcome<IncrementalExecutionResult> =
-        settledCompiledResult.status === 'fulfilled'
-          ? { kind: 'value', value: settledCompiledResult.value }
-          : { kind: 'error', error: settledCompiledResult.reason };
-      if (
-        resultOutcome.kind === 'error' ||
-        compiledResultOutcome.kind === 'error'
-      ) {
-        return expectMatchingOutcomes([resultOutcome, compiledResultOutcome]);
+  if (results.some(isPromise)) {
+    return Promise.allSettled(
+      results.map((item) => Promise.resolve(item)),
+    ).then((settledResults) => {
+      const outcomes: Array<MatchingOutcome<IncrementalExecutionResult>> =
+        settledResults.map((settledResult) =>
+          settledResult.status === 'fulfilled'
+            ? { kind: 'value', value: settledResult.value }
+            : { kind: 'error', error: settledResult.reason },
+        );
+      if (outcomes.some((outcome) => outcome.kind === 'error')) {
+        return expectMatchingOutcomes(outcomes);
       }
-      return compareIncrementalExecutionResult(
-        resultOutcome.value,
-        compiledResultOutcome.value,
+      return compareIncrementalExecutionResults(
+        outcomes.map((outcome) => {
+          assert(outcome.kind === 'value');
+          return outcome.value;
+        }),
       );
     });
   }
 
-  return compareIncrementalExecutionResult(result, compiledResult);
+  return compareIncrementalExecutionResults(
+    results.map((item) => {
+      assert(!isPromise(item));
+      return item;
+    }),
+  );
 }
 
 export function executeIncrementally(
@@ -455,6 +575,298 @@ function executeCompiled(
   return { errors: compiledExecution };
 }
 
+function executeGenerated(
+  args: ExecutionArgs,
+  method: CompiledExecutionMethod,
+): PromiseOrValue<IncrementalExecutionResult> {
+  const generatedExecutionSource = generateExecution(args);
+  if (typeof generatedExecutionSource !== 'string') {
+    if (isStaticGenerationBoundaryErrors(generatedExecutionSource)) {
+      return executeCompiled(args, method);
+    }
+    return { errors: generatedExecutionSource };
+  }
+
+  const createCompiledExecution = getGeneratedExecutionFactory(
+    generatedExecutionSource,
+  );
+  const generatedExecution = createCompiledExecution(args);
+  if ('execute' in generatedExecution) {
+    return generatedExecution[method](args);
+  }
+  return { errors: generatedExecution };
+}
+
+function isStaticGenerationBoundaryErrors(
+  errors: ReadonlyArray<unknown>,
+): boolean {
+  return (
+    errors.length === 1 &&
+    errors[0] instanceof GraphQLError &&
+    errors[0].message ===
+      'Operation cannot be fully represented as static generated source.'
+  );
+}
+
+function subscribeGenerated(
+  args: ExecutionArgs,
+): PromiseOrValue<SubscriptionResult> {
+  try {
+    const generatedSubscription = createGeneratedSubscription(args);
+    return 'subscribe' in generatedSubscription
+      ? generatedSubscription.subscribe(args)
+      : { errors: generatedSubscription };
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === 'Expected subscription operation.'
+    ) {
+      throw error;
+    }
+    return { errors: [error] } as ExecutionResult;
+  }
+}
+
+function createGeneratedSubscription(
+  args: ExecutionArgs,
+): ReturnType<typeof compileSubscription> {
+  const generatedSubscriptionSource = generateSubscription(args);
+  if (typeof generatedSubscriptionSource !== 'string') {
+    if (isStaticGenerationBoundaryErrors(generatedSubscriptionSource)) {
+      return compileSubscription(args);
+    }
+    if (
+      generatedSubscriptionSource.some(
+        (error) => error.message === 'Expected subscription operation.',
+      )
+    ) {
+      throw new GraphQLError('Expected subscription operation.');
+    }
+    return generatedSubscriptionSource;
+  }
+
+  const createCompiledSubscription = getGeneratedSubscriptionFactory(
+    generatedSubscriptionSource,
+  );
+  return createCompiledSubscription(args);
+}
+
+type GeneratedExecutionFactory = (
+  args: ExecutionArgs,
+) => ReturnType<typeof compileExecution>;
+
+type GeneratedSubscriptionFactory = (
+  args: ExecutionArgs,
+) => ReturnType<typeof compileSubscription>;
+
+const generatedExecutionFactoryCache = new Map<
+  string,
+  GeneratedExecutionFactory
+>();
+
+const generatedSubscriptionFactoryCache = new Map<
+  string,
+  GeneratedSubscriptionFactory
+>();
+
+const generatedExecutionDeps = {
+  compileExecution,
+  compileSubscription,
+  isObjectLike,
+  inspect,
+  pathToArray,
+  isPromiseLike,
+  printPathArray,
+  ensureGraphQLError,
+  GraphQLError,
+  GraphQLBoolean,
+  GraphQLFloat,
+  GraphQLID,
+  GraphQLInt,
+  GraphQLString,
+  GraphQLNonNull,
+  locatedError,
+  defaultFieldResolver,
+  defaultTypeResolver,
+  compileExecutionState,
+  EMPTY_VARIABLE_VALUES,
+  isExecutionErrors,
+  parse,
+  CompiledExecutor,
+  cancellablePromise,
+  createSharedExecutionContext,
+  mapAsyncIterable,
+  collectIteratorPromises,
+  compileArgumentValues,
+  compileCollectFields,
+  compileFieldExecutionPlan,
+  compileFieldResolver,
+  compileVariableValues,
+  getCompiledVariableValues,
+  getCompiledArgumentValues,
+  CompiledExecutionRunner,
+  returnIteratorCatchingErrors,
+  isAsyncIterable,
+  isIterableObject,
+  isAbstractType,
+  isLeafType,
+  isListType,
+  isNonNullType,
+  isObjectType,
+  SchemaMetaFieldDef,
+  TypeMetaFieldDef,
+  TypeNameMetaFieldDef,
+  validateDefaultInput,
+  validateInputValue,
+};
+
+function getGeneratedExecutionFactory(
+  source: string,
+): GeneratedExecutionFactory {
+  let factory = generatedExecutionFactoryCache.get(source);
+  if (factory === undefined) {
+    const transformedSource = source
+      .replace(/^import[\s\S]*?;\n/gm, '')
+      .replace(
+        'export function createCompiledExecution(args) {',
+        'function createCompiledExecution(args) {',
+      )
+      .replace('\nexport default createCompiledExecution;\n', '\n');
+    const wrappedSource = `"use strict";
+const {
+  compileExecution,
+  isObjectLike,
+  inspect,
+  pathToArray,
+  isPromiseLike,
+  printPathArray,
+  ensureGraphQLError,
+  GraphQLError,
+  GraphQLBoolean,
+  GraphQLFloat,
+  GraphQLID,
+  GraphQLInt,
+  GraphQLString,
+  GraphQLNonNull,
+  locatedError,
+  defaultFieldResolver,
+  defaultTypeResolver,
+  compileExecutionState,
+  EMPTY_VARIABLE_VALUES,
+  isExecutionErrors,
+  parse,
+  CompiledExecutor,
+  createSharedExecutionContext,
+  collectIteratorPromises,
+  compileArgumentValues,
+  compileCollectFields,
+  compileFieldExecutionPlan,
+  compileFieldResolver,
+  compileVariableValues,
+  getCompiledVariableValues,
+  getCompiledArgumentValues,
+  CompiledExecutionRunner,
+  returnIteratorCatchingErrors,
+  isAsyncIterable,
+  isIterableObject,
+  isAbstractType,
+  isLeafType,
+  isListType,
+  isNonNullType,
+  isObjectType,
+  SchemaMetaFieldDef,
+  TypeMetaFieldDef,
+  TypeNameMetaFieldDef,
+  validateDefaultInput,
+  validateInputValue,
+} = __deps;
+${transformedSource}
+return createCompiledExecution;`;
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+    const createFactory = new Function('__deps', wrappedSource) as (
+      deps: typeof generatedExecutionDeps,
+    ) => GeneratedExecutionFactory;
+    factory = createFactory(generatedExecutionDeps);
+    generatedExecutionFactoryCache.set(source, factory);
+  }
+  return factory;
+}
+
+function getGeneratedSubscriptionFactory(
+  source: string,
+): GeneratedSubscriptionFactory {
+  let factory = generatedSubscriptionFactoryCache.get(source);
+  if (factory === undefined) {
+    const transformedSource = source
+      .replace(/^import[\s\S]*?;\n/gm, '')
+      .replace(
+        'export function createCompiledSubscription(args) {',
+        'function createCompiledSubscription(args) {',
+      )
+      .replace('\nexport default createCompiledSubscription;\n', '\n');
+    const wrappedSource = `"use strict";
+const {
+  compileExecution,
+  compileSubscription,
+  isObjectLike,
+  inspect,
+  pathToArray,
+  isPromiseLike,
+  printPathArray,
+  ensureGraphQLError,
+  GraphQLError,
+  GraphQLBoolean,
+  GraphQLFloat,
+  GraphQLID,
+  GraphQLInt,
+  GraphQLString,
+  GraphQLNonNull,
+  locatedError,
+  defaultFieldResolver,
+  defaultTypeResolver,
+  compileExecutionState,
+  EMPTY_VARIABLE_VALUES,
+  isExecutionErrors,
+  parse,
+  CompiledExecutor,
+  cancellablePromise,
+  createSharedExecutionContext,
+  mapAsyncIterable,
+  collectIteratorPromises,
+  compileArgumentValues,
+  compileCollectFields,
+  compileFieldExecutionPlan,
+  compileFieldResolver,
+  compileVariableValues,
+  getCompiledVariableValues,
+  getCompiledArgumentValues,
+  CompiledExecutionRunner,
+  returnIteratorCatchingErrors,
+  isAsyncIterable,
+  isIterableObject,
+  isAbstractType,
+  isLeafType,
+  isListType,
+  isNonNullType,
+  isObjectType,
+  SchemaMetaFieldDef,
+  TypeMetaFieldDef,
+  TypeNameMetaFieldDef,
+  validateDefaultInput,
+  validateInputValue,
+} = __deps;
+${transformedSource}
+return createCompiledSubscription;`;
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+    const createFactory = new Function('__deps', wrappedSource) as (
+      deps: typeof generatedExecutionDeps,
+    ) => GeneratedSubscriptionFactory;
+    factory = createFactory(generatedExecutionDeps);
+    generatedSubscriptionFactoryCache.set(source, factory);
+  }
+  return factory;
+}
+
 function getExecutionArgs(args: ExecutionArgsInput): ExecutionArgs {
   return typeof args === 'function' ? args() : args;
 }
@@ -473,54 +885,54 @@ async function collectIncrementalResults(
   return results;
 }
 
-function compareIncrementalExecutionResult(
-  result: IncrementalExecutionResult,
-  compiledResult: IncrementalExecutionResult,
+function compareIncrementalExecutionResults(
+  results: ReadonlyArray<IncrementalExecutionResult>,
 ): IncrementalExecutionResult {
-  if (!isIncrementalExecutionResult(result)) {
-    assert(
-      !isIncrementalExecutionResult(compiledResult),
-      'Received an invalid mixture of execution results and incremental execution results.',
-    );
-    return expectMatchingValues([() => result, () => compiledResult]);
+  const [firstResult] = results;
+  assert(firstResult !== undefined, 'Expected at least one execution result.');
+
+  if (!isIncrementalExecutionResult(firstResult)) {
+    for (const result of results) {
+      assert(
+        !isIncrementalExecutionResult(result),
+        'Received an invalid mixture of execution results and incremental execution results.',
+      );
+    }
+    return expectMatchingValues(results.map((result) => () => result));
   }
 
-  assert(
-    isIncrementalExecutionResult(compiledResult),
-    'Received an invalid mixture of execution results and incremental execution results.',
+  const incrementalResults = results.map((result) => {
+    assert(
+      isIncrementalExecutionResult(result),
+      'Received an invalid mixture of execution results and incremental execution results.',
+    );
+    return result;
+  });
+  expectMatchingValues(
+    incrementalResults.map(
+      (result) => () => normalizeIncrementalPayloads([result.initialResult]),
+    ),
   );
-  expectMatchingValues([
-    () => normalizeIncrementalPayloads([result.initialResult]),
-    () => normalizeIncrementalPayloads([compiledResult.initialResult]),
-  ]);
 
-  const expectedPayloads: Array<IncrementalExecutionPayload> = [
-    result.initialResult,
-  ];
-  const actualPayloads: Array<IncrementalExecutionPayload> = [
-    compiledResult.initialResult,
-  ];
+  const payloadsByResult: Array<Array<IncrementalExecutionPayload>> =
+    incrementalResults.map((result) => [result.initialResult]);
   return {
-    initialResult: result.initialResult,
+    initialResult: firstResult.initialResult,
     subsequentResults: expectMatchingAsyncIterablesConcurrently(
-      [result.subsequentResults, compiledResult.subsequentResults],
+      incrementalResults.map((result) => result.subsequentResults),
       (payloadBatches) => {
-        const [expectedSubsequentPayloads, actualSubsequentPayloads] =
-          payloadBatches;
-        assert(expectedSubsequentPayloads !== undefined);
-        assert(actualSubsequentPayloads !== undefined);
-        expectMatchingValues([
-          () =>
-            normalizeIncrementalPayloads([
-              ...expectedPayloads,
-              ...expectedSubsequentPayloads,
-            ]),
-          () =>
-            normalizeIncrementalPayloads([
-              ...actualPayloads,
-              ...actualSubsequentPayloads,
-            ]),
-        ]);
+        for (let i = 0; i < payloadBatches.length; i++) {
+          const payloads = payloadsByResult[i];
+          const subsequentPayloads = payloadBatches[i];
+          assert(payloads !== undefined);
+          assert(subsequentPayloads !== undefined);
+          payloads.push(...subsequentPayloads);
+        }
+        expectMatchingValues(
+          payloadsByResult.map(
+            (payloads) => () => normalizeIncrementalPayloads(payloads),
+          ),
+        );
       },
     ),
   };

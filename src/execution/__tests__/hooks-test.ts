@@ -28,6 +28,7 @@ import type { ExecutionResult } from '../Executor.ts';
 import { runAsyncWorkFinishedHook } from '../hooks.ts';
 
 import {
+  COMPARISON_COUNT,
   execute,
   experimentalExecuteIncrementally,
 } from './executeTestUtils.ts';
@@ -106,8 +107,7 @@ describe('Execute: Hooks', () => {
       },
     });
     await hooksFinished;
-    // Doubled counts reflect original and compiled execution.
-    expect(calls).to.deep.equal(['asyncWork', 'asyncWork']);
+    expect(calls).to.deep.equal(expectedAsyncWorkCalls());
   });
 
   it('runs post execution hooks synchronously when no async work is tracked', () => {
@@ -128,8 +128,7 @@ describe('Execute: Hooks', () => {
         test: 'ok',
       },
     });
-    // Doubled counts reflect original and compiled execution.
-    expect(calls).to.deep.equal(['asyncWork', 'asyncWork']);
+    expect(calls).to.deep.equal(expectedAsyncWorkCalls());
   });
 
   it('runs post execution hooks for asynchronous execution', async () => {
@@ -170,8 +169,7 @@ describe('Execute: Hooks', () => {
       },
     });
     await hooksFinished;
-    // Doubled counts reflect original and compiled execution.
-    expect(calls).to.deep.equal(['asyncWork', 'asyncWork']);
+    expect(calls).to.deep.equal(expectedAsyncWorkCalls());
   });
 
   it('ignores async-work tracker wait rejection', async () => {
@@ -320,8 +318,7 @@ describe('Execute: Hooks', () => {
         test: 'ok',
       },
     });
-    // Doubled counts reflect original and compiled execution.
-    expect(calls).to.deep.equal(['asyncWork', 'asyncWork']);
+    expect(calls).to.deep.equal(expectedAsyncWorkCalls());
   });
 
   it('wrapper returns a promise and resolves after asyncWorkFinished for track(...) side effects', async () => {
@@ -375,8 +372,7 @@ describe('Execute: Hooks', () => {
         test: 'ok',
       },
     });
-    // Doubled counts reflect original and compiled execution.
-    expect(calls).to.deep.equal(['asyncWork', 'asyncWork']);
+    expect(calls).to.deep.equal(expectedAsyncWorkCalls());
   });
 
   it('runs post execution hooks for aborted execution', async () => {
@@ -429,8 +425,7 @@ describe('Execute: Hooks', () => {
     resolveCleanup('done');
     await asyncWorkFinished;
 
-    // Doubled counts reflect original and compiled execution.
-    expect(calls).to.deep.equal(['asyncWork', 'asyncWork']);
+    expect(calls).to.deep.equal(expectedAsyncWorkCalls());
   });
 
   it('fires asyncWorkFinished after async iterator return cleanup', async () => {
@@ -571,7 +566,10 @@ describe('Execute: Hooks', () => {
     expect(nextResult.value.hasNext).to.equal(false);
     await asyncWorkFinished;
     await asyncWorkObserved;
-    // Doubled counts reflect original and compiled execution.
-    expect(asyncWorkFinishedSpy.callCount).to.equal(2);
+    expect(asyncWorkFinishedSpy.callCount).to.equal(COMPARISON_COUNT);
   });
 });
+
+function expectedAsyncWorkCalls(): ReadonlyArray<string> {
+  return Array.from({ length: COMPARISON_COUNT }, () => 'asyncWork');
+}

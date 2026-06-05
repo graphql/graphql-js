@@ -386,6 +386,8 @@ export {
   getDirectiveValues,
   compileExecution,
   compileSubscription,
+  generateExecution,
+  generateSubscription,
   subscribe,
   createSourceEventStream,
   mapSourceToResponseEvent,

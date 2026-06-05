@@ -21,6 +21,7 @@ import { GraphQLID, GraphQLString } from '../../../type/scalars.ts';
 import { GraphQLSchema } from '../../../type/schema.ts';
 
 import {
+  COMPARISON_COUNT,
   completeDirectly,
   completeExecution,
   experimentalExecuteIncrementally,
@@ -1051,8 +1052,7 @@ describe('Execute: defer directive', () => {
       done: false,
     });
 
-    // Doubled counts reflect original and compiled execution.
-    expect(cResolverSpy.callCount).to.equal(2);
+    expect(cResolverSpy.callCount).to.equal(COMPARISON_COUNT);
     expect(eResolverSpy.callCount).to.equal(0);
 
     resolveSlowField('someField');
@@ -1079,8 +1079,7 @@ describe('Execute: defer directive', () => {
       done: false,
     });
 
-    // Doubled counts reflect original and compiled execution.
-    expect(eResolverSpy.callCount).to.equal(2);
+    expect(eResolverSpy.callCount).to.equal(COMPARISON_COUNT);
 
     const result4 = await iterator.next();
     expectJSON(result4).toDeepEqual({
@@ -1175,8 +1174,7 @@ describe('Execute: defer directive', () => {
 
     resolveC();
 
-    // Doubled counts reflect original and compiled execution.
-    expect(cResolverSpy.callCount).to.equal(2);
+    expect(cResolverSpy.callCount).to.equal(COMPARISON_COUNT);
     expect(eResolverSpy.callCount).to.equal(0);
 
     const result3 = await iterator.next();
@@ -3312,8 +3310,7 @@ describe('Execute: defer directive', () => {
     abortController.abort();
     await resolveOnNextTick();
 
-    // Doubled counts reflect original and compiled execution.
-    expect(sourceReturnSpy.callCount).to.equal(2);
+    expect(sourceReturnSpy.callCount).to.equal(COMPARISON_COUNT);
     await expectPromise(resultPromise).toRejectWith(
       'This operation was aborted',
     );

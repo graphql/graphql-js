@@ -2802,6 +2802,24 @@ export class CompiledExecutionRunner {
     this._onDrained = callback;
   }
 
+  awaitValue<T>(
+    promise: PromiseLike<T>,
+    onResolve: (value: T) => void,
+    onReject: (reason: unknown) => void,
+    _boundary: Path | undefined,
+  ): void {
+    this._pending++;
+    try {
+      promise.then(
+        (value) => this._completeResolved(value, onResolve),
+        (reason: unknown) => this._completeRejected(reason, onReject),
+      );
+    } catch (error) {
+      this._pending--;
+      onReject(error);
+    }
+  }
+
   runUntilNulled(_path: Path | undefined): PromiseOrValue<void> {
     this._drain();
     if (this._pending === 0) {
@@ -2847,6 +2865,39 @@ export class CompiledExecutionRunner {
       return;
     }
     throw error;
+  }
+
+  private _completeResolved<T>(value: T, onResolve: (value: T) => void): void {
+    if (this._settled) {
+      this._pending--;
+      return;
+    }
+    try {
+      onResolve(value);
+      this._pending--;
+      this._drainIfReady();
+    } catch (error) {
+      this._pending--;
+      this._fail(error);
+    }
+  }
+
+  private _completeRejected(
+    reason: unknown,
+    onReject: (reason: unknown) => void,
+  ): void {
+    if (this._settled) {
+      this._pending--;
+      return;
+    }
+    try {
+      onReject(reason);
+      this._pending--;
+      this._drainIfReady();
+    } catch (error) {
+      this._pending--;
+      this._fail(error);
+    }
   }
 }
 

@@ -23,6 +23,7 @@ export {
   validateSubscriptionArgs,
 } from './execute.ts';
 export { compileExecution, compileSubscription } from './compile/index.ts';
+export { generateExecution, generateSubscription } from './generate/index.ts';
 export {
   legacyExecuteIncrementally,
   legacyExecuteRootSelectionSet,

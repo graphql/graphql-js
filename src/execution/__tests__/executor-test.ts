@@ -1149,6 +1149,22 @@ describe('Execute: Handles basic execution tasks', () => {
         },
       ],
     });
+    expectJSON(
+      executeSync({
+        schema,
+        document,
+        operationName: 'M',
+        abortSignal: new AbortController().signal,
+      }),
+    ).toDeepEqual({
+      data: null,
+      errors: [
+        {
+          message: 'Schema is not configured to execute mutation operation.',
+          locations: [{ line: 3, column: 7 }],
+        },
+      ],
+    });
 
     expectJSON(
       executeSync({ schema, document, operationName: 'S' }),

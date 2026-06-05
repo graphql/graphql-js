@@ -30,6 +30,7 @@ import { execute as originalExecute } from '../execute.ts';
 import { legacyExecuteIncrementally } from '../legacyIncremental/legacyExecuteIncrementally.ts';
 
 import {
+  COMPARISON_COUNT,
   execute,
   experimentalExecuteIncrementally,
   subscribe,
@@ -1101,8 +1102,7 @@ describe('Execute: Cancellation', () => {
     await expectPromise(resultPromise).toRejectWith(
       'This operation was aborted',
     );
-    // Doubled counts reflect original and compiled execution.
-    expect(returnSpy.callCount).to.equal(2);
+    expect(returnSpy.callCount).to.equal(COMPARISON_COUNT);
   });
 
   it('ignores async iterator return promise rejections after aborting list completion', async () => {
@@ -1150,7 +1150,6 @@ describe('Execute: Cancellation', () => {
     await expectPromise(resultPromise).toRejectWith(
       'This operation was aborted',
     );
-    // Doubled counts reflect original and compiled execution.
-    expect(returnSpy.callCount).to.equal(2);
+    expect(returnSpy.callCount).to.equal(COMPARISON_COUNT);
   });
 });

@@ -492,6 +492,102 @@ describe('compiled executor', () => {
     expect(() => failingRunner.drain()).to.throw(error);
   });
 
+  it('covers preplanned runner awaitValue edge paths', async () => {
+    const thenError = new Error('then failed');
+    const thenRunner = createExecutionRunner();
+    let rejectedReason: unknown;
+    thenRunner.awaitValue(
+      {
+        then() {
+          throw thenError;
+        },
+      },
+      () => {
+        throw new Error('unexpected resolve');
+      },
+      (reason) => {
+        rejectedReason = reason;
+      },
+      undefined,
+    );
+    expect(rejectedReason).to.equal(thenError);
+    expect(getRunnerPending(thenRunner)).to.equal(0);
+
+    const { promise: settledResolvePromise, resolve: resolveSettled } =
+      promiseWithResolvers<string>();
+    const settledResolveRunner = createExecutionRunner();
+    let resolved = false;
+    settledResolveRunner.awaitValue(
+      settledResolvePromise,
+      () => {
+        resolved = true;
+      },
+      () => {
+        throw new Error('unexpected reject');
+      },
+      undefined,
+    );
+    settledResolveRunner._settled = true;
+    resolveSettled('ignored');
+    await resolveOnNextTick();
+    expect(resolved).to.equal(false);
+    expect(getRunnerPending(settledResolveRunner)).to.equal(0);
+
+    const { promise: settledRejectPromise, reject: rejectSettled } =
+      promiseWithResolvers<string>();
+    const settledRejectRunner = createExecutionRunner();
+    let settledRejectedReason: unknown;
+    settledRejectRunner.awaitValue(
+      settledRejectPromise,
+      () => {
+        throw new Error('unexpected resolve');
+      },
+      (reason) => {
+        settledRejectedReason = reason;
+      },
+      undefined,
+    );
+    settledRejectRunner._settled = true;
+    rejectSettled(new Error('ignored'));
+    await resolveOnNextTick();
+    expect(settledRejectedReason).to.equal(undefined);
+    expect(getRunnerPending(settledRejectRunner)).to.equal(0);
+
+    const resolveError = new Error('resolve failed');
+    const resolveRunner = createExecutionRunner();
+    resolveRunner.awaitValue(
+      Promise.resolve('value'),
+      () => {
+        throw resolveError;
+      },
+      () => {
+        throw new Error('unexpected reject');
+      },
+      undefined,
+    );
+    await expectPromise(resolveRunner.runUntilNulled(undefined)).toRejectWith(
+      'resolve failed',
+    );
+    expect(resolveRunner._settled).to.equal(true);
+
+    const rejectError = new Error('reject failed');
+    const rejectRunner = createExecutionRunner();
+    rejectRunner.awaitValue(
+      Promise.reject(new Error('source failed')),
+      () => {
+        throw new Error('unexpected resolve');
+      },
+      () => {
+        throw rejectError;
+      },
+      undefined,
+    );
+    await expectPromise(rejectRunner.runUntilNulled(undefined)).toRejectWith(
+      'reject failed',
+    );
+    expect(rejectRunner._settled).to.equal(true);
+  });
+
   it('creates already-aborted resolver signals after resolver abort finishes', () => {
     const defaultAbortExecutor = new CompiledExecutor(
       getValidatedExecutionArgs(),
@@ -1500,6 +1596,18 @@ function setRunnerPending(
   pending: number,
 ): void {
   (runner as unknown as { _pending: number })._pending = pending;
+}
+
+function getRunnerPending(runner: CompiledExecutionRunner): number {
+  return (runner as unknown as { _pending: number })._pending;
+}
+
+function createExecutionRunner(): CompiledExecutionRunner {
+  return new CompiledExecutionRunner({
+    applyNulledTargets() {
+      return undefined;
+    },
+  } as unknown as CompiledExecutor);
 }
 
 async function collectIncrementalResults(

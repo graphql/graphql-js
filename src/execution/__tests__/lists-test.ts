@@ -22,7 +22,7 @@ import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
 import type { ExecutionResult } from '../Executor.ts';
 
-import { execute, executeSync } from './executeTestUtils.ts';
+import { COMPARISON_COUNT, execute, executeSync } from './executeTestUtils.ts';
 
 function delayedReject(message: string): Promise<never> {
   return (async () => {
@@ -128,8 +128,7 @@ describe('Execute: Accepts any iterable as list value', () => {
         },
       ],
     });
-    // Doubled counts reflect original and compiled execution.
-    expect(nextCalls).to.equal(4);
+    expect(nextCalls).to.equal(2 * COMPARISON_COUNT);
     expect(returnCallCount).to.equal(0);
   });
 });
@@ -186,8 +185,7 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
         },
       ],
     });
-    // Doubled counts reflect original and compiled execution.
-    expect(nextCalls).to.equal(6);
+    expect(nextCalls).to.equal(3 * COMPARISON_COUNT);
     expect(returnCallCount).to.equal(0);
   });
 
@@ -231,8 +229,7 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
         },
       ],
     });
-    // Doubled counts reflect original and compiled execution.
-    expect(nextCalls).to.equal(8);
+    expect(nextCalls).to.equal(4 * COMPARISON_COUNT);
     expect(returnCallCount).to.equal(0);
   });
 
@@ -293,8 +290,7 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
     // eslint-disable-next-line no-undef
     process.removeListener('unhandledRejection', unhandledRejectionListener);
 
-    // Doubled counts reflect original and compiled execution.
-    expect(nextCalls).to.equal(8);
+    expect(nextCalls).to.equal(4 * COMPARISON_COUNT);
     expect(returnCallCount).to.equal(0);
     expect(unhandledRejection).to.equal(null);
   });
@@ -357,8 +353,7 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
     // eslint-disable-next-line no-undef
     process.removeListener('unhandledRejection', unhandledRejectionListener);
 
-    // Doubled counts reflect original and compiled execution.
-    expect(nextCalls).to.equal(8);
+    expect(nextCalls).to.equal(4 * COMPARISON_COUNT);
     expect(returnCallCount).to.equal(0);
     expect(unhandledRejection).to.equal(null);
   });
@@ -615,8 +610,7 @@ describe('Execute: Accepts async iterables as list value', () => {
       data: { listField: null },
       errors,
     });
-    // Doubled counts reflect original and compiled execution.
-    expect(returnCallCount).to.equal(2);
+    expect(returnCallCount).to.equal(COMPARISON_COUNT);
   });
 
   it('Ignores error on return method when async iterator nulls', async () => {
