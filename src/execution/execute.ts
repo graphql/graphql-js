@@ -51,6 +51,7 @@ import type {
 import type { ExecutionResult } from './Executor.ts';
 import { Executor } from './Executor.ts';
 import { ExecutorThrowingOnIncremental } from './ExecutorThrowingOnIncremental.ts';
+import type { GraphQLVariableSignature } from './getVariableSignature.ts';
 import { getVariableSignature } from './getVariableSignature.ts';
 import type { ExperimentalIncrementalExecutionResults } from './incremental/IncrementalExecutor.ts';
 import { IncrementalExecutor } from './incremental/IncrementalExecutor.ts';
@@ -744,6 +745,7 @@ export function validateExecutionArgs(
   const fragmentDefinitions: ObjMap<FragmentDefinitionNode> =
     Object.create(null);
   const fragments: ObjMap<FragmentDetails> = Object.create(null);
+  const fragmentVariableSignatureErrors: Array<GraphQLError> = [];
   for (const definition of document.definitions) {
     switch (definition.kind) {
       case Kind.OPERATION_DEFINITION:
@@ -764,11 +766,17 @@ export function validateExecutionArgs(
         fragmentDefinitions[definition.name.value] = definition;
         let variableSignatures;
         if (definition.variableDefinitions) {
-          variableSignatures = Object.create(null);
+          const signatures: ObjMap<GraphQLVariableSignature> =
+            Object.create(null);
           for (const varDef of definition.variableDefinitions) {
             const signature = getVariableSignature(schema, varDef);
-            variableSignatures[signature.name] = signature;
+            if (signature instanceof GraphQLError) {
+              fragmentVariableSignatureErrors.push(signature);
+              continue;
+            }
+            signatures[signature.name] = signature;
           }
+          variableSignatures = signatures;
         }
         fragments[definition.name.value] = { definition, variableSignatures };
         break;
@@ -783,6 +791,10 @@ export function validateExecutionArgs(
       return [new GraphQLError(`Unknown operation named "${operationName}".`)];
     }
     return [new GraphQLError('Must provide an operation.')];
+  }
+
+  if (fragmentVariableSignatureErrors.length > 0) {
+    return fragmentVariableSignatureErrors;
   }
 
   const variableDefinitions = operation.variableDefinitions ?? [];

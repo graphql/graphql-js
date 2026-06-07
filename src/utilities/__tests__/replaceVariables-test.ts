@@ -5,6 +5,8 @@ import { expect } from 'chai';
 import { invariant } from '../../jsutils/invariant.ts';
 import type { ReadOnlyObjMap } from '../../jsutils/ObjMap.ts';
 
+import { GraphQLError } from '../../error/GraphQLError.ts';
+
 import type {
   FragmentArgumentNode,
   FragmentSpreadNode,
@@ -53,6 +55,7 @@ function testFragmentVariables(variableDefs: string, fragmentArgs: string) {
   const fragmentSignatures = Object.create(null);
   for (const varDef of parseVariableDefinitions(variableDefs)) {
     const signature = getVariableSignature(schema, varDef);
+    invariant(!(signature instanceof GraphQLError));
     fragmentSignatures[signature.name] = signature;
   }
   const spread: FragmentSpreadNode = {

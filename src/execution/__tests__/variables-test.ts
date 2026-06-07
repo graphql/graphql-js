@@ -1609,6 +1609,27 @@ describe('Execute: Handles inputs', () => {
       });
     });
 
+    it('does not allow invalid types to be used as fragment variables', () => {
+      const result = executeQueryWithFragmentArguments(`
+        query {
+          ...a
+        }
+        fragment a($value: TestType!) on TestType {
+          fieldWithNullableStringInput(input: $value)
+        }
+      `);
+
+      expectJSON(result).toDeepEqual({
+        errors: [
+          {
+            message:
+              'Variable "$value" expected value of type "TestType!" which cannot be used as an input type.',
+            locations: [{ line: 5, column: 28 }],
+          },
+        ],
+      });
+    });
+
     it('when a definition has a default, is not provided, and spreads another fragment', () => {
       const result = executeQueryWithFragmentArguments(`
         query {
