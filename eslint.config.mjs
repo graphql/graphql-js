@@ -1296,4 +1296,8 @@ export default defineConfig(
       'import/unambiguous': 'off',
     },
   },
+  {
+    files: ['**/*.mdx'],
+    processor: 'internal-rules/mdx-tabs-spacing',
+  },
 );
