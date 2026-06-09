@@ -5,6 +5,11 @@ import { localRepoPath, prettify } from './utils.ts';
 
 type Mode = 'check' | 'write';
 
+interface Options {
+  filePaths: ReadonlyArray<string>;
+  mode: Mode;
+}
+
 interface JsdocLine {
   content: string;
   prefix: string;
@@ -27,13 +32,13 @@ const languageExtensions = new Map([
   ['typescript', 'ts'],
 ]);
 
-const mode = parseMode(process.argv.slice(2));
 const sourceDir = localRepoPath('src');
+const options = parseOptions(process.argv.slice(2));
 const allIssues = [];
 let changedFiles = 0;
 
 const results = await Promise.all(
-  Array.from(sourceFiles(sourceDir), async (filePath) => {
+  options.filePaths.map(async (filePath) => {
     const source = fs.readFileSync(filePath, 'utf-8');
     const result = await prettifyFile(filePath, source);
     return { filePath, result, source };
@@ -43,7 +48,7 @@ const results = await Promise.all(
 for (const { filePath, result, source } of results) {
   allIssues.push(...result.issues);
 
-  if (mode === 'write' && result.source !== source) {
+  if (options.mode === 'write' && result.source !== source) {
     fs.writeFileSync(filePath, result.source);
     changedFiles++;
   }
@@ -54,18 +59,50 @@ if (allIssues.length > 0) {
     console.error(message);
   }
   process.exitCode = 1;
-} else if (mode === 'write') {
+} else if (options.mode === 'write') {
   console.log(`Prettified JSDoc examples in ${changedFiles} file(s).`);
 }
 
-function parseMode(args: ReadonlyArray<string>): Mode {
-  if (args.length === 1 && args[0] === '--check') {
-    return 'check';
-  }
-  if (args.length === 1 && args[0] === '--write') {
-    return 'write';
+function parseOptions(args: ReadonlyArray<string>): Options {
+  const [modeArg, ...fileArgs] = args;
+  let mode: Mode;
+  if (modeArg === '--check') {
+    mode = 'check';
+  } else if (modeArg === '--write') {
+    mode = 'write';
+  } else {
+    usage();
   }
 
+  return { filePaths: sourceFilePaths(fileArgs), mode };
+}
+
+function sourceFilePaths(
+  fileArgs: ReadonlyArray<string>,
+): ReadonlyArray<string> {
+  if (fileArgs.length === 0) {
+    return Array.from(sourceFiles(sourceDir));
+  }
+
+  const filePaths = new Set<string>();
+  for (const fileArg of fileArgs) {
+    const filePath = path.resolve(fileArg);
+    const relativePath = path.relative(sourceDir, filePath);
+    if (
+      !relativePath.startsWith('..') &&
+      !path.isAbsolute(relativePath) &&
+      filePath.endsWith('.ts') &&
+      fs.existsSync(filePath) &&
+      fs.statSync(filePath).isFile()
+    ) {
+      filePaths.add(filePath);
+    }
+  }
+
+  return Array.from(filePaths).sort((a, b) => a.localeCompare(b));
+}
+
+function usage(): never {
   console.error('Usage: prettier-examples.ts --check|--write');
   process.exit(1);
 }
@@ -213,7 +250,7 @@ async function prettifyFence(
     return { issues: [] };
   }
 
-  if (mode === 'check') {
+  if (options.mode === 'check') {
     return {
       issues: [
         formatIssue(filePath, fenceStart, 'JSDoc example is not formatted.'),
