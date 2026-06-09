@@ -1136,22 +1136,20 @@ instead, and take care to operate on external values.
 
 ```ts
 import { print } from 'graphql/language';
-import {
-  GraphQLInputObjectType,
-  GraphQLInt,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLString,
-} from 'graphql/type';
-import { astFromValue } from 'graphql/utilities';
+import { assertInputObjectType, GraphQLNonNull, GraphQLString } from 'graphql/type';
+import { astFromValue, buildSchema } from 'graphql/utilities';
 
-const ReviewInput = new GraphQLInputObjectType({
-  name: 'ReviewInput',
-  fields: {
-    stars: { type: new GraphQLNonNull(GraphQLInt) },
-    tags: { type: new GraphQLList(GraphQLString) },
-  },
-});
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+    tags: [String]
+  }
+
+  type Query {
+    reviews(filter: ReviewInput): [String]
+  }
+`);
+const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
 
 const valueNode = astFromValue(
   { stars: 5, tags: ['featured', 'verified'] },
@@ -1228,22 +1226,20 @@ are needed.
 
 ```ts
 // Coerce runtime input values, returning undefined when coercion fails.
-import {
-  GraphQLInputObjectType,
-  GraphQLInt,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLString,
-} from 'graphql/type';
-import { coerceInputValue } from 'graphql/utilities';
+import { assertInputObjectType } from 'graphql/type';
+import { buildSchema, coerceInputValue } from 'graphql/utilities';
 
-const ReviewInput = new GraphQLInputObjectType({
-  name: 'ReviewInput',
-  fields: {
-    stars: { type: new GraphQLNonNull(GraphQLInt) },
-    tags: { type: new GraphQLList(GraphQLString) },
-  },
-});
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+    tags: [String]
+  }
+
+  type Query {
+    reviews(filter: ReviewInput): [String]
+  }
+`);
+const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
 
 coerceInputValue({ stars: '5', tags: ['featured'] }, ReviewInput); // => { stars: 5, tags: ['featured'] }
 coerceInputValue({ stars: 'bad' }, ReviewInput); // => undefined
@@ -1324,21 +1320,20 @@ the provided type.
 ```ts
 // Coerce literal input values without variables.
 import { parseValue } from 'graphql/language';
-import {
-  GraphQLInputObjectType,
-  GraphQLInt,
-  GraphQLNonNull,
-  GraphQLString,
-} from 'graphql/type';
-import { coerceInputLiteral } from 'graphql/utilities';
+import { assertInputObjectType } from 'graphql/type';
+import { buildSchema, coerceInputLiteral } from 'graphql/utilities';
 
-const ReviewInput = new GraphQLInputObjectType({
-  name: 'ReviewInput',
-  fields: {
-    stars: { type: new GraphQLNonNull(GraphQLInt) },
-    comment: { type: GraphQLString },
-  },
-});
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+    comment: String
+  }
+
+  type Query {
+    reviews(filter: ReviewInput): [String]
+  }
+`);
+const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
 
 coerceInputLiteral(
   parseValue('{ stars: 5, comment: "Loved it" }'),
@@ -1832,19 +1827,19 @@ all errors via a callback function.
 
 ```ts
 // Collect validation errors with their input paths.
-import {
-  GraphQLInputObjectType,
-  GraphQLInt,
-  GraphQLNonNull,
-} from 'graphql/type';
-import { validateInputValue } from 'graphql/utilities';
+import { assertInputObjectType } from 'graphql/type';
+import { buildSchema, validateInputValue } from 'graphql/utilities';
 
-const ReviewInput = new GraphQLInputObjectType({
-  name: 'ReviewInput',
-  fields: {
-    stars: { type: new GraphQLNonNull(GraphQLInt) },
-  },
-});
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+  }
+
+  type Query {
+    reviews(filter: ReviewInput): [String]
+  }
+`);
+const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
 const errors = [];
 
 validateInputValue({ stars: 'bad' }, ReviewInput, (error, path) => {
@@ -1860,15 +1855,19 @@ errors; // => [ { message: 'Expected value of type "Int", found: "bad".', path: 
 
 ```ts
 // This variant hides suggestion text for unknown input fields.
-import { GraphQLInputObjectType, GraphQLString } from 'graphql/type';
-import { validateInputValue } from 'graphql/utilities';
+import { assertInputObjectType } from 'graphql/type';
+import { buildSchema, validateInputValue } from 'graphql/utilities';
 
-const ReviewInput = new GraphQLInputObjectType({
-  name: 'ReviewInput',
-  fields: {
-    comment: { type: GraphQLString },
-  },
-});
+const schema = buildSchema(`
+  input ReviewInput {
+    comment: String
+  }
+
+  type Query {
+    reviews(filter: ReviewInput): [String]
+  }
+`);
+const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
 const errors = [];
 
 validateInputValue(
@@ -1950,19 +1949,19 @@ If variable values are not provided, the literal is validated statically
 ```ts
 // Validate literal input values and collect literal paths.
 import { parseValue } from 'graphql/language';
-import {
-  GraphQLInputObjectType,
-  GraphQLInt,
-  GraphQLNonNull,
-} from 'graphql/type';
-import { validateInputLiteral } from 'graphql/utilities';
+import { assertInputObjectType } from 'graphql/type';
+import { buildSchema, validateInputLiteral } from 'graphql/utilities';
 
-const ReviewInput = new GraphQLInputObjectType({
-  name: 'ReviewInput',
-  fields: {
-    stars: { type: new GraphQLNonNull(GraphQLInt) },
-  },
-});
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+  }
+
+  type Query {
+    reviews(filter: ReviewInput): [String]
+  }
+`);
+const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
 const errors = [];
 
 validateInputLiteral(
@@ -2100,22 +2099,20 @@ instead.
 ```ts
 // Coerce literal values without variables.
 import { parseValue } from 'graphql/language';
-import {
-  GraphQLInputObjectType,
-  GraphQLInt,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLString,
-} from 'graphql/type';
-import { valueFromAST } from 'graphql/utilities';
+import { assertInputObjectType } from 'graphql/type';
+import { buildSchema, valueFromAST } from 'graphql/utilities';
 
-const ReviewInput = new GraphQLInputObjectType({
-  name: 'ReviewInput',
-  fields: {
-    stars: { type: new GraphQLNonNull(GraphQLInt) },
-    tags: { type: new GraphQLList(GraphQLString) },
-  },
-});
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+    tags: [String]
+  }
+
+  type Query {
+    reviews(filter: ReviewInput): [String]
+  }
+`);
+const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
 
 valueFromAST(parseValue('{ stars: 5, tags: ["featured"] }'), ReviewInput); // => { stars: 5, tags: ['featured'] }
 valueFromAST(parseValue('{ stars: "bad" }'), ReviewInput); // => undefined
@@ -2286,22 +2283,20 @@ value.
 
 ```ts
 import { print } from 'graphql/language';
-import {
-  GraphQLInputObjectType,
-  GraphQLInt,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLString,
-} from 'graphql/type';
-import { valueToLiteral } from 'graphql/utilities';
+import { assertInputObjectType } from 'graphql/type';
+import { buildSchema, valueToLiteral } from 'graphql/utilities';
 
-const ReviewInput = new GraphQLInputObjectType({
-  name: 'ReviewInput',
-  fields: {
-    stars: { type: new GraphQLNonNull(GraphQLInt) },
-    tags: { type: new GraphQLList(GraphQLString) },
-  },
-});
+const schema = buildSchema(`
+  input ReviewInput {
+    stars: Int!
+    tags: [String]
+  }
+
+  type Query {
+    reviews(filter: ReviewInput): [String]
+  }
+`);
+const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
 
 const literal = valueToLiteral({ stars: 5, tags: ['featured'] }, ReviewInput);
 
