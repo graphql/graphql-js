@@ -253,26 +253,26 @@ const fakeDatabase = {};
 
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
-input MessageInput {
-  content: String
-  author: String
-}
+  input MessageInput {
+    content: String
+    author: String
+  }
 
-type Message {
-  id: ID!
-  content: String
-  author: String
-}
+  type Message {
+    id: ID!
+    content: String
+    author: String
+  }
 
-type Query {
-  getMessage(id: ID!): Message
-	getMessages: [Message]
-}
+  type Query {
+    getMessage(id: ID!): Message
+    getMessages: [Message]
+  }
 
-type Mutation {
-  createMessage(input: MessageInput): Message
-  updateMessage(id: ID!, input: MessageInput): Message
-}
+  type Mutation {
+    createMessage(input: MessageInput): Message
+    updateMessage(id: ID!, input: MessageInput): Message
+  }
 `);
 
 // If Message had any complex fields, we'd put them on this object.

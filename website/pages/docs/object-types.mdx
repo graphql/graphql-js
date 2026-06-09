@@ -265,15 +265,15 @@ import { buildSchema } from 'graphql';
 
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
-type RandomDie {
-  numSides: Int!
-  rollOnce: Int!
-  roll(numRolls: Int!): [Int]
-}
+  type RandomDie {
+    numSides: Int!
+    rollOnce: Int!
+    roll(numRolls: Int!): [Int]
+  }
 
-type Query {
-  getDie(numSides: Int): RandomDie
-}
+  type Query {
+    getDie(numSides: Int): RandomDie
+  }
 `);
 
 // This class implements the RandomDie GraphQL type

@@ -160,13 +160,13 @@ export interface ParseOptions {
  *
  * const document = parse(
  *   `
- *   {
- *     t { ...A(var: true) }
- *   }
- *   fragment A($var: Boolean = false) on T {
- *     name
- *   }
- * `,
+ *     {
+ *       t { ...A(var: true) }
+ *     }
+ *     fragment A($var: Boolean = false) on T {
+ *       name
+ *     }
+ *   `,
  *   {
  *     experimentalFragmentArguments: true,
  *     maxTokens: 80,

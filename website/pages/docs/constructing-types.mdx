@@ -21,14 +21,14 @@ import { createHandler } from 'graphql-http/lib/use/express';
 import { buildSchema } from 'graphql';
 
 const schema = buildSchema(`
-type User {
-  id: String
-  name: String
-}
+  type User {
+    id: String
+    name: String
+  }
 
-type Query {
-  user(id: String): User
-}
+  type Query {
+    user(id: String): User
+  }
 `);
 
 // Maps id to User object
