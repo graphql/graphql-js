@@ -26,10 +26,10 @@
  *   </Tabs.Tab></Tabs>
  * Next paragraph.
  *
- * The misformatting is that Prettier does not treat the fenced block as a normal
- * Markdown code fence in a Tabs panel: the JavaScript stays unformatted, the
- * fence remains glued to <Tabs.Tab>, the closing tags remain collapsed, and the
- * next paragraph remains glued to </Tabs>.
+ * The formatting problem is that Prettier does not treat the fenced block as a
+ * normal Markdown code fence in a Tabs panel: the JavaScript stays unformatted,
+ * the fence remains glued to <Tabs.Tab>, the closing tags remain collapsed, and
+ * the next paragraph remains glued to </Tabs>.
  *
  * With clear JSX/Markdown boundaries, Prettier formats the fenced JavaScript and
  * keeps the Tabs block readable:
@@ -80,7 +80,7 @@ function checkMdxTabsSpacing(source) {
     const trimmed = line.trim();
 
     // Prettier can collapse or preserve this one-line close in a way that makes
-    // later conflict resolution hard to read and easy to rebreak. Keeping the
+    // later conflict resolution hard to read and easy to break again. Keeping the
     // component close and container close on separate lines gives Markdown a
     // clear block boundary after the final tab panel.
     if (/<\/Tabs\.Tab>\s*<\/Tabs>/.test(line)) {
