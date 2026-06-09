@@ -11,6 +11,7 @@ import { GraphQLSchema } from '../type/schema.ts';
 
 import { assertValidSDL } from '../validation/validate.ts';
 
+import type { GraphQLSchemaSupplementalConfig } from './extendSchema.ts';
 import { extendSchemaImpl } from './extendSchema.ts';
 
 /** Options used when building a schema from SDL or a parsed SDL document. */
@@ -21,6 +22,14 @@ export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
    * Default: false
    */
   assumeValidSDL?: boolean | undefined;
+  /**
+   * Set to true to assume the supplemental config is valid.
+   *
+   * Default: false
+   */
+  assumeValidSupplementalConfig?: boolean | undefined;
+  /** Supplemental schema constructor config not expressible in SDL. */
+  supplementalConfig?: Readonly<GraphQLSchemaSupplementalConfig> | undefined;
 }
 
 /**
@@ -29,8 +38,8 @@ export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
  * If no schema definition is provided, then it will look for types named Query,
  * Mutation and Subscription.
  *
- * The resulting schema has no resolver functions, so execution will use the
- * default field resolver.
+ * The resulting schema uses the default field resolver unless resolver
+ * functions are supplied through `supplementalConfig`.
  * @param documentAST - The parsed GraphQL document AST.
  * @param options - Optional configuration for this operation.
  * @returns The schema built from the provided SDL document.
@@ -78,7 +87,7 @@ export function buildASTSchema(
   };
   const config = extendSchemaImpl(emptySchemaConfig, documentAST, options);
 
-  if (config.astNode == null) {
+  if (config.astNode === undefined || config.astNode === null) {
     for (const type of config.types) {
       switch (type.name) {
         // Note: While this could make early assertions to get the correctly
@@ -159,5 +168,7 @@ export function buildSchema(
   return buildASTSchema(document, {
     assumeValidSDL: options?.assumeValidSDL,
     assumeValid: options?.assumeValid,
+    assumeValidSupplementalConfig: options?.assumeValidSupplementalConfig,
+    supplementalConfig: options?.supplementalConfig,
   });
 }
