@@ -640,10 +640,14 @@ export function extendSchemaImpl(
         }
         case Kind.SCALAR_TYPE_DEFINITION: {
           const extensionASTNodes = scalarExtensions.get(name) ?? [];
+          let specifiedByURL = getSpecifiedByURL(astNode);
+          for (const extensionNode of extensionASTNodes) {
+            specifiedByURL = getSpecifiedByURL(extensionNode) ?? specifiedByURL;
+          }
           return new GraphQLScalarType({
             name,
             description: astNode.description?.value,
-            specifiedByURL: getSpecifiedByURL(astNode),
+            specifiedByURL,
             astNode,
             extensionASTNodes,
           });

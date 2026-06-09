@@ -359,6 +359,34 @@ describe('extendSchema', () => {
     expectExtensionASTNodes(foo).to.equal(extensionSDL);
   });
 
+  it('builds scalars with specifiedBy directive from extensions', () => {
+    const schema = new GraphQLSchema({});
+    const extensionSDL = dedent`
+      schema {
+        query: Query
+      }
+
+      type Query {
+        foo: Foo
+      }
+
+      scalar Foo
+
+      extend scalar Foo @specifiedBy(url: "https://example.com/foo_spec")
+    `;
+
+    const extendedSchema = extendSchema(schema, parse(extensionSDL));
+    const foo = assertScalarType(extendedSchema.getType('Foo'));
+
+    expect(foo.specifiedByURL).to.equal('https://example.com/foo_spec');
+
+    expect(validateSchema(extendedSchema)).to.deep.equal([]);
+    expectASTNode(foo).to.equal('scalar Foo');
+    expectExtensionASTNodes(foo).to.equal(
+      'extend scalar Foo @specifiedBy(url: "https://example.com/foo_spec")',
+    );
+  });
+
   it('correctly assign AST nodes to new and extended types', () => {
     const schema = buildSchema(`
       type Query
