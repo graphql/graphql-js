@@ -44,14 +44,18 @@ import type {
  * const invalidDocument = parse(`
  *   { field }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [ProvidedRequiredArgumentsRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   ProvidedRequiredArgumentsRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
  * const validDocument = parse(`
  *   { field(required: "x") }
  * `);
- * const validErrors = validate(schema, validDocument, [ProvidedRequiredArgumentsRule]);
+ * const validErrors = validate(schema, validDocument, [
+ *   ProvidedRequiredArgumentsRule,
+ * ]);
  *
  * validErrors; // => []
  * ```

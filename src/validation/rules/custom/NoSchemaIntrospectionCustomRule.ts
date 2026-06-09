@@ -35,14 +35,18 @@ import type { ValidationContext } from '../../ValidationContext.ts';
  * const invalidDocument = parse(`
  *   { __schema { queryType { name } } }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [NoSchemaIntrospectionCustomRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   NoSchemaIntrospectionCustomRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
  * const validDocument = parse(`
  *   { name }
  * `);
- * const validErrors = validate(schema, validDocument, [NoSchemaIntrospectionCustomRule]);
+ * const validErrors = validate(schema, validDocument, [
+ *   NoSchemaIntrospectionCustomRule,
+ * ]);
  *
  * validErrors; // => []
  * ```

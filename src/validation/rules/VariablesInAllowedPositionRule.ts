@@ -43,14 +43,18 @@ import type { ValidationContext } from '../ValidationContext.ts';
  * const invalidDocument = parse(`
  *   query ($id: String) { field(arg: $id) }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [VariablesInAllowedPositionRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   VariablesInAllowedPositionRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
  * const validDocument = parse(`
  *   query ($id: ID!) { field(arg: $id) }
  * `);
- * const validErrors = validate(schema, validDocument, [VariablesInAllowedPositionRule]);
+ * const validErrors = validate(schema, validDocument, [
+ *   VariablesInAllowedPositionRule,
+ * ]);
  *
  * validErrors; // => []
  * ```

@@ -84,14 +84,18 @@ function reasonMessage(reason: ConflictReasonMessage): string {
  * const invalidDocument = parse(`
  *   { dog { value: barkVolume value: name } }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [OverlappingFieldsCanBeMergedRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   OverlappingFieldsCanBeMergedRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
  * const validDocument = parse(`
  *   { dog { barkVolume name } }
  * `);
- * const validErrors = validate(schema, validDocument, [OverlappingFieldsCanBeMergedRule]);
+ * const validErrors = validate(schema, validDocument, [
+ *   OverlappingFieldsCanBeMergedRule,
+ * ]);
  *
  * validErrors; // => []
  * ```

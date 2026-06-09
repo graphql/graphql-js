@@ -107,7 +107,7 @@ export interface ParseOptions {
    * in the `variableDefinitions` field of the FragmentDefinitionNode.
    * Fragment spread arguments will be represented in the `arguments` field of FragmentSpreadNode.
    * @example
-   * ```graphql
+   * ```graphql prettier-ignore
    * {
    *   t { ...A(var: true) }
    * }
@@ -124,7 +124,7 @@ export interface ParseOptions {
    * If enabled, the parser will parse directives on directive definitions.
    * This syntax is not part of the GraphQL specification and may change.
    * @example
-   * ```graphql
+   * ```graphql prettier-ignore
    * directive @foo @bar on FIELD
    * ```
    */
@@ -158,18 +158,21 @@ export interface ParseOptions {
  * // This variant enables parser options and provides an explicit lexer.
  * import { Lexer, Source, parse } from 'graphql/language';
  *
- * const document = parse(`
+ * const document = parse(
+ *   `
  *   {
  *     t { ...A(var: true) }
  *   }
  *   fragment A($var: Boolean = false) on T {
  *     name
  *   }
- * `, {
- *   experimentalFragmentArguments: true,
- *   maxTokens: 80,
- *   noLocation: true,
- * });
+ * `,
+ *   {
+ *     experimentalFragmentArguments: true,
+ *     maxTokens: 80,
+ *     noLocation: true,
+ *   },
+ * );
  * const directiveDocument = parse('directive @foo @bar on FIELD', {
  *   experimentalDirectivesOnDirectiveDefinitions: true,
  * });

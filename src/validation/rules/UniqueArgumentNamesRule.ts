@@ -32,7 +32,9 @@ import type { ASTValidationContext } from '../ValidationContext.ts';
  * const invalidDocument = parse(`
  *   { field(arg: "1", arg: "2") }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [UniqueArgumentNamesRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   UniqueArgumentNamesRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *

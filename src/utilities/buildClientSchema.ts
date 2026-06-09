@@ -66,7 +66,11 @@ import type {
  * @returns The client schema represented by the introspection result.
  * @example
  * ```ts
- * import { buildClientSchema, introspectionFromSchema, buildSchema } from 'graphql/utilities';
+ * import {
+ *   buildClientSchema,
+ *   introspectionFromSchema,
+ *   buildSchema,
+ * } from 'graphql/utilities';
  *
  * const schema = buildSchema('type Query { hello: String }');
  * const clientSchema = buildClientSchema(introspectionFromSchema(schema), {

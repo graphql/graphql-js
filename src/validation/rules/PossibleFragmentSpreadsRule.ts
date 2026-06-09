@@ -45,14 +45,18 @@ import type { ValidationContext } from '../ValidationContext.ts';
  * const invalidDocument = parse(`
  *   { dog { ... on Cat { meowVolume } } }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [PossibleFragmentSpreadsRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   PossibleFragmentSpreadsRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
  * const validDocument = parse(`
  *   { dog { ... on Dog { barkVolume } } }
  * `);
- * const validErrors = validate(schema, validDocument, [PossibleFragmentSpreadsRule]);
+ * const validErrors = validate(schema, validDocument, [
+ *   PossibleFragmentSpreadsRule,
+ * ]);
  *
  * validErrors; // => []
  * ```

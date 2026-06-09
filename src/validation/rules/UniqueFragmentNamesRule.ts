@@ -29,7 +29,9 @@ import type { ASTValidationContext } from '../ValidationContext.ts';
  * const invalidDocument = parse(`
  *   fragment A on Query { name } fragment A on Query { name } query { ...A }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [UniqueFragmentNamesRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   UniqueFragmentNamesRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *

@@ -46,7 +46,9 @@ import type { ValidationContext } from '../ValidationContext.ts';
  * const invalidDocument = parse(`
  *   { missing }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [FieldsOnCorrectTypeRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   FieldsOnCorrectTypeRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *

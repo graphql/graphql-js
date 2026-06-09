@@ -39,14 +39,18 @@ import type { ValidationContext } from '../ValidationContext.ts';
  * const invalidDocument = parse(`
  *   query ($user: User) { field(arg: "1") }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [VariablesAreInputTypesRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   VariablesAreInputTypesRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
  * const validDocument = parse(`
  *   query ($id: ID) { field(arg: $id) }
  * `);
- * const validErrors = validate(schema, validDocument, [VariablesAreInputTypesRule]);
+ * const validErrors = validate(schema, validDocument, [
+ *   VariablesAreInputTypesRule,
+ * ]);
  *
  * validErrors; // => []
  * ```

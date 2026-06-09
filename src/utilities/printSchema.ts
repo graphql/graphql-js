@@ -341,7 +341,11 @@ function printInputValue(
  * @returns SDL string for the directive definition.
  * @example
  * ```ts
- * import { DirectiveLocation, GraphQLDirective, GraphQLString } from 'graphql/type';
+ * import {
+ *   DirectiveLocation,
+ *   GraphQLDirective,
+ *   GraphQLString,
+ * } from 'graphql/type';
  * import { printDirective } from 'graphql/utilities';
  *
  * const authDirective = new GraphQLDirective({

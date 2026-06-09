@@ -14,7 +14,10 @@ import { Kind } from '../language/kinds.ts';
  * import { parse } from 'graphql/language';
  * import { concatAST } from 'graphql/utilities';
  *
- * const document = concatAST([parse('type Query { a: String }'), parse('type User { id: ID }')]);
+ * const document = concatAST([
+ *   parse('type Query { a: String }'),
+ *   parse('type User { id: ID }'),
+ * ]);
  *
  * document.definitions.length; // => 2
  * ```

@@ -22,9 +22,7 @@ import { GraphQLError } from './GraphQLError.ts';
  *
  * const document = parse('{ viewer { name } }');
  * const fieldNode = document.definitions[0].selectionSet.selections[0];
- * const error = locatedError(new Error('Resolver failed'), fieldNode, [
- *   'viewer',
- * ]);
+ * const error = locatedError(new Error('Resolver failed'), fieldNode, ['viewer']);
  *
  * error.message; // => 'Resolver failed'
  * error.locations; // => [{ line: 1, column: 3 }]

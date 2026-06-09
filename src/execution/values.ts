@@ -104,11 +104,9 @@ type VariableValuesOrErrors =
  * `);
  * const operation = document.definitions[0];
  *
- * const result = getVariableValues(
- *   schema,
- *   operation.variableDefinitions,
- *   { stars: '5' },
- * );
+ * const result = getVariableValues(schema, operation.variableDefinitions, {
+ *   stars: '5',
+ * });
  *
  * assert('variableValues' in result);
  *
@@ -390,11 +388,9 @@ export function getFragmentVariableValues(
  * const document = parse('query ($stars: Int!) { reviews(stars: $stars) }');
  * const operation = document.definitions[0];
  * const fieldNode = document.definitions[0].selectionSet.selections[0];
- * const variables = getVariableValues(
- *   schema,
- *   operation.variableDefinitions,
- *   { stars: '5' },
- * );
+ * const variables = getVariableValues(schema, operation.variableDefinitions, {
+ *   stars: '5',
+ * });
  *
  * assert('variableValues' in variables);
  *
@@ -576,18 +572,22 @@ function printArgumentOrFragmentVariable(
  * import { getDirectiveValues, getVariableValues } from 'graphql/execution';
  *
  * const schema = buildSchema('type Query { name: String }');
- * const document = parse('query ($includeName: Boolean!) { name @include(if: $includeName) }');
+ * const document = parse(
+ *   'query ($includeName: Boolean!) { name @include(if: $includeName) }',
+ * );
  * const operation = document.definitions[0];
  * const fieldNode = document.definitions[0].selectionSet.selections[0];
- * const variables = getVariableValues(
- *   schema,
- *   operation.variableDefinitions,
- *   { includeName: false },
- * );
+ * const variables = getVariableValues(schema, operation.variableDefinitions, {
+ *   includeName: false,
+ * });
  *
  * assert('variableValues' in variables);
  *
- * getDirectiveValues(GraphQLIncludeDirective, fieldNode, variables.variableValues); // => { if: false }
+ * getDirectiveValues(
+ *   GraphQLIncludeDirective,
+ *   fieldNode,
+ *   variables.variableValues,
+ * ); // => { if: false }
  * getDirectiveValues(GraphQLIncludeDirective, { directives: [] }); // => undefined
  * ```
  */

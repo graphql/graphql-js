@@ -37,15 +37,11 @@ import { valueToLiteral } from './valueToLiteral.ts';
  *     review(stars: Int = 5): String
  *   }
  * `);
- * const document = parse(
- *   'query ($stars: Int = 5) { review(stars: $stars) }',
- * );
+ * const document = parse('query ($stars: Int = 5) { review(stars: $stars) }');
  * const operation = document.definitions[0];
- * const result = getVariableValues(
- *   schema,
- *   operation.variableDefinitions,
- *   { stars: 4 },
- * );
+ * const result = getVariableValues(schema, operation.variableDefinitions, {
+ *   stars: 4,
+ * });
  *
  * assert('variableValues' in result);
  *
