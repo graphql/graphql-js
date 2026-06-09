@@ -10,38 +10,10 @@ Some inputs will behave differently depending on what input we choose. Let's loo
 a field named `product`, we can fetch a `Product` by either its `id` or its `name`. Currently we'd
 make a tradeoff for this by introducing two arguments that are both nullable, now if both are passed
 as null (or both non-null) we'd have to handle that in code - the type system wouldn't indicate that exactly one was required. To fix this, the `@oneOf` directive was introduced so we
-can create this "exactly one option" constraint without sacrificing the strictly typed nature of our GraphQL Schema.
+can create this "exactly one option" constraint without sacrificing the strictly typed nature of our GraphQL Schema. In code-first schemas, this is expressed with `isOneOf: true`. In SDL, it is expressed with `@oneOf`.
 
-<Tabs items={['SDL', 'Code']}>
-    <Tabs.Tab>
-
-```js
-const schema = buildSchema(`
-  type Product {
-    id: ID!
-    name: String!
-  }
-
-  input ProductLocation {
-    aisleNumber: Int!
-    shelfNumber: Int!
-    positionOnShelf: Int!
-  }
-
-  input ProductSpecifier @oneOf {
-    id: ID
-    name: String
-    location: ProductLocation
-  }
-
-  type Query {
-    product(by: ProductSpecifier!): Product
-  }
-`);
-```
-
-    </Tabs.Tab>
-    <Tabs.Tab>
+<Tabs items={['Code', 'SDL']}>
+  <Tabs.Tab>
 
 ```js
 const Product = new GraphQLObjectType({
@@ -82,14 +54,55 @@ const schema = new GraphQLSchema({
       product: {
         type: Product,
         args: { by: { type: new GraphQLNonNull(ProductSpecifier) } },
+        resolve: (_source, { by }) => findProduct(by),
       },
     },
   }),
 });
 ```
 
-    </Tabs.Tab>
+  </Tabs.Tab>
+  <Tabs.Tab>
 
+```js
+const schema = buildSchema(
+  /* GraphQL */ `
+    type Product {
+      id: ID!
+      name: String!
+    }
+
+    input ProductLocation {
+      aisleNumber: Int!
+      shelfNumber: Int!
+      positionOnShelf: Int!
+    }
+
+    input ProductSpecifier @oneOf {
+      id: ID
+      name: String
+      location: ProductLocation
+    }
+
+    type Query {
+      product(by: ProductSpecifier!): Product
+    }
+  `,
+  {
+    supplementalConfig: {
+      objectTypes: {
+        Query: {
+          fields: {
+            product: (_source, { by }) => findProduct(by),
+          },
+        },
+      },
+    },
+  },
+);
+```
+
+  </Tabs.Tab>
 </Tabs>
 
 It doesn't matter whether you have 2 or more inputs here, all that matters is

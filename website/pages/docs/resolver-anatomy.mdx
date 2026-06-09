@@ -4,6 +4,8 @@ title: Anatomy of a Resolver
 
 # Anatomy of a Resolver
 
+import { Tabs } from 'nextra/components';
+
 In GraphQL.js, a resolver is a function that returns the value for a
 specific field in a schema. Resolvers connect a GraphQL query to the
 underlying data or logic needed to fulfill it.
@@ -75,10 +77,11 @@ writing custom resolvers for every field. For example, if your `source` object
 already contains fields with matching names, GraphQL.js can resolve them
 automatically.
 
-You can override the default behavior by specifying a `resolve` function when
-defining a field in the schema. This is necessary when the field’s value
-needs to be computed dynamically, fetched from an external service, or
-otherwise requires custom logic.
+You can override the default behavior by specifying a `resolve` function for a field. If the
+schema is defined in SDL, add that resolver with `supplementalConfig`; if the schema is
+code-first, add it to the field config. The default resolver can still read same-named
+properties or methods from the source object, so custom resolvers are only needed when the
+field behavior cannot live on the returned value.
 
 ## Writing a custom resolver
 
@@ -86,10 +89,17 @@ A custom resolver is a function you define to control exactly how a field's
 value is fetched or computed. You can add a resolver by specifying a `resolve`
 function when defining a field in your schema:
 
-```js {6-8}
-const UserType = new GraphQLObjectType({
+<Tabs items={['Code', 'SDL']}>
+  <Tabs.Tab>
+
+```js {19-21}
+import { GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql';
+
+const User = new GraphQLObjectType({
   name: 'User',
   fields: {
+    firstName: { type: GraphQLString },
+    lastName: { type: GraphQLString },
     fullName: {
       type: GraphQLString,
       resolve(source) {
@@ -98,7 +108,53 @@ const UserType = new GraphQLObjectType({
     },
   },
 });
+
+const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      user: { type: User },
+    },
+  }),
+});
 ```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```js {6-8}
+import { buildSchema } from 'graphql';
+
+const schema = buildSchema(
+  /* GraphQL */ `
+    type User {
+      firstName: String
+      lastName: String
+      fullName: String
+    }
+
+    type Query {
+      user: User
+    }
+  `,
+  {
+    supplementalConfig: {
+      objectTypes: {
+        User: {
+          fields: {
+            fullName(source) {
+              return `${source.firstName} ${source.lastName}`;
+            },
+          },
+        },
+      },
+    },
+  },
+);
+```
+
+  </Tabs.Tab>
+</Tabs>
 
 Resolvers can be synchronous or asynchronous. If a resolver returns a
 Promise, GraphQL.js automatically waits for the Promise to resolve before
