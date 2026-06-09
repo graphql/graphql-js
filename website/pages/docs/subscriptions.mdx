@@ -12,8 +12,8 @@ This guide covers how to implement subscriptions in GraphQL.js, when to use them
 
 A subscription is a GraphQL operation that delivers ongoing results to the client when a specific event happens. Unlike queries or mutations, which return a single response, a subscription delivers data over time through a persistent connection.
 
-GraphQL.js implements the subscription execution algorithm, but it's up to you to connect it to your event system and transport layer. Most implementations use WebSockets or SSE for transport, though any full-duplex protocol can work.
-You can find [here](https://the-guild.dev/graphql/yoga-server/docs/features/subscriptions#sse-vs-websocket) some valuable information about the differences between WebSockets and SSE.
+GraphQL.js implements the subscription execution algorithm, but it's up to you to connect it to your event system and transport layer. Common transport options include WebSockets and Server-Sent Events (SSE).
+For more context on the advantages of each approach, consider a [general comparison of WebSockets and SSE](https://websocket.org/comparisons/sse/) as well as [GraphQL Yoga's breakdown with respect to GraphQL](https://the-guild.dev/graphql/yoga-server/docs/features/subscriptions#sse-vs-websocket).
 
 ## How execution works
 
