@@ -213,30 +213,9 @@ const cfg: DocsThemeConfig = {
       </>
     );
   },
-  banner: {
-    content: (
-      <>
-        🎉{' '}
-        <NextLink
-          href="https://graphql.org/conf/2026/"
-          className="underline after:content-['_→'] after:font-sans"
-        >
-          Explore GraphQLConf 2026
-        </NextLink>{' '}
-        • May 19-21 • Fremont, CA •{' '}
-        <NextLink
-          href="https://graphql.org/conf/2026/schedule/"
-          className="underline after:content-['_→'] after:font-sans"
-        >
-          View the schedule
-        </NextLink>
-      </>
-    ),
-    key: 'graphqlconf-2026',
-  },
   logo: graphQLLogo,
   docsRepositoryBase:
-    'https://github.com/graphql/graphql-js/tree/16.x.x/website',
+    'https://github.com/graphql/graphql-js/tree/17.x.x/website',
   color: {
     hue: 319,
   },

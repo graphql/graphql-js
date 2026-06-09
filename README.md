@@ -1,11 +1,9 @@
-[![GraphQLConf 2025 Banner: September 08-10, Amsterdam. Hosted by the GraphQL Foundation](./assets/graphql-conf-2025.png)](https://graphql.org/conf/2025/?utm_source=github&utm_medium=graphql_js&utm_campaign=readme)
-
 # GraphQL.js
 
 The JavaScript reference implementation for GraphQL, a query language for APIs created by Facebook.
 
 [![npm version](https://badge.fury.io/js/graphql.svg)](https://badge.fury.io/js/graphql)
-[![Build Status](https://github.com/graphql/graphql-js/workflows/CI/badge.svg?branch=main)](https://github.com/graphql/graphql-js/actions?query=branch%3Amain)
+[![Build Status](https://github.com/graphql/graphql-js/workflows/CI/badge.svg?branch=17.x.x)](https://github.com/graphql/graphql-js/actions?query=branch%3A17.x.x)
 
 See more complete documentation at https://graphql.org/ and
 https://graphql.org/graphql-js/.
@@ -111,7 +109,7 @@ graphql({ schema, source }).then((result) => {
 ## Want to ride the bleeding edge?
 
 The `npm` branch in this repository is automatically maintained to be the last
-commit to `main` to pass all tests, in the same form found on npm. It is
+commit to `17.x.x` to pass all tests, in the same form found on npm. It is
 recommended to use builds deployed to npm for many reasons, but if you want to use
 the latest not-yet-released version of graphql-js, you can do so by depending
 directly on this branch:
@@ -139,7 +137,7 @@ in files with the `.js` extension and the ESModule build within `.mjs` files.
 
 We actively welcome pull requests. Learn how to [contribute](./.github/CONTRIBUTING.md).
 
-This repository is managed by EasyCLA. Project participants must sign the free ([GraphQL Specification Membership agreement](https://preview-spec-membership.graphql.org) before making a contribution. You only need to do this one time, and it can be signed by [individual contributors](http://individual-spec-membership.graphql.org/) or their [employers](http://corporate-spec-membership.graphql.org/).
+This repository is managed by EasyCLA. Project participants must sign the free [GraphQL Specification Membership agreement](https://preview-spec-membership.graphql.org) before making a contribution. You only need to do this one time, and it can be signed by [individual contributors](http://individual-spec-membership.graphql.org/) or their [employers](http://corporate-spec-membership.graphql.org/).
 
 To initiate the signature process please open a PR against this repo. The EasyCLA bot will block the merge if we still need a membership agreement from you.
 

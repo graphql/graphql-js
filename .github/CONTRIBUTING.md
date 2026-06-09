@@ -73,6 +73,42 @@ ensure your pull request matches the style guides, run `npm run prettier`.
 - Trailing commas,
 - Avd abbr wrds.
 
+## Documentation
+
+The documentation website is published from the `17.x.x` branch. Website source
+lives under `website/`, with general guides in `website/pages/docs` and upgrade
+guides in `website/pages/upgrade-guides`.
+
+The API reference pages are generated snapshots:
+
+- `website/pages/api-v16` is generated from a v16 source ref.
+- `website/pages/api-v17` is generated from a v17 source ref.
+
+Generate API docs from the website package:
+
+```bash
+cd website
+npm run generate:docs -- 16.x.x 17.x.x
+```
+
+The generator creates detached temporary git worktrees for the refs passed on
+the command line, infers the major version from each ref's `package.json`, and
+writes the corresponding `api-v*` output directory. Generated API docs are not
+published automatically at this time; PRs that change website API output must
+include the generated files.
+
+Because the generator reads refs through temporary worktrees, it does not read
+uncommitted changes from your current checkout. Passing `17.x.x` reads the
+committed tip of the `17.x.x` branch, not local changes in a checked-out
+worktree. If a PR changes v17 API source comments or exported TypeScript
+surfaces, commit those source changes first and generate v17 docs from a ref
+that includes them, for example:
+
+```bash
+cd website
+npm run generate:docs -- 16.x.x HEAD
+```
+
 ## Review and Merge Process
 
 - Pull requests are required to pass all tests and checks before they can be merged.
@@ -115,7 +151,7 @@ npm run release:prepare -- 17.x.x prerelease --preid rc
 When `--preid` is provided, the release script uses it as the npm publish tag.
 Without a prerelease preid, the publish tag is `latest`.
 
-Push `<my_release_branch>`, open a PR from `<my_release_branch>` to `17.x.x`, wait for CI to pass, merge the PR, and then approve the GitHub Actions release workflow. The workflow currently runs in dry-run mode for testing.
+Push `<my_release_branch>`, open a PR from `<my_release_branch>` to `17.x.x`, wait for CI to pass, merge the PR, and then approve the GitHub Actions release workflow.
 
 ## License
 
