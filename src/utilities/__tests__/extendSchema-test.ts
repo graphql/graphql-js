@@ -1439,6 +1439,34 @@ describe('extendSchema', () => {
       );
     });
 
+    it('builds directives with deprecation from extensions', () => {
+      const schema = new GraphQLSchema({});
+      const extensionSDL = dedent`
+        directive @isDeprecated on FIELD_DEFINITION
+
+        extend directive @isDeprecated @deprecated(reason: "use another directive")
+      `;
+      const extendedSchema = extendSchema(
+        schema,
+        parse(extensionSDL, {
+          experimentalDirectivesOnDirectiveDefinitions: true,
+        }),
+      );
+
+      const isDeprecatedDirective = assertDirective(
+        extendedSchema.getDirective('isDeprecated'),
+      );
+      expect(isDeprecatedDirective).to.include({
+        deprecationReason: 'use another directive',
+      });
+      expectASTNode(isDeprecatedDirective).to.equal(
+        'directive @isDeprecated on FIELD_DEFINITION',
+      );
+      expectExtensionASTNodes(isDeprecatedDirective).to.equal(
+        'extend directive @isDeprecated @deprecated(reason: "use another directive")',
+      );
+    });
+
     it('applies multiple directive extensions defined in the same document', () => {
       const schema = buildASTSchema(
         parse(
