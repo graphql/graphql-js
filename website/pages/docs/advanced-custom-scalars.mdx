@@ -6,23 +6,23 @@ import { Callout } from 'nextra/components';
 
 # Custom Scalars: Best Practices and Testing
 
-Custom scalars must behave predictably and clearly. To maintain a consistent, reliable 
+Custom scalars must behave predictably and clearly. To maintain a consistent, reliable
 schema, follow these best practices.
 
 <Callout type="info">
   GraphQL.js v17 renames the scalar hooks to the coercion terms used by the
-  specification. The v16 names still work in v17, but are deprecated for
-  removal in v18.
+  specification. The v16 names still work in v17, but are deprecated for removal
+  in v18.
 </Callout>
 
 ### Map v16 names to v17 names
 
-| v16 name | v17 name | Purpose |
-| --- | --- | --- |
-| `serialize` | `coerceOutputValue` | Convert resolver values into response values. |
-| `parseValue` | `coerceInputValue` | Convert variable values into internal values. |
-| `parseLiteral` | `coerceInputLiteral` | Convert constant GraphQL literals into internal values. |
-| `astFromValue()` | `valueToLiteral()` | Convert external input values into GraphQL literals. |
+| v16 name         | v17 name             | Purpose                                                 |
+| ---------------- | -------------------- | ------------------------------------------------------- |
+| `serialize`      | `coerceOutputValue`  | Convert resolver values into response values.           |
+| `parseValue`     | `coerceInputValue`   | Convert variable values into internal values.           |
+| `parseLiteral`   | `coerceInputLiteral` | Convert constant GraphQL literals into internal values. |
+| `astFromValue()` | `valueToLiteral()`   | Convert external input values into GraphQL literals.    |
 
 If your scalar supports both v16 and v17, keep the v16 method names for now.
 When your minimum version is v17, implement the v17 names and add
@@ -37,7 +37,7 @@ tooling calls `coerceInputLiteral()` directly outside execution, it must call
 
 ### Document expected formats and validation
 
-Provide a clear description of the scalar's accepted input and output formats. For example, a 
+Provide a clear description of the scalar's accepted input and output formats. For example, a
 `DateTime` scalar should explain that it expects [ISO-8601](https://www.iso.org/iso-8601-date-and-time-format.html) strings ending with `Z`.
 
 Clear descriptions help clients understand valid input and reduce mistakes.
@@ -77,7 +77,7 @@ Clear error messages speed up debugging and make mistakes easier to fix.
 ### Serialize consistently
 
 Always serialize internal values into a predictable format.
-For example, a `DateTime` scalar should always produce an ISO string, even if its 
+For example, a `DateTime` scalar should always produce an ISO string, even if its
 internal value is a `Date` object.
 
 ```js
@@ -167,7 +167,7 @@ async function testQuery() {
 testQuery();
 ```
 
-Schema-level tests verify that the scalar behaves correctly during execution, not just 
+Schema-level tests verify that the scalar behaves correctly during execution, not just
 in isolation.
 
 ## Common use cases for custom scalars
@@ -181,7 +181,9 @@ Custom scalars solve real-world needs by handling types that built-in scalars do
 function validateEmail(value) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(value)) {
-    throw new TypeError(`Email cannot represent invalid email address: ${value}`);
+    throw new TypeError(
+      `Email cannot represent invalid email address: ${value}`,
+    );
   }
   return value;
 }
@@ -200,21 +202,21 @@ function validateURL(value) {
 }
 ```
 
-- `JSON`: Represents arbitrary JSON structures, but use carefully because it bypasses 
-GraphQL's strict type checking.
+- `JSON`: Represents arbitrary JSON structures, but use carefully because it bypasses
+  GraphQL's strict type checking.
 
 ## When to use existing libraries
 
-Writing scalars is deceptively tricky. Validation edge cases can lead to subtle bugs if 
+Writing scalars is deceptively tricky. Validation edge cases can lead to subtle bugs if
 not handled carefully.
 
-Whenever possible, use trusted libraries like [`graphql-scalars`](https://www.npmjs.com/package/graphql-scalars). They offer production-ready 
+Whenever possible, use trusted libraries like [`graphql-scalars`](https://www.npmjs.com/package/graphql-scalars). They offer production-ready
 scalars for DateTime, EmailAddress, URL, UUID, and many others.
 
 ### Example: Handling email validation
 
-Handling email validation correctly requires dealing with Unicode, quoted local parts, and 
-domain validation. Rather than writing your own regex, it's better to use a library scalar 
+Handling email validation correctly requires dealing with Unicode, quoted local parts, and
+domain validation. Rather than writing your own regex, it's better to use a library scalar
 that's already validated against standards.
 
 If you need domain-specific behavior, you can wrap an existing scalar with custom rules:
@@ -242,12 +244,12 @@ const StrictEmailAddress = new GraphQLScalarType({
 });
 ```
 
-By following these best practices and using trusted tools where needed, you can build custom 
+By following these best practices and using trusted tools where needed, you can build custom
 scalars that are reliable, maintainable, and easy for clients to work with.
 
 ## Additional resources
 
-- [GraphQL Scalars by The Guild](https://the-guild.dev/graphql/scalars): A production-ready 
-library of common custom scalars.
-- [GraphQL Scalars Specification](https://github.com/graphql/graphql-scalars): This 
-specification is no longer actively maintained, but useful for historical context.
+- [GraphQL Scalars by The Guild](https://the-guild.dev/graphql/scalars): A production-ready
+  library of common custom scalars.
+- [GraphQL Scalars Specification](https://github.com/graphql/graphql-scalars): This
+  specification is no longer actively maintained, but useful for historical context.

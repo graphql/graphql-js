@@ -14,6 +14,7 @@ For example, let's say we are building a simple API that lets you fetch user dat
 
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
+
 ```js
 import express from 'express';
 import { createHandler } from 'graphql-http/lib/use/express';
@@ -58,10 +59,11 @@ app.all(
 );
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');
+```
 
-````
   </Tabs.Tab>
   <Tabs.Tab>
+
 ```js
 import express from 'express';
 import { createHandler } from 'graphql-http/lib/use/express';
@@ -116,7 +118,7 @@ app.all(
 );
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');
-````
+```
 
   </Tabs.Tab>
 </Tabs>

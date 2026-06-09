@@ -121,10 +121,7 @@ tracked async cleanup has finished. For example, a test harness may want the
 operation to leave no pending execution work before assertions run.
 
 ```js
-import {
-  executeRootSelectionSet,
-  validateExecutionArgs,
-} from 'graphql';
+import { executeRootSelectionSet, validateExecutionArgs } from 'graphql';
 
 async function executeAndWaitForAsyncWork(args) {
   const validatedArgs = validateExecutionArgs(args);

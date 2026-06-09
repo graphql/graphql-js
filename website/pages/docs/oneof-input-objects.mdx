@@ -14,6 +14,7 @@ can create this "exactly one option" constraint without sacrificing the strictly
 
 <Tabs items={['SDL', 'Code']}>
     <Tabs.Tab>
+
 ```js
 const schema = buildSchema(`
   type Product {
@@ -38,8 +39,10 @@ const schema = buildSchema(`
   }
 `);
 ```
+
     </Tabs.Tab>
     <Tabs.Tab>
+
 ```js
 const Product = new GraphQLObjectType({
   name: 'Product',
@@ -84,7 +87,9 @@ const schema = new GraphQLSchema({
   }),
 });
 ```
+
     </Tabs.Tab>
+
 </Tabs>
 
 It doesn't matter whether you have 2 or more inputs here, all that matters is

@@ -34,6 +34,7 @@ npm install graphql --save
 ```
 
 After running these commands, you'll have:
+
 - `package.json` - your project configuration file
 - `node_modules/` - directory where npm packages are installed
 
@@ -62,6 +63,7 @@ To handle GraphQL queries, we need a schema that defines the `Query` type, and w
 
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
+
 ```javascript
 import { graphql, buildSchema } from 'graphql';
 
@@ -80,24 +82,30 @@ graphql({
   schema,
   source: '{ hello }',
   rootValue,
-  }).then((response) => {
-    console.log(response);
-  });
-
+}).then((response) => {
+  console.log(response);
+});
 ```
+
 </Tabs.Tab>
 <Tabs.Tab>
+
 ```javascript
-import { graphql, GraphQLSchema, GraphQLObjectType, GraphQLString } from 'graphql';
+import {
+  graphql,
+  GraphQLSchema,
+  GraphQLObjectType,
+  GraphQLString,
+} from 'graphql';
 
 // Construct a schema
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
     fields: {
-      hello: { 
+      hello: {
         type: GraphQLString,
-        resolve: () => 'Hello world!'
+        resolve: () => 'Hello world!',
       },
     },
   }),
@@ -110,6 +118,7 @@ graphql({
   console.log(response);
 });
 ```
+
 </Tabs.Tab>
 </Tabs>
 

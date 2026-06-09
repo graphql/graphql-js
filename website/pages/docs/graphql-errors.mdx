@@ -1,16 +1,17 @@
 ---
 title: Understanding GraphQL.js Errors
 ---
-import { Callout, GitHubNoteIcon } from "nextra/components";
+
+import { Callout, GitHubNoteIcon } from 'nextra/components';
 
 # Understanding GraphQL.js Errors
 
-When executing a GraphQL operation, a server might encounter problems, such as failing to fetch 
-data, encountering invalid arguments, or running into unexpected internal issues. Instead of 
-crashing or halting execution, GraphQL.js collects these problems as structured errors 
+When executing a GraphQL operation, a server might encounter problems, such as failing to fetch
+data, encountering invalid arguments, or running into unexpected internal issues. Instead of
+crashing or halting execution, GraphQL.js collects these problems as structured errors
 and includes them in the response.
 
-This guide explains how GraphQL.js represents errors internally, how errors propagate through a 
+This guide explains how GraphQL.js represents errors internally, how errors propagate through a
 query, and how you can customize error behavior.
 
 ## How GraphQL.js represents errors in a response
@@ -41,7 +42,7 @@ Each error object can include the following fields:
 - `locations` (optional): Where the error occurred in the operation document.
 - `path` (optional): The path to the field that caused the error.
 - `extensions` (optional): Additional error metadata, often used for error codes, HTTP status
-codes or debugging information.
+  codes or debugging information.
 
 <Callout type="info">
 
@@ -94,7 +95,7 @@ Each option helps tie the error to specific parts of the GraphQL execution:
 When a resolver throws an error:
 
 - If the thrown value is a `GraphQLError` and contains the required information
-(`path`), GraphQL.js uses it as-is.
+  (`path`), GraphQL.js uses it as-is.
 - Otherwise, GraphQL.js wraps it into a `GraphQLError`.
 
 This ensures that all errors returned to the client follow a consistent structure.
@@ -109,10 +110,10 @@ Errors in GraphQL don't necessarily abort the entire operation. How an error aff
 depends on the nullability of the field where the error occurs.
 
 - **Nullable fields**: If a resolver for a nullable field throws an error, GraphQL.js records
-the error and sets the field's value to `null` in the `data` payload.
+  the error and sets the field's value to `null` in the `data` payload.
 - **Non-nullable fields**: If a resolver for a non-nullable field throws an error, GraphQL.js
-records the error and then sets the nearest parent nullable field to `null`.
-If no such nullable field exists, then the operation root will be set `null` (`"data": null`).
+  records the error and then sets the nearest parent nullable field to `null`.
+  If no such nullable field exists, then the operation root will be set `null` (`"data": null`).
 
 For example, consider the following schema:
 
@@ -165,9 +166,9 @@ throw new GraphQLError('Unauthorized', {
   extensions: {
     code: 'UNAUTHORIZED',
     http: {
-      status: 401
-    }
-  }
+      status: 401,
+    },
+  },
 });
 ```
 
@@ -179,20 +180,20 @@ Common use cases for `extensions` include:
 - Specifying HTTP status codes
 - Including internal debug information (hidden from production clients)
 
-Libraries like [Apollo Server](https://www.apollographql.com/docs/apollo-server/data/errors/) and 
-[Envelop](https://the-guild.dev/graphql/envelop/plugins/use-error-handler) offer conventions for 
+Libraries like [Apollo Server](https://www.apollographql.com/docs/apollo-server/data/errors/) and
+[Envelop](https://the-guild.dev/graphql/envelop/plugins/use-error-handler) offer conventions for
 structured error extensions, if you want to adopt standardized patterns.
 
 ## Best practices for error handling
 
-- Write clear, actionable messages. Error messages should help developers understand what went 
-wrong and how to fix it.
-- Use error codes in extensions. Define a set of stable, documented error codes for your API 
-to make client-side error handling easier.
-- Avoid leaking internal details. Do not expose stack traces, database errors, or other 
-sensitive information to clients.
-- Wrap unexpected errors. Catch and wrap low-level exceptions to ensure that all errors passed 
-through your GraphQL server follow the `GraphQLError` structure.
+- Write clear, actionable messages. Error messages should help developers understand what went
+  wrong and how to fix it.
+- Use error codes in extensions. Define a set of stable, documented error codes for your API
+  to make client-side error handling easier.
+- Avoid leaking internal details. Do not expose stack traces, database errors, or other
+  sensitive information to clients.
+- Wrap unexpected errors. Catch and wrap low-level exceptions to ensure that all errors passed
+  through your GraphQL server follow the `GraphQLError` structure.
 
 In larger servers, you might centralize error handling with a custom error formatting function
 to enforce these best practices consistently.

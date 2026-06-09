@@ -19,9 +19,10 @@ and how to disable them. Starting in v17, development mode is disabled by defaul
 be explicitly enabled for development environments.
 
 <Callout type="info" emoji="ℹ️">
-  In v16 and earlier, development mode is enabled by default and must be explicitly disabled
-  in production. Starting in v17, development mode is disabled by default and may require
-  explicit enabling. See [Development Mode](./development-mode) for details and instructions.
+  In v16 and earlier, development mode is enabled by default and must be
+  explicitly disabled in production. Starting in v17, development mode is
+  disabled by default and may require explicit enabling. See [Development
+  Mode](./development-mode) for details and instructions.
 </Callout>
 
 ## Secure your schema
@@ -78,7 +79,7 @@ potentially open for anyone to use.
 Additional resources:
 
 - [GraphQL over HTTP Appendix
-A: Persisted Documents](https://github.com/graphql/graphql-over-http/pull/264)
+  A: Persisted Documents](https://github.com/graphql/graphql-over-http/pull/264)
 - [GraphQL Trusted Documents](https://benjie.dev/graphql/trusted-documents) and
   [Techniques to Protect Your GraphQL API](https://benjie.dev/talks/techniques-to-protect) at benjie.dev
 - [@graphql-codegen/client-preset persisted documents](https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#persisted-documents) or [graphql-codegen-persisted-query-ids](https://github.com/valu-digital/graphql-codegen-persisted-query-ids#integrating-with-apollo-client) for Apollo Client
@@ -98,7 +99,11 @@ production and disabling it may reduce your API's attack surface.
 You can disable introspection in production, or only for unauthenticated users:
 
 ```js
-import { validate, specifiedRules, NoSchemaIntrospectionCustomRule } from 'graphql';
+import {
+  validate,
+  specifiedRules,
+  NoSchemaIntrospectionCustomRule,
+} from 'graphql';
 
 const validationRules = isPublicRequest
   ? [...specifiedRules, NoSchemaIntrospectionCustomRule]
@@ -120,10 +125,7 @@ The following example shows how to limit query depth:
 ```js
 import depthLimit from 'graphql-depth-limit';
 
-const validationRules = [
-  depthLimit(10),
-  ...specifiedRules,
-];
+const validationRules = [depthLimit(10), ...specifiedRules];
 ```
 
 Instead of depth, you can assign each field a cost and reject queries that exceed a total budget.
@@ -139,17 +141,17 @@ authorization should take place:
 // From your business logic
 const postRepository = {
   getBody({ user, post }) {
-    if (user?.id && (user.id === post.authorId)) {
-      return post.body
+    if (user?.id && user.id === post.authorId) {
+      return post.body;
     }
-    return null
-  }
-}
+    return null;
+  },
+};
 
 // Resolver for the `Post.body` field:
 function Post_body(source, args, context, info) {
   // return the post body only if the user is the post's author
-  return postRepository.getBody({ user: context.user, post: source })
+  return postRepository.getBody({ user: context.user, post: source });
 }
 ```
 
@@ -176,7 +178,7 @@ The most common performance issue in GraphQL is the N+1 query problem, where nes
 make repeated calls for related data. `DataLoader` helps avoid this by batching and caching
 field-level fetches within a single request.
 
-For more information on this issue and how to resolve it, see 
+For more information on this issue and how to resolve it, see
 [Solving the N+1 Problem with DataLoader](./n1-dataloader/).
 
 ### Apply caching where appropriate
@@ -185,7 +187,7 @@ You can apply caching at several levels, depending on your server architecture:
 
 - **Resolver-level caching**: Cache the results of expensive operations for a short duration.
 - **HTTP caching**: Use persisted queries and edge caching to avoid re-processing
-common queries.
+  common queries.
 - **Schema caching**: If your schema is static, avoid rebuilding it on every request.
 
 For larger applications, consider request-scoped caching or external systems like Redis to avoid
@@ -216,7 +218,7 @@ Avoid logging sensitive data like passwords or access tokens.
 
 ### Collect metrics
 
-Operational metrics help track the health and behavior of your server over time. 
+Operational metrics help track the health and behavior of your server over time.
 
 You can use tools like [Prometheus](https://prometheus.io) or [OpenTelemetry](https://opentelemetry.io)
 to capture query counts, resolver durations, and error rates.
@@ -320,7 +322,7 @@ Integrate these checks into your CI/CD pipeline to catch issues before they reac
 
 ## Use environment-aware configuration
 
-You should tailor your GraphQL server's behavior based on the runtime environment. 
+You should tailor your GraphQL server's behavior based on the runtime environment.
 
 - Disable introspection and show minimal error messages in production.
 - Enable playgrounds like GraphiQL or Apollo Sandbox only in development.
@@ -337,7 +339,7 @@ app.use(
     schema,
     graphiql: isDev,
     customFormatErrorFn: formatError,
-  })
+  }),
 );
 ```
 
@@ -347,10 +349,12 @@ Use this checklist to verify that your GraphQL.js server is ready for production
 Before deploying, confirm the following checks are complete:
 
 ### Build and environment
+
 - Bundler sets `process.env.NODE_ENV` to `'production'`
 - Development-only checks are removed from the production build
 
 ### Schema security
+
 - Authentication is required for requests
 - Authorization is enforced via business logic
 - Rate limiting is applied
@@ -360,28 +364,33 @@ Before deploying, confirm the following checks are complete:
   - Query cost limits are in place
 
 ### Performance
+
 - `DataLoader` is used to batch data fetching
 - Expensive resolvers use caching (request-scoped or shared)
 - Public queries use HTTP or CDN caching
 - Schema is reused across requests (not rebuilt each time)
 
 ### Monitoring and observability
+
 - Logs are structured and machine-readable
 - Metrics are collected (e.g., with Prometheus or OpenTelemetry)
 - Tracing is enabled with a supported tool
 - Logs do not include sensitive data
 
 ### Error handling
+
 - Stack traces and internal messages are hidden in production
 - Custom error types are used for common cases
 - Errors include `extensions.code` for consistent client handling
 - A `formatError` function is used to control error output
 
 ### Schema lifecycle
+
 - Deprecated fields are marked with `@deprecated` and a clear reason
 - Schema changes are validated before deployment
 - CI/CD includes schema diff checks
 
 ### Environment configuration
+
 - Playground tools (e.g., GraphiQL) are only enabled in development
 - Error formatting, logging, and introspection are environment-specific

@@ -3,19 +3,19 @@ title: Testing Approaches
 sidebarTitle: Testing Approaches
 ---
 
-import { Callout } from 'nextra/components'
+import { Callout } from 'nextra/components';
 
 # Testing Approaches
 
-Testing is essential for building reliable GraphQL servers. But not every test 
-gives you the same kind of feedback, and not every test belongs at every stage of development. 
-This guide explains the differences between unit tests, integration tests, and 
+Testing is essential for building reliable GraphQL servers. But not every test
+gives you the same kind of feedback, and not every test belongs at every stage of development.
+This guide explains the differences between unit tests, integration tests, and
 end-to-end (E2E) tests, so you can choose the right approach for your project.
 
 ## Unit tests
 
-Unit tests focus on testing resolver functions in isolation. You run the resolver directly 
-with mocked arguments and context. These tests do not involve your schema or run actual 
+Unit tests focus on testing resolver functions in isolation. You run the resolver directly
+with mocked arguments and context. These tests do not involve your schema or run actual
 GraphQL queries.
 
 When you write unit tests, you’re checking that the resolver:
@@ -33,8 +33,8 @@ Unit tests are fast and provide tight feedback loops. They're especially useful 
 - Validating error handling and edge cases
 - Refactoring resolver logic and needing immediate verification
 
-However, unit tests have limitations. Because you're mocking inputs and skipping the schema 
-entirely, you won’t catch issues with how your schema connects to your resolver functions. 
+However, unit tests have limitations. Because you're mocking inputs and skipping the schema
+entirely, you won’t catch issues with how your schema connects to your resolver functions.
 There's also a risk of false positives if your mocks drift from real usage over time.
 
 ### Example: Unit test for a resolver
@@ -48,12 +48,12 @@ expect(result).toEqual(expectedResult);
 
 ## Integration tests
 
-Integration tests go a step further by testing resolvers and the schema together. 
+Integration tests go a step further by testing resolvers and the schema together.
 You can run actual GraphQL queries and verify the end-to-end behavior within your
 application's boundaries.
 
-You can use the `graphql()` function from the GraphQL package, no HTTP server 
-needed. With the `graphql()` function, you can test the full flow: request &gt; schema &gt; 
+You can use the `graphql()` function from the GraphQL package, no HTTP server
+needed. With the `graphql()` function, you can test the full flow: request &gt; schema &gt;
 resolver &gt; data source (mocked or real).
 
 Integration tests confirm that:
@@ -82,8 +82,8 @@ Trade-offs to consider:
 
 <Callout type="default">
 
-  If you're preparing to onboard frontend clients or exposing your API to consumers,
-  integration tests catch mismatches early before they reach production.
+If you're preparing to onboard frontend clients or exposing your API to consumers,
+integration tests catch mismatches early before they reach production.
 
 </Callout>
 
@@ -128,7 +128,7 @@ E2E tests simulate production-like conditions and are especially valuable when:
 - You need to test network-level behaviors such as timeouts and error handling
 - You're coordinating multiple services together
 
-E2E tests offer high confidence but come at the cost of speed and complexity. 
+E2E tests offer high confidence but come at the cost of speed and complexity.
 They’re best used sparingly for critical paths, not as your primary testing approach.
 
 Trade-offs to consider:
@@ -140,8 +140,8 @@ Trade-offs to consider:
 
 <Callout type="info">
 
-  In the following guides, we focus on unit and integration tests. E2E tests are 
-  valuable, but they require different tooling and workflows.
+In the following guides, we focus on unit and integration tests. E2E tests are
+valuable, but they require different tooling and workflows.
 
 </Callout>
 
@@ -149,14 +149,14 @@ Trade-offs to consider:
 
 Unit and integration tests are complementary, not competing.
 
-| Factor | Unit tests          | Integration tests        |
-|:-------|:--------------------|:-------------------------|
-| Speed  | Fast                | Moderate                 |
-| Scope  | Resolver logic only | Schema and resolver flow |
-| Setup  | Minimal             | Schema, mocks, context   |
+| Factor   | Unit tests                                      | Integration tests                         |
+| :------- | :---------------------------------------------- | :---------------------------------------- |
+| Speed    | Fast                                            | Moderate                                  |
+| Scope    | Resolver logic only                             | Schema and resolver flow                  |
+| Setup    | Minimal                                         | Schema, mocks, context                    |
 | Best for | Isolated business logic, fast development loops | Verifying resolver wiring, operation flow |
 
-Start with unit tests when building new features, then layer in integration tests 
+Start with unit tests when building new features, then layer in integration tests
 to validate schema wiring and catch regressions as your API grows.
 
 ## Choose a testing approach

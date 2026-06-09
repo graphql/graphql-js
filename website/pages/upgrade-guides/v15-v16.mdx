@@ -12,8 +12,8 @@ import { Callout } from 'nextra/components';
 <Callout type="info">
   GraphQL.js v16 is the current stable release line on npm, and a v17 release
   candidate is available for final testing and feedback. If you are upgrading
-  from v15, use this guide first, then continue with
-  [v16 to v17](/upgrade-guides/v16-v17) when you are ready to test the release
+  from v15, use this guide first, then continue with [v16 to
+  v17](/upgrade-guides/v16-v17) when you are ready to test the release
   candidate.
 </Callout>
 
@@ -31,13 +31,17 @@ required cleanup before moving into the v17 execution and runtime changes.
 <nav className="upgrade-guide-toc" aria-labelledby="contents">
   <div className="upgrade-guide-toc-grid">
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#using-this-guide">Using this Guide</a>
+      <a className="upgrade-guide-toc-title" href="#using-this-guide">
+        Using this Guide
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#using-this-guide">Scope and labels</a>
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#platform-and-package-shape">Platform and Package Shape</a>
+      <a className="upgrade-guide-toc-title" href="#platform-and-package-shape">
+        Platform and Package Shape
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#nodejs-typescript-and-flow">Node.js and types</a>
         <a href="#runtime-polyfills">Polyfills</a>
@@ -45,7 +49,9 @@ required cleanup before moving into the v17 execution and runtime changes.
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#request-apis">Request APIs</a>
+      <a className="upgrade-guide-toc-title" href="#request-apis">
+        Request APIs
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#graphql-and-graphqlsync">graphql()</a>
         <a href="#execute-and-executesync">execute()</a>
@@ -53,7 +59,12 @@ required cleanup before moving into the v17 execution and runtime changes.
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#removed-apis-and-replacements">Removed APIs</a>
+      <a
+        className="upgrade-guide-toc-title"
+        href="#removed-apis-and-replacements"
+      >
+        Removed APIs
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#deprecated-usage-finder">Deprecated usage</a>
         <a href="#comments-as-descriptions">Descriptions</a>
@@ -63,7 +74,12 @@ required cleanup before moving into the v17 execution and runtime changes.
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#validation-and-execution-behavior">Validation and Execution</a>
+      <a
+        className="upgrade-guide-toc-title"
+        href="#validation-and-execution-behavior"
+      >
+        Validation and Execution
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#validation-error-limits">Error limits</a>
         <a href="#subscription-root-fields">Subscription roots</a>
@@ -73,7 +89,9 @@ required cleanup before moving into the v17 execution and runtime changes.
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#language-and-tooling">Language and Tooling</a>
+      <a className="upgrade-guide-toc-title" href="#language-and-tooling">
+        Language and Tooling
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#visitor-shape">Visitors</a>
         <a href="#const-values-and-operation-types">Const values</a>
@@ -83,7 +101,12 @@ required cleanup before moving into the v17 execution and runtime changes.
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#schema-features-added-in-the-v16-line">Schema Features</a>
+      <a
+        className="upgrade-guide-toc-title"
+        href="#schema-features-added-in-the-v16-line"
+      >
+        Schema Features
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#enum-value-thunks">Enum thunks</a>
         <a href="#oneof-input-objects">OneOf inputs</a>
@@ -92,7 +115,9 @@ required cleanup before moving into the v17 execution and runtime changes.
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#practical-migration-order">Migration Work</a>
+      <a className="upgrade-guide-toc-title" href="#practical-migration-order">
+        Migration Work
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#additional-deprecations-in-v16">Deprecations</a>
         <a href="#practical-migration-order">Order</a>
@@ -571,10 +596,7 @@ helpers for tooling that needs stable references to schema elements.
 ```js
 import { resolveSchemaCoordinate } from 'graphql/utilities';
 
-const resolved = resolveSchemaCoordinate(
-  schema,
-  'Query.search(criteria:)',
-);
+const resolved = resolveSchemaCoordinate(schema, 'Query.search(criteria:)');
 ```
 
 Coordinates can resolve named types, fields, input fields, enum values,

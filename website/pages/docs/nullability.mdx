@@ -17,10 +17,10 @@ and how to design schemas with nullability in mind.
 
 In GraphQL, fields are nullable by default. This means if a resolver function
 returns `null`, the result will include a `null` value unless the field is
-explicitly marked as non-nullable. 
+explicitly marked as non-nullable.
 
-When a non-nullable field resolves to `null`, the GraphQL execution engine 
-raises a runtime error and attempts to recover by replacing the nearest 
+When a non-nullable field resolves to `null`, the GraphQL execution engine
+raises a runtime error and attempts to recover by replacing the nearest
 nullable parent field with `null`. This behavior is known formally as "error
 propagation" but more commonly as null bubbling.
 
@@ -33,11 +33,7 @@ GraphQL.js represents non-nullability using the `GraphQLNonNull` wrapper type.
 By default, all fields are nullable:
 
 ```js
-import {
-  GraphQLObjectType,
-  GraphQLString,
-  GraphQLNonNull,
-} from 'graphql';
+import { GraphQLObjectType, GraphQLString, GraphQLNonNull } from 'graphql';
 
 const UserType = new GraphQLObjectType({
   name: 'User',
@@ -61,7 +57,7 @@ You can also combine it with other types to create more
 specific constraints. For example:
 
 ```js
-new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType)))
+new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType)));
 ```
 
 This structure corresponds to [User!]! in SDL: a non-nullable list of non-null
@@ -74,9 +70,9 @@ GraphQL.js uses nullability rules to determine how to handle `null` values
 at runtime:
 
 - If a nullable field returns `null`, the result includes that field with
-a `null` value.
+  a `null` value.
 - If a non-nullable field returns `null`, GraphQL throws an error and
-sets the nearest nullable parent field to `null`.
+  sets the nearest nullable parent field to `null`.
 
 This bubbling behavior prevents partial data from being returned in cases where
 a non-nullable guarantee is violated.
@@ -123,11 +119,11 @@ also less forgiving. When deciding whether to use `GraphQLNonNull`, keep
 the following in mind:
 
 - Use non-null types when a value is always expected. This reflects intent
-and reduces ambiguity for clients.
+  and reduces ambiguity for clients.
 - Avoid aggressive use of non-null types in early schema versions. It limits
-your ability to evolve the API later.
+  your ability to evolve the API later.
 - Be cautious of error bubbling. A `null` return from a deeply nested non-nullable
-field can affect large portions of the response.
+  field can affect large portions of the response.
 
 ### Versioning
 
@@ -204,32 +200,32 @@ const schema = new GraphQLSchema({ query: QueryType });
 
 In this example, the `product` resolver returns an object with `name: null`.
 Because the `name` field is non-nullable, GraphQL.js responds by
-nullifying the entire `product` field and appending a 
+nullifying the entire `product` field and appending a
 corresponding error to the response.
 
 ## Best practices
 
 - Default to nullable. Start with nullable fields and introduce non-null
-constraints when data consistency is guaranteed.
+  constraints when data consistency is guaranteed.
 - Express intent. Use non-null when a field must always be present for logical
-correctness.
+  correctness.
 - Validate early. Add checks in resolvers to prevent returning `null` for
-non-null fields.
+  non-null fields.
 - Consider error boundaries. Were an error to occur, where should it stop
   bubbling?
 - Watch for nesting. Distinguish between:
-    - `[User!]` - nullable list of non-null users
-    - `[User]!` - non-null list of nullable users
-    - `[User!]!` - non-null list of non-null users
+  - `[User!]` - nullable list of non-null users
+  - `[User]!` - non-null list of nullable users
+  - `[User!]!` - non-null list of non-null users
 
 ## Additional resources
 
 - [GraphQL Specification: Non-null](https://spec.graphql.org/draft/#sec-Non-Null):
-Defines the formal behavior of non-null types in the GraphQL type system and
-execution engine.
+  Defines the formal behavior of non-null types in the GraphQL type system and
+  execution engine.
 - [Understanding GraphQL.js Errors](./graphql-errors): Explains
-how GraphQL.js propagates and formats execution-time errors.
+  how GraphQL.js propagates and formats execution-time errors.
 - [Anatomy of a Resolver](./resolver-anatomy): Breaks down
-how resolvers work in GraphQL.js.
+  how resolvers work in GraphQL.js.
 - [Constructing Types](./constructing-types): Shows how
-to define and compose types in GraphQL.js.
+  to define and compose types in GraphQL.js.

@@ -53,7 +53,9 @@ function executeWithTiming(args) {
     };
   };
 
-  return typeof result.then === 'function' ? result.then(addTiming) : addTiming(result);
+  return typeof result.then === 'function'
+    ? result.then(addTiming)
+    : addTiming(result);
 }
 ```
 
@@ -101,7 +103,9 @@ function subscribeWithHostPipeline(args) {
     return mapSourceToResponseEvent(validatedArgs, sourceEventStream);
   };
 
-  return typeof source.then === 'function' ? source.then(mapSource) : mapSource(source);
+  return typeof source.then === 'function'
+    ? source.then(mapSource)
+    : mapSource(source);
 }
 ```
 

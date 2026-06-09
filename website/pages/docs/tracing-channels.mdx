@@ -73,15 +73,15 @@ overhead and no error.
 
 ## The Channels
 
-| Channel | Fires for | Context type |
-| --- | --- | --- |
-| `graphql:parse` | Each `parse()` call | [`GraphQLParseContext`](/api-v17/graphql#graphqlparsecontext) |
-| `graphql:validate` | Each `validate()` call | [`GraphQLValidateContext`](/api-v17/graphql#graphqlvalidatecontext) |
-| `graphql:execute` | Each `execute()` / `graphql()` operation | [`GraphQLExecuteContext`](/api-v17/graphql#graphqlexecutecontext) |
-| `graphql:execute:variableCoercion` | Variable coercion within an operation | [`GraphQLExecuteVariableCoercionContext`](/api-v17/graphql#graphqlexecutevariablecoercioncontext) |
+| Channel                            | Fires for                                                               | Context type                                                                                      |
+| ---------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `graphql:parse`                    | Each `parse()` call                                                     | [`GraphQLParseContext`](/api-v17/graphql#graphqlparsecontext)                                     |
+| `graphql:validate`                 | Each `validate()` call                                                  | [`GraphQLValidateContext`](/api-v17/graphql#graphqlvalidatecontext)                               |
+| `graphql:execute`                  | Each `execute()` / `graphql()` operation                                | [`GraphQLExecuteContext`](/api-v17/graphql#graphqlexecutecontext)                                 |
+| `graphql:execute:variableCoercion` | Variable coercion within an operation                                   | [`GraphQLExecuteVariableCoercionContext`](/api-v17/graphql#graphqlexecutevariablecoercioncontext) |
 | `graphql:execute:rootSelectionSet` | Root selection set execution (also once per emitted subscription event) | [`GraphQLExecuteRootSelectionSetContext`](/api-v17/graphql#graphqlexecuterootselectionsetcontext) |
-| `graphql:subscribe` | Each `subscribe()` setup | [`GraphQLSubscribeContext`](/api-v17/graphql#graphqlsubscribecontext) |
-| `graphql:resolve` | Each field resolver invocation | [`GraphQLResolveContext`](/api-v17/graphql#graphqlresolvecontext) |
+| `graphql:subscribe`                | Each `subscribe()` setup                                                | [`GraphQLSubscribeContext`](/api-v17/graphql#graphqlsubscribecontext)                             |
+| `graphql:resolve`                  | Each field resolver invocation                                          | [`GraphQLResolveContext`](/api-v17/graphql#graphqlresolvecontext)                                 |
 
 <Callout type="warning">
   `graphql:resolve` fires for every resolved field, including fields served by
@@ -154,18 +154,18 @@ stays entered across the full async lifecycle. This is what lets a tracer open
 a span in `start` and close it in `asyncEnd`.
 
 <Callout type="info">
-  A subscriber that attaches partway through an in-flight operation will not
-  see a matching `start`, and any `AsyncLocalStorage` context it expects will be
+  A subscriber that attaches partway through an in-flight operation will not see
+  a matching `start`, and any `AsyncLocalStorage` context it expects will be
   missing. Attach subscribers before the operations you want to observe.
 </Callout>
 
 <Callout type="warning">
-  For incremental delivery (`@defer` and `@stream`), `graphql:execute`
-  completes when the initial result is ready, not when the deferred and
-  streamed payloads finish. Those later payloads are not `graphql:execute`
-  events; the deferred fields still fire `graphql:resolve` as they execute. Do
-  not treat the `graphql:execute` duration as the full request lifetime for
-  incremental responses.
+  For incremental delivery (`@defer` and `@stream`), `graphql:execute` completes
+  when the initial result is ready, not when the deferred and streamed payloads
+  finish. Those later payloads are not `graphql:execute` events; the deferred
+  fields still fire `graphql:resolve` as they execute. Do not treat the
+  `graphql:execute` duration as the full request lifetime for incremental
+  responses.
 </Callout>
 
 ## How the Channels Fit Together
@@ -262,7 +262,7 @@ each handler) is what keeps the asynchronous path from being counted twice.
 
 ## Tracing Subscriptions
 
-`graphql:subscribe` wraps the subscription *setup*: building the event source
+`graphql:subscribe` wraps the subscription _setup_: building the event source
 from the subscription's root field. The result on success is the response
 stream.
 

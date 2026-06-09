@@ -2,12 +2,12 @@
 title: Operation Complexity Controls
 ---
 
-import { Callout } from 'nextra/components'
+import { Callout } from 'nextra/components';
 
 # Operation Complexity Controls
 
 GraphQL gives clients a lot of flexibility to shape responses, but that
-flexibility can also introduce risk. Clients can request deeply nested fields or 
+flexibility can also introduce risk. Clients can request deeply nested fields or
 large volumes of data in a single operation. Without controls, these operations can slow
 down your server or expose security vulnerabilities.
 
@@ -16,14 +16,15 @@ using static analysis. You'll learn how to estimate the cost
 of an operation before execution and reject it if it exceeds a safe limit.
 
 <Callout type="info" emoji="ℹ️">
-  In production, we recommend using [trusted documents](/docs/going-to-production#only-allow-trusted-documents)
-  rather than analyzing arbitrary documents at runtime. Complexity analysis can still be
+  In production, we recommend using [trusted
+  documents](/docs/going-to-production#only-allow-trusted-documents) rather than
+  analyzing arbitrary documents at runtime. Complexity analysis can still be
   useful at build time to catch expensive operations before they're deployed.
 </Callout>
 
 ## Why complexity control matters
 
-GraphQL lets clients choose exactly what data they want. That flexibility is powerful, 
+GraphQL lets clients choose exactly what data they want. That flexibility is powerful,
 but it also makes it hard to predict the runtime cost of a query just by looking
 at the schema.
 
@@ -59,14 +60,14 @@ No resolvers are called unless the operation passes these checks.
 
 <Callout type="info" emoji="ℹ️">
   Fragment cycles or deep nesting can cause some complexity analyzers to perform
-  poorly or get stuck. Always run complexity analysis after validation unless your analyzer
-  explicitly handles cycles safely.
+  poorly or get stuck. Always run complexity analysis after validation unless
+  your analyzer explicitly handles cycles safely.
 </Callout>
 
 ## Simple complexity calculation
 
 There are several community-maintained tools for complexity analysis. The examples in this
-guide use [`graphql-query-complexity`](https://github.com/slicknode/graphql-query-complexity) as 
+guide use [`graphql-query-complexity`](https://github.com/slicknode/graphql-query-complexity) as
 an option, but we recommend choosing the approach that best fits your project.
 
 Here's a basic example using its `simpleEstimator`, which assigns a flat cost to every field:
@@ -144,8 +145,8 @@ complexity of each child field.
 
 <Callout type="info" emoji="ℹ️">
   Most validation steps don't have access to variable values. If your complexity
-  calculation depends on variables (like `limit`), make sure it runs after validation, not
-  as part of it.
+  calculation depends on variables (like `limit`), make sure it runs after
+  validation, not as part of it.
 </Callout>
 
 To evaluate the cost before execution, you can combine estimators like this:
@@ -198,7 +199,10 @@ to your GraphQL.js server. For example, `graphql-query-complexity` provides a
 
 ```js
 import { graphql, specifiedRules, parse } from 'graphql';
-import { createComplexityRule, simpleEstimator } from 'graphql-query-complexity';
+import {
+  createComplexityRule,
+  simpleEstimator,
+} from 'graphql-query-complexity';
 import { schema } from './schema.js';
 
 const source = `
@@ -233,8 +237,9 @@ console.log(result);
 ```
 
 <Callout type="info" emoji="ℹ️">
-  Only use complexity rules in validation if you're sure the analysis is cycle-safe.
-  Otherwise, run complexity checks after validation and before execution.
+  Only use complexity rules in validation if you're sure the analysis is
+  cycle-safe. Otherwise, run complexity checks after validation and before
+  execution.
 </Callout>
 
 ## Complexity in trusted environments
@@ -254,7 +259,7 @@ useful, just in a different way. You can run it at build time to:
 - Account for list fields and abstract types, which can significantly increase cost.
 - Avoid estimating complexity before validation unless you're confident in your tooling.
 - Use complexity analysis as part of your layered security strategy, alongside depth limits,
-field guards, and authentication.
+  field guards, and authentication.
 
 ## Additional resources
 

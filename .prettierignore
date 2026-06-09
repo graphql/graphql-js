@@ -1,2 +1,4 @@
 # additive to .gitignore
-/website/**/*.mdx
+/website/next-env.d.ts
+/website/pages/api-v16/**
+/website/pages/api-v17/**

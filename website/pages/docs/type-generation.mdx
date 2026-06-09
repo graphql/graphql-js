@@ -5,15 +5,15 @@ sidebarTitle: Type Generation
 
 # Type Generation for GraphQL
 
-Writing a GraphQL server in JavaScript or TypeScript often involves managing complex 
-types. As your API grows, keeping these types accurate and aligned with your schema 
+Writing a GraphQL server in JavaScript or TypeScript often involves managing complex
+types. As your API grows, keeping these types accurate and aligned with your schema
 becomes increasingly difficult.
 
-Type generation tools automate this process. Instead of manually defining or maintaining 
-TypeScript types for your schema and operations, these tools can generate them for you. 
+Type generation tools automate this process. Instead of manually defining or maintaining
+TypeScript types for your schema and operations, these tools can generate them for you.
 This improves safety, reduces bugs, and makes development easier to scale.
 
-This guide walks through common type generation workflows for projects using 
+This guide walks through common type generation workflows for projects using
 `graphql-js`, including when and how to use them effectively.
 
 ## Why use type generation?
@@ -43,7 +43,7 @@ functions return values that match their expected shapes.
 However, code-first development has tradeoffs:
 
 - You won't get automatic type definitions for your resolvers unless you generate
-them manually or infer them through wrappers.
+  them manually or infer them through wrappers.
 - Schema documentation, testing, and tool compatibility may require you to provide
   a description of the schema in SDL first.
 
@@ -69,7 +69,7 @@ In a schema-first workflow, your GraphQL schema is written in SDL, for example, 
 or `.gql` (discouraged) files. This serves as the source of truth for your server. This approach
 emphasizes clarity because your schema is defined independently from your business logic.
 
-Schema-first development pairs well with type generation because the schema is 
+Schema-first development pairs well with type generation because the schema is
 serializable and can be directly used by tools like [GraphQL Code Generator](https://the-guild.dev/graphql/codegen).
 
 With a schema-first workflow, you can:
@@ -89,7 +89,7 @@ npm install graphql @graphql-codegen/cli @eddeee888/gcg-typescript-resolver-file
 This scoped package is published by a community maintainer and is widely used for GraphQL server
 type generation.
 
-We recommend using the [Server Preset](https://www.npmjs.com/package/@eddeee888/gcg-typescript-resolver-files) for a 
+We recommend using the [Server Preset](https://www.npmjs.com/package/@eddeee888/gcg-typescript-resolver-files) for a
 managed workflow. It automatically generates types and files based on your schema without needing extra plugin setup.
 
 The Server Preset generates:
@@ -114,14 +114,14 @@ This setup expects your schema is split into modules to improve readability and 
 Here's an example `codegen.ts` file using the Server Preset:
 
 ```ts filename="codegen.ts"
-import type { CodegenConfig } from "@graphql-codegen/cli";
-import { defineConfig } from "@eddeee888/gcg-typescript-resolver-files";
+import type { CodegenConfig } from '@graphql-codegen/cli';
+import { defineConfig } from '@eddeee888/gcg-typescript-resolver-files';
 
 const config: CodegenConfig = {
-  schema: "src/**/schema.graphql",
+  schema: 'src/**/schema.graphql',
   generates: {
-    "src/schema": defineConfig({
-      resolverGeneration: "minimal",
+    'src/schema': defineConfig({
+      resolverGeneration: 'minimal',
     }),
   },
 };
@@ -138,9 +138,9 @@ npx graphql-codegen
 This creates resolver files like:
 
 ```ts filename="src/schema/user/resolvers/Query/user.ts"
-import type { QueryResolvers } from "./../../../types.generated";
+import type { QueryResolvers } from './../../../types.generated';
 
-export const user: NonNullable<QueryResolvers["user"]> = async (
+export const user: NonNullable<QueryResolvers['user']> = async (
   _parent,
   _arg,
   _ctx,
@@ -153,7 +153,7 @@ The user query resolver is typed to ensure that the user resolver expects an id 
 User, giving you confidence and autocomplete while implementing your server logic, which may look like this:
 
 ```ts filename="src/schema/user/resolvers/Query/user.ts"
-export const user: NonNullable<QueryResolvers["user"]> = async (
+export const user: NonNullable<QueryResolvers['user']> = async (
   parent,
   args,
   context,
@@ -166,8 +166,8 @@ See the official [Server Preset guide](https://the-guild.dev/graphql/codegen/doc
 
 ## Generating operation types
 
-In addition to resolver types, you can generate types for GraphQL operations such as queries, mutations, and 
-fragments. This is especially useful for shared integration tests or client logic that needs to match the schema 
+In addition to resolver types, you can generate types for GraphQL operations such as queries, mutations, and
+fragments. This is especially useful for shared integration tests or client logic that needs to match the schema
 precisely.
 
 To get started, install the required packages:
@@ -184,17 +184,17 @@ We recommend using the GraphQL Code Generator [Client Preset](https://the-guild.
 Here's an example configuration using the Client Preset:
 
 ```ts filename="codegen.ts"
-import type { CodegenConfig } from "@graphql-codegen/cli";
+import type { CodegenConfig } from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
-  schema: "src/**/schema.graphql",
-  documents: ["src/**/*.ts"],
+  schema: 'src/**/schema.graphql',
+  documents: ['src/**/*.ts'],
   ignoreNoDocuments: true,
   generates: {
-    "./src/graphql/": {
-      preset: "client",
+    './src/graphql/': {
+      preset: 'client',
       config: {
-        documentMode: "string",
+        documentMode: 'string',
       },
     },
   },
@@ -209,11 +209,11 @@ To keep generated types up to date as you edit your code, run the generator in w
 npx graphql-codegen --config codegen.ts --watch
 ```
 
-Once generated, import the `graphql` function from `src/graphql/` to write GraphQL operations 
+Once generated, import the `graphql` function from `src/graphql/` to write GraphQL operations
 directly in your TypeScript files:
 
 ```ts filename="src/index.ts"
-import { graphql } from "./graphql";
+import { graphql } from './graphql';
 
 const UserQuery = graphql(`
   query User($id: ID!) {
@@ -224,20 +224,20 @@ const UserQuery = graphql(`
   }
 `);
 
-const response = await fetch("https://graphql.org/graphql/", {
-  method: "POST",
+const response = await fetch('https://graphql.org/graphql/', {
+  method: 'POST',
   headers: {
-    "Content-Type": "application/json",
-    Accept: "application/graphql-response+json",
+    'Content-Type': 'application/json',
+    Accept: 'application/graphql-response+json',
   },
   body: JSON.stringify({
     query: UserQuery,
-    variables: { id: "1" },
+    variables: { id: '1' },
   }),
 });
 
 if (!response.ok) {
-  throw new Error("Network response was not ok");
+  throw new Error('Network response was not ok');
 }
 
 const result: ResultOf<typeof UserQuery> = await response.json();
@@ -256,8 +256,8 @@ For guides on using the Client Preset with popular frameworks and tools, see:
 To keep your type generation reliable and consistent:
 
 - Check in generated files to version control so teammates and CI systems don't produce
-divergent results.
+  divergent results.
 - Run type generation in CI to ensure types stay in sync with schema changes.
 - Use schema diffing tools like `graphql-inspector` to catch breaking changes before
-they're merged.
+  they're merged.
 - Automate regeneration with pre-commit hooks, GitHub Actions, or lint-staged workflows.

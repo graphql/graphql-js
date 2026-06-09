@@ -13,8 +13,8 @@ import { Callout } from 'nextra/components';
   GraphQL.js v15 is an older release line. GraphQL.js v16 is the current stable
   release line, and a v17 release candidate is available for final testing and
   feedback. If you are upgrading from v14, use this guide first, then continue
-  through [v15 to v16](/upgrade-guides/v15-v16) and
-  [v16 to v17](/upgrade-guides/v16-v17).
+  through [v15 to v16](/upgrade-guides/v15-v16) and [v16 to
+  v17](/upgrade-guides/v16-v17).
 </Callout>
 
 GraphQL.js v15 is mainly a compatibility cleanup and SDL modernization release.
@@ -29,17 +29,26 @@ major-version guides so failures stay tied to one version boundary.
 <nav className="upgrade-guide-toc" aria-labelledby="contents">
   <div className="upgrade-guide-toc-grid">
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#using-this-guide">Using this Guide</a>
+      <a className="upgrade-guide-toc-title" href="#using-this-guide">
+        Using this Guide
+      </a>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#platform-and-package-shape">Platform and Package Shape</a>
+      <a className="upgrade-guide-toc-title" href="#platform-and-package-shape">
+        Platform and Package Shape
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#nodejs-and-package-dependencies">Node.js</a>
         <a href="#typescript-definitions">TypeScript</a>
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#removed-utilities-and-renamed-entry-points">Removed Utilities</a>
+      <a
+        className="upgrade-guide-toc-title"
+        href="#removed-utilities-and-renamed-entry-points"
+      >
+        Removed Utilities
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#input-coercion-helpers">Input coercion</a>
         <a href="#introspection-query-helper">Introspection</a>
@@ -48,7 +57,12 @@ major-version guides so failures stay tied to one version boundary.
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#schema-construction-and-sdl">Schema and SDL</a>
+      <a
+        className="upgrade-guide-toc-title"
+        href="#schema-construction-and-sdl"
+      >
+        Schema and SDL
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#schema-extensions-in-buildschema">Extensions</a>
         <a href="#interfaces-implementing-interfaces">Interfaces</a>
@@ -59,14 +73,18 @@ major-version guides so failures stay tied to one version boundary.
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#coercion-and-serialization">Coercion and Serialization</a>
+      <a className="upgrade-guide-toc-title" href="#coercion-and-serialization">
+        Coercion and Serialization
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#enum-values">Enum values</a>
         <a href="#built-in-scalars">Built-in scalars</a>
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#execution-and-validation">Execution and Validation</a>
+      <a className="upgrade-guide-toc-title" href="#execution-and-validation">
+        Execution and Validation
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#request-api-object-arguments">Request APIs</a>
         <a href="#synchronous-execution-helper">Sync execution</a>
@@ -76,7 +94,9 @@ major-version guides so failures stay tied to one version boundary.
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#practical-migration-order">Migration Work</a>
+      <a className="upgrade-guide-toc-title" href="#practical-migration-order">
+        Migration Work
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#v15-compatibility-apis-to-clear-before-v16">v16 prep</a>
         <a href="#practical-migration-order">Order</a>

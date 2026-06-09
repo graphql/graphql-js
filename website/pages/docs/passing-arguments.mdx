@@ -18,13 +18,16 @@ Instead of hard coding "three", we might want a more general function that rolls
 
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
+
 ```graphql
 type Query {
   rollDice(numDice: Int!, numSides: Int): [Int]
 }
 ```
+
   </Tabs.Tab>
   <Tabs.Tab>
+
 ```js
 import express from 'express';
 import { createHandler } from 'graphql-http/lib/use/express';
@@ -34,7 +37,7 @@ import {
   GraphQLList,
   GraphQLFloat,
   GraphQLInt,
-  GraphQLNonNull
+  GraphQLNonNull,
 } from 'graphql';
 
 const schema = new GraphQLSchema({
@@ -53,7 +56,7 @@ const schema = new GraphQLSchema({
             output.push(1 + Math.floor(Math.random() * (numSides || 6)));
           }
           return output;
-        }
+        },
       },
     },
   }),
@@ -69,6 +72,7 @@ app.all(
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');
 ```
+
   </Tabs.Tab>
 </Tabs>
 
@@ -155,13 +159,18 @@ The entire code for a server that hosts this `rollDice` API is:
 
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
+
 ```js
 import express from 'express';
 import { createHandler } from 'graphql-http/lib/use/express';
 import { buildSchema } from 'graphql';
 
 // Construct a schema, using GraphQL schema language
-const schema = buildSchema(/_ GraphQL _/ ` type Query { rollDice(numDice: Int!, numSides: Int): [Int] }`);
+const schema = buildSchema(/* GraphQL */ `
+  type Query {
+    rollDice(numDice: Int!, numSides: Int): [Int]
+  }
+`);
 
 // The root provides a resolver function for each API endpoint
 const root = {
@@ -185,8 +194,10 @@ app.all(
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');
 ```
+
   </Tabs.Tab>
   <Tabs.Tab>
+
 ```js
 import express from 'express';
 import { createHandler } from 'graphql-http/lib/use/express';
@@ -197,7 +208,7 @@ import {
   GraphQLString,
   GraphQLList,
   GraphQLFloat,
-  GraphQLSchema
+  GraphQLSchema,
 } from 'graphql';
 
 // Construct a schema, using GraphQL schema language
@@ -209,10 +220,10 @@ const schema = new GraphQLSchema({
         type: new GraphQLList(GraphQLFloat),
         args: {
           numDice: {
-            type: new GraphQLNonNull(GraphQLInt)
+            type: new GraphQLNonNull(GraphQLInt),
           },
           numSides: {
-            type: new GraphQLNonNull(GraphQLInt)
+            type: new GraphQLNonNull(GraphQLInt),
           },
         },
         resolve: (_, { numDice, numSides }) => {
@@ -221,11 +232,11 @@ const schema = new GraphQLSchema({
             output.push(1 + Math.floor(Math.random() * (numSides || 6)));
           }
           return output;
-        }
+        },
       },
     },
-  })
-})
+  }),
+});
 
 const app = express();
 app.all(
@@ -237,6 +248,7 @@ app.all(
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');
 ```
+
   </Tabs.Tab>
 </Tabs>
 

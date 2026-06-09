@@ -22,14 +22,14 @@ GraphQL defines several built-in directives, each serving a specific purpose dur
 execution or in the schema. These include:
 
 - `@include` and `@skip`: Used in the execution language to conditionally include or skip
-fields and fragments at runtime.
-- `@deprecated`: Used in Schema Definition Language (SDL) to mark fields or enum values as 
-deprecated, with an optional reason. It appears in introspection but doesn't affect query execution.
+  fields and fragments at runtime.
+- `@deprecated`: Used in Schema Definition Language (SDL) to mark fields or enum values as
+  deprecated, with an optional reason. It appears in introspection but doesn't affect query execution.
 
 For example, the `@include` directive conditionally includes a field based on a Boolean variable:
 
 ```graphql
-query($shouldInclude: Boolean!) {
+query ($shouldInclude: Boolean!) {
   greeting @include(if: $shouldInclude)
 }
 ```
@@ -190,11 +190,7 @@ Inside a resolver, use the `info` object to access AST nodes and inspect directi
 You can check whether a directive is present and change behavior accordingly.
 
 ```js
-import {
-  graphql,
-  buildSchema,
-  getDirectiveValues,
-} from 'graphql';
+import { graphql, buildSchema, getDirectiveValues } from 'graphql';
 
 const schema = buildSchema(`
   directive @uppercase(enabled: Boolean = true) on FIELD
@@ -209,7 +205,7 @@ const rootValue = {
     const directive = getDirectiveValues(
       schema.getDirective('uppercase'),
       info.fieldNodes[0],
-      info.variableValues
+      info.variableValues,
     );
 
     const result = 'Hello, world';
@@ -265,10 +261,7 @@ using arguments instead we maximize compatibility and consistency. For example,
 our `@uppercase` directive would fit naturally as a field argument:
 
 ```js
-import {
-  graphql,
-  buildSchema,
-} from 'graphql';
+import { graphql, buildSchema } from 'graphql';
 
 const schema = buildSchema(`
   enum Format {
@@ -284,7 +277,7 @@ const rootValue = {
   greeting: (source, args) => {
     const result = 'Hello, world';
 
-    if (args.format === "UPPERCASE") {
+    if (args.format === 'UPPERCASE') {
       return result.toUpperCase();
     }
 
@@ -312,16 +305,16 @@ console.log(result);
 When working with custom directives in GraphQL.js, keep the following best practices in mind:
 
 - GraphQL.js doesn't have a directive middleware system. All custom directive logic must be implemented
-manually.
-- Weigh schema-driven logic against resolver logic. Directives can make queries more expressive, but they 
-may also hide behavior from developers reading the schema or resolvers.
+  manually.
+- Weigh schema-driven logic against resolver logic. Directives can make queries more expressive, but they
+  may also hide behavior from developers reading the schema or resolvers.
 - Always prefer field arguments over directives where possible.
-- Keep directive behavior transparent and debuggable. Since directives are invisible at runtime unless 
-logged or documented, try to avoid magic behavior.
+- Keep directive behavior transparent and debuggable. Since directives are invisible at runtime unless
+  logged or documented, try to avoid magic behavior.
 - Use directives when they offer real value. Avoid overusing directives to replace things that could be
-handled more clearly in schema design or resolvers.
-- Validate directive usage explicitly if needed. If your directive has rules or side effects, consider 
-writing custom validation rules to enforce correct usage.
+  handled more clearly in schema design or resolvers.
+- Validate directive usage explicitly if needed. If your directive has rules or side effects, consider
+  writing custom validation rules to enforce correct usage.
 
 ## Additional resources
 

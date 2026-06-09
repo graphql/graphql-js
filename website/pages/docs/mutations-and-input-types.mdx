@@ -12,6 +12,7 @@ Let's say we have a "message of the day" server, where anyone can update the mes
 
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
+
 ```graphql
 type Mutation {
   setMessage(message: String): String
@@ -21,14 +22,12 @@ type Query {
   getMessage: String
 }
 ```
+
   </Tabs.Tab>
   <Tabs.Tab>
+
 ```js
-import {
-  GraphQLObjectType,
-  GraphQLString,
-  GraphQLSchema,
-} from 'graphql';
+import { GraphQLObjectType, GraphQLString, GraphQLSchema } from 'graphql';
 
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
@@ -72,6 +71,7 @@ For example, instead of a single message of the day, let's say we have many mess
 
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
+
 ```graphql
 input MessageInput {
   content: String
@@ -92,10 +92,11 @@ type Mutation {
   createMessage(input: MessageInput): Message
   updateMessage(id: ID!, input: MessageInput): Message
 }
-
 ```
+
   </Tabs.Tab>
   <Tabs.Tab>
+
 ```js
 import {
   GraphQLObjectType,
@@ -140,12 +141,14 @@ const schema = new GraphQLSchema({
           if (!fakeDatabase[id]) {
             throw new Error('no message exists with id ' + id);
           }
-          return fakeDatabase[id] ? {
-            id,
-            content: fakeDatabase[id].content,
-            author: fakeDatabase[id].author,
-          } : null;
-        }
+          return fakeDatabase[id]
+            ? {
+                id,
+                content: fakeDatabase[id].content,
+                author: fakeDatabase[id].author,
+              }
+            : null;
+        },
       },
     },
   }),
@@ -166,7 +169,7 @@ const schema = new GraphQLSchema({
             content: input.content,
             author: input.author,
           };
-        }
+        },
       },
       updateMessage: {
         type: Message,
@@ -185,7 +188,7 @@ const schema = new GraphQLSchema({
             content: input.content,
             author: input.author,
           };
-        }
+        },
       },
     },
   }),
@@ -240,6 +243,7 @@ Here's some runnable code that implements this schema, keeping the data in memor
 
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
+
 ```js
 import express from 'express';
 import { createHandler } from 'graphql-http/lib/use/express';
@@ -282,38 +286,40 @@ class Message {
 
 const root = {
   getMessage: ({ id }) => {
-    return fakeDatabase[id]
+    return fakeDatabase[id];
   },
   getMessages: () => {
-    return Object.values(fakeDatabase)
+    return Object.values(fakeDatabase);
   },
   createMessage: ({ input }) => {
-    const id = String(Object.keys(fakeDatabase).length + 1)
-    const message = new Message(id, input)
-    fakeDatabase[id] = message
-    return message
+    const id = String(Object.keys(fakeDatabase).length + 1);
+    const message = new Message(id, input);
+    fakeDatabase[id] = message;
+    return message;
   },
   updateMessage: ({ id, input }) => {
-    const message = fakeDatabase[id]
-    Object.assign(message, input)
-    return message
-  }
-}
+    const message = fakeDatabase[id];
+    Object.assign(message, input);
+    return message;
+  },
+};
 
 const app = express();
 app.all(
   '/graphql',
   createHandler({
     schema: schema,
-		rootValue: root,
+    rootValue: root,
   }),
 );
 app.listen(4000, () => {
-console.log('Running a GraphQL API server at localhost:4000/graphql');
+  console.log('Running a GraphQL API server at localhost:4000/graphql');
 });
 ```
+
   </Tabs.Tab>
   <Tabs.Tab>
+
 ```js
 import express from 'express';
 import { createHandler } from 'graphql-http/lib/use/express';
@@ -368,12 +374,14 @@ const schema = new GraphQLSchema({
           if (!fakeDatabase[id]) {
             throw new Error('no message exists with id ' + id);
           }
-          return fakeDatabase[id] ? {
-            id,
-            content: fakeDatabase[id].content,
-            author: fakeDatabase[id].author,
-          } : null;
-        }
+          return fakeDatabase[id]
+            ? {
+                id,
+                content: fakeDatabase[id].content,
+                author: fakeDatabase[id].author,
+              }
+            : null;
+        },
       },
     },
   }),
@@ -395,7 +403,7 @@ const schema = new GraphQLSchema({
             content: input.content,
             author: input.author,
           };
-        }
+        },
       },
       updateMessage: {
         type: Message,
@@ -414,7 +422,7 @@ const schema = new GraphQLSchema({
             content: input.content,
             author: input.author,
           };
-        }
+        },
       },
     },
   }),

@@ -2,25 +2,26 @@
 title: Authorization Strategies
 ---
 
-import { Callout } from 'nextra/components'
+import { Callout } from 'nextra/components';
 
-GraphQL gives you complete control over how to define and enforce access control. 
-That flexibility means it's up to you to decide where authorization rules live and 
+GraphQL gives you complete control over how to define and enforce access control.
+That flexibility means it's up to you to decide where authorization rules live and
 how they're enforced.
 
-This guide covers common strategies for implementing authorization in GraphQL 
-servers using GraphQL.js. It assumes you're authenticating requests and passing a user or 
+This guide covers common strategies for implementing authorization in GraphQL
+servers using GraphQL.js. It assumes you're authenticating requests and passing a user or
 session object into the `context`.
 
 <Callout type="info" emoji="ℹ️">
-  In production systems authorization should be handled in your business logic layer, not your
-  GraphQL resolvers. GraphQL is intended to be a thin execution layer that calls into your application's
-  domain logic, which enforces access control.
+  In production systems authorization should be handled in your business logic
+  layer, not your GraphQL resolvers. GraphQL is intended to be a thin execution
+  layer that calls into your application's domain logic, which enforces access
+  control.
 </Callout>
 
 ## What is authorization?
 
-Authorization determines what a user is allowed to do. It's different from 
+Authorization determines what a user is allowed to do. It's different from
 authentication, which verifies who a user is.
 
 In GraphQL, authorization typically involves restricting:
@@ -47,13 +48,13 @@ export const resolvers = {
 ```
 
 This approach can help when you're learning how context works or building quick prototypes.
-However, for production systems, you should enforce access control in your business logic layer 
+However, for production systems, you should enforce access control in your business logic layer
 rather than in GraphQL resolvers.
 
 ## Centralizing access control logic
 
-If you're experimenting or building a small project, repeating checks like 
-`context.user.role !== 'admin'` across resolvers can become error-prone. One 
+If you're experimenting or building a small project, repeating checks like
+`context.user.role !== 'admin'` across resolvers can become error-prone. One
 way to manage that duplication is by extracting shared logic into utility functions:
 
 ```js
@@ -86,15 +87,15 @@ export const resolvers = {
 };
 ```
 
-This pattern improves readability and reusability, but like all resolver-based authorization, 
+This pattern improves readability and reusability, but like all resolver-based authorization,
 it's best suited for prototypes or early-stage development.
 
-For production use, move authorization into your business logic layer. These helpers can still be useful 
+For production use, move authorization into your business logic layer. These helpers can still be useful
 there, but they should be applied outside the GraphQL execution layer.
 
 ## Field-level access control
 
-You can also conditionally return or hide data at the field level. This 
+You can also conditionally return or hide data at the field level. This
 is useful when, for example, users should only see their own private data:
 
 ```js
@@ -134,7 +135,7 @@ function withAuthCheck(resolverFn, schema, fieldNode, variableValues, context) {
   const directive = getDirectiveValues(
     schema.getDirective('auth'),
     fieldNode,
-    variableValues
+    variableValues,
   );
 
   if (directive?.role && context.user?.role !== directive.role) {
@@ -162,27 +163,25 @@ resolver-based checks and adopt directives later if needed.
 - Keep authorization logic in your business logic layer, not in your GraphQL resolvers.
 - Use shared helper functions to reduce duplication and improve clarity.
 - Avoid tightly coupling authorization logic to your schema. Make it
-reusable where possible.
+  reusable where possible.
 - Consider using `null` to hide fields from unauthorized users, rather than
-throwing errors.
+  throwing errors.
 - Be mindful of tools like introspection or GraphQL Playground that can
-expose your schema. Use caution when deploying introspection in production
-environments.
+  expose your schema. Use caution when deploying introspection in production
+  environments.
 
 ## Additional resources
 
-- [Anatomy of a Resolver](./resolver-anatomy): Shows how resolvers work and how the `context` 
-object is passed in. Helpful if you're new to writing custom resolvers or 
-want to understand where authorization logic fits.
-- [GraphQL Specification, Execution section](https://spec.graphql.org/October2021/#sec-Execution): Defines how fields are 
-resolved, including field-level error propagation and execution order. Useful 
-background when building advanced authorization patterns that rely on the 
-structure of GraphQL execution.
-- [`graphql-shield`](https://github.com/dimatill/graphql-shield): A community library for adding rule-based 
-authorization as middleware to resolvers.
-- [`graphql-auth-directives`](https://github.com/the-guild-org/graphql-auth-directives): Adds support for custom directives like 
-`@auth(role: "admin")`, letting you declare access control rules in SDL. 
-Helpful if you're building a schema-first API and prefer declarative access 
-control.
-
-
+- [Anatomy of a Resolver](./resolver-anatomy): Shows how resolvers work and how the `context`
+  object is passed in. Helpful if you're new to writing custom resolvers or
+  want to understand where authorization logic fits.
+- [GraphQL Specification, Execution section](https://spec.graphql.org/October2021/#sec-Execution): Defines how fields are
+  resolved, including field-level error propagation and execution order. Useful
+  background when building advanced authorization patterns that rely on the
+  structure of GraphQL execution.
+- [`graphql-shield`](https://github.com/dimatill/graphql-shield): A community library for adding rule-based
+  authorization as middleware to resolvers.
+- [`graphql-auth-directives`](https://github.com/the-guild-org/graphql-auth-directives): Adds support for custom directives like
+  `@auth(role: "admin")`, letting you declare access control rules in SDL.
+  Helpful if you're building a schema-first API and prefer declarative access
+  control.

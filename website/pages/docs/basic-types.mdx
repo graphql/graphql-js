@@ -18,6 +18,7 @@ Each of these types maps straightforwardly to JavaScript, so you can just return
 
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
+
 ```js
 import express from 'express';
 import { createHandler } from 'graphql-http/lib/use/express';
@@ -55,10 +56,11 @@ app.all(
 );
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');
-
 ```
+
   </Tabs.Tab>
   <Tabs.Tab>
+
 ```js
 import express from 'express';
 import { createHandler } from 'graphql-http/lib/use/express';
@@ -75,17 +77,18 @@ const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
     fields: {
-      quoteOfTheDay: { 
+      quoteOfTheDay: {
         type: GraphQLString,
-        resolve: () => Math.random() < 0.5 ? 'Take it easy' : 'Salvation lies within'
+        resolve: () =>
+          Math.random() < 0.5 ? 'Take it easy' : 'Salvation lies within',
       },
-      random: { 
+      random: {
         type: GraphQLFloat,
-        resolve: () => Math.random()
+        resolve: () => Math.random(),
       },
-      rollThreeDice: { 
+      rollThreeDice: {
         type: new GraphQLList(GraphQLFloat),
-        resolve: () => [1, 2, 3].map((_) => 1 + Math.floor(Math.random() * 6))
+        resolve: () => [1, 2, 3].map((_) => 1 + Math.floor(Math.random() * 6)),
       },
     },
   }),
@@ -101,8 +104,8 @@ app.all(
 
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');
-
 ```
+
   </Tabs.Tab>
 </Tabs>
 

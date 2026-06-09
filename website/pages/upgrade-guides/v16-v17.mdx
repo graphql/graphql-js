@@ -28,13 +28,17 @@ GraphQL.js runtime APIs.
 <nav className="upgrade-guide-toc" aria-labelledby="contents">
   <div className="upgrade-guide-toc-grid">
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#using-this-guide">Using this Guide</a>
+      <a className="upgrade-guide-toc-title" href="#using-this-guide">
+        Using this Guide
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#using-this-guide">Scope and labels</a>
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#platform-and-package-shape">Platform and Package Shape</a>
+      <a className="upgrade-guide-toc-title" href="#platform-and-package-shape">
+        Platform and Package Shape
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#nodejs-and-typescript">Node.js and TypeScript</a>
         <a href="#conditional-exports">Exports</a>
@@ -42,14 +46,24 @@ GraphQL.js runtime APIs.
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#request-pipeline-and-harnesses">Request Pipeline</a>
+      <a
+        className="upgrade-guide-toc-title"
+        href="#request-pipeline-and-harnesses"
+      >
+        Request Pipeline
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#graphql-and-graphqlsync">graphql()</a>
         <a href="#graphql-harness">Harness</a>
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#execution-and-incremental-delivery">Execution and Incremental Delivery</a>
+      <a
+        className="upgrade-guide-toc-title"
+        href="#execution-and-incremental-delivery"
+      >
+        Execution and Incremental Delivery
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#single-result-execution">Single result</a>
         <a href="#incremental-delivery">Incremental</a>
@@ -58,14 +72,21 @@ GraphQL.js runtime APIs.
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#subscriptions-and-source-event-streams">Subscriptions</a>
+      <a
+        className="upgrade-guide-toc-title"
+        href="#subscriptions-and-source-event-streams"
+      >
+        Subscriptions
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#subscription-return-type">Return type</a>
         <a href="#lower-level-subscription-helpers">Helpers</a>
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#abort-signals">Runtime Features</a>
+      <a className="upgrade-guide-toc-title" href="#abort-signals">
+        Runtime Features
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#abort-signals">Abort signals</a>
         <a href="#execution-hooks">Execution hooks</a>
@@ -73,7 +94,12 @@ GraphQL.js runtime APIs.
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#input-coercion-defaults-and-custom-scalars">Input and Scalars</a>
+      <a
+        className="upgrade-guide-toc-title"
+        href="#input-coercion-defaults-and-custom-scalars"
+      >
+        Input and Scalars
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#default-values">Defaults</a>
         <a href="#undefined-and-omitted-input-values">undefined</a>
@@ -83,20 +109,35 @@ GraphQL.js runtime APIs.
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#variable-values-and-resolver-info">Variables and Resolver Info</a>
+      <a
+        className="upgrade-guide-toc-title"
+        href="#variable-values-and-resolver-info"
+      >
+        Variables and Resolver Info
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#variable-values-and-resolver-info">VariableValues</a>
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#schema-type-system-directives-and-introspection">Schema and Introspection</a>
+      <a
+        className="upgrade-guide-toc-title"
+        href="#schema-type-system-directives-and-introspection"
+      >
+        Schema and Introspection
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#schema-validation">Validation</a>
         <a href="#programmatic-schema-apis">Programmatic APIs</a>
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#language-ast-parser-printer-and-visitor-apis">Language and AST</a>
+      <a
+        className="upgrade-guide-toc-title"
+        href="#language-ast-parser-printer-and-visitor-apis"
+      >
+        Language and AST
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#ast-constants-and-visitors">AST constants</a>
         <a href="#fragment-arguments">Fragment arguments</a>
@@ -104,7 +145,12 @@ GraphQL.js runtime APIs.
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#utilities-and-error-handling">Utilities and Errors</a>
+      <a
+        className="upgrade-guide-toc-title"
+        href="#utilities-and-error-handling"
+      >
+        Utilities and Errors
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#schema-change-utilities">Schema changes</a>
         <a href="#removed-helpers">Removed helpers</a>
@@ -112,7 +158,9 @@ GraphQL.js runtime APIs.
       </div>
     </div>
     <div className="upgrade-guide-toc-group">
-      <a className="upgrade-guide-toc-title" href="#practical-migration-order">Migration Work</a>
+      <a className="upgrade-guide-toc-title" href="#practical-migration-order">
+        Migration Work
+      </a>
       <div className="upgrade-guide-toc-links">
         <a href="#practical-migration-order">Order</a>
         <a href="#detailed-migration-checklists">Checklists</a>
@@ -566,12 +614,12 @@ literal format. This is a JavaScript runtime coercion change for hosts that pass
 **Deprecation.** v17 introduces scalar method names that match the GraphQL
 coercion model:
 
-| v16 name | v17 name | Purpose |
-| --- | --- | --- |
-| `serialize` | `coerceOutputValue` | Convert resolver values into response values. |
-| `parseValue` | `coerceInputValue` | Convert variable values into internal values. |
-| `parseLiteral` | `coerceInputLiteral` | Convert GraphQL literals into internal values. |
-| `astFromValue()` | `valueToLiteral()` | Convert external input values into GraphQL literals. |
+| v16 name         | v17 name             | Purpose                                              |
+| ---------------- | -------------------- | ---------------------------------------------------- |
+| `serialize`      | `coerceOutputValue`  | Convert resolver values into response values.        |
+| `parseValue`     | `coerceInputValue`   | Convert variable values into internal values.        |
+| `parseLiteral`   | `coerceInputLiteral` | Convert GraphQL literals into internal values.       |
+| `astFromValue()` | `valueToLiteral()`   | Convert external input values into GraphQL literals. |
 
 The v16 scalar method names still work in v17 and are deprecated for removal in
 v18. See [Advanced Custom Scalars](/docs/advanced-custom-scalars).

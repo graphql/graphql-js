@@ -111,11 +111,7 @@ This example fails a build on breaking changes and prints dangerous changes for
 review.
 
 ```js
-import {
-  BreakingChangeType,
-  buildSchema,
-  findSchemaChanges,
-} from 'graphql';
+import { BreakingChangeType, buildSchema, findSchemaChanges } from 'graphql';
 import { readFile } from 'node:fs/promises';
 
 const oldSchema = buildSchema(await readFile('schema-old.graphql', 'utf8'));

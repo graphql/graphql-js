@@ -57,10 +57,7 @@ The following example stitches two subschemas into a single stitched schema:
 import { stitchSchemas } from '@graphql-tools/stitch';
 
 export const schema = stitchSchemas({
-  subschemas: [
-    { schema: userSchema },
-    { schema: productSchema },
-  ],
+  subschemas: [{ schema: userSchema }, { schema: productSchema }],
 });
 ```
 
@@ -100,7 +97,7 @@ GraphQL.js, you'll need to:
 - Implement resolvers for reference types
 - Output a schema that conforms to a federation-compliant format
 
-Most federation tooling today is based on 
+Most federation tooling today is based on
 [Apollo Federation](https://www.apollographql.com/docs/graphos/schema-design/federated-schemas/federation) and [here you can find a list of Apollo Federation compatible gateways](https://the-guild.dev/graphql/hive/federation-gateway-audit).
 
 However, other approaches exist:
@@ -116,11 +113,11 @@ independently under a shared contract.
 The best structure for your GraphQL API depends on your team size, deployment model, and how your
 schema is expected to grow.
 
-| Pattern | Best for | GraphQL.js support | Tooling required |
-|---|---|---|---|
-| Monolith | Default choice for most projects; simpler, faster, easier to reason about | Built-in | None |
-| Schema stitching | Aggregating services you control | External tooling required | `@graphql-tools/stitch`
-| Federation | Large enterprises; many teams contributing to a distributed graph independently | Manual implementation | Significant tooling and infrastructure |
+| Pattern          | Best for                                                                        | GraphQL.js support        | Tooling required                       |
+| ---------------- | ------------------------------------------------------------------------------- | ------------------------- | -------------------------------------- |
+| Monolith         | Default choice for most projects; simpler, faster, easier to reason about       | Built-in                  | None                                   |
+| Schema stitching | Aggregating services you control                                                | External tooling required | `@graphql-tools/stitch`                |
+| Federation       | Large enterprises; many teams contributing to a distributed graph independently | Manual implementation     | Significant tooling and infrastructure |
 
 ## Migration paths
 
@@ -149,12 +146,12 @@ experience to support it.
 The following guidelines can help you choose and evolve your architecture over time:
 
 - Start simple. If you're building a new API, a monolithic schema is usually the right place
-to begin. It's easier to reason about, test, and iterate on.
+  to begin. It's easier to reason about, test, and iterate on.
 - Split only when needed. Don't reach for composition tools prematurely. Schema stitching or federation
-should be introduced in response to real organizational or scalability needs.
+  should be introduced in response to real organizational or scalability needs.
 - Favor clarity over flexibility. Stitching and federation add power, but they also increase complexity.
-Make sure your team has the operational maturity to support the tooling and patterns involved.
+  Make sure your team has the operational maturity to support the tooling and patterns involved.
 - Define ownership boundaries. Federation is most useful when teams need clear control over parts of
-the schema. Without strong ownership models, a federated graph can become harder to manage.
+  the schema. Without strong ownership models, a federated graph can become harder to manage.
 - Consider alternatives. Not all use cases need stitching or federation. Sometimes, versioning, modular
-schema design, or schema delegation patterns within a monolith are sufficient.
+  schema design, or schema delegation patterns within a monolith are sufficient.

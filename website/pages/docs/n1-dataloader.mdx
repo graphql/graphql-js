@@ -5,8 +5,8 @@ title: Solving the N+1 Problem with DataLoader
 # Solving the N+1 Problem with DataLoader
 
 When building a server with GraphQL.js, it's common to encounter
-performance issues related to the N+1 problem: a pattern that 
-results in many unnecessary database or service calls, 
+performance issues related to the N+1 problem: a pattern that
+results in many unnecessary database or service calls,
 especially in nested query structures.
 
 This guide explains what the N+1 problem is, why it's relevant in
@@ -54,16 +54,16 @@ could be grouped.
 ## Solving the problem with DataLoader
 
 [`DataLoader`](https://github.com/graphql/dataloader) is a utility library designed
-to solve this problem. It batches multiple `.load(key)` calls into a single `batchLoadFn(keys)` 
+to solve this problem. It batches multiple `.load(key)` calls into a single `batchLoadFn(keys)`
 call and caches results during the life of a request. This means you can reduce redundant data
 fetches and group related lookups into efficient operations.
 
 To use `DataLoader` in a `graphql-js` server:
 
 1. Create `DataLoader` instances for each request.
-2. Attach the instance to the `contextValue` passed to GraphQL execution. You can attach the 
-loader when calling [`graphql()`](https://graphql.org/graphql-js/graphql/#graphql) directly, or 
-when setting up a GraphQL HTTP server such as [express-graphql](https://github.com/graphql/express-graphql).
+2. Attach the instance to the `contextValue` passed to GraphQL execution. You can attach the
+   loader when calling [`graphql()`](https://graphql.org/graphql-js/graphql/#graphql) directly, or
+   when setting up a GraphQL HTTP server such as [express-graphql](https://github.com/graphql/express-graphql).
 3. Use `.load(id)` in resolvers to fetch data through the loader.
 
 ### Example: Batching author lookups
@@ -136,14 +136,14 @@ additional fetches.
 ## Best practices
 
 - Create a new `DataLoader` instance per request. This ensures that caching is scoped
-correctly and avoids leaking data between users.
+  correctly and avoids leaking data between users.
 - Always return results in the same order as the input keys. This is required by the
-`DataLoader` contract. If a key is not found, return `null` or throw depending on
-your policy.
+  `DataLoader` contract. If a key is not found, return `null` or throw depending on
+  your policy.
 - Keep batch functions focused. Each loader should handle a specific data access pattern.
 - Use `.loadMany()` sparingly. While it's useful when you already have a list of IDs, it's
-typically not needed in field resolvers, since `.load()` already batches individual calls
-made within the same execution cycle.
+  typically not needed in field resolvers, since `.load()` already batches individual calls
+  made within the same execution cycle.
 
 ## Additional resources
 

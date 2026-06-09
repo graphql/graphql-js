@@ -15,6 +15,7 @@ For example, let's say we wanted our server to log the IP address of every reque
 
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
+
 ```js
 import express from 'express';
 import { createHandler } from 'graphql-http/lib/use/express';
@@ -47,29 +48,26 @@ app.all(
 );
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');
-
 ```
+
   </Tabs.Tab>
   <Tabs.Tab>
+
 ```js
 import express from 'express';
 import { createHandler } from 'graphql-http/lib/use/express';
-import {
-  GraphQLObjectType,
-  GraphQLSchema,
-  GraphQLString,
-} from 'graphql';
+import { GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql';
 
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
-    fields: { 
-      ip: { 
+    fields: {
+      ip: {
         type: GraphQLString,
         resolve: (_, args, context) => {
           return context.ip;
-        }
-      } 
+        },
+      },
     },
   }),
 });
@@ -92,8 +90,8 @@ app.all(
 );
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');
-
 ```
+
   </Tabs.Tab>
 </Tabs>
 
