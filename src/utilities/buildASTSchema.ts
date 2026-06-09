@@ -138,6 +138,38 @@ export function buildASTSchema(
  * ```
  * @example
  * ```ts
+ * // Supply resolver functions and other constructor-only config alongside SDL.
+ * import { graphqlSync } from 'graphql';
+ * import { buildSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(
+ *   `
+ *     type Query {
+ *       greeting(name: String = "world"): String
+ *     }
+ *   `,
+ *   {
+ *     supplementalConfig: {
+ *       objectTypes: {
+ *         Query: {
+ *           fields: {
+ *             greeting: (_source, { name }) => `Hello, ${name}!`,
+ *           },
+ *         },
+ *       },
+ *     },
+ *   },
+ * );
+ *
+ * const result = graphqlSync({
+ *   schema,
+ *   source: '{ greeting(name: "GraphQL") }',
+ * });
+ *
+ * result.data; // => { greeting: 'Hello, GraphQL!' }
+ * ```
+ * @example
+ * ```ts
  * // This variant enables parser options and omits source locations.
  * import { buildSchema } from 'graphql/utilities';
  *

@@ -352,6 +352,40 @@ export interface ExtendSchemaOptions extends GraphQLSchemaValidationOptions {
  * ```
  * @example
  * ```ts
+ * // Attach resolvers to fields newly added by an SDL extension.
+ * import { graphqlSync } from 'graphql';
+ * import { parse } from 'graphql/language';
+ * import { buildSchema, extendSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting: String
+ *   }
+ * `);
+ * const extensionAST = parse(`
+ *   extend type Query {
+ *     farewell: String
+ *   }
+ * `);
+ *
+ * const extendedSchema = extendSchema(schema, extensionAST, {
+ *   supplementalConfig: {
+ *     objectTypes: {
+ *       Query: {
+ *         fields: {
+ *           farewell: () => 'Goodbye!',
+ *         },
+ *       },
+ *     },
+ *   },
+ * });
+ *
+ * const result = graphqlSync({ schema: extendedSchema, source: '{ farewell }' });
+ *
+ * result.data; // => { farewell: 'Goodbye!' }
+ * ```
+ * @example
+ * ```ts
  * // This variant bypasses validation for an otherwise invalid extension.
  * import { parse } from 'graphql/language';
  * import { buildSchema, extendSchema } from 'graphql/utilities';

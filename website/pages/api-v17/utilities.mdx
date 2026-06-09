@@ -2325,6 +2325,34 @@ valueToLiteral({ tags: ['missing stars'] }, ReviewInput); // => undefined
   <p>
     <strong>Types:</strong><br />
     <a href="/api-v17/utilities#buildschemaoptions">BuildSchemaOptions</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#graphqlschemasupplementalconfig">GraphQLSchemaSupplementalConfig</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#graphqlscalartypesupplementalconfig">GraphQLScalarTypeSupplementalConfig</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#graphqlobjecttypesupplementalconfig">GraphQLObjectTypeSupplementalConfig</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#graphqlinterfacetypesupplementalconfig">GraphQLInterfaceTypeSupplementalConfig</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#graphqluniontypesupplementalconfig">GraphQLUnionTypeSupplementalConfig</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#graphqlenumtypesupplementalconfig">GraphQLEnumTypeSupplementalConfig</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#graphqlenumvaluesupplementalconfig">GraphQLEnumValueSupplementalConfig</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#graphqlinputobjecttypesupplementalconfig">GraphQLInputObjectTypeSupplementalConfig</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#graphqlfieldsupplementalconfig">GraphQLFieldSupplementalConfig</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#graphqlfieldsupplementalconfigmap">GraphQLFieldSupplementalConfigMap</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#graphqlargumentsupplementalconfig">GraphQLArgumentSupplementalConfig</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#graphqlinputfieldsupplementalconfig">GraphQLInputFieldSupplementalConfig</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#graphqldirectivesupplementalconfig">GraphQLDirectiveSupplementalConfig</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/utilities#extendschemaoptions">ExtendSchemaOptions</a>
   </p>
 </div>
 
@@ -2337,8 +2365,8 @@ Builds a GraphQLSchema from a parsed schema definition language document.
 If no schema definition is provided, then it will look for types named Query,
 Mutation and Subscription.
 
-The resulting schema has no resolver functions, so execution will use the
-default field resolver.
+The resulting schema uses the default field resolver unless resolver
+functions are supplied through `supplementalConfig`.
 
 **Signature:**
 
@@ -2495,6 +2523,42 @@ schema.getQueryType().name; // => 'Query'
 <div className="api-subsection-title">Example 2</div>
 
 ```ts
+// Supply resolver functions and other constructor-only config alongside SDL.
+import { graphqlSync } from 'graphql';
+import { buildSchema } from 'graphql/utilities';
+
+const schema = buildSchema(
+  `
+    type Query {
+      greeting(name: String = "world"): String
+    }
+  `,
+  {
+    supplementalConfig: {
+      objectTypes: {
+        Query: {
+          fields: {
+            greeting: (_source, { name }) => `Hello, ${name}!`,
+          },
+        },
+      },
+    },
+  },
+);
+
+const result = graphqlSync({
+  schema,
+  source: '{ greeting(name: "GraphQL") }',
+});
+
+result.data; // => { greeting: 'Hello, GraphQL!' }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 3</div>
+
+```ts
 // This variant enables parser options and omits source locations.
 import { buildSchema } from 'graphql/utilities';
 
@@ -2530,7 +2594,7 @@ producing the copy. The original schema remains unaltered.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "extendSchema"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n  ", ["parameter", "documentAST"], ": ", ["link", "DocumentNode", "/api-v17/language#documentnode"], ",\n  ", ["parameter", "options"], "?: \u007b ", ["property", "assumeValidSDL"], "?: ", ["keyword", "boolean"], " \u007c ", ["keyword", "undefined"], " \u007d,\n): ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ";"]} />
+<ApiSignature parts={[["name", "extendSchema"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n  ", ["parameter", "documentAST"], ": ", ["link", "DocumentNode", "/api-v17/language#documentnode"], ",\n  ", ["parameter", "options"], "?: ", ["link", "ExtendSchemaOptions", "/api-v17/utilities#extendschemaoptions"], ",\n): ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -2557,7 +2621,7 @@ producing the copy. The original schema remains unaltered.
     </tr>
     <tr>
       <td>options?</td>
-      <td><ApiType parts={["\u007b ", ["property", "assumeValidSDL"], "?: ", ["keyword", "boolean"], " \u007c ", ["keyword", "undefined"], " \u007d"]} /></td>
+      <td><ApiType parts={[["link", "ExtendSchemaOptions", "/api-v17/utilities#extendschemaoptions"]]} /></td>
       <td>Optional configuration for this operation.</td>
     </tr>
   </tbody>
@@ -2616,6 +2680,44 @@ Object.keys(extendedSchema.getQueryType().getFields()); // => ['greeting', 'fare
 <hr className="api-subsection-divider" />
 
 <div className="api-subsection-title">Example 2</div>
+
+```ts
+// Attach resolvers to fields newly added by an SDL extension.
+import { graphqlSync } from 'graphql';
+import { parse } from 'graphql/language';
+import { buildSchema, extendSchema } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const extensionAST = parse(`
+  extend type Query {
+    farewell: String
+  }
+`);
+
+const extendedSchema = extendSchema(schema, extensionAST, {
+  supplementalConfig: {
+    objectTypes: {
+      Query: {
+        fields: {
+          farewell: () => 'Goodbye!',
+        },
+      },
+    },
+  },
+});
+
+const result = graphqlSync({ schema: extendedSchema, source: '{ farewell }' });
+
+result.data; // => { farewell: 'Goodbye!' }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 3</div>
 
 ```ts
 // This variant bypasses validation for an otherwise invalid extension.
@@ -2756,6 +2858,522 @@ printSchema(sortedSchema);
       <td><ApiType parts={[["keyword", "boolean"]]} /></td>
       <td>Set to true to assume the SDL is valid.<br />
 Default: false</td>
+    </tr>
+    <tr>
+      <td>assumeValidSupplementalConfig?</td>
+      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
+      <td>Set to true to assume the supplemental config is valid.<br />
+Default: false</td>
+    </tr>
+    <tr>
+      <td>supplementalConfig?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["link", "GraphQLSchemaSupplementalConfig", "/api-v17/utilities#graphqlschemasupplementalconfig"], "\u003e"]} /></td>
+      <td>Supplemental schema constructor config not expressible in SDL.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLSchemaSupplementalConfig
+
+**Interface.** Supplemental schema constructor config for SDL-built elements when SDL cannot
+express the config directly.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>scalarTypes?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["type", "ObjMap"], "\u003c", ["link", "GraphQLScalarTypeSupplementalConfig", "/api-v17/utilities#graphqlscalartypesupplementalconfig"], "\u003e\u003e"]} /></td>
+      <td>Supplemental config keyed by scalar type name.</td>
+    </tr>
+    <tr>
+      <td>objectTypes?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["type", "ObjMap"], "\u003c", ["link", "GraphQLObjectTypeSupplementalConfig", "/api-v17/utilities#graphqlobjecttypesupplementalconfig"], "\u003e\u003e"]} /></td>
+      <td>Supplemental config keyed by object type name.</td>
+    </tr>
+    <tr>
+      <td>interfaceTypes?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["type", "ObjMap"], "\u003c", ["link", "GraphQLInterfaceTypeSupplementalConfig", "/api-v17/utilities#graphqlinterfacetypesupplementalconfig"], "\u003e\u003e"]} /></td>
+      <td>Supplemental config keyed by interface type name.</td>
+    </tr>
+    <tr>
+      <td>unionTypes?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["type", "ObjMap"], "\u003c", ["link", "GraphQLUnionTypeSupplementalConfig", "/api-v17/utilities#graphqluniontypesupplementalconfig"], "\u003e\u003e"]} /></td>
+      <td>Supplemental config keyed by union type name.</td>
+    </tr>
+    <tr>
+      <td>enumTypes?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["type", "ObjMap"], "\u003c", ["link", "GraphQLEnumTypeSupplementalConfig", "/api-v17/utilities#graphqlenumtypesupplementalconfig"], "\u003e\u003e"]} /></td>
+      <td>Supplemental config keyed by enum type name.</td>
+    </tr>
+    <tr>
+      <td>inputObjectTypes?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["type", "ObjMap"], "\u003c", ["link", "GraphQLInputObjectTypeSupplementalConfig", "/api-v17/utilities#graphqlinputobjecttypesupplementalconfig"], "\u003e\u003e"]} /></td>
+      <td>Supplemental config keyed by input object type name.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["type", "ObjMap"], "\u003c", ["link", "GraphQLDirectiveSupplementalConfig", "/api-v17/utilities#graphqldirectivesupplementalconfig"], "\u003e\u003e"]} /></td>
+      <td>Supplemental config keyed by directive name.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["link", "GraphQLSchemaExtensions", "/api-v17/type#graphqlschemaextensions"], "\u003e"]} /></td>
+      <td>Custom extensions.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLScalarTypeSupplementalConfig
+
+**Interface.** Supplemental config for a scalar type.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>serialize? <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
+      <td><ApiType parts={[["link", "GraphQLScalarSerializer", "/api-v17/type#graphqlscalarserializer"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Deprecated legacy serializer used to convert internal values for response<br />
+output. Use <code>{"coerceOutputValue()"}</code> instead.</td>
+    </tr>
+    <tr>
+      <td>parseValue? <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
+      <td><ApiType parts={[["link", "GraphQLScalarValueParser", "/api-v17/type#graphqlscalarvalueparser"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Deprecated legacy parser used to convert externally provided input values.<br />
+Use <code>{"coerceInputValue()"}</code> instead.</td>
+    </tr>
+    <tr>
+      <td>parseLiteral? <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
+      <td><ApiType parts={[["link", "GraphQLScalarLiteralParser", "/api-v17/type#graphqlscalarliteralparser"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Deprecated legacy parser used to convert externally provided input<br />
+literals. Use <code>{"replaceVariables()"}</code> and <code>{"coerceInputLiteral()"}</code> instead.</td>
+    </tr>
+    <tr>
+      <td>coerceOutputValue?</td>
+      <td><ApiType parts={[["link", "GraphQLScalarOutputValueCoercer", "/api-v17/type#graphqlscalaroutputvaluecoercer"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Coerces an internal value to include in a response.</td>
+    </tr>
+    <tr>
+      <td>coerceInputValue?</td>
+      <td><ApiType parts={[["link", "GraphQLScalarInputValueCoercer", "/api-v17/type#graphqlscalarinputvaluecoercer"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Coerces an externally provided value to use as an input.</td>
+    </tr>
+    <tr>
+      <td>coerceInputLiteral?</td>
+      <td><ApiType parts={[["link", "GraphQLScalarInputLiteralCoercer", "/api-v17/type#graphqlscalarinputliteralcoercer"], "\u003c", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Coerces an externally provided const literal value to use as an input.</td>
+    </tr>
+    <tr>
+      <td>valueToLiteral?</td>
+      <td><ApiType parts={["(", ["parameter", "inputValue"], ": ", ["keyword", "unknown"], ") =\u003e ", ["link", "ConstValueNode", "/api-v17/language#constvaluenode"], " \u007c ", ["keyword", "undefined"]]} /></td>
+      <td>Translates an externally provided value to a literal (AST).</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["link", "GraphQLScalarTypeExtensions", "/api-v17/type#graphqlscalartypeextensions"], "\u003e"]} /></td>
+      <td>Custom extensions.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLObjectTypeSupplementalConfig
+
+**Interface.** Supplemental config for an object type.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>fields?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["type", "ObjMap"], "\u003c", ["link", "GraphQLFieldSupplementalConfig", "/api-v17/utilities#graphqlfieldsupplementalconfig"], "\u003e\u003e"]} /></td>
+      <td>Supplemental config for fields declared by the document.</td>
+    </tr>
+    <tr>
+      <td>isTypeOf?</td>
+      <td><ApiType parts={[["link", "GraphQLIsTypeOfFn", "/api-v17/type#graphqlistypeoffn"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Predicate used to determine whether a runtime value belongs to this object type.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["link", "GraphQLObjectTypeExtensions", "/api-v17/type#graphqlobjecttypeextensions"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e\u003e"]} /></td>
+      <td>Custom extensions.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLInterfaceTypeSupplementalConfig
+
+**Interface.** Supplemental config for an interface type.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>fields?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["type", "ObjMap"], "\u003c", ["link", "GraphQLFieldSupplementalConfig", "/api-v17/utilities#graphqlfieldsupplementalconfig"], "\u003e\u003e"]} /></td>
+      <td>Supplemental config for fields declared by the document.</td>
+    </tr>
+    <tr>
+      <td>resolveType?</td>
+      <td><ApiType parts={[["link", "GraphQLTypeResolver", "/api-v17/type#graphqltyperesolver"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Optionally provide a custom type resolver function. If one is not provided,<br />
+the default implementation will call <code>{"isTypeOf"}</code> on each implementing<br />
+Object type.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["link", "GraphQLInterfaceTypeExtensions", "/api-v17/type#graphqlinterfacetypeextensions"], "\u003e"]} /></td>
+      <td>Custom extensions.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLUnionTypeSupplementalConfig
+
+**Interface.** Supplemental config for a union type.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>resolveType?</td>
+      <td><ApiType parts={[["link", "GraphQLTypeResolver", "/api-v17/type#graphqltyperesolver"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Optionally provide a custom type resolver function. If one is not provided,<br />
+the default implementation will call <code>{"isTypeOf"}</code> on each implementing<br />
+Object type.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["link", "GraphQLUnionTypeExtensions", "/api-v17/type#graphqluniontypeextensions"], "\u003e"]} /></td>
+      <td>Custom extensions.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLEnumTypeSupplementalConfig
+
+**Interface.** Supplemental config for an enum type.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>values?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["type", "ObjMap"], "\u003c", ["link", "GraphQLEnumValueSupplementalConfig", "/api-v17/utilities#graphqlenumvaluesupplementalconfig"], "\u003e\u003e"]} /></td>
+      <td>Supplemental config for values declared by the document.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["link", "GraphQLEnumTypeExtensions", "/api-v17/type#graphqlenumtypeextensions"], "\u003e"]} /></td>
+      <td>Custom extensions.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLEnumValueSupplementalConfig
+
+**Interface.** Supplemental config for an enum value.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>value?</td>
+      <td><ApiType parts={[["keyword", "unknown"]]} /></td>
+      <td>Internal runtime value represented by this enum value.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["link", "GraphQLEnumValueExtensions", "/api-v17/type#graphqlenumvalueextensions"], "\u003e"]} /></td>
+      <td>Custom extensions.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLInputObjectTypeSupplementalConfig
+
+**Interface.** Supplemental config for an input object type.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>fields?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["type", "ObjMap"], "\u003c", ["link", "GraphQLInputFieldSupplementalConfig", "/api-v17/utilities#graphqlinputfieldsupplementalconfig"], "\u003e\u003e"]} /></td>
+      <td>Supplemental config for fields declared by the document.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["link", "GraphQLInputObjectTypeExtensions", "/api-v17/type#graphqlinputobjecttypeextensions"], "\u003e"]} /></td>
+      <td>Custom extensions.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLFieldSupplementalConfig
+
+**Type alias.** Supplemental config for a field declared by an object or interface.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "GraphQLFieldSupplementalConfig"], " =\n  \u007c ", ["link", "GraphQLFieldResolver", "/api-v17/type#graphqlfieldresolver"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e\n  \u007c ", ["link", "GraphQLFieldSupplementalConfigMap", "/api-v17/utilities#graphqlfieldsupplementalconfigmap"], ";"]} />
+
+<hr className="api-item-divider" />
+
+#### GraphQLFieldSupplementalConfigMap
+
+**Interface.** Supplemental config map for a field declared by an object or interface.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>args?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["type", "ObjMap"], "\u003c", ["link", "GraphQLArgumentSupplementalConfig", "/api-v17/utilities#graphqlargumentsupplementalconfig"], "\u003e\u003e"]} /></td>
+      <td>Supplemental config for arguments declared by the document.</td>
+    </tr>
+    <tr>
+      <td>resolve?</td>
+      <td><ApiType parts={[["link", "GraphQLFieldResolver", "/api-v17/type#graphqlfieldresolver"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Resolver function used to produce this field value.</td>
+    </tr>
+    <tr>
+      <td>subscribe?</td>
+      <td><ApiType parts={[["link", "GraphQLFieldResolver", "/api-v17/type#graphqlfieldresolver"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e"]} /></td>
+      <td>Resolver function used to create a subscription event stream for this field.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["link", "GraphQLFieldExtensions", "/api-v17/type#graphqlfieldextensions"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e\u003e"]} /></td>
+      <td>Custom extensions.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLArgumentSupplementalConfig
+
+**Interface.** Supplemental config for an argument declared by a field or directive.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["link", "GraphQLArgumentExtensions", "/api-v17/type#graphqlargumentextensions"], "\u003e"]} /></td>
+      <td>Custom extensions.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLInputFieldSupplementalConfig
+
+**Interface.** Supplemental config for an input object field.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["link", "GraphQLInputFieldExtensions", "/api-v17/type#graphqlinputfieldextensions"], "\u003e"]} /></td>
+      <td>Custom extensions.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### GraphQLDirectiveSupplementalConfig
+
+**Interface.** Supplemental config for a directive declared by SDL.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>args?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["type", "ObjMap"], "\u003c", ["link", "GraphQLArgumentSupplementalConfig", "/api-v17/utilities#graphqlargumentsupplementalconfig"], "\u003e\u003e"]} /></td>
+      <td>Supplemental config for arguments declared by the document.</td>
+    </tr>
+    <tr>
+      <td>extensions?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["link", "GraphQLDirectiveExtensions", "/api-v17/type#graphqldirectiveextensions"], "\u003e"]} /></td>
+      <td>Custom extensions.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ExtendSchemaOptions
+
+**Interface.** Options used when extending a schema from a parsed SDL document.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>assumeValidSupplementalConfig?</td>
+      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
+      <td>Set to true to assume the supplemental config is valid.<br />
+Default: false</td>
+    </tr>
+    <tr>
+      <td>supplementalConfig?</td>
+      <td><ApiType parts={[["type", "Readonly"], "\u003c", ["link", "GraphQLSchemaSupplementalConfig", "/api-v17/utilities#graphqlschemasupplementalconfig"], "\u003e"]} /></td>
+      <td>Supplemental schema constructor config not expressible in SDL.<br />
+It applies only to elements newly added by the document, including fields<br />
+added to an existing type by a type extension.</td>
     </tr>
   </tbody>
 </table>
