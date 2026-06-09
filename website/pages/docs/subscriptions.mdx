@@ -86,30 +86,59 @@ GraphQL.js supports subscription execution, but you’re responsible for setting
 - An event-publishing mechanism
 - A transport layer to maintain the connection
 
-The following examples use the [`@graphql-yoga/subscriptions`](https://github.com/graphql-hive/graphql-yoga/tree/main/packages/subscription) package to set up an in-memory event system.
+The following examples use a small in-memory pub/sub helper to set up an event
+system for local development.
 
 ### Install dependencies
 
 Start by installing the necessary packages:
 
 ```bash
-npm install graphql @graphql-yoga/subscriptions
+npm install graphql
 ```
 
-To serve subscriptions over a network, you’ll also need a transport implementation. Two popular options are [`graphql-ws`](https://github.com/enisdenjo/graphql-ws), a community-maintained WebSocket library and [`graphql-sse`](https://github.com/enisdenjo/graphql-sse) a community-maintained Server-Sent Events library. This guide focuses on schema-level implementation.
+To serve subscriptions over a network, you’ll also need a transport implementation. Two common options are [`graphql-ws`](https://github.com/enisdenjo/graphql-ws), a community-maintained WebSocket library, and [`graphql-sse`](https://github.com/enisdenjo/graphql-sse), a community-maintained Server-Sent Events library. This guide focuses on schema-level implementation.
 
 ### Set up a pub/sub instance
 
-Create a `PubSub` instance to manage your in-memory event system:
+In production, subscriptions are typically backed by a robust pub/sub system
+that can span processes and servers. For this demonstration, you can use an
+in-memory pub/sub system of your choice, or an implementation such as the
+following:
 
-```js
-import { createPubSub } from '@graphql-yoga/subscriptions'
+```ts
+import { EventEmitter, on } from 'node:events';
 
-const pubSub = createPubSub();
+export class InMemoryPubSub<T extends Record<string, unknown>> {
+  private emitter = new EventEmitter();
+
+  publish<K extends keyof T & string>(topic: K, value: T[K]): boolean {
+    return this.emitter.emit(topic, value);
+  }
+
+  async *subscribe<K extends keyof T & string>(
+    topic: K,
+    signal?: AbortSignal,
+  ): AsyncGenerator<T[K], void, unknown> {
+    for await (const [value] of on(this.emitter, topic, { signal })) {
+      yield value as T[K];
+    }
+  }
+}
 ```
 
-This `pubsub` object provides `publish` and `asyncIterator` methods, allowing
-you to broadcast and listen for events.
+Then create a typed pub/sub instance for the subscription events in your schema:
+
+```ts
+type PubSubEvents = {
+  MESSAGE_SENT: { messageSent: string };
+};
+
+const pubsub = new InMemoryPubSub<PubSubEvents>();
+```
+
+This `pubsub` object provides `publish` and `subscribe` methods, allowing you to
+broadcast and listen for events.
 
 ### Define a subscription type
 
@@ -167,8 +196,8 @@ Whenever your server publishes a `MESSAGE_SENT` event, clients subscribed to
 
 ## Planning for production
 
-The in-memory `PubSub` used in this example is suitable for development only.
-It does not support multiple server instances or distributed environments.
+The in-memory pub/sub helper used in this example is suitable for development
+only. It does not support multiple server instances or distributed environments.
 
 For production, consider using a more robust event system such as:
 
