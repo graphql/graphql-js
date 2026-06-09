@@ -194,7 +194,7 @@ export class GraphQLSchema {
   readonly __kind: typeof schemaSymbol = schemaSymbol;
   /** Human-readable description for this schema element, if provided. */
   description: Maybe<string>;
-  /** Extension fields to include in the formatted result. */
+  /** Custom extension fields reserved for users. */
   extensions: Readonly<GraphQLSchemaExtensions>;
   /** AST node from which this schema element was built, if available. */
   astNode: Maybe<SchemaDefinitionNode>;
@@ -898,7 +898,7 @@ export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
   types?: Maybe<ReadonlyArray<GraphQLNamedType>>;
   /** Directives available in this schema or applied to this AST node. */
   directives?: Maybe<ReadonlyArray<GraphQLDirective>>;
-  /** Extension fields to include in the formatted result. */
+  /** Custom extension fields reserved for users. */
   extensions?: Maybe<Readonly<GraphQLSchemaExtensions>>;
   /** AST node from which this schema element was built, if available. */
   astNode?: Maybe<SchemaDefinitionNode>;

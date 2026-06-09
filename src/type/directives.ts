@@ -110,7 +110,7 @@ export class GraphQLDirective implements GraphQLSchemaElement {
   isRepeatable: boolean;
   /** Reason this element is deprecated, if one was provided. */
   deprecationReason: Maybe<string>;
-  /** Extension fields to include in the formatted result. */
+  /** Custom extension fields reserved for users. */
   extensions: Readonly<GraphQLDirectiveExtensions>;
   /** AST node from which this schema element was built, if available. */
   astNode: Maybe<DirectiveDefinitionNode>;
@@ -300,7 +300,7 @@ export interface GraphQLDirectiveConfig {
   isRepeatable?: Maybe<boolean>;
   /** Reason this element is deprecated, if one was provided. */
   deprecationReason?: Maybe<string>;
-  /** Extension fields to include in the formatted result. */
+  /** Custom extension fields reserved for users. */
   extensions?: Maybe<Readonly<GraphQLDirectiveExtensions>>;
   /** AST node from which this schema element was built, if available. */
   astNode?: Maybe<DirectiveDefinitionNode>;
