@@ -3,7 +3,7 @@
 The JavaScript reference implementation for GraphQL, a query language for APIs created by Facebook.
 
 [![npm version](https://badge.fury.io/js/graphql.svg)](https://badge.fury.io/js/graphql)
-[![Build Status](https://github.com/graphql/graphql-js/workflows/CI/badge.svg?branch=17.x.x)](https://github.com/graphql/graphql-js/actions?query=branch%3A17.x.x)
+[![Build Status](https://github.com/graphql/graphql-js/actions/workflows/push.yml/badge.svg?branch=17.x.x)](https://github.com/graphql/graphql-js/actions/workflows/push.yml?query=branch%3A17.x.x)
 
 See more complete documentation at https://graphql.org/ and
 https://graphql.org/graphql-js/.
