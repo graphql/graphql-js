@@ -2585,7 +2585,7 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
     ]);
   });
 
-  it('rejects a normal Input Object requiring an unbreakable OneOf cycle', () => {
+  it('rejects a non-OneOf Input Object requiring an unbreakable OneOf cycle', () => {
     const schema = buildSchema(`
       type Query {
         t(arg: T): Int

@@ -803,8 +803,8 @@ function createInputObjectUnbreakableCycleCheck(): (
       candidates.set(candidate, []);
     }
 
-    // Tracks unresolved fields for normal Input Objects.
-    const normalTypeStates = new Map<
+    // Tracks unresolved fields for non-OneOf Input Objects.
+    const nonOneOfTypeStates = new Map<
       GraphQLInputObjectType,
       { hasKnownCycleField: boolean; unresolvedFieldCount: number }
     >();
@@ -841,7 +841,7 @@ function createInputObjectUnbreakableCycleCheck(): (
           }
         }
       } else {
-        // Normal Input Objects have an unbreakable cycle if any non-null field has one.
+        // Non-OneOf Input Objects have an unbreakable cycle if any non-null field has one.
         let hasKnownCycleField = false;
         let unresolvedFieldCount = 0;
 
@@ -865,7 +865,7 @@ function createInputObjectUnbreakableCycleCheck(): (
           }
         }
 
-        normalTypeStates.set(candidate, {
+        nonOneOfTypeStates.set(candidate, {
           hasKnownCycleField,
           unresolvedFieldCount,
         });
@@ -896,7 +896,7 @@ function createInputObjectUnbreakableCycleCheck(): (
         if (dependent.isOneOf) {
           typesToRemove.push(dependent);
         } else {
-          const state = normalTypeStates.get(dependent);
+          const state = nonOneOfTypeStates.get(dependent);
           invariant(state !== undefined);
 
           --state.unresolvedFieldCount;
