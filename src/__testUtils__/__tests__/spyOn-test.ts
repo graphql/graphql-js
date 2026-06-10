@@ -27,6 +27,23 @@ describe('spyOn', () => {
     expect(obj.addToBase(5)).to.equal(15);
     expect(obj.addToBase.callCount).to.equal(1);
   });
+
+  it('passes an empty stack to the matcher when stack traces are unavailable', () => {
+    const originalStackTraceLimit = Error.stackTraceLimit;
+    (Error as { stackTraceLimit: number | undefined }).stackTraceLimit =
+      undefined;
+
+    try {
+      const spy = spyOn(() => 42, {
+        stackMatcher: (stack) => stack === '',
+      });
+
+      expect(spy()).to.equal(42);
+      expect(spy.callCount).to.equal(1);
+    } finally {
+      Error.stackTraceLimit = originalStackTraceLimit;
+    }
+  });
 });
 
 describe('spyOnMethod', () => {
@@ -56,6 +73,30 @@ describe('spyOnMethod', () => {
 
     expect(accumulator.addToBase(5)).to.equal(15);
     expect(spy.callCount).to.equal(1);
+  });
+
+  it('can count only method invocations matching the call stack', () => {
+    const calculator = {
+      add(a: number, b: number) {
+        return a + b;
+      },
+    };
+
+    const spy = spyOnMethod(calculator, 'add', {
+      stackMatcher: (stack) => stack.includes('callTrackedMethod'),
+    });
+
+    expect(callTrackedMethod()).to.equal(5);
+    expect(callUntrackedMethod()).to.equal(9);
+    expect(spy.callCount).to.equal(1);
+
+    function callTrackedMethod(): number {
+      return calculator.add(2, 3);
+    }
+
+    function callUntrackedMethod(): number {
+      return calculator.add(4, 5);
+    }
   });
 
   it('throws when target property is not a function', () => {

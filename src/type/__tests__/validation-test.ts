@@ -2630,7 +2630,13 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
       });
     }
 
-    const getFieldsSpies = types.map((type) => spyOnMethod(type, 'getFields'));
+    const getFieldsSpies = types.map((type) =>
+      spyOnMethod(type, 'getFields', {
+        stackMatcher: (stack) =>
+          stack.includes('inputObjectHasUnbreakableCycle') ||
+          stack.includes('reportInputObjectUnbreakableCycles'),
+      }),
+    );
 
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
@@ -2648,7 +2654,7 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
     expect(validateSchema(schema)).to.have.lengthOf(1);
     expect(
       getFieldsSpies.reduce((sum, spy) => sum + spy.callCount, 0),
-    ).to.be.lessThan(500);
+    ).to.equal(51);
   });
 
   it('rejects a mixed OneOf/non-OneOf cycle with no escapes', () => {

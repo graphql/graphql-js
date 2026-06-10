@@ -5,13 +5,22 @@ export interface MethodSpy {
   restore: () => void;
 }
 
+export interface SpyOptions {
+  readonly stackMatcher?: (stack: string) => boolean;
+}
+
 export type SpyFn<T extends AnyFn> = T & MethodSpy;
 
-export function spyOn<T extends AnyFn>(fn: T): SpyFn<T> {
+export function spyOn<T extends AnyFn>(fn: T, options?: SpyOptions): SpyFn<T> {
   let callCount = 0;
 
   const spy = function (this: unknown, ...args: Parameters<T>): ReturnType<T> {
-    callCount += 1;
+    if (
+      options?.stackMatcher === undefined ||
+      options.stackMatcher(new Error().stack ?? '')
+    ) {
+      callCount += 1;
+    }
     return fn.apply(this, args) as ReturnType<T>;
   };
 
@@ -28,6 +37,7 @@ export function spyOn<T extends AnyFn>(fn: T): SpyFn<T> {
 export function spyOnMethod<T extends object>(
   target: T,
   key: keyof T,
+  options?: SpyOptions,
 ): MethodSpy {
   const original = target[key];
   const wasOwnProperty = Object.hasOwn(target, key);
@@ -38,7 +48,7 @@ export function spyOnMethod<T extends object>(
     );
   }
 
-  const spy = spyOn(original as AnyFn);
+  const spy = spyOn(original as AnyFn, options);
   target[key] = spy as T[keyof T];
 
   const methodSpy: MethodSpy = {
