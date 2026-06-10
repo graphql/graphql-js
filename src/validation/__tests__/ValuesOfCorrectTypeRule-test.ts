@@ -11,10 +11,16 @@ import { GraphQLObjectType, GraphQLScalarType } from '../../type/definition';
 import { GraphQLString } from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
 
-import { ValuesOfCorrectTypeRule } from '../rules/ValuesOfCorrectTypeRule';
+import { buildSchema } from '../../utilities/buildASTSchema';
+
+import {
+  ValuesOfCorrectTypeOnDirectivesRule,
+  ValuesOfCorrectTypeRule,
+} from '../rules/ValuesOfCorrectTypeRule';
 import { validate } from '../validate';
 
 import {
+  expectSDLValidationErrors,
   expectValidationErrors,
   expectValidationErrorsWithSchema,
 } from './harness';
@@ -37,6 +43,18 @@ function expectValid(queryStr: string) {
 
 function expectValidWithSchema(schema: GraphQLSchema, queryStr: string) {
   expectErrorsWithSchema(schema, queryStr).toDeepEqual([]);
+}
+
+function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
+  return expectSDLValidationErrors(
+    schema,
+    ValuesOfCorrectTypeOnDirectivesRule,
+    sdlStr,
+  );
+}
+
+function expectValidSDL(sdlStr: string, schema?: GraphQLSchema) {
+  expectSDLErrors(sdlStr, schema).toDeepEqual([]);
 }
 
 describe('Validate: Values of correct type', () => {
@@ -1142,6 +1160,109 @@ describe('Validate: Values of correct type', () => {
           locations: [{ line: 4, column: 28 }],
         },
       ]);
+    });
+
+    describe('within SDL', () => {
+      it('with directive arguments of valid types', () => {
+        expectValidSDL(`
+          enum DirectiveEnum {
+            VALUE
+          }
+
+          input DirectiveInput {
+            enabled: Boolean!
+          }
+
+          type Query {
+            field: String @test(
+              str: "value"
+              int: 1
+              enum: VALUE
+              input: { enabled: true }
+            )
+          }
+
+          directive @test(
+            str: String
+            int: Int
+            enum: DirectiveEnum
+            input: DirectiveInput
+          ) on FIELD_DEFINITION
+        `);
+      });
+
+      it('with directive argument of invalid type', () => {
+        expectSDLErrors(`
+          type Query {
+            baz: Boolean @foo(bar: FOOBAR)
+          }
+
+          directive @foo(bar: String!) on FIELD_DEFINITION
+        `).toDeepEqual([
+          {
+            message: 'String cannot represent a non string value: FOOBAR',
+            locations: [{ line: 3, column: 36 }],
+          },
+        ]);
+      });
+
+      it('with directive input object argument of invalid type', () => {
+        expectSDLErrors(`
+          input DirectiveInput {
+            count: Int!
+          }
+
+          type Query {
+            field: String @test(input: { count: "one" })
+          }
+
+          directive @test(input: DirectiveInput) on FIELD_DEFINITION
+        `).toDeepEqual([
+          {
+            message: 'Int cannot represent non-integer value: "one"',
+            locations: [{ line: 7, column: 49 }],
+          },
+        ]);
+      });
+
+      it('with directive argument types extended inside SDL', () => {
+        const schema = buildSchema(`
+          enum DirectiveEnum {
+            OLD
+          }
+
+          input DirectiveInput {
+            old: String
+          }
+
+          type Query {
+            field: String
+          }
+
+          directive @test(
+            enum: DirectiveEnum
+            input: DirectiveInput
+          ) on OBJECT
+        `);
+
+        expectValidSDL(
+          `
+            extend enum DirectiveEnum {
+              VALUE
+            }
+
+            extend input DirectiveInput {
+              enabled: Boolean!
+            }
+
+            extend type Query @test(
+              enum: VALUE
+              input: { enabled: true }
+            )
+          `,
+          schema,
+        );
+      });
     });
   });
 
