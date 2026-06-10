@@ -825,7 +825,7 @@ function createInputObjectUnbreakableCycleCheck(): (
         for (const field of fields) {
           const target = getUnbreakableCycleTarget(candidate, field.type);
 
-          if (target == null) {
+          if (target === undefined) {
             typesToRemove.push(candidate);
             break;
           }
@@ -848,7 +848,7 @@ function createInputObjectUnbreakableCycleCheck(): (
         for (const field of fields) {
           const target = getUnbreakableCycleTarget(candidate, field.type);
 
-          if (target == null) {
+          if (target === undefined) {
             continue;
           }
 
@@ -936,7 +936,7 @@ function createInputObjectUnbreakableCycleCheck(): (
       for (const field of Object.values(type.getFields())) {
         const target = getUnbreakableCycleTarget(type, field.type);
 
-        if (target != null) {
+        if (target !== undefined) {
           collect(target);
         }
       }
@@ -947,12 +947,12 @@ function createInputObjectUnbreakableCycleCheck(): (
 function getUnbreakableCycleTarget(
   inputObj: GraphQLInputObjectType,
   fieldType: GraphQLInputType,
-): Maybe<GraphQLInputObjectType> {
+): GraphQLInputObjectType | undefined {
   if (inputObj.isOneOf) {
     if (isInputObjectType(fieldType)) {
       return fieldType;
     }
-    return undefined;
+    return;
   }
 
   if (isNonNullType(fieldType) && isInputObjectType(fieldType.ofType)) {
@@ -988,7 +988,7 @@ function reportInputObjectUnbreakableCycles(
 
     for (const field of Object.values(inputObj.getFields())) {
       const target = getUnbreakableCycleTarget(inputObj, field.type);
-      if (target == null || !typesWithUnbreakableCycles.has(target)) {
+      if (target === undefined || !typesWithUnbreakableCycles.has(target)) {
         continue;
       }
 
