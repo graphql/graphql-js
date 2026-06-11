@@ -2371,44 +2371,6 @@ describe('Type System: Input Object field default values must be valid', () => {
 });
 
 describe('Type System: OneOf Input Object fields must be nullable', () => {
-  it('rejects non-nullable fields', () => {
-    const schema = buildSchema(`
-      type Query {
-        test(arg: SomeInputObject): String
-      }
-
-      input SomeInputObject @oneOf {
-        a: String
-        b: String!
-      }
-    `);
-    expectJSON(validateSchema(schema)).toDeepEqual([
-      {
-        message: 'OneOf input field SomeInputObject.b must be nullable.',
-        locations: [{ line: 8, column: 12 }],
-      },
-    ]);
-  });
-
-  it('rejects fields with default values', () => {
-    const schema = buildSchema(`
-      type Query {
-        test(arg: SomeInputObject): String
-      }
-
-      input SomeInputObject @oneOf {
-        a: String
-        b: String = "foo"
-      }
-    `);
-    expectJSON(validateSchema(schema)).toDeepEqual([
-      {
-        message:
-          'OneOf input field SomeInputObject.b cannot have a default value.',
-        locations: [{ line: 8, column: 9 }],
-      },
-    ]);
-  });
   it('accepts a OneOf Input Object with a scalar field', () => {
     const schema = buildSchema(`
       type Query {
@@ -2542,6 +2504,97 @@ describe('Type System: OneOf Input Object fields must be nullable', () => {
       }
     `);
     expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts a OneOf/non-OneOf with scalar escape', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): Int
+      }
+
+      input A @oneOf {
+        b: B
+        escape: Int
+      }
+
+      input B {
+        a: A!
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts a non-OneOf/non-OneOf cycle with a nullable escape', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): Int
+      }
+
+      input A {
+        b: B!
+      }
+
+      input B {
+        a: A
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts a non-OneOf/non-OneOf cycle with a list escape', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): Int
+      }
+
+      input A {
+        b: [B!]!
+      }
+
+      input B {
+        a: A!
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('rejects non-nullable fields', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: SomeInputObject): String
+      }
+
+      input SomeInputObject @oneOf {
+        a: String
+        b: String!
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message: 'OneOf input field SomeInputObject.b must be nullable.',
+        locations: [{ line: 8, column: 12 }],
+      },
+    ]);
+  });
+
+  it('rejects fields with default values', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: SomeInputObject): String
+      }
+
+      input SomeInputObject @oneOf {
+        a: String
+        b: String = "foo"
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'OneOf input field SomeInputObject.b cannot have a default value.',
+        locations: [{ line: 8, column: 9 }],
+      },
+    ]);
   });
 
   it('rejects a self-referencing OneOf type with no escapes', () => {
@@ -2696,58 +2749,6 @@ describe('Type System: OneOf Input Object fields must be nullable', () => {
         ],
       },
     ]);
-  });
-
-  it('accepts a OneOf/non-OneOf with scalar escape', () => {
-    const schema = buildSchema(`
-      type Query {
-        test(arg: A): Int
-      }
-
-      input A @oneOf {
-        b: B
-        escape: Int
-      }
-
-      input B {
-        a: A!
-      }
-    `);
-    expectJSON(validateSchema(schema)).toDeepEqual([]);
-  });
-
-  it('accepts a non-OneOf/non-OneOf cycle with a nullable escape', () => {
-    const schema = buildSchema(`
-      type Query {
-        test(arg: A): Int
-      }
-
-      input A {
-        b: B!
-      }
-
-      input B {
-        a: A
-      }
-    `);
-    expectJSON(validateSchema(schema)).toDeepEqual([]);
-  });
-
-  it('accepts a non-OneOf/non-OneOf cycle with a list escape', () => {
-    const schema = buildSchema(`
-      type Query {
-        test(arg: A): Int
-      }
-
-      input A {
-        b: [B!]!
-      }
-
-      input B {
-        a: A!
-      }
-    `);
-    expectJSON(validateSchema(schema)).toDeepEqual([]);
   });
 
   it('rejects a non-OneOf/non-OneOf cycle with required scalar, list, and finite input fields', () => {
