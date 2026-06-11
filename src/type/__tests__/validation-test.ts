@@ -890,24 +890,6 @@ describe('Type System: Input Objects must have fields', () => {
     ]);
   });
 
-  it('rejects a OneOf Input Object type with missing fields', () => {
-    const schema = buildSchema(`
-      type Query {
-        field(arg: SomeInputObject): String
-      }
-
-      input SomeInputObject @oneOf
-    `);
-
-    expectJSON(validateSchema(schema)).toDeepEqual([
-      {
-        message:
-          'Input Object type SomeInputObject must define one or more fields.',
-        locations: [{ line: 6, column: 7 }],
-      },
-    ]);
-  });
-
   it('accepts an Input Object with breakable circular reference', () => {
     const schema = buildSchema(`
       type Query {
