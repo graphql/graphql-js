@@ -2476,7 +2476,6 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
   it('accepts a OneOf Input Object referencing an already checked input object', () => {
     const schema = buildSchema(`
       type Query {
-        b(arg: B): Int
         a(arg: A): Int
       }
 
@@ -2588,7 +2587,6 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
   it('rejects a non-OneOf Input Object requiring an unbreakable OneOf cycle', () => {
     const schema = buildSchema(`
       type Query {
-        t(arg: T): Int
         a(arg: A): Int
       }
 
@@ -2604,7 +2602,7 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
       {
         message:
           'Input Object T cannot be provided a finite value because it references itself through fields: T.self.',
-        locations: [{ line: 8, column: 9 }],
+        locations: [{ line: 7, column: 9 }],
       },
     ]);
   });
