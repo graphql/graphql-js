@@ -2609,7 +2609,7 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
     ]);
   });
 
-  it('caches shared unbreakable OneOf subgraphs', () => {
+  it('checks each shared unbreakable OneOf subgraph once', () => {
     const chainLength = 16;
     const types: Array<GraphQLInputObjectType> = [];
     types[0] = new GraphQLInputObjectType({
@@ -2633,8 +2633,7 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
     const getFieldsSpies = types.map((type) =>
       spyOnMethod(type, 'getFields', {
         stackMatcher: (stack) =>
-          stack.includes('inputObjectHasUnbreakableCycle') ||
-          stack.includes('reportInputObjectUnbreakableCycles'),
+          stack.includes('detectInputObjectUnbreakableCycles'),
       }),
     );
 
@@ -2654,7 +2653,7 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
     expect(validateSchema(schema)).to.have.lengthOf(1);
     expect(
       getFieldsSpies.reduce((sum, spy) => sum + spy.callCount, 0),
-    ).to.equal(51);
+    ).to.equal(17);
   });
 
   it('rejects a mixed OneOf/non-OneOf cycle with no escapes', () => {

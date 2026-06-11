@@ -405,14 +405,13 @@ function validateName(
 }
 
 function validateTypes(context: SchemaValidationContext): void {
-  const inputObjectUnbreakableCycleCheck =
-    createInputObjectUnbreakableCycleCheck();
   const validateInputObjectDefaultValueCircularRefs =
     createInputObjectDefaultValueCircularRefsValidator(context);
   const typeMap = context.schema.getTypeMap();
-
-  // Collect Input Object types that have unbreakable cycles.
-  const typesWithUnbreakableCycles = new Set<GraphQLInputObjectType>();
+  const cycleStates = new Map<
+    GraphQLInputObjectType,
+    InputObjectUnbreakableCycleState
+  >();
 
   for (const type of Object.values(typeMap)) {
     // Ensure all provided types are in fact GraphQL type.
@@ -451,17 +450,26 @@ function validateTypes(context: SchemaValidationContext): void {
       // Ensure Input Object fields are valid.
       validateInputFields(context, type);
 
-      // Ensure Input Objects do not have unbreakable cycles.
-      if (inputObjectUnbreakableCycleCheck(type)) {
-        typesWithUnbreakableCycles.add(type);
-      }
+      initializeInputObjectUnbreakableCycleState(type);
 
       // Ensure Input Objects do not contain invalid default value circular references.
       validateInputObjectDefaultValueCircularRefs(type);
     }
   }
 
-  reportInputObjectUnbreakableCycles(context, typesWithUnbreakableCycles);
+  detectInputObjectUnbreakableCycles(context, cycleStates);
+
+  function initializeInputObjectUnbreakableCycleState(
+    inputObj: GraphQLInputObjectType,
+  ): void {
+    cycleStates.set(inputObj, {
+      inputObj,
+      targets: [],
+      dependents: [],
+      unresolvedTargetCount: 0,
+      hasUnbreakableCycle: true,
+    });
+  }
 }
 
 function validateFields(
@@ -777,170 +785,144 @@ function validateOneOfInputObjectField(
   }
 }
 
-// Implements the spec's InputObjectHasUnbreakableCycle algorithm.
-// Tracks already checked types to ensure that types are not redundantly checked.
-function createInputObjectUnbreakableCycleCheck(): (
-  inputObj: GraphQLInputObjectType,
-) => boolean {
-  const cycleMemo = new Map<GraphQLInputObjectType, boolean>();
+interface InputObjectUnbreakableCycleTarget {
+  field: GraphQLInputField;
+  target: GraphQLInputObjectType;
+}
 
-  return inputObjectHasUnbreakableCycle;
+interface InputObjectUnbreakableCycleState {
+  inputObj: GraphQLInputObjectType;
+  targets: Array<InputObjectUnbreakableCycleTarget>;
+  dependents: Array<InputObjectUnbreakableCycleState>;
+  unresolvedTargetCount: number;
+  hasUnbreakableCycle: boolean;
+}
 
-  function inputObjectHasUnbreakableCycle(
-    inputObj: GraphQLInputObjectType,
-  ): boolean {
-    const cachedResult = cycleMemo.get(inputObj);
-    if (cachedResult !== undefined) {
-      return cachedResult;
-    }
+// Implements the spec's InputObjectHasUnbreakableCycle algorithm for all Input
+// Objects in one pass by propagating known breakable types through reverse edges.
+function detectInputObjectUnbreakableCycles(
+  context: SchemaValidationContext,
+  cycleStates: ReadonlyMap<
+    GraphQLInputObjectType,
+    InputObjectUnbreakableCycleState
+  >,
+): void {
+  const typesWithoutUnbreakableCycles: Array<InputObjectUnbreakableCycleState> =
+    [];
 
-    // Unknown reachable types mapped to types that depend on them.
-    const candidates = new AccumulatorMap<
-      GraphQLInputObjectType,
-      GraphQLInputObjectType
-    >();
-    for (const candidate of collectReachableInputObjects(inputObj)) {
-      candidates.set(candidate, []);
-    }
+  for (const state of cycleStates.values()) {
+    const inputObj = state.inputObj;
+    const fields = Object.values(inputObj.getFields());
 
-    // Tracks unresolved fields for non-OneOf Input Objects.
-    const nonOneOfTypeStates = new Map<
-      GraphQLInputObjectType,
-      { hasKnownCycleField: boolean; unresolvedFieldCount: number }
-    >();
-
-    // Types proven not to have cycles and ready to remove.
-    const typesToRemove: Array<GraphQLInputObjectType> = [];
-
-    for (const candidate of candidates.keys()) {
-      const fields = Object.values(candidate.getFields());
-
-      if (candidate.isOneOf) {
-        // OneOf Input Objects have an unbreakable cycle if every field leads to an unbreakable cycle.
-        if (fields.length === 0) {
-          typesToRemove.push(candidate);
-          continue;
-        }
-
-        for (const field of fields) {
-          const target = getUnbreakableCycleTarget(candidate, field.type);
-
-          if (target === undefined) {
-            typesToRemove.push(candidate);
-            break;
-          }
-
-          const targetResult = cycleMemo.get(target);
-          if (targetResult === false) {
-            typesToRemove.push(candidate);
-            break;
-          }
-
-          if (targetResult === undefined) {
-            candidates.add(target, candidate);
-          }
-        }
-      } else {
-        // Non-OneOf Input Objects have an unbreakable cycle if any non-null field has one.
-        let hasKnownCycleField = false;
-        let unresolvedFieldCount = 0;
-
-        for (const field of fields) {
-          const target = getUnbreakableCycleTarget(candidate, field.type);
-
-          if (target === undefined) {
-            continue;
-          }
-
-          const targetResult = cycleMemo.get(target);
-          if (targetResult === false) {
-            continue;
-          }
-
-          if (targetResult === true) {
-            hasKnownCycleField = true;
-          } else {
-            ++unresolvedFieldCount;
-            candidates.add(target, candidate);
-          }
-        }
-
-        nonOneOfTypeStates.set(candidate, {
-          hasKnownCycleField,
-          unresolvedFieldCount,
-        });
-
-        if (!hasKnownCycleField && unresolvedFieldCount === 0) {
-          typesToRemove.push(candidate);
-        }
-      }
-    }
-
-    while (typesToRemove.length > 0) {
-      const type = typesToRemove.pop();
-      invariant(type != null);
-
-      const dependents = candidates.get(type);
-      if (dependents === undefined) {
+    for (const field of fields) {
+      const target = getUnbreakableCycleTarget(inputObj, field.type);
+      if (target === undefined) {
         continue;
       }
 
-      candidates.delete(type);
-      cycleMemo.set(type, false);
-
-      for (const dependent of dependents) {
-        if (!candidates.has(dependent)) {
-          continue;
-        }
-
-        if (dependent.isOneOf) {
-          typesToRemove.push(dependent);
-        } else {
-          const state = nonOneOfTypeStates.get(dependent);
-          invariant(state !== undefined);
-
-          --state.unresolvedFieldCount;
-          if (!state.hasKnownCycleField && state.unresolvedFieldCount === 0) {
-            typesToRemove.push(dependent);
-          }
-        }
+      state.targets.push({ field, target });
+      const targetState = cycleStates.get(target);
+      if (targetState !== undefined) {
+        targetState.dependents.push(state);
       }
     }
 
-    for (const candidate of candidates.keys()) {
-      cycleMemo.set(candidate, true);
+    if (inputObj.isOneOf) {
+      // OneOf Input Objects have an unbreakable cycle if every field leads to an unbreakable cycle.
+      if (fields.length === 0 || state.targets.length < fields.length) {
+        markInputObjectHasNoUnbreakableCycle(state);
+      }
+    } else {
+      // Non-OneOf Input Objects have an unbreakable cycle if any non-null field has one.
+      state.unresolvedTargetCount = state.targets.length;
+      if (state.targets.length === 0) {
+        markInputObjectHasNoUnbreakableCycle(state);
+      }
     }
-
-    const result = cycleMemo.get(inputObj);
-    invariant(result !== undefined);
-    return result;
   }
 
-  function collectReachableInputObjects(
-    inputObj: GraphQLInputObjectType,
-  ): Set<GraphQLInputObjectType> {
-    const reachable = new Set<GraphQLInputObjectType>();
-    const visited = new Set<GraphQLInputObjectType>();
-
-    collect(inputObj);
-    return reachable;
-
-    function collect(type: GraphQLInputObjectType): void {
-      if (visited.has(type) || cycleMemo.has(type)) {
-        return;
+  let nextBreakableState: InputObjectUnbreakableCycleState | undefined;
+  while (
+    (nextBreakableState = typesWithoutUnbreakableCycles.pop()) !== undefined
+  ) {
+    for (const dependentState of nextBreakableState.dependents) {
+      if (!dependentState.hasUnbreakableCycle) {
+        continue;
       }
 
-      visited.add(type);
-      reachable.add(type);
+      if (dependentState.inputObj.isOneOf) {
+        markInputObjectHasNoUnbreakableCycle(dependentState);
+        continue;
+      }
 
-      for (const field of Object.values(type.getFields())) {
-        const target = getUnbreakableCycleTarget(type, field.type);
-
-        if (target !== undefined) {
-          collect(target);
-        }
+      --dependentState.unresolvedTargetCount;
+      if (dependentState.unresolvedTargetCount === 0) {
+        markInputObjectHasNoUnbreakableCycle(dependentState);
       }
     }
+  }
+
+  // Tracks already visited types to ensure that cycles are not redundantly
+  // reported.
+  const visitedTypes = new Set<GraphQLInputObjectType>();
+
+  // Array of fields used to produce meaningful errors.
+  const fieldPath: Array<{ fieldStr: string; astNode: Maybe<ASTNode> }> = [];
+
+  // Position in the field path.
+  const fieldPathIndexByType = new Map<GraphQLInputObjectType, number>();
+
+  for (const state of cycleStates.values()) {
+    if (state.hasUnbreakableCycle) {
+      reportCycleRecursive(state);
+    }
+  }
+
+  function markInputObjectHasNoUnbreakableCycle(
+    breakableState: InputObjectUnbreakableCycleState,
+  ): void {
+    if (breakableState.hasUnbreakableCycle) {
+      breakableState.hasUnbreakableCycle = false;
+      typesWithoutUnbreakableCycles.push(breakableState);
+    }
+  }
+
+  function reportCycleRecursive(state: InputObjectUnbreakableCycleState): void {
+    const inputObj = state.inputObj;
+    if (visitedTypes.has(inputObj)) {
+      return;
+    }
+
+    visitedTypes.add(inputObj);
+    fieldPathIndexByType.set(inputObj, fieldPath.length);
+
+    for (const { field, target } of state.targets) {
+      const targetState = cycleStates.get(target);
+      if (targetState?.hasUnbreakableCycle !== true) {
+        continue;
+      }
+
+      const cycleIndex = fieldPathIndexByType.get(target);
+      fieldPath.push({
+        fieldStr: `${inputObj}.${field.name}`,
+        astNode: field.astNode,
+      });
+
+      if (cycleIndex === undefined) {
+        reportCycleRecursive(targetState);
+      } else {
+        const cyclePath = fieldPath.slice(cycleIndex);
+        const pathStr = cyclePath.map((p) => p.fieldStr).join(', ');
+        context.reportError(
+          `Input Object ${target} cannot be provided a finite value because it references itself through fields: ${pathStr}.`,
+          cyclePath.map((p) => p.astNode),
+        );
+      }
+
+      fieldPath.pop();
+    }
+
+    fieldPathIndexByType.delete(inputObj);
   }
 }
 
@@ -957,62 +939,6 @@ function getUnbreakableCycleTarget(
 
   if (isNonNullType(fieldType) && isInputObjectType(fieldType.ofType)) {
     return fieldType.ofType;
-  }
-}
-
-function reportInputObjectUnbreakableCycles(
-  context: SchemaValidationContext,
-  typesWithUnbreakableCycles: ReadonlySet<GraphQLInputObjectType>,
-): void {
-  // Tracks already visited types to ensure that cycles are not redundantly
-  // reported.
-  const visitedTypes = new Set<GraphQLInputObjectType>();
-
-  // Array of fields used to produce meaningful errors.
-  const fieldPath: Array<{ fieldStr: string; astNode: Maybe<ASTNode> }> = [];
-
-  // Position in the field path.
-  const fieldPathIndexByType = new Map<GraphQLInputObjectType, number>();
-
-  for (const type of typesWithUnbreakableCycles) {
-    reportCycleRecursive(type);
-  }
-
-  function reportCycleRecursive(inputObj: GraphQLInputObjectType): void {
-    if (visitedTypes.has(inputObj)) {
-      return;
-    }
-
-    visitedTypes.add(inputObj);
-    fieldPathIndexByType.set(inputObj, fieldPath.length);
-
-    for (const field of Object.values(inputObj.getFields())) {
-      const target = getUnbreakableCycleTarget(inputObj, field.type);
-      if (target === undefined || !typesWithUnbreakableCycles.has(target)) {
-        continue;
-      }
-
-      const cycleIndex = fieldPathIndexByType.get(target);
-      fieldPath.push({
-        fieldStr: `${inputObj}.${field.name}`,
-        astNode: field.astNode,
-      });
-
-      if (cycleIndex === undefined) {
-        reportCycleRecursive(target);
-      } else {
-        const cyclePath = fieldPath.slice(cycleIndex);
-        const pathStr = cyclePath.map((p) => p.fieldStr).join(', ');
-        context.reportError(
-          `Input Object ${target} cannot be provided a finite value because it references itself through fields: ${pathStr}.`,
-          cyclePath.map((p) => p.astNode),
-        );
-      }
-
-      fieldPath.pop();
-    }
-
-    fieldPathIndexByType.delete(inputObj);
   }
 }
 
