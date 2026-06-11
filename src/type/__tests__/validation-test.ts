@@ -2409,9 +2409,6 @@ describe('Type System: OneOf Input Object fields must be nullable', () => {
       },
     ]);
   });
-});
-
-describe('Type System: Input Objects must not have unbreakable cycles', () => {
   it('accepts a OneOf Input Object with a scalar field', () => {
     const schema = buildSchema(`
       type Query {
