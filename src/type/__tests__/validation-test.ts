@@ -1010,6 +1010,46 @@ describe('Type System: Input Objects must have fields', () => {
     ]);
   });
 
+  it('rejects an Input Object with multiple non-breakable circular references', () => {
+    const schema = buildSchema(`
+      type Query {
+        field(arg: A): String
+      }
+
+      input A {
+        b: B!
+        c: C!
+      }
+
+      input B {
+        a: A!
+      }
+
+      input C {
+        a: A!
+      }
+    `);
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Input Object A cannot be provided a finite value because it references itself through fields: A.b, B.a.',
+        locations: [
+          { line: 7, column: 9 },
+          { line: 12, column: 9 },
+        ],
+      },
+      {
+        message:
+          'Input Object A cannot be provided a finite value because it references itself through fields: A.c, C.a.',
+        locations: [
+          { line: 8, column: 9 },
+          { line: 16, column: 9 },
+        ],
+      },
+    ]);
+  });
+
   it('accepts Input Objects with default values without circular references (SDL)', () => {
     const validSchema = buildSchema(`
       type Query {
