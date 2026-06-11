@@ -2541,7 +2541,7 @@ describe('Type System: OneOf Input Object fields must be nullable', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([]);
   });
 
-  it('accepts a non-OneOf/non-OneOf cycle with a list escape', () => {
+  it('accepts a non-OneOf/non-OneOf cycle with a non-null list of non-null items escape', () => {
     const schema = buildSchema(`
       type Query {
         test(arg: A): Int
