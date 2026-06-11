@@ -2633,7 +2633,7 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
     const getFieldsSpies = types.map((type) =>
       spyOnMethod(type, 'getFields', {
         stackMatcher: (stack) =>
-          stack.includes('detectInputObjectUnbreakableCycles'),
+          stack.includes('detectInputObjectNonFiniteValues'),
       }),
     );
 

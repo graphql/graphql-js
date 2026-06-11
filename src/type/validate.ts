@@ -408,9 +408,9 @@ function validateTypes(context: SchemaValidationContext): void {
   const validateInputObjectDefaultValueCircularRefs =
     createInputObjectDefaultValueCircularRefsValidator(context);
   const typeMap = context.schema.getTypeMap();
-  const cycleStates = new Map<
+  const finiteValueStates = new Map<
     GraphQLInputObjectType,
-    InputObjectUnbreakableCycleState
+    InputObjectFiniteValueState
   >();
 
   for (const type of Object.values(typeMap)) {
@@ -450,24 +450,24 @@ function validateTypes(context: SchemaValidationContext): void {
       // Ensure Input Object fields are valid.
       validateInputFields(context, type);
 
-      initializeInputObjectUnbreakableCycleState(type);
+      initializeInputObjectFiniteValueState(type);
 
       // Ensure Input Objects do not contain invalid default value circular references.
       validateInputObjectDefaultValueCircularRefs(type);
     }
   }
 
-  detectInputObjectUnbreakableCycles(context, cycleStates);
+  detectInputObjectNonFiniteValues(context, finiteValueStates);
 
-  function initializeInputObjectUnbreakableCycleState(
+  function initializeInputObjectFiniteValueState(
     inputObj: GraphQLInputObjectType,
   ): void {
-    cycleStates.set(inputObj, {
+    finiteValueStates.set(inputObj, {
       inputObj,
       targets: [],
       dependents: [],
       unresolvedTargetCount: 0,
-      hasUnbreakableCycle: true,
+      hasFiniteValue: false,
     });
   }
 }
@@ -785,43 +785,42 @@ function validateOneOfInputObjectField(
   }
 }
 
-interface InputObjectUnbreakableCycleTarget {
+interface InputObjectFiniteValueTarget {
   field: GraphQLInputField;
   target: GraphQLInputObjectType;
 }
 
-interface InputObjectUnbreakableCycleState {
+interface InputObjectFiniteValueState {
   inputObj: GraphQLInputObjectType;
-  targets: Array<InputObjectUnbreakableCycleTarget>;
-  dependents: Array<InputObjectUnbreakableCycleState>;
+  targets: Array<InputObjectFiniteValueTarget>;
+  dependents: Array<InputObjectFiniteValueState>;
   unresolvedTargetCount: number;
-  hasUnbreakableCycle: boolean;
+  hasFiniteValue: boolean;
 }
 
 // Implements the spec's InputObjectHasUnbreakableCycle algorithm for all Input
 // Objects in one pass by propagating known breakable types through reverse edges.
-function detectInputObjectUnbreakableCycles(
+function detectInputObjectNonFiniteValues(
   context: SchemaValidationContext,
-  cycleStates: ReadonlyMap<
+  finiteValueStates: ReadonlyMap<
     GraphQLInputObjectType,
-    InputObjectUnbreakableCycleState
+    InputObjectFiniteValueState
   >,
 ): void {
-  const typesWithoutUnbreakableCycles: Array<InputObjectUnbreakableCycleState> =
-    [];
+  const inputObjectsWithFiniteValues: Array<InputObjectFiniteValueState> = [];
 
-  for (const state of cycleStates.values()) {
+  for (const state of finiteValueStates.values()) {
     const inputObj = state.inputObj;
     const fields = Object.values(inputObj.getFields());
 
     for (const field of fields) {
-      const target = getUnbreakableCycleTarget(inputObj, field.type);
+      const target = getFiniteValueTarget(inputObj, field.type);
       if (target === undefined) {
         continue;
       }
 
       state.targets.push({ field, target });
-      const targetState = cycleStates.get(target);
+      const targetState = finiteValueStates.get(target);
       if (targetState !== undefined) {
         targetState.dependents.push(state);
       }
@@ -830,34 +829,34 @@ function detectInputObjectUnbreakableCycles(
     if (inputObj.isOneOf) {
       // OneOf Input Objects have an unbreakable cycle if every field leads to an unbreakable cycle.
       if (fields.length === 0 || state.targets.length < fields.length) {
-        markInputObjectHasNoUnbreakableCycle(state);
+        markInputObjectHasFiniteValue(state);
       }
     } else {
       // Non-OneOf Input Objects have an unbreakable cycle if any non-null field has one.
       state.unresolvedTargetCount = state.targets.length;
       if (state.targets.length === 0) {
-        markInputObjectHasNoUnbreakableCycle(state);
+        markInputObjectHasFiniteValue(state);
       }
     }
   }
 
-  let nextBreakableState: InputObjectUnbreakableCycleState | undefined;
+  let nextFiniteValueState: InputObjectFiniteValueState | undefined;
   while (
-    (nextBreakableState = typesWithoutUnbreakableCycles.pop()) !== undefined
+    (nextFiniteValueState = inputObjectsWithFiniteValues.pop()) !== undefined
   ) {
-    for (const dependentState of nextBreakableState.dependents) {
-      if (!dependentState.hasUnbreakableCycle) {
+    for (const dependentState of nextFiniteValueState.dependents) {
+      if (dependentState.hasFiniteValue) {
         continue;
       }
 
       if (dependentState.inputObj.isOneOf) {
-        markInputObjectHasNoUnbreakableCycle(dependentState);
+        markInputObjectHasFiniteValue(dependentState);
         continue;
       }
 
       --dependentState.unresolvedTargetCount;
       if (dependentState.unresolvedTargetCount === 0) {
-        markInputObjectHasNoUnbreakableCycle(dependentState);
+        markInputObjectHasFiniteValue(dependentState);
       }
     }
   }
@@ -872,22 +871,22 @@ function detectInputObjectUnbreakableCycles(
   // Position in the field path.
   const fieldPathIndexByType = new Map<GraphQLInputObjectType, number>();
 
-  for (const state of cycleStates.values()) {
-    if (state.hasUnbreakableCycle) {
+  for (const state of finiteValueStates.values()) {
+    if (!state.hasFiniteValue) {
       reportCycleRecursive(state);
     }
   }
 
-  function markInputObjectHasNoUnbreakableCycle(
-    breakableState: InputObjectUnbreakableCycleState,
+  function markInputObjectHasFiniteValue(
+    finiteValueState: InputObjectFiniteValueState,
   ): void {
-    if (breakableState.hasUnbreakableCycle) {
-      breakableState.hasUnbreakableCycle = false;
-      typesWithoutUnbreakableCycles.push(breakableState);
+    if (!finiteValueState.hasFiniteValue) {
+      finiteValueState.hasFiniteValue = true;
+      inputObjectsWithFiniteValues.push(finiteValueState);
     }
   }
 
-  function reportCycleRecursive(state: InputObjectUnbreakableCycleState): void {
+  function reportCycleRecursive(state: InputObjectFiniteValueState): void {
     const inputObj = state.inputObj;
     if (visitedTypes.has(inputObj)) {
       return;
@@ -897,8 +896,8 @@ function detectInputObjectUnbreakableCycles(
     fieldPathIndexByType.set(inputObj, fieldPath.length);
 
     for (const { field, target } of state.targets) {
-      const targetState = cycleStates.get(target);
-      if (targetState?.hasUnbreakableCycle !== true) {
+      const targetState = finiteValueStates.get(target);
+      if (targetState?.hasFiniteValue !== false) {
         continue;
       }
 
@@ -926,7 +925,7 @@ function detectInputObjectUnbreakableCycles(
   }
 }
 
-function getUnbreakableCycleTarget(
+function getFiniteValueTarget(
   inputObj: GraphQLInputObjectType,
   fieldType: GraphQLInputType,
 ): GraphQLInputObjectType | undefined {
