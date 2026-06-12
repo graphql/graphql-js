@@ -317,7 +317,10 @@ this case is the entire response.
 import assert from 'node:assert';
 import { parse } from 'graphql/language';
 import { buildSchema } from 'graphql/utilities';
-import { executeRootSelectionSet, validateExecutionArgs } from 'graphql/execution';
+import {
+  executeRootSelectionSet,
+  validateExecutionArgs,
+} from 'graphql/execution';
 
 const schema = buildSchema('type Query { greeting: String }');
 const validatedArgs = validateExecutionArgs({
@@ -465,7 +468,10 @@ or rejecting the returned promise.
 import assert from 'node:assert';
 import { parse } from 'graphql/language';
 import { buildSchema } from 'graphql/utilities';
-import { executeSubscriptionEvent, validateSubscriptionArgs } from 'graphql/execution';
+import {
+  executeSubscriptionEvent,
+  validateSubscriptionArgs,
+} from 'graphql/execution';
 
 const schema = buildSchema(`
   type Query {
@@ -738,7 +744,10 @@ or otherwise separating these two steps. For more on this, see the
 import assert from 'node:assert';
 import { parse } from 'graphql/language';
 import { buildSchema } from 'graphql/utilities';
-import { createSourceEventStream, validateSubscriptionArgs } from 'graphql/execution';
+import {
+  createSourceEventStream,
+  validateSubscriptionArgs,
+} from 'graphql/execution';
 
 async function* greetings() {
   yield { greeting: 'Hello' };
@@ -1028,7 +1037,10 @@ stream to an ExecutionResult in the response stream.
 import assert from 'node:assert';
 import { parse } from 'graphql/language';
 import { buildSchema } from 'graphql/utilities';
-import { mapSourceToResponseEvent, validateSubscriptionArgs } from 'graphql/execution';
+import {
+  mapSourceToResponseEvent,
+  validateSubscriptionArgs,
+} from 'graphql/execution';
 
 async function* events() {
   yield { greeting: 'Hello' };
@@ -3770,11 +3782,9 @@ const document = parse(`
 `);
 const operation = document.definitions[0];
 
-const result = getVariableValues(
-  schema,
-  operation.variableDefinitions,
-  { stars: '5' },
-);
+const result = getVariableValues(schema, operation.variableDefinitions, {
+  stars: '5',
+});
 
 assert('variableValues' in result);
 
@@ -3938,11 +3948,9 @@ const fieldDef = schema.getQueryType().getFields().reviews;
 const document = parse('query ($stars: Int!) { reviews(stars: $stars) }');
 const operation = document.definitions[0];
 const fieldNode = document.definitions[0].selectionSet.selections[0];
-const variables = getVariableValues(
-  schema,
-  operation.variableDefinitions,
-  { stars: '5' },
-);
+const variables = getVariableValues(schema, operation.variableDefinitions, {
+  stars: '5',
+});
 
 assert('variableValues' in variables);
 
@@ -4056,18 +4064,22 @@ import { buildSchema } from 'graphql/utilities';
 import { getDirectiveValues, getVariableValues } from 'graphql/execution';
 
 const schema = buildSchema('type Query { name: String }');
-const document = parse('query ($includeName: Boolean!) { name @include(if: $includeName) }');
+const document = parse(
+  'query ($includeName: Boolean!) { name @include(if: $includeName) }',
+);
 const operation = document.definitions[0];
 const fieldNode = document.definitions[0].selectionSet.selections[0];
-const variables = getVariableValues(
-  schema,
-  operation.variableDefinitions,
-  { includeName: false },
-);
+const variables = getVariableValues(schema, operation.variableDefinitions, {
+  includeName: false,
+});
 
 assert('variableValues' in variables);
 
-getDirectiveValues(GraphQLIncludeDirective, fieldNode, variables.variableValues); // => { if: false }
+getDirectiveValues(
+  GraphQLIncludeDirective,
+  fieldNode,
+  variables.variableValues,
+); // => { if: false }
 getDirectiveValues(GraphQLIncludeDirective, { directives: [] }); // => undefined
 ```
 

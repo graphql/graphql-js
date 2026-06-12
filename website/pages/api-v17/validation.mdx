@@ -1179,7 +1179,10 @@ A GraphQL document is only valid if defer directives are not used on root mutati
 ```ts
 import { parse } from 'graphql/language';
 import { buildSchema } from 'graphql/utilities';
-import { validate, DeferStreamDirectiveOnRootFieldRule } from 'graphql/validation';
+import {
+  validate,
+  DeferStreamDirectiveOnRootFieldRule,
+} from 'graphql/validation';
 
 const schema = buildSchema(`
   type Query {
@@ -1378,14 +1381,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   type Extra { field: String }
 `);
-const invalidErrors = validate(schema, invalidDocument, [ExecutableDefinitionsRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  ExecutableDefinitionsRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { name }
 `);
-const validErrors = validate(schema, validDocument, [ExecutableDefinitionsRule]);
+const validErrors = validate(schema, validDocument, [
+  ExecutableDefinitionsRule,
+]);
 
 validErrors; // => []
 ```
@@ -1462,7 +1469,9 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { missing }
 `);
-const invalidErrors = validate(schema, invalidDocument, [FieldsOnCorrectTypeRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  FieldsOnCorrectTypeRule,
+]);
 
 invalidErrors.length; // => 1
 
@@ -1547,14 +1556,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   fragment Bad on String { length }
 `);
-const invalidErrors = validate(schema, invalidDocument, [FragmentsOnCompositeTypesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  FragmentsOnCompositeTypesRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   fragment Good on Query { name }
 `);
-const validErrors = validate(schema, validDocument, [FragmentsOnCompositeTypesRule]);
+const validErrors = validate(schema, validDocument, [
+  FragmentsOnCompositeTypesRule,
+]);
 
 validErrors; // => []
 ```
@@ -1632,7 +1645,9 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { field(unknown: "1") }
 `);
-const invalidErrors = validate(schema, invalidDocument, [KnownArgumentNamesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  KnownArgumentNamesRule,
+]);
 
 invalidErrors.length; // => 1
 
@@ -1800,7 +1815,9 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { ...Missing }
 `);
-const invalidErrors = validate(schema, invalidDocument, [KnownFragmentNamesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  KnownFragmentNamesRule,
+]);
 
 invalidErrors.length; // => 1
 
@@ -2044,14 +2061,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   query { name } query Other { name }
 `);
-const invalidErrors = validate(schema, invalidDocument, [LoneAnonymousOperationRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  LoneAnonymousOperationRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { name }
 `);
-const validErrors = validate(schema, validDocument, [LoneAnonymousOperationRule]);
+const validErrors = validate(schema, validDocument, [
+  LoneAnonymousOperationRule,
+]);
 
 validErrors; // => []
 ```
@@ -2197,14 +2218,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { __schema { types { fields { type { fields { type { fields { name } } } } } } } }
 `);
-const invalidErrors = validate(schema, invalidDocument, [MaxIntrospectionDepthRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  MaxIntrospectionDepthRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { __schema { queryType { name } } }
 `);
-const validErrors = validate(schema, validDocument, [MaxIntrospectionDepthRule]);
+const validErrors = validate(schema, validDocument, [
+  MaxIntrospectionDepthRule,
+]);
 
 validErrors; // => []
 ```
@@ -2365,7 +2390,9 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   query ($id: ID) { field(arg: $missing) }
 `);
-const invalidErrors = validate(schema, invalidDocument, [NoUndefinedVariablesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  NoUndefinedVariablesRule,
+]);
 
 invalidErrors.length; // => 1
 
@@ -2449,7 +2476,9 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   fragment Unused on Query { name } query { name }
 `);
-const invalidErrors = validate(schema, invalidDocument, [NoUnusedFragmentsRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  NoUnusedFragmentsRule,
+]);
 
 invalidErrors.length; // => 1
 
@@ -2534,7 +2563,9 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   query ($id: ID) { name }
 `);
-const invalidErrors = validate(schema, invalidDocument, [NoUnusedVariablesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  NoUnusedVariablesRule,
+]);
 
 invalidErrors.length; // => 1
 
@@ -2624,14 +2655,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { dog { value: barkVolume value: name } }
 `);
-const invalidErrors = validate(schema, invalidDocument, [OverlappingFieldsCanBeMergedRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  OverlappingFieldsCanBeMergedRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { dog { barkVolume name } }
 `);
-const validErrors = validate(schema, validDocument, [OverlappingFieldsCanBeMergedRule]);
+const validErrors = validate(schema, validDocument, [
+  OverlappingFieldsCanBeMergedRule,
+]);
 
 validErrors; // => []
 ```
@@ -2715,14 +2750,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { dog { ... on Cat { meowVolume } } }
 `);
-const invalidErrors = validate(schema, invalidDocument, [PossibleFragmentSpreadsRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  PossibleFragmentSpreadsRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { dog { ... on Dog { barkVolume } } }
 `);
-const validErrors = validate(schema, validDocument, [PossibleFragmentSpreadsRule]);
+const validErrors = validate(schema, validDocument, [
+  PossibleFragmentSpreadsRule,
+]);
 
 validErrors; // => []
 ```
@@ -2871,14 +2910,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { field }
 `);
-const invalidErrors = validate(schema, invalidDocument, [ProvidedRequiredArgumentsRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  ProvidedRequiredArgumentsRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { field(required: "x") }
 `);
-const validErrors = validate(schema, validDocument, [ProvidedRequiredArgumentsRule]);
+const validErrors = validate(schema, validDocument, [
+  ProvidedRequiredArgumentsRule,
+]);
 
 validErrors; // => []
 ```
@@ -3042,14 +3085,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   subscription { a b }
 `);
-const invalidErrors = validate(schema, invalidDocument, [SingleFieldSubscriptionsRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  SingleFieldSubscriptionsRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   subscription { a }
 `);
-const validErrors = validate(schema, validDocument, [SingleFieldSubscriptionsRule]);
+const validErrors = validate(schema, validDocument, [
+  SingleFieldSubscriptionsRule,
+]);
 
 validErrors; // => []
 ```
@@ -3275,7 +3322,9 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { field(arg: "1", arg: "2") }
 `);
-const invalidErrors = validate(schema, invalidDocument, [UniqueArgumentNamesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  UniqueArgumentNamesRule,
+]);
 
 invalidErrors.length; // => 1
 
@@ -3433,14 +3482,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { name @include(if: true) @include(if: false) }
 `);
-const invalidErrors = validate(schema, invalidDocument, [UniqueDirectivesPerLocationRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  UniqueDirectivesPerLocationRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { name @include(if: true) }
 `);
-const validErrors = validate(schema, validDocument, [UniqueDirectivesPerLocationRule]);
+const validErrors = validate(schema, validDocument, [
+  UniqueDirectivesPerLocationRule,
+]);
 
 validErrors; // => []
 ```
@@ -3664,7 +3717,9 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   fragment A on Query { name } fragment A on Query { name } query { ...A }
 `);
-const invalidErrors = validate(schema, invalidDocument, [UniqueFragmentNamesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  UniqueFragmentNamesRule,
+]);
 
 invalidErrors.length; // => 1
 
@@ -3752,14 +3807,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { search(filter: { name: "a", name: "b" }) }
 `);
-const invalidErrors = validate(schema, invalidDocument, [UniqueInputFieldNamesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  UniqueInputFieldNamesRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { search(filter: { name: "a" }) }
 `);
-const validErrors = validate(schema, validDocument, [UniqueInputFieldNamesRule]);
+const validErrors = validate(schema, validDocument, [
+  UniqueInputFieldNamesRule,
+]);
 
 validErrors; // => []
 ```
@@ -3835,7 +3894,9 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   query Same { name } query Same { name }
 `);
-const invalidErrors = validate(schema, invalidDocument, [UniqueOperationNamesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  UniqueOperationNamesRule,
+]);
 
 invalidErrors.length; // => 1
 
@@ -4064,7 +4125,9 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   query ($id: ID, $id: ID) { field(arg: $id) }
 `);
-const invalidErrors = validate(schema, invalidDocument, [UniqueVariableNamesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  UniqueVariableNamesRule,
+]);
 
 invalidErrors.length; // => 1
 
@@ -4148,7 +4211,9 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { count(limit: "many") }
 `);
-const invalidErrors = validate(schema, invalidDocument, [ValuesOfCorrectTypeRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  ValuesOfCorrectTypeRule,
+]);
 
 invalidErrors.length; // => 1
 
@@ -4236,14 +4301,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   query ($user: User) { field(arg: "1") }
 `);
-const invalidErrors = validate(schema, invalidDocument, [VariablesAreInputTypesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  VariablesAreInputTypesRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   query ($id: ID) { field(arg: $id) }
 `);
-const validErrors = validate(schema, validDocument, [VariablesAreInputTypesRule]);
+const validErrors = validate(schema, validDocument, [
+  VariablesAreInputTypesRule,
+]);
 
 validErrors; // => []
 ```
@@ -4319,14 +4388,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   query ($id: String) { field(arg: $id) }
 `);
-const invalidErrors = validate(schema, invalidDocument, [VariablesInAllowedPositionRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  VariablesInAllowedPositionRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   query ($id: ID!) { field(arg: $id) }
 `);
-const validErrors = validate(schema, validDocument, [VariablesInAllowedPositionRule]);
+const validErrors = validate(schema, validDocument, [
+  VariablesInAllowedPositionRule,
+]);
 
 validErrors; // => []
 ```
@@ -4457,7 +4530,9 @@ const schema = new GraphQLSchema({
 const invalidDocument = parse(`
   { oldName }
 `);
-const invalidErrors = validate(schema, invalidDocument, [NoDeprecatedCustomRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  NoDeprecatedCustomRule,
+]);
 
 invalidErrors.length; // => 1
 
@@ -4543,14 +4618,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { __schema { queryType { name } } }
 `);
-const invalidErrors = validate(schema, invalidDocument, [NoSchemaIntrospectionCustomRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  NoSchemaIntrospectionCustomRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { name }
 `);
-const validErrors = validate(schema, validDocument, [NoSchemaIntrospectionCustomRule]);
+const validErrors = validate(schema, validDocument, [
+  NoSchemaIntrospectionCustomRule,
+]);
 
 validErrors; // => []
 ```
@@ -4691,12 +4770,9 @@ const schema = buildSchema(`
 `);
 const document = parse('{ missingOne missingTwo }');
 
-const errors = validate(
-  schema,
-  document,
-  [FieldsOnCorrectTypeRule],
-  { maxErrors: 1 },
-);
+const errors = validate(schema, document, [FieldsOnCorrectTypeRule], {
+  maxErrors: 1,
+});
 
 errors.length; // => 2
 errors[1].message; // => 'Too many validation errors, error limit reached. Validation aborted.'

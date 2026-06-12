@@ -4254,18 +4254,21 @@ document.kind; // => 'Document'
 // This variant enables parser options and provides an explicit lexer.
 import { Lexer, Source, parse } from 'graphql/language';
 
-const document = parse(`
+const document = parse(
+  `
+    {
+      t { ...A(var: true) }
+    }
+    fragment A($var: Boolean = false) on T {
+      name
+    }
+  `,
   {
-    t { ...A(var: true) }
-  }
-  fragment A($var: Boolean = false) on T {
-    name
-  }
-`, {
-  experimentalFragmentArguments: true,
-  maxTokens: 80,
-  noLocation: true,
-});
+    experimentalFragmentArguments: true,
+    maxTokens: 80,
+    noLocation: true,
+  },
+);
 const directiveDocument = parse('directive @foo @bar on FIELD', {
   experimentalDirectivesOnDirectiveDefinitions: true,
 });
@@ -4622,7 +4625,7 @@ This syntax is not part of the GraphQL specification and may change.</td>
 
 <div className="api-subsection-title">experimentalFragmentArguments Example</div>
 
-```graphql
+```graphql prettier-ignore
 {
   t { ...A(var: true) }
 }
@@ -4635,7 +4638,7 @@ fragment A($var: Boolean = false) on T {
 
 <div className="api-subsection-title">experimentalDirectivesOnDirectiveDefinitions Example</div>
 
-```graphql
+```graphql prettier-ignore
 directive @foo @bar on FIELD
 ```
 
@@ -5047,7 +5050,11 @@ Returns true when the AST node is a constant value node.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { parseConstValue, parseValue, isConstValueNode } from 'graphql/language';
+import {
+  parseConstValue,
+  parseValue,
+  isConstValueNode,
+} from 'graphql/language';
 
 const value = parseConstValue('[42]');
 const variable = parseValue('$id');
@@ -5936,8 +5943,16 @@ const events = [];
 visit(
   document,
   visitInParallel([
-    { Field: (node) => { events.push(`field:${node.name.value}`); } },
-    { Name: (node) => { events.push(`name:${node.value}`); } },
+    {
+      Field: (node) => {
+        events.push(`field:${node.name.value}`);
+      },
+    },
+    {
+      Name: (node) => {
+        events.push(`name:${node.value}`);
+      },
+    },
   ]),
 );
 

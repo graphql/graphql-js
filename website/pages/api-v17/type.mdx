@@ -474,8 +474,8 @@ const PersonType = new GraphQLObjectType({
   fields: () => ({
     parents: { type: new GraphQLList(PersonType) },
     children: { type: new GraphQLList(PersonType) },
-  })
-})
+  }),
+});
 ```
 
 <hr className="api-subsection-divider" />
@@ -659,8 +659,8 @@ const RowType = new GraphQLObjectType({
   name: 'Row',
   fields: () => ({
     id: { type: new GraphQLNonNull(GraphQLString) },
-  })
-})
+  }),
+});
 ```
 
 Note: the enforcement of non-nullability occurs within the executor.
@@ -754,9 +754,7 @@ Returns this wrapping type as a GraphQL type-reference string.
 import { GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql/type';
 
 const requiredString = new GraphQLNonNull(GraphQLString);
-const requiredStringList = new GraphQLNonNull(
-  new GraphQLList(GraphQLString),
-);
+const requiredStringList = new GraphQLNonNull(new GraphQLList(GraphQLString));
 
 requiredString.toString(); // => 'String!'
 requiredStringList.toString(); // => '[String]!'
@@ -897,7 +895,9 @@ const ensureOdd = (value) => {
   }
 
   if (value % 2 === 0) {
-    throw new Error(`Scalar "Odd" cannot represent "${value}" since it is even.`);
+    throw new Error(
+      `Scalar "Odd" cannot represent "${value}" since it is even.`,
+    );
   }
 
   return value;
@@ -913,7 +913,7 @@ const OddType = new GraphQLScalarType({
   },
   valueToLiteral: (value) => {
     return { kind: Kind.INT, value: String(ensureOdd(value)) };
-  }
+  },
 });
 ```
 
@@ -1223,10 +1223,10 @@ const AddressType = new GraphQLObjectType({
     formatted: {
       type: GraphQLString,
       resolve: (obj) => {
-        return obj.number + ' ' + obj.street
-      }
-    }
-  }
+        return obj.number + ' ' + obj.street;
+      },
+    },
+  },
 });
 ```
 
@@ -1244,7 +1244,7 @@ const PersonType = new GraphQLObjectType({
   fields: () => ({
     name: { type: GraphQLString },
     bestFriend: { type: PersonType },
-  })
+  }),
 });
 ```
 
@@ -1631,8 +1631,8 @@ when the field is resolved.
 const EntityType = new GraphQLInterfaceType({
   name: 'Entity',
   fields: {
-    name: { type: GraphQLString }
-  }
+    name: { type: GraphQLString },
+  },
 });
 ```
 
@@ -2038,7 +2038,7 @@ const PetType = new GraphQLUnionType({
     if (value instanceof Cat) {
       return CatType;
     }
-  }
+  },
 });
 ```
 
@@ -2211,7 +2211,11 @@ Returns a normalized configuration object for this object.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { GraphQLObjectType, GraphQLString, GraphQLUnionType } from 'graphql/type';
+import {
+  GraphQLObjectType,
+  GraphQLString,
+  GraphQLUnionType,
+} from 'graphql/type';
 
 const Photo = new GraphQLObjectType({
   name: 'Photo',
@@ -2320,7 +2324,11 @@ Returns the JSON representation used when this object is serialized.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { GraphQLObjectType, GraphQLString, GraphQLUnionType } from 'graphql/type';
+import {
+  GraphQLObjectType,
+  GraphQLString,
+  GraphQLUnionType,
+} from 'graphql/type';
 
 const Photo = new GraphQLObjectType({
   name: 'Photo',
@@ -3264,7 +3272,7 @@ const GeoPoint = new GraphQLInputObjectType({
     lat: { type: new GraphQLNonNull(GraphQLFloat) },
     lon: { type: new GraphQLNonNull(GraphQLFloat) },
     alt: { type: GraphQLFloat, default: { value: 0 } },
-  }
+  },
 });
 ```
 
@@ -4767,7 +4775,9 @@ Returns true when the value is a resolved GraphQL enum value definition.
 import { buildSchema } from 'graphql/utilities';
 import { assertEnumType, isEnumValue } from 'graphql/type';
 
-const schema = buildSchema('enum Episode { NEW_HOPE } type Query { episode: Episode }');
+const schema = buildSchema(
+  'enum Episode { NEW_HOPE } type Query { episode: Episode }',
+);
 const enumValue = assertEnumType(schema.getType('Episode')).getValues()[0];
 
 isEnumValue(enumValue); // => true
@@ -4832,7 +4842,9 @@ Returns the value as a GraphQLEnumValue, or throws if it is not one.
 import { buildSchema } from 'graphql/utilities';
 import { assertEnumType, assertEnumValue } from 'graphql/type';
 
-const schema = buildSchema('enum Episode { NEW_HOPE } type Query { episode: Episode }');
+const schema = buildSchema(
+  'enum Episode { NEW_HOPE } type Query { episode: Episode }',
+);
 const enumValue = assertEnumValue(
   assertEnumType(schema.getType('Episode')).getValues()[0],
 );
@@ -5053,8 +5065,12 @@ Returns true when the value is a resolved GraphQL input field definition.
 import { buildSchema } from 'graphql/utilities';
 import { assertInputObjectType, isInputField } from 'graphql/type';
 
-const schema = buildSchema('input ReviewInput { stars: Int } type Query { ok: Boolean }');
-const inputField = assertInputObjectType(schema.getType('ReviewInput')).getFields().stars;
+const schema = buildSchema(
+  'input ReviewInput { stars: Int } type Query { ok: Boolean }',
+);
+const inputField = assertInputObjectType(
+  schema.getType('ReviewInput'),
+).getFields().stars;
 
 isInputField(inputField); // => true
 isInputField(schema.getQueryType()); // => false
@@ -5118,7 +5134,9 @@ Returns the value as a GraphQLInputField, or throws if it is not one.
 import { buildSchema } from 'graphql/utilities';
 import { assertInputField, assertInputObjectType } from 'graphql/type';
 
-const schema = buildSchema('input ReviewInput { stars: Int } type Query { ok: Boolean }');
+const schema = buildSchema(
+  'input ReviewInput { stars: Int } type Query { ok: Boolean }',
+);
 const inputField = assertInputField(
   assertInputObjectType(schema.getType('ReviewInput')).getFields().stars,
 );
@@ -6908,9 +6926,7 @@ import {
   getNullableType,
 } from 'graphql/type';
 
-const requiredStringList = new GraphQLNonNull(
-  new GraphQLList(GraphQLString),
-);
+const requiredStringList = new GraphQLNonNull(new GraphQLList(GraphQLString));
 
 getNullableType(requiredStringList).toString(); // => '[String]'
 getNullableType(GraphQLString); // => GraphQLString
@@ -7357,11 +7373,7 @@ Returns the named type after unwrapping all list and non-null wrappers.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import {
-  GraphQLList,
-  GraphQLString,
-  getNamedType,
-} from 'graphql/type';
+import { GraphQLList, GraphQLString, getNamedType } from 'graphql/type';
 
 getNamedType(new GraphQLList(GraphQLString)); // => GraphQLString
 getNamedType(undefined); // => undefined
@@ -10114,7 +10126,11 @@ Returns a normalized configuration object for this input field.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { GraphQLInputField, GraphQLInputObjectType, GraphQLString } from 'graphql/type';
+import {
+  GraphQLInputField,
+  GraphQLInputObjectType,
+  GraphQLString,
+} from 'graphql/type';
 
 const ReviewInput = new GraphQLInputObjectType({
   name: 'ReviewInput',
@@ -10162,7 +10178,11 @@ Returns this input field as a schema coordinate string.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { GraphQLInputField, GraphQLInputObjectType, GraphQLString } from 'graphql/type';
+import {
+  GraphQLInputField,
+  GraphQLInputObjectType,
+  GraphQLString,
+} from 'graphql/type';
 
 const ReviewInput = new GraphQLInputObjectType({
   name: 'ReviewInput',
@@ -10209,7 +10229,11 @@ Returns the JSON representation used when this object is serialized.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { GraphQLInputField, GraphQLInputObjectType, GraphQLString } from 'graphql/type';
+import {
+  GraphQLInputField,
+  GraphQLInputObjectType,
+  GraphQLString,
+} from 'graphql/type';
 
 const ReviewInput = new GraphQLInputObjectType({
   name: 'ReviewInput',

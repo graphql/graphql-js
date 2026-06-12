@@ -1340,7 +1340,10 @@ const ReviewInput = new GraphQLInputObjectType({
   },
 });
 
-coerceInputLiteral(parseValue('{ stars: 5, comment: "Loved it" }'), ReviewInput); // => { stars: 5, comment: 'Loved it' }
+coerceInputLiteral(
+  parseValue('{ stars: 5, comment: "Loved it" }'),
+  ReviewInput,
+); // => { stars: 5, comment: 'Loved it' }
 coerceInputLiteral(parseValue('{ comment: "Missing" }'), ReviewInput); // => undefined
 ```
 
@@ -1363,11 +1366,9 @@ const schema = buildSchema(`
 `);
 const document = parse('query ($stars: Int = 5) { review(stars: $stars) }');
 const operation = document.definitions[0];
-const result = getVariableValues(
-  schema,
-  operation.variableDefinitions,
-  { stars: '4' },
-);
+const result = getVariableValues(schema, operation.variableDefinitions, {
+  stars: '4',
+});
 
 assert('variableValues' in result);
 
@@ -1454,15 +1455,11 @@ const schema = buildSchema(`
     review(stars: Int = 5): String
   }
 `);
-const document = parse(
-  'query ($stars: Int = 5) { review(stars: $stars) }',
-);
+const document = parse('query ($stars: Int = 5) { review(stars: $stars) }');
 const operation = document.definitions[0];
-const result = getVariableValues(
-  schema,
-  operation.variableDefinitions,
-  { stars: 4 },
-);
+const result = getVariableValues(schema, operation.variableDefinitions, {
+  stars: 4,
+});
 
 assert('variableValues' in result);
 
@@ -1968,9 +1965,13 @@ const ReviewInput = new GraphQLInputObjectType({
 });
 const errors = [];
 
-validateInputLiteral(parseValue('{ stars: "bad" }'), ReviewInput, (error, path) => {
-  errors.push({ message: error.message, path });
-});
+validateInputLiteral(
+  parseValue('{ stars: "bad" }'),
+  ReviewInput,
+  (error, path) => {
+    errors.push({ message: error.message, path });
+  },
+);
 
 errors; // => [ { message: 'Expected value of type "Int", found: "bad".', path: ['stars'] } ]
 ```
@@ -1994,11 +1995,9 @@ const schema = buildSchema(`
 `);
 const document = parse('query ($stars: Int = 5) { review(stars: $stars) }');
 const operation = document.definitions[0];
-const result = getVariableValues(
-  schema,
-  operation.variableDefinitions,
-  { stars: '4' },
-);
+const result = getVariableValues(schema, operation.variableDefinitions, {
+  stars: '4',
+});
 
 assert('variableValues' in result);
 
@@ -2637,9 +2636,9 @@ const invalidExtension = parse(`
 
 extendSchema(schema, invalidExtension); // throws an error
 extendSchema(schema, invalidExtension, {
-    assumeValid: true,
-    assumeValidSDL: true,
-  }); // does not throw
+  assumeValid: true,
+  assumeValidSDL: true,
+}); // does not throw
 ```
 
 <hr className="api-item-divider" />
@@ -2699,7 +2698,11 @@ This function returns a sorted copy of the given GraphQLSchema.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { buildSchema, lexicographicSortSchema, printSchema } from 'graphql/utilities';
+import {
+  buildSchema,
+  lexicographicSortSchema,
+  printSchema,
+} from 'graphql/utilities';
 
 const schema = buildSchema(`
   type Query {
@@ -2886,7 +2889,11 @@ the "errors" field of a server response before calling this function.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { buildClientSchema, introspectionFromSchema, buildSchema } from 'graphql/utilities';
+import {
+  buildClientSchema,
+  introspectionFromSchema,
+  buildSchema,
+} from 'graphql/utilities';
 
 const schema = buildSchema('type Query { hello: String }');
 const clientSchema = buildClientSchema(introspectionFromSchema(schema), {
@@ -3067,7 +3074,9 @@ const schema = buildSchema(`
 `);
 
 const introspection = introspectionFromSchema(schema);
-const urlType = introspection.__schema.types.find((type) => type.name === 'Url');
+const urlType = introspection.__schema.types.find(
+  (type) => type.name === 'Url',
+);
 
 urlType.specifiedByURL; // => 'https://url.spec.whatwg.org/'
 ```
@@ -3097,7 +3106,9 @@ const introspection = introspectionFromSchema(schema, {
   experimentalDirectiveDeprecation: false,
   oneOf: false,
 });
-const urlType = introspection.__schema.types.find((type) => type.name === 'Url');
+const urlType = introspection.__schema.types.find(
+  (type) => type.name === 'Url',
+);
 const deprecatedDirective = introspection.__schema.directives.find(
   (directive) => directive.name === 'deprecated',
 );
@@ -4021,7 +4032,10 @@ GraphQL source files which together represent one conceptual application.
 import { parse } from 'graphql/language';
 import { concatAST } from 'graphql/utilities';
 
-const document = concatAST([parse('type Query { a: String }'), parse('type User { id: ID }')]);
+const document = concatAST([
+  parse('type Query { a: String }'),
+  parse('type User { id: ID }'),
+]);
 
 document.definitions.length; // => 2
 ```
@@ -4195,7 +4209,7 @@ query SomeQuery($foo: String!, $bar: String) {
 
 Becomes:
 
-```graphql
+```graphql prettier-ignore
 query SomeQuery($foo:String!$bar:String){someField(foo:$foo bar:$bar){a b{c d}}}
 ```
 
@@ -4217,7 +4231,7 @@ type Foo {
 
 Becomes:
 
-```graphql
+```graphql prettier-ignore
 """Type description""" type Foo{"""Field description""" bar:String}
 ```
 
@@ -5183,7 +5197,11 @@ Prints a directive definition in GraphQL SDL.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { DirectiveLocation, GraphQLDirective, GraphQLString } from 'graphql/type';
+import {
+  DirectiveLocation,
+  GraphQLDirective,
+  GraphQLString,
+} from 'graphql/type';
 import { printDirective } from 'graphql/utilities';
 
 const authDirective = new GraphQLDirective({
@@ -5464,11 +5482,7 @@ Provided two types, return true if the types are equal (invariant).
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import {
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLString,
-} from 'graphql/type';
+import { GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql/type';
 import { isEqualType } from 'graphql/utilities';
 
 isEqualType(GraphQLString, GraphQLString); // => true
