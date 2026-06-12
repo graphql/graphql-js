@@ -23,11 +23,12 @@ const repoRoot = resolve(__dirname, '..');
 const websiteDir = __dirname;
 const typedocTemplatePath = join(__dirname, 'typedoc-api.json');
 const tmpDir = mkdtempSync(join(tmpdir(), 'graphql-js-api-'));
-const prettierConfig = prettier.resolveConfig.sync(repoRoot) ?? {};
-const signaturePrettierOptions = {
-  ...prettierConfig,
-  parser: 'typescript',
-};
+const signaturePrettierOptionsPromise = prettier
+  .resolveConfig(join(repoRoot, 'package.json'))
+  .then((prettierConfig) => ({
+    ...(prettierConfig ?? {}),
+    parser: 'typescript',
+  }));
 const LOCAL = 'local';
 
 let generation = {
@@ -1566,9 +1567,11 @@ function signatureSourceTypeLink(ctx, name) {
   );
 }
 
-function formatSignatureSource(source) {
+async function formatSignatureSource(source) {
   try {
-    return prettier.format(source, signaturePrettierOptions).trimEnd();
+    return (
+      await prettier.format(source, await signaturePrettierOptionsPromise)
+    ).trimEnd();
   } catch (error) {
     fail(`Cannot format API signature source:\n${source}\n\n${error.message}`);
   }
@@ -1595,15 +1598,19 @@ function signatureSourceText(value) {
   );
 }
 
-function formatInterfaceMemberSource(memberSource) {
+async function formatInterfaceMemberSource(memberSource) {
   return formatDeclarationBody(
-    formatSignatureSource(`interface __ApiSignature {\n${memberSource}\n}`),
+    await formatSignatureSource(
+      `interface __ApiSignature {\n${memberSource}\n}`,
+    ),
   );
 }
 
-function formatClassMemberSource(memberSource) {
+async function formatClassMemberSource(memberSource) {
   return formatDeclarationBody(
-    formatSignatureSource(`declare class __ApiSignature {\n${memberSource}\n}`),
+    await formatSignatureSource(
+      `declare class __ApiSignature {\n${memberSource}\n}`,
+    ),
   );
 }
 
@@ -1612,10 +1619,10 @@ function formatDeclarationBody(source) {
   return lines.slice(1, -1).join('\n').replace(/^ {2}/gm, '').trim();
 }
 
-function formatTypeSource(type, options = {}) {
+async function formatTypeSource(type, options = {}) {
   const ctx = createSignatureSourceContext(options);
   const source = signatureTypeSource(type, ctx);
-  const formatted = formatInterfaceMemberSource(`__api(): ${source};`);
+  const formatted = await formatInterfaceMemberSource(`__api(): ${source};`);
   const body = extractReturnTypeBody(formatted);
   return renderFormattedSignatureSource(body, ctx);
 }
@@ -2127,13 +2134,13 @@ function typeLiteralMembers(node, options, renderIndexSignature, renderChild) {
   ];
 }
 
-function renderApiType(type, options = {}) {
+async function renderApiType(type, options = {}) {
   return `<ApiType parts={${signaturePartsExpression(
-    formatTypeSource(type, options),
+    await formatTypeSource(type, options),
   )}} />`;
 }
 
-function renderSignatureDeclaration(
+async function renderSignatureDeclaration(
   signature,
   options = {},
   name = signature.name,
@@ -2149,11 +2156,14 @@ function renderSignatureDeclaration(
     includeDefault: true,
   })}): ${signatureTypeSource(signature.type, ctx)};`;
   return apiSignature(
-    renderFormattedSignatureSource(formatInterfaceMemberSource(source), ctx),
+    renderFormattedSignatureSource(
+      await formatInterfaceMemberSource(source),
+      ctx,
+    ),
   );
 }
 
-function renderConstructorDeclaration(signature, options = {}) {
+async function renderConstructorDeclaration(signature, options = {}) {
   const ctx = createSignatureSourceContext(options);
   const source = `constructor(${signatureParametersSource(signature, ctx, {
     includeDefault: true,
@@ -2164,7 +2174,7 @@ function renderConstructorDeclaration(signature, options = {}) {
   );
   return apiSignature(
     renderFormattedSignatureSource(
-      formatClassMemberSource(source).replace(
+      (await formatClassMemberSource(source)).replace(
         /^constructor/,
         constructorSource,
       ),
@@ -2173,7 +2183,7 @@ function renderConstructorDeclaration(signature, options = {}) {
   );
 }
 
-function renderTypeAliasDeclaration(node, options = {}) {
+async function renderTypeAliasDeclaration(node, options = {}) {
   const ctx = createSignatureSourceContext(options);
   const source = `type ${signatureNameSource(
     ctx,
@@ -2183,7 +2193,7 @@ function renderTypeAliasDeclaration(node, options = {}) {
     ctx,
   )};`;
   return apiSignature(
-    renderFormattedSignatureSource(formatSignatureSource(source), ctx),
+    renderFormattedSignatureSource(await formatSignatureSource(source), ctx),
   );
 }
 
@@ -2333,7 +2343,7 @@ function renderComment(node) {
   return parts.join('\n\n');
 }
 
-function renderFields(parent, level, options = {}) {
+async function renderFields(parent, level, options = {}) {
   const children = visibleChildren(parent).filter(
     (child) =>
       child.kind === ReflectionKind.Property ||
@@ -2350,7 +2360,8 @@ function renderFields(parent, level, options = {}) {
       if (rows.length > 0 || lines.length > 0) {
         lines.push('<hr className="api-subsection-divider" />');
       }
-      lines.push(...renderCallable(child, level, child.name));
+      // eslint-disable-next-line no-await-in-loop
+      lines.push(...(await renderCallable(child, level, child.name)));
       continue;
     }
     const defaultValue = defaultText(child, parent, options);
@@ -2358,7 +2369,8 @@ function renderFields(parent, level, options = {}) {
       `${htmlText(child.name)}${
         child.flags?.isOptional ? '?' : ''
       }${deprecatedTag(child)}`,
-      renderApiType(child.type, options),
+      // eslint-disable-next-line no-await-in-loop
+      await renderApiType(child.type, options),
       defaultValue,
       summary(child),
     ]);
@@ -2373,7 +2385,7 @@ function renderFields(parent, level, options = {}) {
     : [...subsection('Members', members), ...lines];
 }
 
-function renderParams(signature, options = {}) {
+async function renderParams(signature, options = {}) {
   const params = signature.parameters ?? [];
   if (params.length === 0) {
     return [];
@@ -2386,7 +2398,8 @@ function renderParams(signature, options = {}) {
       `${htmlText(param.name)}${
         param.flags?.isOptional ? '?' : ''
       }${deprecatedTag(param)}`,
-      renderApiType(param.type, options),
+      // eslint-disable-next-line no-await-in-loop
+      await renderApiType(param.type, options),
       defaultValue,
       summary(param),
     ]);
@@ -2435,7 +2448,7 @@ function renderExamples(comment, title = 'Example') {
   );
 }
 
-function renderReturns(signature, options = {}) {
+async function renderReturns(signature, options = {}) {
   if (signature.type == null || typeName(signature.type, options) === 'void') {
     return [];
   }
@@ -2448,23 +2461,36 @@ function renderReturns(signature, options = {}) {
   return subsection('Returns', [
     ...table([
       ['Type', 'Description'],
-      [renderApiType(signature.type, options), returns],
+      [await renderApiType(signature.type, options), returns],
     ]),
   ]);
 }
 
-function renderTypeParameters(node, options = {}) {
+async function renderTypeParameters(node, options = {}) {
   const typeParameters = node.typeParameters ?? [];
   if (typeParameters.length === 0) {
     return [];
   }
 
-  const rows = typeParameters.map((param) => [
-    `${param.name}${deprecatedTag(param)}`,
-    param.type == null ? '' : renderApiType(param.type, options),
-    param.default == null ? '' : renderApiType(param.default, options),
-    summary(param),
-  ]);
+  const rows = [];
+  for (const param of typeParameters) {
+    let constraint = '';
+    if (param.type != null) {
+      // eslint-disable-next-line no-await-in-loop
+      constraint = await renderApiType(param.type, options);
+    }
+    let defaultType = '';
+    if (param.default != null) {
+      // eslint-disable-next-line no-await-in-loop
+      defaultType = await renderApiType(param.default, options);
+    }
+    rows.push([
+      `${param.name}${deprecatedTag(param)}`,
+      constraint,
+      defaultType,
+      summary(param),
+    ]);
+  }
   return subsection('Type Parameters', [
     ...table([['Name', 'Constraint', 'Default', 'Description'], ...rows]),
   ]);
@@ -2481,7 +2507,7 @@ function publishedExtendedTypes(node) {
   });
 }
 
-function renderInterfaceDeclaration(node, options = {}) {
+async function renderInterfaceDeclaration(node, options = {}) {
   const extendedTypes = publishedExtendedTypes(node);
   if (extendedTypes.length === 0) {
     return '';
@@ -2496,13 +2522,13 @@ function renderInterfaceDeclaration(node, options = {}) {
     .join(', ')} {}`;
   return apiSignature(
     renderFormattedSignatureSource(
-      formatSignatureSource(source).replace(/\s*\{\}$/, ''),
+      (await formatSignatureSource(source)).replace(/\s*\{\}$/, ''),
       ctx,
     ),
   );
 }
 
-function renderCallable(
+async function renderCallable(
   node,
   level,
   label = `${node.name}()`,
@@ -2533,19 +2559,24 @@ function renderCallable(
     if (comment) {
       lines.push(comment);
     }
-    lines.push(...renderTypeParameters(signature, options));
-    lines.push(
-      '**Signature:**',
-      renderSignatureDeclaration(signature, options),
+    // eslint-disable-next-line no-await-in-loop
+    lines.push(...(await renderTypeParameters(signature, options)));
+    // eslint-disable-next-line no-await-in-loop
+    const signatureDeclaration = await renderSignatureDeclaration(
+      signature,
+      options,
     );
-    lines.push(...renderParams(signature, options));
-    lines.push(...renderReturns(signature, options));
+    lines.push('**Signature:**', signatureDeclaration);
+    // eslint-disable-next-line no-await-in-loop
+    lines.push(...(await renderParams(signature, options)));
+    // eslint-disable-next-line no-await-in-loop
+    lines.push(...(await renderReturns(signature, options)));
     lines.push(...renderExamples(signature.comment));
   }
   return lines;
 }
 
-function renderDeclaration(node, level = 3, siblings = []) {
+async function renderDeclaration(node, level = 3, siblings = []) {
   const declaration = documentationNode(node);
   if (declaration !== node) {
     return renderDeclaration(
@@ -2574,7 +2605,7 @@ function renderDeclaration(node, level = 3, siblings = []) {
     lines.push(comment);
   }
 
-  lines.push(...renderTypeParameters(node, options));
+  lines.push(...(await renderTypeParameters(node, options)));
   const examples = renderExamples(node.comment);
 
   if (isEnumLikeDeclaration(node, siblings)) {
@@ -2584,13 +2615,15 @@ function renderDeclaration(node, level = 3, siblings = []) {
     return lines;
   }
 
-  const interfaceDeclaration = renderInterfaceDeclaration(node, options);
+  const interfaceDeclaration = await renderInterfaceDeclaration(node, options);
   if (interfaceDeclaration) {
     lines.push(interfaceDeclaration);
   }
 
   if (node.kind === ReflectionKind.Variable) {
-    lines.push(...subsection('Type', [renderApiType(node.type, options)]));
+    lines.push(
+      ...subsection('Type', [await renderApiType(node.type, options)]),
+    );
     lines.push(...examples);
     return lines;
   }
@@ -2600,7 +2633,7 @@ function renderDeclaration(node, level = 3, siblings = []) {
       node.kind === ReflectionKind.Reference) &&
     node.type != null
   ) {
-    lines.push(renderTypeAliasDeclaration(node, options));
+    lines.push(await renderTypeAliasDeclaration(node, options));
   }
 
   if (node.kind === ReflectionKind.Enum) {
@@ -2635,11 +2668,14 @@ function renderDeclaration(node, level = 3, siblings = []) {
         if (signatureComment) {
           lines.push(signatureComment);
         }
-        lines.push(
-          '**Signature:**',
-          renderConstructorDeclaration(signature, options),
+        // eslint-disable-next-line no-await-in-loop
+        const constructorDeclaration = await renderConstructorDeclaration(
+          signature,
+          options,
         );
-        lines.push(...renderParams(signature, options));
+        lines.push('**Signature:**', constructorDeclaration);
+        // eslint-disable-next-line no-await-in-loop
+        lines.push(...(await renderParams(signature, options)));
       }
     }
   } else {
@@ -2647,10 +2683,10 @@ function renderDeclaration(node, level = 3, siblings = []) {
   }
 
   lines.push(
-    ...renderFields(node, level + 1, {
+    ...(await renderFields(node, level + 1, {
       ...options,
       heading: node.kind === ReflectionKind.Class,
-    }),
+    })),
   );
   return lines;
 }
@@ -2855,7 +2891,7 @@ function sameDoc(left, right) {
   return left.page === right.page && left.anchor === right.anchor;
 }
 
-function renderGroup(title, items, level, allItems) {
+async function renderGroup(title, items, level, allItems) {
   if (items.length === 0) {
     return [];
   }
@@ -2864,7 +2900,8 @@ function renderGroup(title, items, level, allItems) {
     if (index > 0) {
       lines.push('<hr className="api-item-divider" />');
     }
-    lines.push(...renderDeclaration(item, level + 1, allItems));
+    // eslint-disable-next-line no-await-in-loop
+    lines.push(...(await renderDeclaration(item, level + 1, allItems)));
   }
   return lines;
 }
@@ -2883,11 +2920,12 @@ function grouped(items) {
   return map;
 }
 
-function renderItems(items, page, level = 2) {
+async function renderItems(items, page, level = 2) {
   const groups = grouped(items);
   const lines = [renderItemToc(groups, page)];
   for (const group of groupOrder) {
-    lines.push(...renderGroup(group, groups.get(group), level, items));
+    // eslint-disable-next-line no-await-in-loop
+    lines.push(...(await renderGroup(group, groups.get(group), level, items)));
   }
   return lines.filter(Boolean).join('\n\n').trimEnd() + '\n';
 }
@@ -2986,14 +3024,14 @@ function categoryHeading(categoryName) {
   return `Category: ${categoryName}`;
 }
 
-function categorySection(name, items, moduleName) {
+async function categorySection(name, items, moduleName) {
   return [
     heading(2, categoryHeading(name)),
-    renderItems(items, moduleName, 3).trimEnd(),
+    (await renderItems(items, moduleName, 3)).trimEnd(),
   ].join('\n\n');
 }
 
-function renderModulePage(docs) {
+async function renderModulePage(docs) {
   const content = [];
   if (isDeprecatedModule(docs)) {
     content.push(heading(1, deprecatedHeadingLabel(docs.title, true)));
@@ -3001,14 +3039,18 @@ function renderModulePage(docs) {
   content.push(summary(docs.module));
   if (docs.categories.length === 1) {
     content.push(
-      renderItems(docs.byCategory.get(docs.categories[0]), docs.name).trimEnd(),
+      (
+        await renderItems(docs.byCategory.get(docs.categories[0]), docs.name)
+      ).trimEnd(),
     );
   } else {
     content.push(categoryLinks(docs.categories, docs.name));
     content.push(
-      ...docs.categories.map((name) =>
-        categorySection(name, docs.byCategory.get(name), docs.name),
-      ),
+      ...(await Promise.all(
+        docs.categories.map((name) =>
+          categorySection(name, docs.byCategory.get(name), docs.name),
+        ),
+      )),
     );
   }
   return content.filter(Boolean).join('\n\n') + '\n';
@@ -3069,7 +3111,7 @@ function buildApiReference(doc) {
   };
 }
 
-function writeApiReference(reference) {
+async function writeApiReference(reference) {
   renderContext.docsBasePath = generation.docsBasePath;
   renderContext.docsIndex = reference.index;
   renderContext.reflectionsById = reference.reflectionsById;
@@ -3081,15 +3123,16 @@ function writeApiReference(reference) {
   for (const docs of reference.modules) {
     addModuleMeta(meta, docs);
     assertAllItemsCategorized(docs);
-    writePage(docs.name, renderModulePage(docs));
+    // eslint-disable-next-line no-await-in-loop
+    writePage(docs.name, await renderModulePage(docs));
     writeCategoryMeta(docs);
   }
 
   writeMeta(generation.outputDir, meta);
 }
 
-function renderDocs(doc) {
-  writeApiReference(buildApiReference(doc));
+async function renderDocs(doc) {
+  await writeApiReference(buildApiReference(doc));
 }
 
 function addCategory(comment, category) {
@@ -3427,35 +3470,50 @@ function readTypedocOutput() {
   return readJson(generation.jsonPath);
 }
 
-function generateForSource(source) {
+async function generateForSource(source) {
   configureGeneration(source.ref, source.sourceDir);
   prepareSourceSnapshot();
   sourceContext = analyzeSourceSnapshot(generation.tmpSourceDir);
   runTypedoc(source.ref);
-  renderDocs(readTypedocOutput());
+  await renderDocs(readTypedocOutput());
 }
 
-function generateRefs(refs) {
+async function generateRefs(refs) {
   if (refs.length === 0) {
     fail('Usage: npm run generate:docs <local-or-ref> [...local-or-ref]');
   }
 
   const sources = generationSources(refs);
   for (const source of sources) {
-    generateForSource(source);
+    // eslint-disable-next-line no-await-in-loop
+    await generateForSource(source);
   }
 }
 
-try {
-  generateRefs(process.argv.slice(2));
-} catch (error) {
-  console.error(error.message);
-  process.exitCode = 1;
-} finally {
-  removeSourceWorktrees();
-  if (process.env.GRAPHQL_JS_API_KEEP_TMP === '1') {
-    console.error('[api-docs] Kept temporary directory:', tmpDir);
-  } else {
-    rmSync(tmpDir, { recursive: true, force: true });
+async function main() {
+  let exitCode = 0;
+  try {
+    await generateRefs(process.argv.slice(2));
+  } catch (error) {
+    console.error(error.message);
+    exitCode = 1;
+  } finally {
+    removeSourceWorktrees();
+    if (process.env.GRAPHQL_JS_API_KEEP_TMP === '1') {
+      console.error('[api-docs] Kept temporary directory:', tmpDir);
+    } else {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
   }
+  return exitCode;
 }
+
+main().then(
+  (exitCode) => {
+    process.exitCode = exitCode;
+  },
+  (error) => {
+    console.error(error.message);
+    process.exitCode = 1;
+  },
+);
