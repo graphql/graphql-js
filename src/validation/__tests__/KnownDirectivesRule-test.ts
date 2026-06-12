@@ -325,7 +325,9 @@ describe('Validate: Known directives', () => {
             myField(myArg: Int @onArgumentDefinition): String @onFieldDefinition
           }
 
-          extend type MyObj @onObject
+          extend type MyObj @onObject {
+            myExtensionField(myArg: Int @onArgumentDefinition): String @onFieldDefinition
+          }
 
           scalar MyScalar @onScalar
 
@@ -335,7 +337,9 @@ describe('Validate: Known directives', () => {
             myField(myArg: Int @onArgumentDefinition): String @onFieldDefinition
           }
 
-          extend interface MyInterface @onInterface
+          extend interface MyInterface @onInterface {
+            myExtensionField(myArg: Int @onArgumentDefinition): String @onFieldDefinition
+          }
 
           union MyUnion @onUnion = MyObj | Other
 
@@ -377,10 +381,18 @@ describe('Validate: Known directives', () => {
             myField(myArg: Int @onInputFieldDefinition): String @onInputFieldDefinition
           }
 
+          extend type MyObj @onDirective {
+            myExtensionField(myArg: Int @onInputFieldDefinition): String @onInputFieldDefinition
+          }
+
           scalar MyScalar @onEnum
 
           interface MyInterface @onObject {
             myField(myArg: Int @onInputFieldDefinition): String @onInputFieldDefinition
+          }
+
+          extend interface MyInterface @onObject {
+            myExtensionField(myArg: Int @onInputFieldDefinition): String @onInputFieldDefinition
           }
 
           union MyUnion @onEnumValue = MyObj | Other
@@ -402,8 +414,6 @@ describe('Validate: Known directives', () => {
           }
 
           extend schema @onObject
-
-          extend type MyObj @onDirective
         `,
         schemaWithSDLDirectives,
       ).toDeepEqual([
@@ -422,60 +432,84 @@ describe('Validate: Known directives', () => {
           locations: [{ line: 3, column: 65 }],
         },
         {
-          message: 'Directive "@onEnum" may not be used on SCALAR.',
-          locations: [{ line: 6, column: 27 }],
-        },
-        {
-          message: 'Directive "@onObject" may not be used on INTERFACE.',
-          locations: [{ line: 8, column: 33 }],
+          message: 'Directive "@onDirective" may not be used on OBJECT.',
+          locations: [{ line: 6, column: 29 }],
         },
         {
           message:
             'Directive "@onInputFieldDefinition" may not be used on ARGUMENT_DEFINITION.',
-          locations: [{ line: 9, column: 32 }],
+          locations: [{ line: 7, column: 41 }],
         },
         {
           message:
             'Directive "@onInputFieldDefinition" may not be used on FIELD_DEFINITION.',
-          locations: [{ line: 9, column: 65 }],
+          locations: [{ line: 7, column: 74 }],
+        },
+        {
+          message: 'Directive "@onEnum" may not be used on SCALAR.',
+          locations: [{ line: 10, column: 27 }],
+        },
+        {
+          message: 'Directive "@onObject" may not be used on INTERFACE.',
+          locations: [{ line: 12, column: 33 }],
+        },
+        {
+          message:
+            'Directive "@onInputFieldDefinition" may not be used on ARGUMENT_DEFINITION.',
+          locations: [{ line: 13, column: 32 }],
+        },
+        {
+          message:
+            'Directive "@onInputFieldDefinition" may not be used on FIELD_DEFINITION.',
+          locations: [{ line: 13, column: 65 }],
+        },
+        {
+          message: 'Directive "@onObject" may not be used on INTERFACE.',
+          locations: [{ line: 16, column: 40 }],
+        },
+        {
+          message:
+            'Directive "@onInputFieldDefinition" may not be used on ARGUMENT_DEFINITION.',
+          locations: [{ line: 17, column: 41 }],
+        },
+        {
+          message:
+            'Directive "@onInputFieldDefinition" may not be used on FIELD_DEFINITION.',
+          locations: [{ line: 17, column: 74 }],
         },
         {
           message: 'Directive "@onEnumValue" may not be used on UNION.',
-          locations: [{ line: 12, column: 25 }],
+          locations: [{ line: 20, column: 25 }],
         },
         {
           message: 'Directive "@onScalar" may not be used on ENUM.',
-          locations: [{ line: 14, column: 23 }],
+          locations: [{ line: 22, column: 23 }],
         },
         {
           message: 'Directive "@onUnion" may not be used on ENUM_VALUE.',
-          locations: [{ line: 15, column: 22 }],
+          locations: [{ line: 23, column: 22 }],
         },
         {
           message: 'Directive "@onEnum" may not be used on INPUT_OBJECT.',
-          locations: [{ line: 18, column: 25 }],
+          locations: [{ line: 26, column: 25 }],
         },
         {
           message:
             'Directive "@onArgumentDefinition" may not be used on INPUT_FIELD_DEFINITION.',
-          locations: [{ line: 19, column: 26 }],
+          locations: [{ line: 27, column: 26 }],
         },
         {
           message:
             'Directive "@onArgumentDefinition" may not be used on INPUT_FIELD_DEFINITION.',
-          locations: [{ line: 23, column: 35 }],
+          locations: [{ line: 31, column: 35 }],
         },
         {
           message: 'Directive "@onObject" may not be used on SCHEMA.',
-          locations: [{ line: 26, column: 18 }],
+          locations: [{ line: 34, column: 18 }],
         },
         {
           message: 'Directive "@onObject" may not be used on SCHEMA.',
-          locations: [{ line: 30, column: 25 }],
-        },
-        {
-          message: 'Directive "@onDirective" may not be used on OBJECT.',
-          locations: [{ line: 32, column: 29 }],
+          locations: [{ line: 38, column: 25 }],
         },
       ]);
     });
