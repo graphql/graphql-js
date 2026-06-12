@@ -351,7 +351,9 @@ describe('Validate: Known directives', () => {
             myField: Int @onInputFieldDefinition
           }
 
-          extend input MyInput @onInputObject
+          extend input MyInput @onInputObject {
+            myExtensionField: Int @onInputFieldDefinition
+          }
 
           schema @onSchema {
             query: MyQuery
@@ -389,6 +391,10 @@ describe('Validate: Known directives', () => {
 
           input MyInput @onEnum {
             myField: Int @onArgumentDefinition
+          }
+
+          extend input MyInput {
+            myExtensionField: Int @onArgumentDefinition
           }
 
           schema @onObject {
@@ -455,16 +461,21 @@ describe('Validate: Known directives', () => {
           locations: [{ line: 19, column: 26 }],
         },
         {
-          message: 'Directive "@onObject" may not be used on SCHEMA.',
-          locations: [{ line: 22, column: 18 }],
+          message:
+            'Directive "@onArgumentDefinition" may not be used on INPUT_FIELD_DEFINITION.',
+          locations: [{ line: 23, column: 35 }],
         },
         {
           message: 'Directive "@onObject" may not be used on SCHEMA.',
-          locations: [{ line: 26, column: 25 }],
+          locations: [{ line: 26, column: 18 }],
+        },
+        {
+          message: 'Directive "@onObject" may not be used on SCHEMA.',
+          locations: [{ line: 30, column: 25 }],
         },
         {
           message: 'Directive "@onDirective" may not be used on OBJECT.',
-          locations: [{ line: 28, column: 29 }],
+          locations: [{ line: 32, column: 29 }],
         },
       ]);
     });
