@@ -2117,6 +2117,28 @@ describe('Execute: stream directive (legacy)', () => {
     ]);
   });
   it('Handles overlapping deferred and non-deferred streams', async () => {
+    // NOTE: This is an *invalid* query, but it should be an *executable* query.
+    // Validation rejects the overlapping @stream selections. See
+    // https://github.com/graphql/defer-stream-wg/discussions/100.
+    //
+    // The query selects the same stream field twice. The non-deferred selection
+    // asks for `id`. The deferred stream selection asks for `id`, `name`, and
+    // an inner deferred `innerName`.
+    //
+    // Stream item completion later sees one merged stream. Without rewriting
+    // the stream field details to clear inherited defer usage, `name` would be
+    // treated as still belonging to the outer @defer instead of to the stream
+    // item. The bad stream payload would be `items: [{ id: '1' }]` and then
+    // `items: [{ id: '2' }]`; the `name` fields would be dropped even though
+    // the `innerName` payloads would still be emitted.
+    //
+    // `getStreamUsage` avoids that by rewriting the stream field details to
+    // clear inherited defer usage before those details are reused to complete
+    // stream items.
+    //
+    // The inner @defer is included only because it forces stream item
+    // completion through execution planning. Without it, a fast path executes
+    // all collected fields directly and this bug would not be exposed.
     const document = parse(`
       query {
         nestedObject {
@@ -2129,6 +2151,9 @@ describe('Execute: stream directive (legacy)', () => {
             nestedFriendList @stream(initialCount: 0) {
               id
               name
+              ... @defer {
+                innerName: name
+              }
             }
           }
         }
@@ -2176,6 +2201,10 @@ describe('Execute: stream directive (legacy)', () => {
             items: [{ id: '2' }],
             path: ['nestedObject', 'nestedFriendList', 1],
           },
+          {
+            data: { innerName: 'Luke' },
+            path: ['nestedObject', 'nestedFriendList', 0],
+          },
         ],
         hasNext: true,
       },
@@ -2183,6 +2212,10 @@ describe('Execute: stream directive (legacy)', () => {
         incremental: [
           {
             items: [{ id: '2', name: 'Han' }],
+            path: ['nestedObject', 'nestedFriendList', 1],
+          },
+          {
+            data: { innerName: 'Han' },
             path: ['nestedObject', 'nestedFriendList', 1],
           },
         ],
@@ -2193,6 +2226,9 @@ describe('Execute: stream directive (legacy)', () => {
   it('Re-promotes a completed stream when a slower sibling defer resolves later', async () => {
     const { promise: slowFieldPromise, resolve: resolveSlowField } =
       promiseWithResolvers<string>();
+    // NOTE: This is an *invalid* query, but it should be an *executable* query.
+    // Validation rejects the overlapping @stream selections. See
+    // https://github.com/graphql/defer-stream-wg/discussions/100.
     const document = parse(`
       query {
         nestedObject {
@@ -2397,7 +2433,7 @@ describe('Execute: stream directive (legacy)', () => {
     const document = parse(`
     query {
       friendList @stream(label:"stream-label") {
-        ...NameFragment @defer(label: "DeferName") @defer(label: "DeferName")
+        ...NameFragment @defer(label: "DeferName")
         id
       }
     }
@@ -2500,7 +2536,7 @@ describe('Execute: stream directive (legacy)', () => {
     const document = parse(`
     query {
       friendList @stream(initialCount: 1, label:"stream-label") {
-        ...NameFragment @defer(label: "DeferName") @defer(label: "DeferName")
+        ...NameFragment @defer(label: "DeferName")
         id
       }
     }
