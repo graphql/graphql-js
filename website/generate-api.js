@@ -11,20 +11,18 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs';
-import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import prettier from 'prettier';
+import ts from 'typescript';
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '..');
 const websiteDir = __dirname;
-const repoRequire = createRequire(join(repoRoot, 'package.json'));
-const websiteRequire = createRequire(join(websiteDir, 'package.json'));
 const typedocTemplatePath = join(__dirname, 'typedoc-api.json');
 const tmpDir = mkdtempSync(join(tmpdir(), 'graphql-js-api-'));
-const prettier = repoRequire('prettier');
-const ts = websiteRequire('typescript');
 const prettierConfig = prettier.resolveConfig.sync(repoRoot) ?? {};
 const signaturePrettierOptions = {
   ...prettierConfig,
