@@ -28,6 +28,7 @@ const signaturePrettierOptions = {
   ...prettierConfig,
   parser: 'typescript',
 };
+const LOCAL = 'local';
 
 let generation = {
   docsVersionLabel: 'api-docs',
@@ -121,6 +122,10 @@ function checkoutSourceRef(ref, index) {
   run('git', ['worktree', 'add', '--detach', dir, ref], repoRoot);
   worktreeDirs.push(dir);
   return dir;
+}
+
+function sourceDirForRef(ref, index) {
+  return ref === LOCAL ? repoRoot : checkoutSourceRef(ref, index);
 }
 
 function removeSourceWorktrees() {
@@ -3374,13 +3379,32 @@ function typedocEntryPoints(sourceRootDir) {
     .filter((path) => existsSync(path));
 }
 
-function rememberGeneratedMajor(generatedMajors, majorVersion) {
-  if (generatedMajors.has(majorVersion)) {
-    fail(
-      `Multiple refs resolve to v${majorVersion}; refusing to overwrite docs.`,
-    );
+function assertUniqueMajorVersions(sources) {
+  const sourceByMajor = new Map();
+  for (const source of sources) {
+    const previousRef = sourceByMajor.get(source.majorVersion);
+    if (previousRef != null) {
+      fail(
+        `Multiple refs resolve to v${source.majorVersion}: ${previousRef} and ${source.ref}. Refusing to overwrite docs.`,
+      );
+    }
+    sourceByMajor.set(source.majorVersion, source.ref);
   }
-  generatedMajors.add(majorVersion);
+}
+
+function generationSources(refs) {
+  const sources = refs.map((ref, index) => {
+    const sourceDir = sourceDirForRef(ref, index);
+    assertSourceRoot(sourceDir);
+    return {
+      majorVersion: sourceMajorVersion(sourceDir),
+      ref,
+      sourceDir,
+    };
+  });
+
+  assertUniqueMajorVersions(sources);
+  return sources;
 }
 
 function runTypedoc(ref) {
@@ -3403,24 +3427,22 @@ function readTypedocOutput() {
   return readJson(generation.jsonPath);
 }
 
-function generateForRef(ref, index, generatedMajors) {
-  const sourceCheckoutDir = checkoutSourceRef(ref, index);
-  const majorVersion = configureGeneration(ref, sourceCheckoutDir);
-  rememberGeneratedMajor(generatedMajors, majorVersion);
+function generateForSource(source) {
+  configureGeneration(source.ref, source.sourceDir);
   prepareSourceSnapshot();
   sourceContext = analyzeSourceSnapshot(generation.tmpSourceDir);
-  runTypedoc(ref);
+  runTypedoc(source.ref);
   renderDocs(readTypedocOutput());
 }
 
 function generateRefs(refs) {
   if (refs.length === 0) {
-    fail('Usage: npm run generate:docs <branch-or-ref> [...branch-or-ref]');
+    fail('Usage: npm run generate:docs <local-or-ref> [...local-or-ref]');
   }
 
-  const generatedMajors = new Set();
-  for (const [index, ref] of refs.entries()) {
-    generateForRef(ref, index, generatedMajors);
+  const sources = generationSources(refs);
+  for (const source of sources) {
+    generateForSource(source);
   }
 }
 

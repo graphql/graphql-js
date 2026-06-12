@@ -91,23 +91,23 @@ cd website
 npm run generate:docs -- 16.x.x 17.x.x
 ```
 
-The generator creates detached temporary git worktrees for the refs passed on
-the command line, infers the major version from each ref's `package.json`, and
-writes the corresponding `api-v*` output directory. Generated API docs are not
-published automatically at this time; PRs that change website API output must
-include the generated files.
+Each argument is either `local` or a local git ref such as a branch, tag, SHA,
+or `HEAD`. For git refs, the generator creates detached temporary worktrees. For
+`local`, it snapshots the current working tree, including uncommitted changes.
+The generator infers the major version from each source's `package.json`, writes
+the corresponding `api-v*` output directory, and fails if more than one input
+resolves to the same major version.
 
-Because the generator reads refs through temporary worktrees, it does not read
-uncommitted changes from your current checkout. Passing `17.x.x` reads the
-committed tip of the `17.x.x` branch, not local changes in a checked-out
-worktree. If a PR changes v17 API source comments or exported TypeScript
-surfaces, commit those source changes first and generate v17 docs from a ref
-that includes them, for example:
+Use `local` when a PR changes API source comments or exported TypeScript
+surfaces and you want to regenerate docs before committing those source changes:
 
 ```bash
 cd website
-npm run generate:docs -- 16.x.x HEAD
+npm run generate:docs -- 16.x.x local
 ```
+
+Generated API docs are not published automatically at this time; PRs that
+change website API output must include the generated files.
 
 ## Review and Merge Process
 
