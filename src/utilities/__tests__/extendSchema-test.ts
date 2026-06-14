@@ -316,7 +316,7 @@ describe('extendSchema', () => {
         someScalar(arg: SomeScalar): SomeScalar
       }
 
-      directive @foo on SCALAR
+      directive @foo(arg: SomeScalar) on SCALAR
 
       input FooInput {
         foo: SomeScalar

@@ -31,8 +31,6 @@ import { LoneAnonymousOperationRule } from './rules/LoneAnonymousOperationRule.t
 import { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule.ts';
 // TODO: Spec Section
 import { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule.ts';
-// Spec Section: "Directives"
-import { NoDirectiveDefinitionCyclesRule } from './rules/NoDirectiveDefinitionCyclesRule.ts';
 // Spec Section: "Fragments must not form cycles"
 import { NoFragmentCyclesRule } from './rules/NoFragmentCyclesRule.ts';
 // Spec Section: "All Variable Used Defined"
@@ -150,5 +148,4 @@ export const specifiedSDLRules: ReadonlyArray<SDLValidationRule> =
     UniqueArgumentNamesRule,
     UniqueInputFieldNamesRule,
     ProvidedRequiredArgumentsOnDirectivesRule,
-    NoDirectiveDefinitionCyclesRule,
   ]);

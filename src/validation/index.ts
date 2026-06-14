@@ -118,7 +118,6 @@ export { UniqueFieldDefinitionNamesRule } from './rules/UniqueFieldDefinitionNam
 export { UniqueArgumentDefinitionNamesRule } from './rules/UniqueArgumentDefinitionNamesRule.ts';
 export { UniqueDirectiveNamesRule } from './rules/UniqueDirectiveNamesRule.ts';
 export { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule.ts';
-export { NoDirectiveDefinitionCyclesRule } from './rules/NoDirectiveDefinitionCyclesRule.ts';
 
 // Optional rules not defined by the GraphQL Specification
 export { NoDeprecatedCustomRule } from './rules/custom/NoDeprecatedCustomRule.ts';
