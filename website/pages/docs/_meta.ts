@@ -36,7 +36,6 @@ const meta = {
   'defer-stream': '',
   'fragment-arguments': '',
   'disabling-error-propagation': '',
-  'directives-on-directives': '',
   '-- 4': {
     type: 'separator',
     title: 'GraphQL.js Runtime Features',
@@ -59,6 +58,7 @@ const meta = {
   'resolver-anatomy': '',
   'graphql-errors': '',
   'using-directives': '',
+  'directives-on-directives': '',
   'authorization-strategies': '',
   '-- 6': {
     type: 'separator',
