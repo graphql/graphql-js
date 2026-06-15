@@ -604,8 +604,9 @@ directive definitions, and arguments.
 
 ### Directives on directive definitions
 
-**Experimental or opt-in.** The v16 line supports directives on directive
-definitions behind `experimentalDirectivesOnDirectiveDefinitions`.
+**Experimental or opt-in in v16.** The v16 line supports directives on directive
+definitions behind `experimentalDirectivesOnDirectiveDefinitions`. In v17 and
+later, this syntax is parsed by default as part of the normal SDL grammar.
 
 ```js
 const schema = buildSchema(source, {
@@ -649,8 +650,9 @@ each category into concrete items.
 5. Migrate deprecated compatibility APIs that still work in v16 but should be
    gone before v17.
 6. Adopt optional v16 features such as OneOf, schema coordinates, parser token
-   limits, and directive-definition directives only where they match your
-   server design.
+   limits, and directives on directive definitions only where they match your
+   server design. When moving to v17, remove the directive-definition parser
+   option.
 
 Run schema validation, operation validation, execution tests, and TypeScript
 checks after each group. Mechanical changes are easiest to review when they are
@@ -734,9 +736,9 @@ separated from behavior changes.
   exactly-one input semantics are intended.
 - Use `resolveSchemaCoordinate()` for tooling that stores schema element
   references.
-- Enable `experimentalDirectivesOnDirectiveDefinitions` only for hosts that
-  intentionally support directives applied to directive definitions or
-  directive extensions.
+- Enable `experimentalDirectivesOnDirectiveDefinitions` only while on v16 and
+  only for hosts that intentionally support directives applied to directive
+  definitions or directive extensions. Remove this option when moving to v17.
 - Use additive tooling helpers such as `parseConstValue()`,
   `isConstValueNode()`, `getEnterLeaveForKind()`, `OperationTypeNode`,
   `GRAPHQL_MIN_INT`, and `GRAPHQL_MAX_INT` where they replace local code.

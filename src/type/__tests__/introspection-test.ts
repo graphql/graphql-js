@@ -1844,7 +1844,6 @@ describe('Introspection', () => {
           directive @isDeprecated @deprecated(reason: "No longer supported") on FIELD_DEFINITION
           directive @isDeprecatedWithEmptyReason @deprecated(reason: "") on FIELD_DEFINITION
         `,
-        { experimentalDirectivesOnDirectiveDefinitions: true },
       ),
     );
 
@@ -1920,7 +1919,6 @@ describe('Introspection', () => {
           directive @isNotDeprecated on FIELD_DEFINITION
           directive @isDeprecated @deprecated(reason: "No longer supported") on FIELD_DEFINITION
         `,
-        { experimentalDirectivesOnDirectiveDefinitions: true },
       ),
     );
 

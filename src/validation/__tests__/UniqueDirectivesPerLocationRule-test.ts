@@ -1,7 +1,5 @@
 import { describe, it } from 'node:test';
 
-import { expectJSON } from '../../__testUtils__/expectJSON.ts';
-
 import { parse } from '../../language/parser.ts';
 
 import type { GraphQLSchema } from '../../type/schema.ts';
@@ -9,7 +7,6 @@ import type { GraphQLSchema } from '../../type/schema.ts';
 import { extendSchema } from '../../utilities/extendSchema.ts';
 
 import { UniqueDirectivesPerLocationRule } from '../rules/UniqueDirectivesPerLocationRule.ts';
-import { validateSDL } from '../validate.ts';
 
 import {
   expectSDLValidationErrors,
@@ -43,14 +40,6 @@ function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
     UniqueDirectivesPerLocationRule,
     sdlStr,
   );
-}
-
-function expectExperimentalSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
-  const doc = parse(sdlStr, {
-    experimentalDirectivesOnDirectiveDefinitions: true,
-  });
-  const errors = validateSDL(doc, schema, [UniqueDirectivesPerLocationRule]);
-  return expectJSON(errors);
 }
 
 describe('Validate: Directives Are Unique Per Location', () => {
@@ -404,7 +393,7 @@ describe('Validate: Directives Are Unique Per Location', () => {
   });
 
   it('duplicate directives on directive definitions', () => {
-    expectExperimentalSDLErrors(`
+    expectSDLErrors(`
       directive @nonRepeatable on DIRECTIVE_DEFINITION
 
       directive @testDirective @nonRepeatable @nonRepeatable on FIELD_DEFINITION
@@ -421,7 +410,7 @@ describe('Validate: Directives Are Unique Per Location', () => {
   });
 
   it('duplicate directives on directive extensions', () => {
-    expectExperimentalSDLErrors(`
+    expectSDLErrors(`
       directive @nonRepeatable on DIRECTIVE_DEFINITION
 
       extend directive @testDirective @nonRepeatable @nonRepeatable
@@ -438,7 +427,7 @@ describe('Validate: Directives Are Unique Per Location', () => {
   });
 
   it('duplicate directives between directive definitions and extensions', () => {
-    expectExperimentalSDLErrors(`
+    expectSDLErrors(`
       directive @nonRepeatable on DIRECTIVE_DEFINITION
 
       directive @testDirective @nonRepeatable on FIELD_DEFINITION
@@ -456,7 +445,7 @@ describe('Validate: Directives Are Unique Per Location', () => {
   });
 
   it('duplicate directives between directive extensions', () => {
-    expectExperimentalSDLErrors(`
+    expectSDLErrors(`
       directive @nonRepeatable on DIRECTIVE_DEFINITION
 
       extend directive @testDirective @nonRepeatable

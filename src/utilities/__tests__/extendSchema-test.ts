@@ -1378,7 +1378,6 @@ describe('extendSchema', () => {
         `
         extend directive @isDeprecated @deprecated(reason: "use another directive")
       `,
-        { experimentalDirectivesOnDirectiveDefinitions: true },
       );
       const extendedSchema = extendSchema(schema, extendAST);
 
@@ -1400,7 +1399,6 @@ describe('extendSchema', () => {
 
             directive @isDeprecated @deprecated(reason: "use another directive") on FIELD_DEFINITION
           `,
-          { experimentalDirectivesOnDirectiveDefinitions: true },
         ),
       );
       const extendAST = parse(dedent`
@@ -1427,7 +1425,6 @@ describe('extendSchema', () => {
 
             extend directive @someDirective @onDirective
           `,
-          { experimentalDirectivesOnDirectiveDefinitions: true },
         ),
       );
 
@@ -1446,12 +1443,7 @@ describe('extendSchema', () => {
 
         extend directive @isDeprecated @deprecated(reason: "use another directive")
       `;
-      const extendedSchema = extendSchema(
-        schema,
-        parse(extensionSDL, {
-          experimentalDirectivesOnDirectiveDefinitions: true,
-        }),
-      );
+      const extendedSchema = extendSchema(schema, parse(extensionSDL));
 
       const isDeprecatedDirective = assertDirective(
         extendedSchema.getDirective('isDeprecated'),
@@ -1478,7 +1470,6 @@ describe('extendSchema', () => {
             extend directive @someDirective @onDirective
             extend directive @someDirective @otherDirective
           `,
-          { experimentalDirectivesOnDirectiveDefinitions: true },
         ),
       );
 
@@ -1493,11 +1484,9 @@ describe('extendSchema', () => {
     });
 
     it('extend directive without adding new directives is an error', () => {
-      expect(() =>
-        parse('extend directive @isDeprecated', {
-          experimentalDirectivesOnDirectiveDefinitions: true,
-        }),
-      ).to.throw('Syntax Error: Unexpected <EOF>.');
+      expect(() => parse('extend directive @isDeprecated')).to.throw(
+        'Syntax Error: Unexpected <EOF>.',
+      );
     });
   });
 });

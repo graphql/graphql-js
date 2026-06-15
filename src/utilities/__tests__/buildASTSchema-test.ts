@@ -1089,7 +1089,7 @@ describe('Schema Builder', () => {
     buildSchema(sdl, { assumeValidSDL: true });
   });
 
-  it('Forwards parser options to buildSchema', () => {
+  it('buildSchema parses directives on directive definitions', () => {
     const schema = buildSchema(
       dedent`
         type Query {
@@ -1098,7 +1098,6 @@ describe('Schema Builder', () => {
 
         directive @bar @deprecated(reason: "Use another directive") on FIELD_DEFINITION
       `,
-      { experimentalDirectivesOnDirectiveDefinitions: true },
     );
 
     const barDirective = assertDirective(schema.getDirective('bar'));

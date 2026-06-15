@@ -4269,9 +4269,7 @@ const document = parse(
     noLocation: true,
   },
 );
-const directiveDocument = parse('directive @foo @bar on FIELD', {
-  experimentalDirectivesOnDirectiveDefinitions: true,
-});
+const directiveDocument = parse('directive @foo @bar on FIELD');
 const source = new Source('{ hero }');
 const lexerDocument = parse(source, { lexer: new Lexer(source) });
 
@@ -4611,13 +4609,6 @@ and arguments on fragment spreads. Fragment variable definitions will be represe
 in the <code>{"variableDefinitions"}</code> field of the FragmentDefinitionNode.<br />
 Fragment spread arguments will be represented in the <code>{"arguments"}</code> field of FragmentSpreadNode.</td>
     </tr>
-    <tr>
-      <td>experimentalDirectivesOnDirectiveDefinitions?</td>
-      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
-      <td>EXPERIMENTAL:<br />
-If enabled, the parser will parse directives on directive definitions.<br />
-This syntax is not part of the GraphQL specification and may change.</td>
-    </tr>
   </tbody>
 </table>
 
@@ -4632,14 +4623,6 @@ This syntax is not part of the GraphQL specification and may change.</td>
 fragment A($var: Boolean = false) on T {
   ...B(x: $var)
 }
-```
-
-<hr className="api-subsection-divider" />
-
-<div className="api-subsection-title">experimentalDirectivesOnDirectiveDefinitions Example</div>
-
-```graphql prettier-ignore
-directive @foo @bar on FIELD
 ```
 
 ## Category: AST Predicates

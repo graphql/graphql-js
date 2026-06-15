@@ -1097,13 +1097,6 @@ input Hello {
     });
   });
 
-  it('Directive definition extensions require the experimental flag', () => {
-    expectToThrowJSON(() => parse('extend directive @foo @bar')).to.deep.equal({
-      message: 'Syntax Error: Unexpected Name "directive".',
-      locations: [{ line: 1, column: 8 }],
-    });
-  });
-
   it('Directive with incorrect locations', () => {
     expectSyntaxError(
       'directive @foo on FIELD | INCORRECT_LOCATION',
@@ -1113,10 +1106,8 @@ input Hello {
     });
   });
 
-  it('Directive extension with experimental option enabled', () => {
-    const doc = parse('extend directive @foo @bar', {
-      experimentalDirectivesOnDirectiveDefinitions: true,
-    });
+  it('Directive extension', () => {
+    const doc = parse('extend directive @foo @bar');
 
     expectJSON(doc).toDeepEqual({
       kind: 'Document',
@@ -1144,13 +1135,6 @@ input Hello {
         },
       ],
       loc: { start: 0, end: 26 },
-    });
-  });
-
-  it('Directive extension requires experimental option', () => {
-    expectSyntaxError('extend directive @foo @bar').to.deep.equal({
-      message: 'Syntax Error: Unexpected Name "directive".',
-      locations: [{ line: 1, column: 8 }],
     });
   });
 

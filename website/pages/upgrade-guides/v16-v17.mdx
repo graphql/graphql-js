@@ -189,6 +189,8 @@ Changes described below use these labels:
 - **Behavioral tightening:** v17 validates or reports a case more precisely.
 - **Deprecation:** the v16 API still works in v17, but should be migrated
   before v18.
+- **Graduated experiment:** a previously experimental or opt-in GraphQL.js
+  feature is now stable or enabled by default.
 - **New stable API:** a new public API that can be adopted independently.
 - **Experimental or opt-in:** available in v17, but proposal-backed or outside
   the default execution path.
@@ -729,6 +731,27 @@ as `arguments`, `directives`, `variableDefinitions`, `interfaces`, `fields`,
 **New stable API.** `isSubscriptionOperationDefinitionNode()` narrows
 subscription operation nodes.
 
+### Directives on directive definitions
+
+**Graduated experiment.** Directives can now be applied to directive definitions
+without a parser option, and directive extensions are part of the normal SDL
+grammar.
+
+```diff
+- const document = parse(source, {
+-   experimentalDirectivesOnDirectiveDefinitions: true,
+- });
++ const document = parse(source);
+```
+
+The AST surface includes `DirectiveDefinitionNode.directives`,
+`DirectiveExtensionNode`, and `DirectiveExtensionNode.directives`.
+`DirectiveLocation.DIRECTIVE_DEFINITION` is available for directives that apply
+to directive definitions. Directive deprecation metadata is surfaced on
+`GraphQLDirective`, introspection, and schema printing.
+
+See [Directives on Directives](/docs/directives-on-directives).
+
 ### Fragment arguments
 
 **Experimental or opt-in.** v17 adds proposal-backed fragment arguments behind
@@ -894,6 +917,8 @@ separated from behavior changes.
   `VariableValues.coerced` as null-prototype maps.
 - Update clients or tests that passed `includeDeprecated: null` in
   introspection queries.
+- Remove `experimentalDirectivesOnDirectiveDefinitions`; directive definition
+  directives and directive extensions are now parsed by default.
 - Update built-in scalar tests for JavaScript `bigint` values if your host
   passes `bigint` values directly.
 

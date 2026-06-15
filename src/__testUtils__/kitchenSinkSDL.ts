@@ -134,13 +134,15 @@ extend input InputType {
 
 extend input InputType @onInputObject
 
+directive @onDirectiveDefinition on DIRECTIVE_DEFINITION
+
 """
 This is a description of the \`@skip\` directive
 """
 directive @skip(
   """This is a description of the \`if\` argument"""
   if: Boolean! @onArgumentDefinition
-) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+) @onDirectiveDefinition on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
 directive @include(if: Boolean!)
   on FIELD
@@ -155,6 +157,8 @@ directive @include2(if: Boolean!) on
 directive @myRepeatableDir(name: String!) repeatable on
   | OBJECT
   | INTERFACE
+
+extend directive @skip @onDirectiveDefinition
 
 extend schema @onSchema
 
