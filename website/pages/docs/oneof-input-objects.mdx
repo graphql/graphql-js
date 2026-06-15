@@ -104,3 +104,33 @@ In GraphQL.js v17, OneOf coercion is stricter around defaults, unknown fields,
 `undefined`, and values that are present before coercion but invalid after
 coercion. Schemas that accidentally rely on ambiguous OneOf inputs should fail
 earlier and with clearer errors.
+
+## Recursive OneOf input objects
+
+Recursive input objects are valid only when a client can provide a finite value.
+For OneOf input objects, that means at least one branch must eventually escape
+the cycle through a scalar, enum, list, nullable non-OneOf field, or another
+input object that can be provided a finite value.
+
+This schema is invalid because the only possible value for `A` points back to
+`A`:
+
+```graphql
+input A @oneOf {
+  self: A
+}
+```
+
+Add a real escape branch or move the recursive shape into a nullable field on a
+regular input object:
+
+```graphql
+input A @oneOf {
+  id: ID
+  nested: NestedA
+}
+
+input NestedA {
+  value: A
+}
+```

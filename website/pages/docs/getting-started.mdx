@@ -11,21 +11,21 @@ import { Tabs } from 'nextra/components';
 
 ## Prerequisites
 
-Before getting started, you should have at least Node 20 installed, the examples can be tweaked to work with Node versions
-before that by switching to require syntax.
-For this guide, we won't use any language features that require transpilation, but we will use some ES6 features like
-[Promises](http://web.dev/articles/promises/), classes,
-and arrow functions, so if you aren't familiar with them you might want to read up on them first.
+Before getting started, you should have Node.js 22 or newer installed. For this
+guide, we won't use any language features that require transpilation, but we
+will use some ES6 features like [Promises](http://web.dev/articles/promises/),
+classes, and arrow functions, so if you aren't familiar with them you might want
+to read up on them first.
 
 > Alternatively you can start from [this StackBlitz](https://stackblitz.com/edit/stackblitz-starters-znvgwr) - if you choose
 > this route you can skip to [Basic Types](./basic-types.mdx).
 
-GraphQL.js v16 is the current stable release. v17 is available as a release
-candidate for final testing and feedback before the stable v17 release.
+GraphQL.js v17 is the current stable release. GraphQL.js v16 remains available
+for projects that still need older Node.js versions.
 
 ## Setting Up Your Project
 
-To create a new project and install the latest stable release (v16) in your
+To create a new project and install the latest stable release (v17) in your
 current directory:
 
 ```sh npm2yarn
@@ -50,11 +50,10 @@ Update your `package.json` to include `"type": "module"`:
 }
 ```
 
-To try the v17 release candidate instead, use Node.js 22 or newer and install
-the `rc` package tag:
+To install the latest v16 release instead, use the v16 package tag:
 
 ```sh npm2yarn
-npm install graphql@rc --save
+npm install graphql@16 --save
 ```
 
 ## Writing Code

@@ -10,9 +10,9 @@ import { Callout } from 'nextra/components';
 # What Changed in GraphQL.js v17
 
 <Callout type="info">
-  GraphQL.js v17 has a release candidate available for final testing and
-  feedback. Use this guide to prepare v16 projects for testing the
-  release-candidate line.
+  GraphQL.js v17 is the current release line. Use this guide to move v16
+  projects onto v17 and to review compatibility work before adopting optional
+  v17 features.
 </Callout>
 
 GraphQL.js v17 keeps the core programming model: build a schema, parse a
@@ -175,10 +175,10 @@ GraphQL.js runtime APIs.
 
 This guide is for projects that depend on GraphQL.js, including applications,
 servers, libraries, and tools. It compares the latest v16 release line with the
-current v17 release candidate, and focuses on differences you will see when
-testing that RC from an up-to-date v16 project. If a change is already present
-in both lines, including v17 work that also shipped in v16, it is not listed
-here as v16-to-v17 migration work.
+current v17 release line, and focuses on differences you will see when moving
+from an up-to-date v16 project. If a change is already present in both lines,
+including v17 work that also shipped in v16, it is not listed here as
+v16-to-v17 migration work.
 
 Changes described below use these labels:
 
@@ -721,6 +721,16 @@ are now `Boolean! = false`. The `includeDeprecated` argument on
 should omit the argument or pass a Boolean value; queries that pass
 `includeDeprecated: null` to those fields are invalid in v17.
 
+**Behavioral tightening.** Input object cycle validation now checks whether an
+input object can be provided any finite value. This preserves the existing
+non-null input-object cycle checks and also rejects recursive OneOf input
+objects where every possible branch leads back into the same unbreakable input
+object cycle.
+
+**Behavioral tightening.** SDL directive validation now applies directive
+location rules consistently to field, argument, and input-field definitions
+inside type and input-object extensions.
+
 ### Programmatic schema APIs
 
 **New stable API.** v17 exposes TypeScript schema element types and runtime
@@ -960,6 +970,11 @@ separated from behavior changes.
   directives and directive extensions are now parsed by default.
 - Update built-in scalar tests for JavaScript `bigint` values if your host
   passes `bigint` values directly.
+- Fix input-object cycles that cannot produce a finite value, including
+  recursive OneOf input objects with no scalar, enum, list, or nullable escape
+  branch.
+- Audit directives on type extensions; v17 validates directive locations on
+  extension fields, arguments, and input fields consistently with definitions.
 
 ### Execution and subscriptions
 
