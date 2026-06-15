@@ -1,6 +1,6 @@
 {
   "name": "graphql",
-  "version": "17.0.0-rc.0",
+  "version": "17.0.0",
   "description": "A Query Language and Runtime which can target any service.",
   "license": "MIT",
   "private": true,
@@ -75,6 +75,6 @@
     "typescript-eslint": "8.59.0"
   },
   "publishConfig": {
-    "tag": "rc"
+    "tag": "latest"
   }
 }
