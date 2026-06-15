@@ -31,6 +31,33 @@ value is `specifiedDirectives`.
 
 See [Defer and Stream](/docs/defer-stream).
 
+## Disabling error propagation
+
+Disabling error propagation lets an execution error resolve the errored response
+position to `null` without nulling out non-null parent fields. GraphQL.js exposes
+this through the experimental operation directive
+`@experimental_disableErrorPropagation`.
+
+The motivations are:
+
+- Preserve useful partial data. A failed field should not necessarily remove
+  sibling response data that resolved successfully.
+- Keep normalized caches safe. A bubbled ancestor `null` can look like a real
+  object update when only one descendant field failed.
+- Separate execution errors from true semantic nullability. Schema nullability
+  should be able to express whether `null` is a normal domain value, not whether
+  a resolver might fail.
+
+This feature is part of a longer nullability and error-handling proposal thread.
+The latest proposals to follow are
+[Error Behavior](https://github.com/graphql/graphql-spec/pull/1163), which
+defines client-selected `onError` modes, and
+[Service Capabilities](https://github.com/graphql/graphql-spec/pull/1208), which
+pulls the capabilities work out into the introspection mechanism clients use to
+discover support, accepted modes, and default behavior.
+
+See [Disabling Error Propagation](/docs/disabling-error-propagation).
+
 ## Fragment arguments
 
 Fragment arguments let named fragments declare local variables and let named

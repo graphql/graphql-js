@@ -1,0 +1,226 @@
+---
+title: Disabling Error Propagation
+sidebarTitle: Disabling Error Propagation
+---
+
+# Disabling Error Propagation
+
+GraphQL's traditional execution behavior propagates an execution error from a
+non-null field to the nearest nullable parent. This preserves the schema's
+strict non-null guarantee, but it can also destroy useful data from the response
+and make the result unsafe for normalized client caches.
+
+GraphQL.js v17 exposes an experimental operation directive for services and
+clients that want to test the non-propagating error mode:
+
+```graphql
+directive @experimental_disableErrorPropagation on QUERY | MUTATION | SUBSCRIPTION
+```
+
+When an operation uses this directive, an execution error still appears in the
+`errors` list with its normal `path`, but the errored response position becomes
+`null` directly. The error no longer nulls out non-null parents.
+
+## Motivation
+
+The current
+[error behavior](https://github.com/graphql/graphql-spec/pull/1163) proposal
+describes error propagation as the source of two practical problems: it removes
+data that could otherwise be used, and it makes errored responses unsafe to
+write into normalized stores. The broader
+[Semantic Nullability RFC](https://github.com/graphql/graphql-wg/blob/main/rfcs/SemanticNullability.md)
+also traces the consequences through partial success, schema design, and
+normalized caching, and the Nullability WG captured the cache issue as
+[normalized-cache corruption from null bubbling](https://github.com/graphql/nullability-wg/issues/20).
+
+The motivations are:
+
+- Preserve useful partial data. A failed field should not necessarily remove
+  sibling response data that resolved successfully.
+- Keep normalized caches safe. A bubbled ancestor `null` can look like a real
+  object update when only one descendant field failed.
+- Separate execution errors from true semantic nullability. Schema nullability
+  should be able to express whether `null` is a normal domain value, not whether
+  a resolver might fail.
+
+The core issue behind those motivations is that traditional error propagation
+couples two concerns:
+
+- Whether `null` is a meaningful value for a field.
+- Whether resolving that field might fail.
+
+Because any field can fail, schema authors often make fields nullable even when
+`null` is not a normal domain value. This avoids losing larger chunks of the
+response when a resolver fails, but it also creates a "nullable epidemic":
+clients and generated types must treat many semantically required values as
+nullable just because execution errors are possible.
+
+Error propagation also creates a cache-safety problem for clients with normalized
+stores. If `viewer.name` is already cached and a later query for `viewer.age`
+raises an execution error, traditional propagation may replace the whole
+`viewer` object with `null`. Writing that bubbled `null` can corrupt the
+normalized cache entry for `viewer`, even though the already-known `name` value
+is still valid. With propagation disabled, the client can keep the `viewer`
+object, record the error at `["viewer", "age"]`, and avoid turning a field error
+into an ancestor-object cache update.
+
+Disabling error propagation moves responsibility for execution-error handling to
+the client. Clients that read `errors` by path, throw on field errors, use error
+boundaries, or store errors alongside normalized data can keep the successful
+parts of the response without treating bubbled ancestor `null` values as real
+data.
+
+This also opens the path toward semantic nullability, but with an important
+distinction: disabling propagation does not make every raw `null` in `data` a
+semantic `null`. A field that raised an execution error is still represented as
+`null`; the `errors` entry at the same path tells the client that this is an
+error `null`. What changes is that descendant errors no longer replace ancestor
+positions, so a `null` at a position without a matching execution error can more
+directly reflect that field's semantic nullability.
+
+## Using it in GraphQL.js
+
+Define the directive in the schema while this feature is experimental:
+
+```graphql
+directive @experimental_disableErrorPropagation on QUERY | MUTATION | SUBSCRIPTION
+
+type Query {
+  viewer: User!
+}
+
+type User {
+  id: ID!
+  displayName: String!
+  nickname: String
+}
+```
+
+Apply the directive to an operation:
+
+```graphql
+query Profile @experimental_disableErrorPropagation {
+  viewer {
+    id
+    displayName
+    nickname
+  }
+}
+```
+
+If `displayName` throws, traditional propagation would null out `viewer`, and
+because `viewer` is non-null, the whole `data` entry could become `null`. With
+error propagation disabled, GraphQL.js reports the error at the field path and
+keeps the rest of the object:
+
+```json
+{
+  "data": {
+    "viewer": {
+      "id": "1",
+      "displayName": null,
+      "nickname": "Ada"
+    }
+  },
+  "errors": [
+    {
+      "message": "Could not fetch display name.",
+      "path": ["viewer", "displayName"]
+    }
+  ]
+}
+```
+
+The directive changes execution behavior only for operations that use it.
+Operations without the directive keep traditional GraphQL error propagation.
+
+This directive only tests one behavior: error propagation is disabled for the
+operation. It is not the final shape of the broader standards proposal.
+
+## Relationship to `onError`
+
+The newer draft
+[`onError` GraphQL.js implementation](https://github.com/graphql/graphql-js/pull/4364)
+tracks the
+[error behavior](https://github.com/graphql/graphql-spec/pull/1163) spec
+proposal, which generalizes this idea into a client-selected `onError` behavior.
+Rather than only toggling propagation on or off, the proposal describes multiple
+modes, including:
+
+- Traditional propagation behavior.
+- Resolving errored positions to `null` without propagating to non-null parents.
+- Halting execution on the first execution error.
+
+The current `@experimental_disableErrorPropagation` directive lets GraphQL.js
+users experiment with the second mode. Clients can use it to test error handling
+by path, normalized-cache behavior, and UI error boundaries before the request
+shape is standardized.
+
+The `onError` proposal relies on
+[Service capabilities](https://github.com/graphql/graphql-spec/pull/1208)
+because clients need a way to discover support and defaults before choosing a
+mode automatically. A client cannot safely assume that a service understands a
+new request parameter, supports every proposed mode, or uses the same default
+error behavior. Capabilities give tools and clients an in-band way to learn what
+the service supports and how to configure themselves without out-of-band
+instructions.
+
+## Service capabilities and introspection
+
+Service capabilities are proposed as an introspection feature. They were
+originally part of the error-behavior work and were later extracted into their
+own [Service capabilities](https://github.com/graphql/graphql-spec/pull/1208)
+proposal. Existing GraphQL introspection describes the schema's type system:
+object types, fields, arguments, directives, and related schema metadata. Service
+capabilities extend that idea to service-level behavior that is outside the type
+system, such as which experimental syntax, transport features, or error
+behaviors the service supports.
+
+The proposal introduces a service introspection entry point, currently described
+as a `__service` meta-field, that returns capability records. For error
+behavior, those records let a client discover whether the service supports
+client-selected `onError` behavior, which modes are accepted, and what default
+mode applies when the request does not choose one.
+
+That distinction matters for clients. A schema can contain the same fields and
+types whether it uses traditional error propagation or a non-propagating error
+mode, so ordinary type introspection is not enough to configure the client
+safely. Capabilities make that operational contract introspectable.
+
+## Proposal history
+
+This area has gone through several proposals. The broader
+[Semantic Nullability RFC](https://github.com/graphql/graphql-wg/blob/main/rfcs/SemanticNullability.md)
+collects the problem history and solution matrix.
+
+The latest proposals to watch are:
+
+- [Error behavior](https://github.com/graphql/graphql-spec/pull/1163) defines
+  the client-selected `onError` modes. GraphQL.js v17 makes one part of this
+  current proposal available experimentally through
+  `@experimental_disableErrorPropagation`: the mode where errored positions
+  resolve to `null` without propagating through non-null parents.
+- [Service capabilities](https://github.com/graphql/graphql-spec/pull/1208)
+  is the capabilities work extracted from the error-behavior proposal. It
+  defines the introspection mechanism for advertising service-level features and
+  configuration. It is related to error behavior because clients need to
+  discover whether `onError` is supported, which modes may be requested, and
+  which behavior applies when no mode is requested.
+
+## What is next
+
+The current GraphQL.js directive is intentionally experimental and uses an
+implementation-prefixed name. Future standards work is expected to settle the
+request shape and discovery story separately:
+
+- The error-behavior proposal defines the execution modes.
+- Semantic nullability work defines how schemas and clients distinguish values
+  that are nullable in normal business logic from values that are only `null`
+  because an execution error occurred.
+- The service-capabilities proposal defines how clients discover whether those
+  modes are supported and what the default behavior is.
+
+Until that settles, clients should only use
+`@experimental_disableErrorPropagation` with services that document support for
+it. When it is enabled, clients should treat `null` at an errored path as an
+error `null`, not as a semantic `null`.

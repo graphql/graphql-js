@@ -35,6 +35,7 @@ const meta = {
   'experimental-specification-features': '',
   'defer-stream': '',
   'fragment-arguments': '',
+  'disabling-error-propagation': '',
   'directives-on-directives': '',
   '-- 4': {
     type: 'separator',

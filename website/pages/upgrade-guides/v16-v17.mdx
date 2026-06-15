@@ -371,6 +371,45 @@ with `singleResult` as a discriminator is gone. Remove branches that check for
 Schema setup, directive validation, result shapes, and transport guidance are
 covered in [Defer and Stream](/docs/defer-stream).
 
+### Disabling error propagation
+
+**Experimental or opt-in.** GraphQL.js v17 includes experimental support for
+operations that disable non-null error propagation. Add the directive definition
+to schemas that support it, then apply the directive to an operation:
+
+```graphql
+directive @experimental_disableErrorPropagation on QUERY | MUTATION | SUBSCRIPTION
+
+query Profile @experimental_disableErrorPropagation {
+  viewer {
+    name
+  }
+}
+```
+
+When a selected non-null field raises an execution error, GraphQL.js records the
+error at its path and resolves that response position to `null` directly instead
+of nulling out non-null parent fields.
+
+The motivations are:
+
+- Preserve useful partial data. A failed field should not necessarily remove
+  sibling response data that resolved successfully.
+- Keep normalized caches safe. A bubbled ancestor `null` can look like a real
+  object update when only one descendant field failed.
+- Separate execution errors from true semantic nullability. Schema nullability
+  should be able to express whether `null` is a normal domain value, not whether
+  a resolver might fail.
+
+This directive only disables propagation. The newer draft
+[`onError` GraphQL.js implementation](https://github.com/graphql/graphql-js/pull/4364)
+tracks a proposal for multiple client-selected error behavior modes, such as
+traditional propagation, resolving errored positions to `null`, or halting on the
+first execution error. The GraphQL.js directive is useful for testing the
+non-propagating mode before the request shape is standardized.
+
+See [Disabling Error Propagation](/docs/disabling-error-propagation).
+
 **Behavioral tightening.** Defer/stream validation now tracks named fragment
 spreads through the selected operation rather than treating every fragment use
 in a document the same way. Subscription operations reject active `@defer` and
@@ -981,6 +1020,10 @@ These v16 APIs still work in v17, but are deprecated for removal in v18:
   `graphql()` parse, validate, execute, or subscribe phases.
 - Enable `experimentalFragmentArguments` only for hosts that intentionally
   support arguments on named fragment spreads.
+- Enable `@experimental_disableErrorPropagation` to test the non-propagating
+  error mode when clients intentionally handle field errors by path; track
+  [Service capabilities](https://github.com/graphql/graphql-spec/pull/1208) for
+  discovery of future `onError` support, supported modes, and defaults.
 
 ## Deep Import Moves
 
