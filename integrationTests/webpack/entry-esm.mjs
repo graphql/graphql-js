@@ -1,5 +1,5 @@
-import { graphqlSync } from 'graphql-esm';
-import { buildSchema } from 'graphql-esm/utilities/buildASTSchema';
+import { graphqlSync } from 'graphql';
+import { buildSchema } from 'graphql/utilities/buildASTSchema';
 
 const schema = buildSchema('type Query { hello: String }');
 

@@ -6,7 +6,6 @@
     "test": "node test.js"
   },
   "dependencies": {
-    "graphql": "file:../graphql.tgz",
-    "graphql-esm": "file:../graphql-esm.tgz"
+    "graphql": "file:../graphql.tgz"
   }
 }

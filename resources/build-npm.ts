@@ -28,14 +28,10 @@ const devTypeFiles = [
 ] as const;
 
 console.log('\n./npmDist');
-await buildPackage('./npmDist', false);
+await buildPackage('./npmDist');
 showDirStats('./npmDist');
 
-console.log('\n./npmEsmDist');
-await buildPackage('./npmEsmDist', true);
-showDirStats('./npmEsmDist');
-
-async function buildPackage(outDir: string, isESMOnly: boolean): Promise<void> {
+async function buildPackage(outDir: string): Promise<void> {
   const devDir = path.join(outDir, '__dev__');
 
   fs.rmSync(outDir, { recursive: true, force: true });
@@ -79,113 +75,88 @@ async function buildPackage(outDir: string, isESMOnly: boolean): Promise<void> {
     'Publish tag and version tag should match!',
   );
 
-  if (isESMOnly) {
-    packageJSON.exports = {};
+  delete packageJSON.type;
+  packageJSON.main = 'index.js';
+  packageJSON.module = 'index.mjs';
+  packageJSON.types = 'index.d.ts';
 
-    const { emittedTSFiles } = emitTSFiles({ outDir, extension: '.js' });
+  const { emittedTSFiles } = emitTSFiles({
+    outDir,
+    module: 'commonjs',
+    moduleResolution: 'node10',
+    extension: '.js',
+  });
+  emitTSFiles({ outDir, extension: '.mjs' });
 
-    for (const filepath of emittedTSFiles) {
-      if (path.basename(filepath) === 'index.js') {
-        const relativePath = './' + path.relative('./npmEsmDist', filepath);
-        packageJSON.exports[path.dirname(relativePath)] = relativePath;
-      }
+  packageJSON.exports = {};
+  for (const prodFile of emittedTSFiles) {
+    const { dir, base, name, ext } = path.parse(prodFile);
+
+    if (ext === '.map') {
+      continue;
+    } else if (path.basename(dir) === 'dev') {
+      packageJSON.exports['./dev'] = buildPlatformConditionalExports(
+        './dev',
+        'index',
+      );
+      continue;
     }
 
-    packageJSON.exports['./*.js'] = './*.js';
-    packageJSON.exports['./*'] = './*.js';
+    const relativePathToProd = path.relative(prodFile, outDir);
 
-    packageJSON.publishConfig.tag += '-esm';
-    packageJSON.version += '+esm';
-  } else {
-    delete packageJSON.type;
-    packageJSON.main = 'index.js';
-    packageJSON.module = 'index.mjs';
-    packageJSON.types = 'index.d.ts';
+    const { name: innerName, ext: innerExt } = path.parse(name);
 
-    const { emittedTSFiles } = emitTSFiles({
-      outDir,
-      module: 'commonjs',
-      moduleResolution: 'node10',
-      extension: '.js',
-    });
-    emitTSFiles({ outDir, extension: '.mjs' });
+    if (innerExt === '.d') {
+      const relativePathAndName = path.relative(outDir, `${dir}/${innerName}`);
 
-    packageJSON.exports = {};
-    for (const prodFile of emittedTSFiles) {
-      const { dir, base, name, ext } = path.parse(prodFile);
-
-      if (ext === '.map') {
-        continue;
-      } else if (path.basename(dir) === 'dev') {
-        packageJSON.exports['./dev'] = buildPlatformConditionalExports(
-          './dev',
-          'index',
+      for (const [typeExt, targetExt] of devTypeFiles) {
+        const line = `export * from '${relativePathToProd}/${relativePathAndName}${targetExt}';`;
+        writeGeneratedFile(
+          path.join(devDir, path.relative(outDir, `${dir}/${name}${typeExt}`)),
+          line,
         );
-        continue;
       }
-
-      const relativePathToProd = path.relative(prodFile, outDir);
-
-      const { name: innerName, ext: innerExt } = path.parse(name);
-
-      if (innerExt === '.d') {
-        const relativePathAndName = path.relative(
-          outDir,
-          `${dir}/${innerName}`,
-        );
-
-        for (const [typeExt, targetExt] of devTypeFiles) {
-          const line = `export * from '${relativePathToProd}/${relativePathAndName}${targetExt}';`;
-          writeGeneratedFile(
-            path.join(
-              devDir,
-              path.relative(outDir, `${dir}/${name}${typeExt}`),
-            ),
-            line,
-          );
-        }
-        continue;
-      }
-
-      const relativePathAndName = path.relative(outDir, `${dir}/${name}`);
-
-      writeGeneratedFile(
-        path.join(devDir, path.relative(outDir, `${dir}/${name}.js`)),
-        buildCJSDevModeStub(
-          `${relativePathToProd}/devMode.js`,
-          `${relativePathToProd}/${relativePathAndName}.js`,
-        ),
-      );
-
-      writeGeneratedFile(
-        path.join(devDir, path.relative(outDir, `${dir}/${name}.mjs`)),
-        buildESMDevModeStub(
-          `${relativePathToProd}/devMode.mjs`,
-          `${relativePathToProd}/${relativePathAndName}.mjs`,
-        ),
-      );
-
-      if (base === 'index.js') {
-        const dirname = path.dirname(relativePathAndName);
-        packageJSON.exports[dirname === '.' ? dirname : `./${dirname}`] = {
-          development: buildPlatformConditionalExports(
-            './__dev__',
-            relativePathAndName,
-          ),
-          default: buildPlatformConditionalExports('.', relativePathAndName),
-        };
-      }
+      continue;
     }
 
-    const globEntryPoints = {
-      development: buildPlatformConditionalExports('./__dev__', '*'),
-      default: buildPlatformConditionalExports('.', '*'),
-    };
-    packageJSON.exports['./*.js'] = globEntryPoints;
-    packageJSON.exports['./*'] = globEntryPoints;
+    const relativePathAndName = path.relative(outDir, `${dir}/${name}`);
 
-    packageJSON.sideEffects = ['__dev__/*'];
+    writeGeneratedFile(
+      path.join(devDir, path.relative(outDir, `${dir}/${name}.js`)),
+      buildCJSDevModeStub(
+        `${relativePathToProd}/devMode.js`,
+        `${relativePathToProd}/${relativePathAndName}.js`,
+      ),
+    );
+
+    writeGeneratedFile(
+      path.join(devDir, path.relative(outDir, `${dir}/${name}.mjs`)),
+      buildESMDevModeStub(
+        `${relativePathToProd}/devMode.mjs`,
+        `${relativePathToProd}/${relativePathAndName}.mjs`,
+      ),
+    );
+
+    if (base === 'index.js') {
+      const dirname = path.dirname(relativePathAndName);
+      packageJSON.exports[dirname === '.' ? dirname : `./${dirname}`] = {
+        development: buildPlatformConditionalExports(
+          './__dev__',
+          relativePathAndName,
+        ),
+        default: buildPlatformConditionalExports('.', relativePathAndName),
+      };
+    }
   }
+
+  const globEntryPoints = {
+    development: buildPlatformConditionalExports('./__dev__', '*'),
+    default: buildPlatformConditionalExports('.', '*'),
+  };
+  packageJSON.exports['./*.js'] = globEntryPoints;
+  packageJSON.exports['./*'] = globEntryPoints;
+
+  packageJSON.sideEffects = ['__dev__/*'];
 
   const packageJsonPath = `./${outDir}/package.json`;
   const prettified = await prettify(

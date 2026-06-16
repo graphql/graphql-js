@@ -1,11 +1,7 @@
-import type { ExecutionResult } from 'graphql-esm/execution';
+import type { ExecutionResult } from 'graphql/execution';
 
-import { graphqlSync } from 'graphql-esm';
-import {
-  GraphQLString,
-  GraphQLSchema,
-  GraphQLObjectType,
-} from 'graphql-esm/type';
+import { graphqlSync } from 'graphql';
+import { GraphQLString, GraphQLSchema, GraphQLObjectType } from 'graphql/type';
 
 const queryType: GraphQLObjectType = new GraphQLObjectType({
   name: 'Query',

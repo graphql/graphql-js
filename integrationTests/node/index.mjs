@@ -1,13 +1,13 @@
 import assert from 'node:assert';
 import { readFileSync } from 'node:fs';
 
-import { graphqlSync } from 'graphql-esm';
-import { astFromValue, buildSchema } from 'graphql-esm/utilities';
-import { version } from 'graphql-esm/version';
+import { graphqlSync } from 'graphql';
+import { astFromValue, buildSchema } from 'graphql/utilities';
+import { version } from 'graphql/version';
 
 assert.deepStrictEqual(
-  version + '+esm',
-  JSON.parse(readFileSync('./node_modules/graphql-esm/package.json')).version,
+  version,
+  JSON.parse(readFileSync('./node_modules/graphql/package.json')).version,
 );
 
 const schema = buildSchema('type Query { hello: String }');
