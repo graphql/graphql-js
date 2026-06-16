@@ -280,29 +280,49 @@ export function buildESMDevModeStub(
   ].join('\n');
 }
 
-export function getPublishConfigTag(version: string): string {
-  return getPrereleaseDistTag(version) ?? 'latest';
+export function getReleaseDistTag(
+  version: string,
+  latestVersion: string,
+): string {
+  const { major, prerelease } = parseSemVer(version);
+  if (prerelease != null) {
+    return prerelease.split('.')[0];
+  }
+
+  return major >= parseSemVer(latestVersion).major
+    ? 'latest'
+    : `latest-${major}`;
+}
+
+export function isLatestReleaseVersion(
+  version: string,
+  latestVersion: string,
+): boolean {
+  const { major, prerelease } = parseSemVer(version);
+  return prerelease == null && major >= parseSemVer(latestVersion).major;
 }
 
 export function isPrereleaseVersion(version: string): boolean {
-  return getPrereleaseDistTag(version) != null;
+  return parseSemVer(version).prerelease != null;
 }
 
-function getPrereleaseDistTag(version: string): string | null {
+function parseSemVer(version: string): {
+  major: number;
+  prerelease: string | null;
+} {
   const versionMatch =
-    /^\d+\.\d+\.\d+(?:-(?<prerelease>[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/.exec(
+    /^(?<major>\d+)\.\d+\.\d+(?:-(?<prerelease>[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/.exec(
       version,
     );
   if (versionMatch?.groups == null) {
     throw new Error('Version does not match semver spec: ' + version);
   }
 
-  const { prerelease } = versionMatch.groups;
-  if (prerelease == null) {
-    return null;
-  }
-
-  return prerelease.split('.')[0];
+  const { major, prerelease } = versionMatch.groups;
+  return {
+    major: Number(major),
+    prerelease: prerelease ?? null,
+  };
 }
 
 interface PackageJSON {
@@ -317,7 +337,6 @@ interface PackageJSON {
   types?: string;
   typesVersions: { [ranges: string]: { [path: string]: Array<string> } };
   devDependencies?: { [name: string]: string };
-  publishConfig: { tag: string };
 
   // TODO: remove after we drop CJS support
   main?: string;

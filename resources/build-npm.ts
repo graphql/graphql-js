@@ -14,7 +14,6 @@ import type { PlatformConditionalExports } from './utils.ts';
 import {
   buildCJSDevModeStub,
   buildESMDevModeStub,
-  getPublishConfigTag,
   prettify,
   readPackageJSON,
   readTSConfig,
@@ -65,15 +64,6 @@ async function buildPackage(outDir: string): Promise<void> {
     ...packageJSON.typesVersions,
     '*': { '*': [notSupportedTSVersionFile] },
   };
-
-  // TODO: move to integration tests
-  const { version } = packageJSON;
-  const publishTag = getPublishConfigTag(version);
-  assert.equal(
-    packageJSON.publishConfig?.tag,
-    publishTag,
-    'Publish tag and version tag should match!',
-  );
 
   delete packageJSON.type;
   packageJSON.main = 'index.js';

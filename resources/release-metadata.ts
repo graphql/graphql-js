@@ -1,8 +1,7 @@
-import assert from 'node:assert';
-
 import {
-  getPublishConfigTag,
+  getReleaseDistTag,
   git,
+  isLatestReleaseVersion,
   isPrereleaseVersion,
   npm,
   readPackageJSON,
@@ -13,6 +12,7 @@ interface ReleaseMetadata {
   version: string;
   tag: string;
   distTag: string;
+  latest: boolean;
   prerelease: boolean;
   releaseNotes: string;
   packageSpec: string;
@@ -22,19 +22,16 @@ interface ReleaseMetadata {
 
 try {
   const packageJSON = readPackageJSON();
-  const { version, publishConfig } = packageJSON;
+  const { version } = packageJSON;
 
   if (typeof version !== 'string' || version === '') {
     throw new Error('package.json is missing a valid "version" field.');
   }
 
   const tag = `v${version}`;
-  const distTag = getPublishConfigTag(version);
-  assert.equal(
-    publishConfig?.tag,
-    distTag,
-    'Publish tag and version tag should match!',
-  );
+  const latestVersion = npm().view('graphql', 'dist-tags.latest');
+  const distTag = getReleaseDistTag(version, latestVersion);
+  const latest = isLatestReleaseVersion(version, latestVersion);
   const prerelease = isPrereleaseVersion(version);
   const releaseCommitSha = findReleaseCommitSha(version);
   const releaseNotes =
@@ -54,6 +51,7 @@ try {
     version,
     tag,
     distTag,
+    latest,
     prerelease,
     releaseNotes,
     packageSpec,

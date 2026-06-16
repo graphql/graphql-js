@@ -1,6 +1,4 @@
-import fs from 'node:fs';
-
-import { getPublishConfigTag, git, npm, readPackageJSON } from './utils.ts';
+import { git, npm, readPackageJSON } from './utils.ts';
 
 let args: ParsedArgs;
 try {
@@ -16,9 +14,6 @@ npm().ci('--ignore-scripts');
 
 console.log('Bumping package version without creating a tag...');
 npm().version(...args.npmVersionArgs, '--no-git-tag-version');
-
-console.log('Updating publishConfig.tag...');
-updatePublishConfigTag();
 
 console.log('Updating src/version.ts...');
 npm().exec(
@@ -101,7 +96,10 @@ function validateBranchState(releaseBranch: string): void {
     throw new Error(
       'Git is in detached HEAD state (not on a local branch). ' +
         'Switch to a local branch based on the release branch first, for example:\n' +
-        `  git switch -c release-${releaseBranch.replace(/[^a-zA-Z0-9._-]/g, '-')} ${releaseBranch}`,
+        `  git switch -c release-${releaseBranch.replace(
+          /[^a-zA-Z0-9._-]/g,
+          '-',
+        )} ${releaseBranch}`,
     );
   }
   if (checkedBranch === releaseBranch) {
@@ -198,15 +196,6 @@ function validateBranchState(releaseBranch: string): void {
       `Current branch "${checkedBranch}" must match "${releaseBranch}" before preparing a release.`,
     );
   }
-}
-
-function updatePublishConfigTag(): void {
-  const packageJSON = readPackageJSON();
-  packageJSON.publishConfig = {
-    ...packageJSON.publishConfig,
-    tag: getPublishConfigTag(packageJSON.version),
-  };
-  fs.writeFileSync('package.json', JSON.stringify(packageJSON, null, 2) + '\n');
 }
 
 function throwUsage(message: string): never {

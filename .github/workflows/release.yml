@@ -14,6 +14,7 @@ jobs:
       should_publish: ${{ steps.release_metadata.outputs.should_publish }}
       tag: ${{ steps.release_metadata.outputs.tag }}
       dist_tag: ${{ steps.release_metadata.outputs.dist_tag }}
+      latest: ${{ steps.release_metadata.outputs.latest }}
       prerelease: ${{ steps.release_metadata.outputs.prerelease }}
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref_name }}
@@ -47,6 +48,7 @@ jobs:
             "version=\(.version)",
             "tag=\(.tag)",
             "dist_tag=\(.distTag)",
+            "latest=\(.latest)",
             "prerelease=\(.prerelease)",
             "package_spec=\(.packageSpec)",
             "should_publish=\(.shouldPublish)"
@@ -120,11 +122,7 @@ jobs:
       - name: Publish to npm
         working-directory: ./npmDist
         run: |
-          if [ -n "${{ needs.check-publish.outputs.dist_tag }}" ]; then
-            npm publish --provenance --tag "${{ needs.check-publish.outputs.dist_tag }}"
-          else
-            npm publish --provenance
-          fi
+          npm publish --provenance --tag "${{ needs.check-publish.outputs.dist_tag }}"
 
   publish-jsr:
     name: Publish JSR package
@@ -204,8 +202,14 @@ jobs:
               --notes-file "${release_notes_file}" \
               --prerelease
           else
+            latest_flag="--latest=false"
+            if [ "${{ needs.check-publish.outputs.latest }}" = "true" ]; then
+              latest_flag="--latest"
+            fi
+
             gh release create "${tag}" \
               --verify-tag \
               --title "${tag}" \
-              --notes-file "${release_notes_file}"
+              --notes-file "${release_notes_file}" \
+              "${latest_flag}"
           fi

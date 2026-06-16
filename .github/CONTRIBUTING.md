@@ -122,7 +122,7 @@ Feel free to reach out via the [graphql-js channel](https://discord.com/channels
 
 ## Release on NPM
 
-Releases on `17.x.x` are managed by local scripts and GitHub Actions:
+Releases on maintained release branches are managed by local scripts and GitHub Actions:
 
 ```bash
 git switch 17.x.x
@@ -149,9 +149,15 @@ npm run release:prepare -- 17.x.x prerelease --preid rc
 ```
 
 When `--preid` is provided, the release script uses it as the npm publish tag.
-Without a prerelease preid, the publish tag is `latest`.
+Without a prerelease preid, stable releases from the latest major use the npm
+`latest` tag and are marked as the latest GitHub release. Stable releases from
+older maintained majors use an npm `latest-<major>` tag and are explicitly not
+marked as the latest GitHub release. Users can install those older majors with a
+semver specifier, for example `npm install graphql@16`.
 
-Push `<my_release_branch>`, open a PR from `<my_release_branch>` to `17.x.x`, wait for CI to pass, merge the PR, and then approve the GitHub Actions release workflow.
+Push `<my_release_branch>`, open a PR from `<my_release_branch>` to the target
+release branch, wait for CI to pass, merge the PR, and then approve the GitHub
+Actions release workflow.
 
 ## License
 
