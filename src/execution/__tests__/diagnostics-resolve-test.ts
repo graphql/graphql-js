@@ -130,6 +130,7 @@ describe('resolve diagnostics channel', () => {
             args: {},
             isDefaultResolver: true,
             fieldPath: 'async',
+            result: 'hello-async',
           },
         },
         {
@@ -207,6 +208,7 @@ describe('resolve diagnostics channel', () => {
             args: {},
             isDefaultResolver: true,
             fieldPath: 'async',
+            result: 'hello-thenable',
           },
         },
         {
@@ -325,7 +327,7 @@ describe('resolve diagnostics channel', () => {
           },
         },
         {
-          channel: 'asyncStart',
+          channel: 'error',
           context: {
             fieldName: 'asyncFail',
             alias: 'asyncFail',
@@ -334,10 +336,11 @@ describe('resolve diagnostics channel', () => {
             args: {},
             isDefaultResolver: true,
             fieldPath: 'asyncFail',
+            error,
           },
         },
         {
-          channel: 'error',
+          channel: 'asyncStart',
           context: {
             fieldName: 'asyncFail',
             alias: 'asyncFail',

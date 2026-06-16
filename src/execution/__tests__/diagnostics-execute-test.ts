@@ -121,6 +121,7 @@ describe('execute diagnostics channel', () => {
             rawVariableValues: undefined,
             operationName: undefined,
             operationType: OperationTypeNode.QUERY,
+            result,
           },
         },
         {
@@ -201,17 +202,18 @@ describe('execute diagnostics channel', () => {
           },
         },
         {
-          channel: 'asyncStart',
+          channel: 'error',
           context: {
             schema: asyncDeferSchema,
             document,
             rawVariableValues: undefined,
             operationName: 'Deferred',
             operationType: OperationTypeNode.QUERY,
+            error,
           },
         },
         {
-          channel: 'error',
+          channel: 'asyncStart',
           context: {
             schema: asyncDeferSchema,
             document,
@@ -456,6 +458,7 @@ describe('execute root selection set diagnostics channel', () => {
             rawVariableValues: undefined,
             operationName: undefined,
             operationType: OperationTypeNode.QUERY,
+            result,
           },
         },
         {

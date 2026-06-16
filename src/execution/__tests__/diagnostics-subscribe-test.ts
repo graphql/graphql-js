@@ -145,6 +145,7 @@ describe('subscribe diagnostics channel', () => {
             rawVariableValues: undefined,
             operationName: undefined,
             operationType: OperationTypeNode.SUBSCRIPTION,
+            result,
           },
         },
         {
@@ -474,6 +475,7 @@ describe('subscribe diagnostics channel', () => {
             rawVariableValues: undefined,
             operationName: 'S',
             operationType: OperationTypeNode.SUBSCRIPTION,
+            result,
           },
         },
         {
