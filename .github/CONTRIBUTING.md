@@ -85,6 +85,11 @@ export GH_TOKEN=<token> # required to build changelog via GitHub API requests
 npm run release:prepare -- 16.x.x patch
 ```
 
+Stable `16.x.x` releases publish to npm with the `latest-16` tag so they do
+not replace the package `latest` tag, and their GitHub releases are explicitly
+not marked as the latest release. Users can install this line with a semver
+specifier, for example `npm install graphql@16`.
+
 Push `<my_release_branch>`, open a PR from `<my_release_branch>` to `16.x.x`,
 wait for CI to pass, merge the PR, and then approve the GitHub Actions release
 workflow.

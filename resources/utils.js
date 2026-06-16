@@ -137,6 +137,48 @@ function readPackageJSONAtRef(ref) {
   return JSON.parse(packageJSONAtRef);
 }
 
+function getReleaseDistTag(version, latestVersion) {
+  const { major, prerelease } = parseSemVer(version);
+  if (prerelease != null) {
+    return getPrereleaseDistTag(prerelease);
+  }
+
+  return major >= parseSemVer(latestVersion).major
+    ? 'latest'
+    : `latest-${major}`;
+}
+
+function isLatestReleaseVersion(version, latestVersion) {
+  const { major, prerelease } = parseSemVer(version);
+  return prerelease == null && major >= parseSemVer(latestVersion).major;
+}
+
+function isPrereleaseVersion(version) {
+  return parseSemVer(version).prerelease != null;
+}
+
+function parseSemVer(version) {
+  const versionMatch =
+    /^(?<major>\d+)\.\d+\.\d+(?:-(?<prerelease>[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/.exec(
+      version,
+    );
+  if (versionMatch?.groups == null) {
+    throw new Error('Version does not match semver spec: ' + version);
+  }
+
+  const { major, prerelease } = versionMatch.groups;
+  return {
+    major: Number(major),
+    prerelease: prerelease ?? null,
+  };
+}
+
+function getPrereleaseDistTag(prerelease) {
+  const splittedTag = prerelease.split('.');
+  // Note: `experimental-*` take precedence over `alpha`, `beta` or `rc`.
+  return splittedTag[2] ?? splittedTag[0];
+}
+
 function tagExists(tag) {
   const result = childProcess.spawnSync(
     'git',
@@ -148,6 +190,9 @@ function tagExists(tag) {
 
 module.exports = {
   exec,
+  getReleaseDistTag,
+  isLatestReleaseVersion,
+  isPrereleaseVersion,
   spawn,
   spawnOutput,
   readdirRecursive,

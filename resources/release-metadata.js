@@ -1,6 +1,9 @@
 'use strict';
 
 const {
+  getReleaseDistTag,
+  isLatestReleaseVersion,
+  isPrereleaseVersion,
   readPackageJSON,
   readPackageJSONAtRef,
   spawnOutput,
@@ -8,15 +11,21 @@ const {
 
 try {
   const packageJSON = readPackageJSON();
-  const { version, publishConfig } = packageJSON;
+  const { version } = packageJSON;
 
   if (typeof version !== 'string' || version === '') {
     throw new Error('package.json is missing a valid "version" field.');
   }
 
   const tag = `v${version}`;
-  const distTag = publishConfig?.tag ?? '';
-  const prerelease = distTag === 'alpha';
+  const latestVersion = spawnOutput('npm', [
+    'view',
+    'graphql',
+    'dist-tags.latest',
+  ]);
+  const distTag = getReleaseDistTag(version, latestVersion);
+  const latest = isLatestReleaseVersion(version, latestVersion);
+  const prerelease = isPrereleaseVersion(version);
   const releaseCommitSha = findReleaseCommitSha(version);
   const releaseNotes =
     releaseCommitSha == null
@@ -45,6 +54,7 @@ try {
     version,
     tag,
     distTag,
+    latest,
     prerelease,
     releaseNotes,
     packageSpec,
