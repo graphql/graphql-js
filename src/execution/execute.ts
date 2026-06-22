@@ -121,6 +121,8 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   collectedErrors: CollectedErrors;
+  maxDepth: number | undefined;
+  maxAliases: number | undefined;
 }
 
 class CollectedErrors {
@@ -217,6 +219,21 @@ export interface ExecutionArgs {
   options?: {
     /** Set the maximum number of errors allowed for coercing (defaults to 50). */
     maxCoercionErrors?: number;
+    /**
+     * Set the maximum allowed depth for field resolution.
+     * Depth is counted as the number of nested field selections from the root.
+     * When exceeded, a GraphQLError is thrown for the offending field.
+     * No limit is applied when undefined (the default).
+     */
+    maxDepth?: number;
+    /**
+     * Set the maximum number of aliases allowed in any single selection set.
+     * This helps prevent alias-bombing denial-of-service attacks where many
+     * aliases for the same field bypass depth-based protections.
+     * When exceeded, a GraphQLError is thrown before executing the selection set.
+     * No limit is applied when undefined (the default).
+     */
+    maxAliases?: number;
   };
 }
 
@@ -588,6 +605,8 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     collectedErrors: new CollectedErrors(),
+    maxDepth: options?.maxDepth,
+    maxAliases: options?.maxAliases,
   };
 }
 
@@ -616,11 +635,21 @@ function executeOperation(
     rootType,
     operation.selectionSet,
   );
+
+  checkAliasCount(exeContext, rootFields);
+
   const path = undefined;
 
   switch (operation.operation) {
     case OperationTypeNode.QUERY:
-      return executeFields(exeContext, rootType, rootValue, path, rootFields);
+      return executeFields(
+        exeContext,
+        rootType,
+        rootValue,
+        path,
+        rootFields,
+        1,
+      );
     case OperationTypeNode.MUTATION:
       return executeFieldsSerially(
         exeContext,
@@ -628,11 +657,19 @@ function executeOperation(
         rootValue,
         path,
         rootFields,
+        1,
       );
     case OperationTypeNode.SUBSCRIPTION:
       // TODO: deprecate `subscribe` and move all logic here
       // Temporary solution until we finish merging execute and subscribe together
-      return executeFields(exeContext, rootType, rootValue, path, rootFields);
+      return executeFields(
+        exeContext,
+        rootType,
+        rootValue,
+        path,
+        rootFields,
+        1,
+      );
   }
 }
 
@@ -648,6 +685,7 @@ function executeFieldsSerially(
   sourceValue: unknown,
   path: Path | undefined,
   fields: Map<string, ReadonlyArray<FieldNode>>,
+  depth: number,
 ): PromiseOrValue<ObjMap<unknown>> {
   return promiseReduce(
     fields.entries(),
@@ -659,6 +697,7 @@ function executeFieldsSerially(
         sourceValue,
         fieldNodes,
         fieldPath,
+        depth,
       );
       if (result === undefined) {
         return results;
@@ -688,6 +727,7 @@ function executeFields(
   sourceValue: unknown,
   path: Path | undefined,
   fields: Map<string, ReadonlyArray<FieldNode>>,
+  depth: number,
 ): PromiseOrValue<ObjMap<unknown>> {
   const results = Object.create(null);
   let containsPromise = false;
@@ -701,6 +741,7 @@ function executeFields(
         sourceValue,
         fieldNodes,
         fieldPath,
+        depth,
       );
 
       if (result !== undefined) {
@@ -732,6 +773,32 @@ function executeFields(
 }
 
 /**
+ * Checks whether the number of response keys (including aliases) in a
+ * selection set exceeds the configured limit. Throws a GraphQLError when
+ * the limit is exceeded.
+ */
+function checkAliasCount(
+  exeContext: ExecutionContext,
+  fields: Map<string, ReadonlyArray<FieldNode>>,
+): void {
+  if (exeContext.maxAliases !== undefined) {
+    const aliasCount = fields.size;
+    if (aliasCount > exeContext.maxAliases) {
+      // Collect nodes for the error location from the first field node of
+      // each response key beyond the limit.
+      const nodes: Array<FieldNode> = [];
+      for (const [, fieldNodes] of fields) {
+        nodes.push(fieldNodes[0]);
+      }
+      throw new GraphQLError(
+        `Aliases limit of ${exeContext.maxAliases} exceeded, found ${aliasCount} aliases.`,
+        { nodes },
+      );
+    }
+  }
+}
+
+/**
  * Implements the "Executing fields" section of the spec
  * In particular, this function figures out the value that the field returns by
  * calling its resolve function, then calls completeValue to complete promises,
@@ -745,7 +812,16 @@ function executeField(
   source: unknown,
   fieldNodes: ReadonlyArray<FieldNode>,
   path: Path,
+  depth: number,
 ): PromiseOrValue<unknown> {
+  // Check depth limit before resolving the field.
+  if (exeContext.maxDepth !== undefined && depth > exeContext.maxDepth) {
+    throw new GraphQLError(
+      `Query depth limit of ${exeContext.maxDepth} exceeded, found depth: ${depth}.`,
+      { nodes: fieldNodes },
+    );
+  }
+
   const fieldDef = getFieldDef(exeContext.schema, parentType, fieldNodes[0]);
   if (!fieldDef) {
     return;
@@ -783,7 +859,15 @@ function executeField(
     let completed;
     if (isPromise(result)) {
       completed = result.then((resolved) =>
-        completeValue(exeContext, returnType, fieldNodes, info, path, resolved),
+        completeValue(
+          exeContext,
+          returnType,
+          fieldNodes,
+          info,
+          path,
+          resolved,
+          depth,
+        ),
       );
     } else {
       completed = completeValue(
@@ -793,6 +877,7 @@ function executeField(
         info,
         path,
         result,
+        depth,
       );
     }
 
@@ -883,6 +968,7 @@ function completeValue(
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
+  depth: number,
 ): PromiseOrValue<unknown> {
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
@@ -899,6 +985,7 @@ function completeValue(
       info,
       path,
       result,
+      depth,
     );
     if (completed === null) {
       throw new Error(
@@ -922,6 +1009,7 @@ function completeValue(
       info,
       path,
       result,
+      depth,
     );
   }
 
@@ -941,6 +1029,7 @@ function completeValue(
       info,
       path,
       result,
+      depth,
     );
   }
 
@@ -953,6 +1042,7 @@ function completeValue(
       info,
       path,
       result,
+      depth,
     );
   }
   /* c8 ignore next 6 */
@@ -976,6 +1066,7 @@ function completeListValue(
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
+  depth: number,
 ): PromiseOrValue<ReadonlyArray<unknown>> {
   if (!isIterableObject(result)) {
     throw new GraphQLError(
@@ -1002,6 +1093,7 @@ function completeListValue(
             info,
             itemPath,
             resolved,
+            depth,
           ),
         );
       } else {
@@ -1012,6 +1104,7 @@ function completeListValue(
           info,
           itemPath,
           item,
+          depth,
         );
       }
 
@@ -1071,6 +1164,7 @@ function completeAbstractValue(
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
+  depth: number,
 ): PromiseOrValue<ObjMap<unknown>> {
   const resolveTypeFn = returnType.resolveType ?? exeContext.typeResolver;
   const contextValue = exeContext.contextValue;
@@ -1092,6 +1186,7 @@ function completeAbstractValue(
         info,
         path,
         result,
+        depth,
       ),
     );
   }
@@ -1110,6 +1205,7 @@ function completeAbstractValue(
     info,
     path,
     result,
+    depth,
   );
 }
 
@@ -1180,9 +1276,14 @@ function completeObjectValue(
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
+  depth: number,
 ): PromiseOrValue<ObjMap<unknown>> {
   // Collect sub-fields to execute to complete this value.
   const subFieldNodes = collectSubfields(exeContext, returnType, fieldNodes);
+
+  checkAliasCount(exeContext, subFieldNodes);
+
+  const subDepth = depth + 1;
 
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
@@ -1201,6 +1302,7 @@ function completeObjectValue(
           result,
           path,
           subFieldNodes,
+          subDepth,
         );
       });
     }
@@ -1210,7 +1312,14 @@ function completeObjectValue(
     }
   }
 
-  return executeFields(exeContext, returnType, result, path, subFieldNodes);
+  return executeFields(
+    exeContext,
+    returnType,
+    result,
+    path,
+    subFieldNodes,
+    subDepth,
+  );
 }
 
 function invalidReturnTypeError(
