@@ -4,7 +4,7 @@ import { expect } from 'chai';
 
 import { dedentString } from '../../__testUtils__/dedent.ts';
 
-import { GraphQLObjectType } from '../../type/definition.ts';
+import { assertObjectType, GraphQLObjectType } from '../../type/definition.ts';
 import type { GraphQLSchemaNormalizedConfig } from '../../type/schema.ts';
 import { GraphQLSchema } from '../../type/schema.ts';
 
@@ -83,6 +83,33 @@ describe('mapSchemaConfig', () => {
           }
         `,
       );
+    });
+
+    it('provides field and parent type names when mapping field arguments', () => {
+      const sdl = `
+        type SomeType {
+          field(arg: String): String
+        }
+      `;
+
+      const schemaConfig = buildSchema(sdl).toConfig();
+      const visits: Array<string> = [];
+
+      const newSchemaConfig = mapSchemaConfig(schemaConfig, () => ({
+        [SchemaElementKind.ARGUMENT]: (
+          config,
+          fieldOrDirectiveName,
+          parentTypeName,
+        ) => {
+          visits.push(`${parentTypeName}.${fieldOrDirectiveName}`);
+          return config;
+        },
+      }));
+      const schema = new GraphQLSchema(newSchemaConfig);
+      const type = assertObjectType(schema.getType('SomeType'));
+      expect(type.getFields().field.args).to.have.lengthOf(1);
+
+      expect(visits).to.deep.equal(['SomeType.field']);
     });
   });
 
