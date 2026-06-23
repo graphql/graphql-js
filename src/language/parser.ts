@@ -58,6 +58,9 @@ import type {
   SchemaExtensionNode,
   SelectionNode,
   SelectionSetNode,
+  ServiceCapabilityNode,
+  ServiceDefinitionNode,
+  ServiceExtensionNode,
   StringValueNode,
   Token,
   TypeCoordinateNode,
@@ -73,7 +76,7 @@ import { Location, OperationTypeNode } from './ast';
 import { DirectiveLocation } from './directiveLocation';
 import { Kind } from './kinds';
 import type { LexerInterface } from './lexer';
-import { isPunctuatorTokenKind, Lexer } from './lexer';
+import { isPunctuatorTokenKind, Lexer, readQualifiedName } from './lexer';
 import { SchemaCoordinateLexer } from './schemaCoordinateLexer';
 import { isSource, Source } from './source';
 import { TokenKind } from './tokenKind';
@@ -436,6 +439,8 @@ export class Parser {
           return this.parseInputObjectTypeDefinition();
         case 'directive':
           return this.parseDirectiveDefinition();
+        case 'service':
+          return this.parseServiceDefinition();
       }
 
       switch (keywordToken.value) {
@@ -1394,6 +1399,8 @@ export class Parser {
             return this.parseDirectiveDefinitionExtension();
           }
           break;
+        case 'service':
+          return this.parseServiceExtension();
       }
     }
 
@@ -1686,6 +1693,109 @@ export class Parser {
       return name;
     }
     throw this.unexpected(start);
+  }
+
+  // Service Definitions
+
+  /**
+   * ```
+   * ServiceDefinition : Description? service Directives? { ServiceCapability* }
+   * ```
+   */
+  parseServiceDefinition(): ServiceDefinitionNode {
+    const start = this._lexer.token;
+    const description = this.parseDescription();
+    this.expectKeyword('service');
+    const directives = this.parseConstDirectives();
+    const entries = this.optionalMany(
+      TokenKind.BRACE_L,
+      this.parseServiceCapability,
+      TokenKind.BRACE_R,
+    );
+    return this.node<ServiceDefinitionNode>(start, {
+      kind: Kind.SERVICE_DEFINITION,
+      description,
+      directives,
+      entries,
+    });
+  }
+
+  /**
+   * ```
+   * ServiceCapability : Description? capability QualifiedName ServiceCapabilityValue?
+   * ServiceCapabilityValue : ( StringValue )
+   * ```
+   */
+  parseServiceCapability(): ServiceCapabilityNode {
+    const start = this._lexer.token;
+    const description = this.parseDescription();
+    this.expectKeyword('capability');
+
+    // Parse qualified name - this is a lexer feature that doesn't allow whitespace
+    // The current token should be a NAME that starts the qualified name
+    const identifierToken = this._lexer.token;
+    if (identifierToken.kind !== TokenKind.NAME) {
+      throw this.unexpected(identifierToken);
+    }
+
+    // Use the lexer to read a qualified name directly from this position
+    const qualifiedNameToken = readQualifiedName(
+      this._lexer,
+      identifierToken.start,
+    );
+
+    // Create a StringValueNode from the qualified name token
+    const identifier = this.node<StringValueNode>(identifierToken, {
+      kind: Kind.STRING,
+      value: qualifiedNameToken.value,
+      block: false,
+    });
+
+    // Update the lexer to point to the qualified name token and then advance past it
+    // The qualified name token will be followed by whatever comes next
+    (this._lexer as { token: Token }).token = qualifiedNameToken;
+    this.advanceLexer();
+
+    // Parse optional value: ( StringValue )
+    let value: StringValueNode | undefined;
+    if (this.expectOptionalToken(TokenKind.PAREN_L)) {
+      value = this.parseStringLiteral();
+      this.expectToken(TokenKind.PAREN_R);
+    }
+
+    return this.node<ServiceCapabilityNode>(start, {
+      kind: Kind.SERVICE_CAPABILITY,
+      description,
+      identifier,
+      value,
+    });
+  }
+
+  /**
+   * ```
+   * ServiceExtension :
+   *   - extend service Directives? { ServiceCapability* }
+   *   - extend service Directives [lookahead != `{`]
+   * ```
+   */
+  parseServiceExtension(): ServiceExtensionNode {
+    const start = this._lexer.token;
+    this.expectKeyword('extend');
+    this.expectKeyword('service');
+    const directives = this.parseConstDirectives();
+    const entries = this.optionalMany(
+      TokenKind.BRACE_L,
+      this.parseServiceCapability,
+      TokenKind.BRACE_R,
+    );
+    if (directives.length === 0 && entries.length === 0) {
+      throw this.unexpected();
+    }
+    return this.node<ServiceExtensionNode>(start, {
+      kind: Kind.SERVICE_EXTENSION,
+      directives,
+      entries,
+    });
   }
 
   // Schema Coordinates

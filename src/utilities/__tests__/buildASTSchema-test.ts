@@ -509,6 +509,26 @@ describe('Schema Builder', () => {
     expect(cycleSDL(sdl)).to.equal(sdl);
   });
 
+  it('builds recursive input object field defaults', () => {
+    const sdl = dedent`
+      type Query {
+        depth(person: PersonInput): Int
+      }
+
+      input PersonInput {
+        parent: PersonInput = {parent: null}
+      }
+    `;
+
+    const schema = buildSchema(sdl);
+    const personInput = assertInputObjectType(schema.getType('PersonInput'));
+
+    expect(personInput.getFields().parent.defaultValue).to.deep.equal({
+      parent: null,
+    });
+    expect(printSchema(schema)).to.equal(sdl);
+  });
+
   it('Simple argument field with default', () => {
     const sdl = dedent`
       type Query {

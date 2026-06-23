@@ -95,12 +95,14 @@ export { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule';
 
 // SDL-specific validation rules
 export { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule';
+export { LoneServiceDefinitionRule } from './rules/LoneServiceDefinitionRule';
 export { UniqueOperationTypesRule } from './rules/UniqueOperationTypesRule';
 export { UniqueTypeNamesRule } from './rules/UniqueTypeNamesRule';
 export { UniqueEnumValueNamesRule } from './rules/UniqueEnumValueNamesRule';
 export { UniqueFieldDefinitionNamesRule } from './rules/UniqueFieldDefinitionNamesRule';
 export { UniqueArgumentDefinitionNamesRule } from './rules/UniqueArgumentDefinitionNamesRule';
 export { UniqueDirectiveNamesRule } from './rules/UniqueDirectiveNamesRule';
+export { UniqueCapabilityIdentifiersRule } from './rules/UniqueCapabilityIdentifiersRule';
 export { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule';
 
 // Optional rules not defined by the GraphQL Specification

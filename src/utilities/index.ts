@@ -32,6 +32,8 @@ export type {
   IntrospectionInputValue,
   IntrospectionEnumValue,
   IntrospectionDirective,
+  IntrospectionCapability,
+  IntrospectionService,
 } from './getIntrospectionQuery';
 
 // Gets the target Operation from a Document.
@@ -118,3 +120,7 @@ export {
   resolveASTSchemaCoordinate,
 } from './resolveSchemaCoordinate';
 export type { ResolvedSchemaElement } from './resolveSchemaCoordinate';
+
+// Create a new schema with service capabilities.
+export { withServiceCapabilities } from './withServiceCapabilities';
+export type { WithServiceCapabilitiesOptions } from './withServiceCapabilities';

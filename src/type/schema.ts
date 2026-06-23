@@ -33,6 +33,8 @@ import {
 import type { GraphQLDirective } from './directives';
 import { isDirective, specifiedDirectives } from './directives';
 import { __Schema } from './introspection';
+import type { GraphQLService } from './service';
+import { builtInService } from './service';
 
 /**
  * Test if the given value is a GraphQL schema.
@@ -198,6 +200,7 @@ export class GraphQLSchema {
   private _mutationType: Maybe<GraphQLObjectType>;
   private _subscriptionType: Maybe<GraphQLObjectType>;
   private _directives: ReadonlyArray<GraphQLDirective>;
+  private _service: GraphQLService;
   private _typeMap: TypeMap;
   private _subTypeMap: ObjMap<ObjMap<boolean>>;
   private _implementationsMap: ObjMap<{
@@ -325,6 +328,8 @@ export class GraphQLSchema {
     this._subscriptionType = config.subscription;
     // Provide specified directives (e.g. @include and @skip) by default.
     this._directives = config.directives ?? specifiedDirectives;
+    // Provide built-in service by default (similar to specifiedDirectives).
+    this._service = config.service ?? builtInService;
 
     // To preserve order of user-provided types, we add first to add them to
     // the set of "collected" types, so `collectReferencedTypes` ignore them.
@@ -803,6 +808,9 @@ export class GraphQLSchema {
    * schemaCopy.getQueryType()?.name; // => 'Query'
    * ```
    */
+  getService(): GraphQLService {
+    return this._service;
+  }
   toConfig(): GraphQLSchemaNormalizedConfig {
     return {
       description: this.description,
@@ -811,6 +819,7 @@ export class GraphQLSchema {
       subscription: this.getSubscriptionType(),
       types: Object.values(this.getTypeMap()),
       directives: this.getDirectives(),
+      service: this.getService(),
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
@@ -847,6 +856,7 @@ export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
   types?: Maybe<ReadonlyArray<GraphQLNamedType>>;
   /** Directives available in this schema or applied to this AST node. */
   directives?: Maybe<ReadonlyArray<GraphQLDirective>>;
+  service?: Maybe<GraphQLService>;
   /** Custom extension fields reserved for users. */
   extensions?: Maybe<Readonly<GraphQLSchemaExtensions>>;
   /** AST node from which this schema element was built, if available. */
@@ -860,6 +870,7 @@ export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
   description: Maybe<string>;
   types: ReadonlyArray<GraphQLNamedType>;
   directives: ReadonlyArray<GraphQLDirective>;
+  service: GraphQLService;
   extensions: Readonly<GraphQLSchemaExtensions>;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
   assumeValid: boolean;

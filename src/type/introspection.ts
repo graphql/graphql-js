@@ -34,6 +34,7 @@ import {
 import type { GraphQLDirective } from './directives';
 import { GraphQLBoolean, GraphQLString } from './scalars';
 import type { GraphQLSchema } from './schema';
+import type { GraphQLCapability, GraphQLService } from './service';
 
 /** The introspection type describing a GraphQL schema. */
 export const __Schema: GraphQLObjectType = new GraphQLObjectType({
@@ -545,6 +546,48 @@ export const __TypeKind: GraphQLEnumType = new GraphQLEnumType({
   },
 });
 
+export const __Capability: GraphQLObjectType = new GraphQLObjectType({
+  name: '__Capability',
+  description:
+    'A service capability describes a feature supported by the GraphQL service.',
+  fields: () =>
+    ({
+      identifier: {
+        type: new GraphQLNonNull(GraphQLString),
+        description:
+          'The capability identifier uniquely identifying this service capability.',
+        resolve: (capability) => capability.identifier,
+      },
+      description: {
+        type: GraphQLString,
+        resolve: (capability) => capability.description,
+      },
+      value: {
+        type: GraphQLString,
+        description:
+          'The string value of the service capability, or null if there is no associated value.',
+        resolve: (capability) => capability.value,
+      },
+    } as GraphQLFieldConfigMap<GraphQLCapability, unknown>),
+});
+
+export const __Service: GraphQLObjectType = new GraphQLObjectType({
+  name: '__Service',
+  description:
+    'The __Service type is returned from the __service meta-field and provides information about the GraphQL service, most notably about its capabilities.',
+  fields: () =>
+    ({
+      capabilities: {
+        type: new GraphQLNonNull(
+          new GraphQLList(new GraphQLNonNull(__Capability)),
+        ),
+        description:
+          'A list of capabilities detailing each service capability supported by the service.',
+        resolve: (service) => service.capabilities,
+      },
+    } as GraphQLFieldConfigMap<GraphQLService, unknown>),
+});
+
 /**
  * Note that these are GraphQLField and not GraphQLFieldConfig,
  * so the format for args is different.
@@ -596,6 +639,17 @@ export const TypeNameMetaFieldDef: GraphQLField<unknown, unknown> = {
 };
 
 /** All introspection types defined by the GraphQL specification. */
+export const ServiceMetaFieldDef: GraphQLField<unknown, unknown> = {
+  name: '__service',
+  type: new GraphQLNonNull(__Service),
+  description: 'Access service information and capabilities.',
+  args: [],
+  // Returns the service - all schemas have a service (built-in or custom)
+  resolve: (_source, _args, _context, { schema }) => schema.getService(),
+  deprecationReason: undefined,
+  extensions: Object.create(null),
+  astNode: undefined,
+};
 export const introspectionTypes: ReadonlyArray<GraphQLNamedType> =
   Object.freeze([
     __Schema,
@@ -606,6 +660,8 @@ export const introspectionTypes: ReadonlyArray<GraphQLNamedType> =
     __InputValue,
     __EnumValue,
     __TypeKind,
+    __Service,
+    __Capability,
   ]);
 
 /**

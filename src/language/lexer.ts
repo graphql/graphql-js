@@ -934,3 +934,58 @@ export function readName(lexer: LexerInterface, start: number): Token {
     body.slice(start, position),
   );
 }
+
+/**
+ * Reads a qualified name from the source, which is two or more names
+ * separated by periods with no whitespace or ignored characters.
+ *
+ * ```
+ * QualifiedName ::
+ *   - QualifiedName . Name [lookahead != `.`]
+ *   - Name . Name [lookahead != `.`]
+ * ```
+ *
+ * @internal
+ */
+export function readQualifiedName(lexer: LexerInterface, start: number): Token {
+  const body = lexer.source.body;
+  const bodyLength = body.length;
+  let position = start;
+  let dotCount = 0;
+
+  while (position < bodyLength) {
+    const code = body.charCodeAt(position);
+    if (isNameContinue(code)) {
+      ++position;
+    } else if (code === 0x002e) {
+      // . (period)
+      // Check if next character is a valid name start
+      const nextCode = body.charCodeAt(position + 1);
+      if (isNameStart(nextCode)) {
+        ++dotCount;
+        ++position;
+      } else {
+        break;
+      }
+    } else {
+      break;
+    }
+  }
+
+  // Must have at least one dot to be a qualified name
+  if (dotCount === 0) {
+    throw syntaxError(
+      lexer.source,
+      start,
+      'Expected a qualified name with at least two components separated by periods.',
+    );
+  }
+
+  return createToken(
+    lexer,
+    TokenKind.QUALIFIED_NAME,
+    start,
+    position,
+    body.slice(start, position),
+  );
+}
