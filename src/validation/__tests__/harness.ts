@@ -1,4 +1,5 @@
 import { expectJSON } from '../../__testUtils__/expectJSON.ts';
+import { expectMatchingValues } from '../../__testUtils__/expectMatchingValues.ts';
 
 import type { Maybe } from '../../jsutils/Maybe.ts';
 
@@ -8,11 +9,18 @@ import type { GraphQLSchema } from '../../type/schema.ts';
 
 import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
+import type { TypeSystemValidationFn } from '../TypeSystemValidationIndex.ts';
+import type { ASTVisitorFn } from '../unifiedValidationRules/ASTValidationContext.ts';
+// eslint-disable-next-line import/no-namespace
+import * as ValidationRules from '../unifiedValidationRules/index.ts';
 import { validate, validateSDL } from '../validate.ts';
+import { validateWithRules } from '../validateWithRules.ts';
 import type {
   SDLValidationRule,
   ValidationRule,
 } from '../ValidationContext.ts';
+
+const validationRules: Readonly<{ [key: string]: unknown }> = ValidationRules;
 
 export const testSchema: GraphQLSchema = buildSchema(`
   interface Mammal {
@@ -135,6 +143,20 @@ export function expectValidationErrorsWithSchema(
 ): any {
   const doc = parse(queryStr, { experimentalFragmentArguments: true });
   const errors = validate(schema, doc, [rule], { hideSuggestions });
+  const astRule = getASTVisitor(rule.name);
+  if (astRule != null) {
+    return expectJSON(
+      expectMatchingValues([
+        errors,
+        validateWithRules({
+          documentAST: doc,
+          rules: [astRule],
+          schema,
+          hideSuggestions,
+        }),
+      ]),
+    );
+  }
   return expectJSON(errors);
 }
 
@@ -158,5 +180,47 @@ export function expectSDLValidationErrors(
 ): any {
   const doc = parse(sdlStr);
   const errors = validateSDL(doc, schema, [rule]);
+  const astRule = getASTVisitor(rule.name);
+  const typeSystemRule = getTypeSystemValidation(rule.name);
+  if (astRule != null || typeSystemRule != null) {
+    return expectJSON(
+      expectMatchingValues([
+        errors,
+        validateWithRules({
+          documentAST: doc,
+          rules: astRule == null ? [] : [astRule],
+          typeSystemRules: typeSystemRule == null ? [] : [typeSystemRule],
+          schema,
+          hideSuggestions: false,
+        }),
+      ]),
+    );
+  }
   return expectJSON(errors);
+}
+
+function getASTVisitor(ruleName: string): ASTVisitorFn | undefined {
+  const astVisitorName = ruleName.replace(
+    /(?:OnDirectives)?Rule$/,
+    'ASTVisitor',
+  );
+  const astVisitor = validationRules[astVisitorName];
+  return isASTVisitorFn(astVisitor) ? astVisitor : undefined;
+}
+
+function getTypeSystemValidation(
+  ruleName: string,
+): TypeSystemValidationFn | undefined {
+  const typeSystemValidationName = ruleName.replace(
+    /(?:OnDirectives)?Rule$/,
+    'TypeSystemValidation',
+  );
+  const typeSystemValidation = validationRules[typeSystemValidationName];
+  return typeof typeSystemValidation === 'function'
+    ? (typeSystemValidation as TypeSystemValidationFn)
+    : undefined;
+}
+
+function isASTVisitorFn(value: unknown): value is ASTVisitorFn {
+  return typeof value === 'function';
 }
