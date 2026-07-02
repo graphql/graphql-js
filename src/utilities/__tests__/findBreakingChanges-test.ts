@@ -979,6 +979,55 @@ describe('findDangerousChanges', () => {
     ]);
   });
 
+  it('should detect if a defaultValue changed on an input field', () => {
+    const oldSDL = `
+      input InputType1 {
+        withDefaultValue: String = "TO BE DELETED"
+        stringField: String = "test"
+        emptyArray: [Int!] = []
+        withoutDefaultValue: String
+      }
+
+      type Query {
+        field1(arg: InputType1): String
+      }
+    `;
+
+    const oldSchema = buildSchema(oldSDL);
+    const copyOfOldSchema = buildSchema(oldSDL);
+    expect(findDangerousChanges(oldSchema, copyOfOldSchema)).to.deep.equal([]);
+
+    const newSchema = buildSchema(`
+      input InputType1 {
+        withDefaultValue: String
+        stringField: String = "Test"
+        emptyArray: [Int!] = [7]
+        withoutDefaultValue: String = "now has one"
+      }
+
+      type Query {
+        field1(arg: InputType1): String
+      }
+    `);
+
+    expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        type: DangerousChangeType.INPUT_FIELD_DEFAULT_VALUE_CHANGE,
+        description: 'InputType1.withDefaultValue defaultValue was removed.',
+      },
+      {
+        type: DangerousChangeType.INPUT_FIELD_DEFAULT_VALUE_CHANGE,
+        description:
+          'InputType1.stringField has changed defaultValue from "test" to "Test".',
+      },
+      {
+        type: DangerousChangeType.INPUT_FIELD_DEFAULT_VALUE_CHANGE,
+        description:
+          'InputType1.emptyArray has changed defaultValue from [] to [7].',
+      },
+    ]);
+  });
+
   it('should ignore changes in field order of defaultValue', () => {
     const oldSchema = buildSchema(`
       input Input1 {
