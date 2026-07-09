@@ -3437,23 +3437,81 @@ describe('Type System: A full schema may contain reserved names', () => {
     expectJSON(experimentalValidateFullSchema(schema)).toDeepEqual([]);
   });
 
-  it('accepts reserved names on types, fields, args, enum values and input fields', () => {
-    const schema = schemaWithFieldType(
-      new GraphQLObjectType({
-        name: '__SomeObject',
-        fields: {
-          __badField: {
-            type: GraphQLString,
-            args: {
-              __badArg: { type: GraphQLString },
-            },
-          },
-        },
-      }),
-    );
+  it('accepts reserved names that are not reachable from the root operation types', () => {
+    const schema = buildSchema(`
+      type Query {
+        hello: String
+      }
 
+      type __Unused {
+        field: String
+      }
+    `);
+
+    // The reserved type is unreachable, so a full schema accepts it while a
+    // source schema still rejects it.
     expect(validateSchema(schema)).to.not.deep.equal([]);
     expectJSON(experimentalValidateFullSchema(schema)).toDeepEqual([]);
+  });
+
+  it('rejects a reserved type reachable from a root field', () => {
+    // A user type must not expose an introspection type.
+    const schema = buildSchema(`
+      type Query {
+        int: __Type
+      }
+    `);
+
+    expectJSON(experimentalValidateFullSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Name "__Type" must not begin with "__", which is reserved by GraphQL introspection.',
+      },
+    ]);
+  });
+
+  it('rejects a reserved root operation type', () => {
+    const schema = buildSchema(`
+      scalar __S
+
+      type __Q {
+        __i: __S
+      }
+
+      schema {
+        query: __Q
+      }
+    `);
+
+    expectJSON(experimentalValidateFullSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Name "__Q" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 4, column: 7 }],
+      },
+    ]);
+  });
+
+  it('rejects reserved field and argument names reachable from the root types', () => {
+    const schema = buildSchema(`
+      type Query {
+        __secret: String
+        ok(__x: Int): String
+      }
+    `);
+
+    expectJSON(experimentalValidateFullSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Name "__secret" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 3, column: 9 }],
+      },
+      {
+        message:
+          'Name "__x" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 4, column: 12 }],
+      },
+    ]);
   });
 
   it('still reports non-name errors when validating a full schema', () => {
