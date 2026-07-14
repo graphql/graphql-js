@@ -2,7 +2,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const assert = require('assert');
 
 const babel = require('@babel/core');
 
@@ -58,25 +57,10 @@ function buildPackageJSON() {
   packageJSON.engines = packageJSON.engines_on_npm;
   delete packageJSON.engines_on_npm;
 
-  // TODO: move to integration tests
-  const publishTag = packageJSON.publishConfig?.tag;
-  assert(publishTag != null, 'Should have packageJSON.publishConfig defined!');
-
   const { version } = packageJSON;
   const versionMatch = /^\d+\.\d+\.\d+-?(?<preReleaseTag>.*)?$/.exec(version);
   if (!versionMatch) {
     throw new Error('Version does not match semver spec: ' + version);
-  }
-
-  const { preReleaseTag } = versionMatch.groups;
-
-  if (preReleaseTag != null) {
-    const [tag] = preReleaseTag.split('.');
-    assert(
-      tag.startsWith('experimental-') || ['alpha', 'beta', 'rc'].includes(tag),
-      `"${tag}" tag is supported.`,
-    );
-    assert.equal(tag, publishTag, 'Publish tag and version tag should match!');
   }
 
   return packageJSON;

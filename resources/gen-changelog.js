@@ -5,12 +5,15 @@ const https = require('https');
 
 const packageJSON = require('../package.json');
 
-const { exec } = require('./utils');
+const { exec, readPackageJSONAtRef, tagExists } = require('./utils.js');
 
 const graphqlRequest = util.promisify(graphqlRequestImpl);
 const labelsConfig = {
   'PR: breaking change 💥': {
     section: 'Breaking Change 💥',
+  },
+  'PR: deprecation ⚠': {
+    section: 'Deprecation ⚠',
   },
   'PR: feature 🚀': {
     section: 'New Feature 🚀',
@@ -64,26 +67,125 @@ getChangeLog()
   });
 
 function getChangeLog() {
-  const { version } = packageJSON;
-
-  let tag = null;
-  let commitsList = exec(`git rev-list --reverse v${version}..`);
-  if (commitsList === '') {
-    const parentPackageJSON = exec('git cat-file blob HEAD~1:package.json');
-    const parentVersion = JSON.parse(parentPackageJSON).version;
-    commitsList = exec(`git rev-list --reverse v${parentVersion}..HEAD~1`);
-    tag = `v${version}`;
-  }
+  const workingTreeVersion = packageJSON.version;
+  const fromRev = parseFromRevArg(process.argv.slice(2));
+  const { title, commitsList } = resolveChangeLogConfig(
+    workingTreeVersion,
+    fromRev,
+  );
 
   const date = exec('git log -1 --format=%cd --date=short');
-  return getCommitsInfo(commitsList.split('\n'))
+  return getCommitsInfo(commitsList)
     .then((commitsInfo) => getPRsInfo(commitsInfoToPRs(commitsInfo)))
-    .then((prsInfo) => genChangeLog(tag, date, prsInfo));
+    .then((prsInfo) => genChangeLog(title, date, prsInfo));
 }
 
-function genChangeLog(tag, date, allPRs) {
+function parseFromRevArg(rawArgs) {
+  if (rawArgs.length === 0) {
+    return null;
+  }
+
+  if (rawArgs.length === 1 && rawArgs[0].trim() !== '') {
+    return rawArgs[0];
+  }
+
+  throw new Error(
+    'Usage: npm run changelog [-- <fromRev>]\n' +
+      'Example: npm run changelog -- d41f59bbfdfc207712a2fc3778934694a3410ddf',
+  );
+}
+
+function getTaggedVersionCommit(version) {
+  const tag = `v${version}`;
+  if (!tagExists(tag)) {
+    return null;
+  }
+  return exec(`git rev-parse ${tag}^{}`);
+}
+
+function getFirstParentCommit(commit) {
+  const commitWithParents = exec(`git rev-list --parents -n 1 ${commit}`);
+  if (commitWithParents === '') {
+    return null;
+  }
+
+  const [, firstParent] = commitWithParents.split(' ');
+  return firstParent || null;
+}
+
+function resolveCommitRefOrThrow(ref) {
+  try {
+    return exec(`git rev-parse ${ref}`);
+  } catch (error) {
+    throw new Error(
+      `Unable to resolve fromRev "${ref}" to a local commit. ` +
+        'Pass a reachable first-parent revision:\n' +
+        '  npm run changelog -- <fromRev>',
+      { cause: error },
+    );
+  }
+}
+
+function resolveChangeLogConfig(workingTreeVersion, fromRev) {
+  const workingTreeReleaseTag = `v${workingTreeVersion}`;
+  const title = tagExists(workingTreeReleaseTag)
+    ? 'Unreleased'
+    : workingTreeReleaseTag;
+
+  const commitsList = [];
+  let rangeStart =
+    fromRev != null
+      ? resolveCommitRefOrThrow(fromRev)
+      : getTaggedVersionCommit(workingTreeVersion);
+
+  let rangeStartReached = false;
+  let lastCheckedVersion = workingTreeVersion;
+  let newerCommit = null;
+  let newerVersion = null;
+  let commit = exec('git rev-parse HEAD');
+
+  while (commit != null) {
+    const commitVersion = readPackageJSONAtRef(commit).version;
+
+    if (rangeStart == null && commitVersion !== lastCheckedVersion) {
+      rangeStart = getTaggedVersionCommit(commitVersion);
+      lastCheckedVersion = commitVersion;
+    }
+
+    if (newerCommit != null && newerVersion === commitVersion) {
+      commitsList.push(newerCommit);
+    }
+
+    if (rangeStart != null && commit === rangeStart) {
+      rangeStartReached = true;
+      break;
+    }
+
+    newerCommit = commit;
+    newerVersion = commitVersion;
+    commit = getFirstParentCommit(commit);
+  }
+
+  if (rangeStart == null || !rangeStartReached) {
+    throw new Error(
+      'Unable to determine changelog range from local first-parent history.\n' +
+        'This can happen with a shallow clone, missing tags, or an unreachable fromRev.\n' +
+        'Fetch more history/tags (for example, "git fetch --tags --deepen=200") ' +
+        'or pass an explicit reachable first-parent fromRev:\n' +
+        '  npm run changelog -- <fromRev>',
+    );
+  }
+
+  return {
+    title,
+    commitsList: commitsList.reverse(),
+  };
+}
+
+function genChangeLog(title, date, allPRs) {
   const byLabel = {};
   const committersByLogin = {};
+  const validationIssues = [];
 
   for (const pr of allPRs) {
     const labels = pr.labels.nodes
@@ -91,24 +193,37 @@ function genChangeLog(tag, date, allPRs) {
       .filter((label) => label.startsWith('PR: '));
 
     if (labels.length === 0) {
-      throw new Error(`PR is missing label. See ${pr.url}`);
+      validationIssues.push(`PR #${pr.number} is missing label. See ${pr.url}`);
+      continue;
     }
+
     if (labels.length > 1) {
-      throw new Error(
-        `PR has conflicting labels: ${labels.join('\n')}\nSee ${pr.url}`,
+      validationIssues.push(
+        `PR #${pr.number} has conflicting labels: ${labels.join(', ')}\nSee ${
+          pr.url
+        }`,
       );
+      continue;
     }
 
     const label = labels[0];
     if (!labelsConfig[label]) {
-      throw new Error(`Unknown label: ${label}. See ${pr.url}`);
+      validationIssues.push(
+        `PR #${pr.number} has unknown label: ${label}\nSee ${pr.url}`,
+      );
+      continue;
     }
+
     byLabel[label] = byLabel[label] || [];
     byLabel[label].push(pr);
     committersByLogin[pr.author.login] = pr.author;
   }
 
-  let changelog = `## ${tag || 'Unreleased'} (${date})\n`;
+  if (validationIssues.length > 0) {
+    throw new Error(validationIssues.join('\n\n'));
+  }
+
+  let changelog = `## ${title} (${date})\n`;
   for (const [label, config] of Object.entries(labelsConfig)) {
     const prs = byLabel[label];
     if (prs) {
