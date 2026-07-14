@@ -28,6 +28,7 @@ import type {
   UnionTypeExtensionNode,
 } from '../language/ast.ts';
 import { OperationTypeNode } from '../language/ast.ts';
+import { DirectiveLocation } from '../language/directiveLocation.ts';
 import { Kind } from '../language/kinds.ts';
 
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators.ts';
@@ -121,7 +122,11 @@ export function validateSchema(
  * the built-in definitions and service capabilities added by an implementation,
  * such as a schema reconstructed from an introspection result. Such a schema may
  * legitimately contain reserved names, including ones added by a newer version
- * of GraphQL than this library implements, so those names are not rejected.
+ * of GraphQL than this library implements, so those names are not rejected
+ * outright. Instead, a reserved name is reported only when it is part of the
+ * queryable surface: reachable from the root operation types through ordinary
+ * fields, arguments, and their types, or belonging to a directive usable in
+ * executable documents.
  *
  * Note: This API is experimental and may change or be removed in a future
  * version while the behavior and test coverage for full schemas converge.
@@ -522,17 +527,33 @@ function reportReservedName(
   );
 }
 
+// Directive locations that appear in executable documents. A directive with
+// any of these locations is part of the queryable surface of a schema.
+const executableDirectiveLocations = new Set<DirectiveLocation>([
+  DirectiveLocation.QUERY,
+  DirectiveLocation.MUTATION,
+  DirectiveLocation.SUBSCRIPTION,
+  DirectiveLocation.FIELD,
+  DirectiveLocation.FRAGMENT_DEFINITION,
+  DirectiveLocation.FRAGMENT_SPREAD,
+  DirectiveLocation.INLINE_FRAGMENT,
+  DirectiveLocation.VARIABLE_DEFINITION,
+  DirectiveLocation.FRAGMENT_VARIABLE_DEFINITION,
+]);
+
 // A full schema is permitted to contain reserved names (those beginning with
 // `__`) among the built-in definitions and service capabilities added by an
 // implementation, such as the introspection types. Those definitions are only
 // reachable through the `__schema`, `__type`, and `__typename` meta-fields,
 // which are not part of any type's fields and so are never traversed here.
 //
-// A reserved name is only invalid when it is reachable from the root operation
-// types through ordinary fields, arguments, and their types. This ensures that,
-// for example, a user type or field is not allowed to expose an introspection
-// type, while newer reserved definitions that are not part of the queryable
-// surface are still accepted.
+// A reserved name is only invalid when it is part of the queryable surface:
+// reachable from the root operation types through ordinary fields, arguments,
+// and their types, or belonging to a directive usable in executable documents.
+// This ensures that, for example, a user type or field is not allowed to
+// expose an introspection type, while newer reserved definitions that are not
+// part of the queryable surface (such as those referenced only by type-system
+// directives) are still accepted.
 function validateReachableReservedNames(
   context: SchemaValidationContext,
 ): void {
@@ -543,6 +564,33 @@ function validateReachableReservedNames(
     const rootType = schema.getRootType(operationType);
     if (rootType != null) {
       visit(rootType);
+    }
+  }
+
+  for (const directive of schema.getDirectives()) {
+    // Non-directive values are reported by validateDirectives.
+    if (!isDirective(directive)) {
+      continue;
+    }
+
+    // Directives limited to type-system locations are not part of the
+    // queryable surface, so they may reference reserved definitions.
+    if (
+      !directive.locations.some((location) =>
+        executableDirectiveLocations.has(location),
+      )
+    ) {
+      continue;
+    }
+
+    if (directive.name.startsWith('__')) {
+      reportReservedName(context, directive);
+    }
+    for (const arg of directive.args) {
+      if (arg.name.startsWith('__')) {
+        reportReservedName(context, arg);
+      }
+      visit(getNamedType(arg.type));
     }
   }
 

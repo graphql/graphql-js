@@ -3492,6 +3492,55 @@ describe('Type System: A full schema may contain reserved names', () => {
     ]);
   });
 
+  it('rejects reserved names on directives usable in executable documents', () => {
+    const schema = buildSchema(`
+      type Query {
+        hello: String
+      }
+
+      scalar __Bar
+
+      directive @flibble(__foo: __Bar) on FIELD
+    `);
+
+    expectJSON(experimentalValidateFullSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Name "__foo" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 8, column: 26 }],
+      },
+      {
+        message:
+          'Name "__Bar" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 6, column: 7 }],
+      },
+    ]);
+  });
+
+  it('rejects a reserved type reachable via a directive with mixed locations', () => {
+    const schema = buildSchema(`
+      type Query {
+        hello: String
+      }
+
+      enum __ErrorBehavior {
+        NULL
+        PROPAGATE
+        HALT
+      }
+
+      directive @behavior(onError: __ErrorBehavior) on SCHEMA | FIELD
+    `);
+
+    expectJSON(experimentalValidateFullSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Name "__ErrorBehavior" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 6, column: 7 }],
+      },
+    ]);
+  });
+
   it('rejects reserved field and argument names reachable from the root types', () => {
     const schema = buildSchema(`
       type Query {
