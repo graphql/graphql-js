@@ -46,6 +46,11 @@ overrides:
       - precompiled
       - debuggable
       - dataloaders
+      - opentelemetry
+      - OTLP
+      - otlp
+      - Millis
+      - Kubernetes
 
 ignoreRegExpList:
   - u\{[0-9a-f]{1,8}\}
