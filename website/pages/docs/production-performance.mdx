@@ -3,6 +3,8 @@ title: Improve GraphQL Performance in Production
 description: Identify bottlenecks, batch database operations, implement caching strategies, and optimize query execution for production GraphQL.js applications.
 ---
 
+import { Callout } from 'nextra/components';
+
 # Improve GraphQL Performance in Production
 
 Production GraphQL servers require careful attention to performance. 
@@ -273,8 +275,21 @@ stores results with a 10-minute TTL, and returns cached data when available.
 When implementing application-level caching, clear or update cache 
 entries after mutations to maintain consistency. Adjust TTL values 
 based on how frequently your data changes. Replace Redis with your 
-chosen cache backend and handle connection errors appropriately. Add 
-cache keys that include relevant context like user permissions when necessary.
+chosen cache backend and handle connection errors appropriately.
+
+<Callout type="warning">
+A shared cache is not aware of who is making the request. If you cache 
+data that depends on the caller's authorization or other request-specific 
+context, a naive cache key can leak one user's data to another. In the 
+example above, `user:${args.id}` is safe because the key fully identifies 
+the cached value, but a key like `currentUserProfile` would return the 
+first caller's profile to everyone.
+
+Include any authorization-relevant context in the cache key (for example, 
+the viewer's ID, role, or tenant), or only cache data that is identical 
+for every viewer. When in doubt, scope the cache to the authenticated 
+principal so that access checks still apply to each request.
+</Callout>
 
 ### Control HTTP caching
 
