@@ -1,0 +1,653 @@
+---
+title: Manage GraphQL Schemas
+description: Version schemas safely, detect breaking changes, implement deprecation workflows, and establish governance processes for production GraphQL.js applications.
+---
+
+import { Callout } from 'nextra/components';
+
+# Manage GraphQL Schemas
+
+GraphQL schemas change as products evolve. Adding features, fixing issues, and improving APIs require schema modifications. Managing these changes without breaking existing clients requires careful planning and consistent processes.
+
+This guide shows you how to version schemas, detect breaking changes before they reach production, implement deprecation workflows, and establish governance processes for GraphQL.js applications.
+
+## Version schemas safely
+
+GraphQL's strong typing and introspection enable additive changes without breaking clients. Focus on adding new fields and types rather than modifying existing ones.
+
+### Add fields without breaking changes
+
+Extend your schema by adding optional fields and new types.
+
+```javascript
+import { GraphQLObjectType, GraphQLString, GraphQLInt } from 'graphql';
+
+const UserType = new GraphQLObjectType({
+  name: 'User',
+  fields: {
+    id: { type: GraphQLString },
+    name: { type: GraphQLString },
+    email: { type: GraphQLString },
+    avatarUrl: { type: GraphQLString },
+    bio: { type: GraphQLString }
+  }
+});
+
+const QueryType = new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+    user: {
+      type: UserType,
+      args: { id: { type: GraphQLString } }
+    },
+    userByEmail: {
+      type: UserType,
+      args: { email: { type: GraphQLString } }
+    }
+  }
+});
+```
+
+Adding fields to types and new queries to your schema doesn't affect existing clients. Clients only request fields they know about, so new fields remain invisible until clients explicitly query them.
+
+To add fields safely:
+
+- Make all new fields nullable unless your API can guarantee a value
+- Add required fields only to new types
+- Consider adding fields with default values when appropriate
+- Document new fields so clients discover them through your API documentation rather than introspection alone
+
+### Handle breaking changes
+
+Identify changes that might break existing clients before deploying them.
+
+Breaking changes include:
+
+- Removing fields or types
+- Renaming fields or types
+- Changing field types
+- Adding required arguments
+- Removing arguments
+- Changing argument types from nullable to non-nullable
+
+```javascript
+const UserType = new GraphQLObjectType({
+  name: 'User',
+  fields: {
+    id: { type: GraphQLString },
+    email: { type: GraphQLString }
+  }
+});
+
+const QueryType = new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+    users: {
+      type: new GraphQLList(UserType),
+      args: {
+        limit: { type: new GraphQLNonNull(GraphQLInt) }
+      }
+    }
+  }
+});
+```
+
+These changes break clients that query the removed username field or call the users query without the new required limit argument.
+
+When you must make breaking changes, use a deprecation workflow. Mark the old field as deprecated, add the new field or type alongside it, give clients time to migrate, then remove the deprecated field in a future release. Document breaking changes prominently and notify client teams before deploying.
+
+### Track schema versions
+
+Maintain a changelog of schema modifications to understand evolution over time.
+
+```javascript
+/**
+ * Schema version: 2024-12-01
+ *
+ * Changes:
+ * - added User.avatarUrl field
+ * - added User.bio field
+ * - added Query.userByEmail
+ * - deprecated User.username (use User.name instead)
+ *
+ * Breaking changes: none
+ */
+
+export const schema = new GraphQLSchema({
+  query: QueryType,
+  mutation: MutationType
+});
+```
+
+This comment documents what changed in this schema version, making it easier to understand evolution and communicate changes to client teams.
+
+To track schema versions effectively:
+
+- Include the date or version number in your schema comments
+- Document every change with categorization: addition, deprecation, breaking
+- Keep a separate changelog file that spans all versions
+- Use semantic versioning if you publish your schema as a package
+- Consider including the schema version in your GraphQL response headers
+
+## Detect breaking changes
+
+Automated tools catch breaking changes before they affect production clients.
+
+### Compare schema versions
+
+Generate a diff between your current and proposed schema to identify changes.
+
+```javascript
+import { printSchema, buildSchema } from 'graphql';
+import fs from 'fs';
+
+export function detectSchemaChanges(currentSchema, proposedSchema) {
+  const currentSDL = printSchema(currentSchema);
+  const proposedSDL = printSchema(proposedSchema);
+  
+  const changes = [];
+  
+  if (!fs.existsSync('schema.baseline.graphql')) {
+    fs.writeFileSync('schema.baseline.graphql', currentSDL);
+    return changes;
+  }
+  
+  const baseline = fs.readFileSync('schema.baseline.graphql', 'utf8');
+  const baselineSchema = buildSchema(baseline);
+  
+  const currentTypes = currentSchema.getTypeMap();
+  const proposedTypes = proposedSchema.getTypeMap();
+  
+  for (const typeName in currentTypes) {
+    if (typeName.startsWith('__')) continue;
+    
+    if (!proposedTypes[typeName]) {
+      changes.push({
+        type: 'BREAKING',
+        message: `Type ${typeName} was removed`
+      });
+    }
+  }
+  
+  return changes;
+}
+```
+
+This function compares two schemas and identifies removed types. A complete implementation would check fields, arguments, and type changes.
+
+<Callout type="info">
+Before hand-rolling schema comparison, reach for the utilities GraphQL.js
+already ships. `findBreakingChanges` and `findDangerousChanges` take two
+schemas and return structured lists of changes, covering the common cases
+(removed types and fields, changed argument and field types, enum value
+removals, and more) without any extra dependencies.
+</Callout>
+
+```javascript
+import { findBreakingChanges, findDangerousChanges } from 'graphql';
+
+export function detectSchemaChanges(oldSchema, newSchema) {
+  const breaking = findBreakingChanges(oldSchema, newSchema);
+  const dangerous = findDangerousChanges(oldSchema, newSchema);
+
+  // Each change is { type, description }, for example:
+  // { type: 'FIELD_REMOVED', description: 'User.age was removed.' }
+  return { breaking, dangerous };
+}
+```
+
+These built-ins are more rudimentary than a dedicated tool like GraphQL
+Inspector, but they are enough for many pipelines and require nothing beyond
+the `graphql` package. In GraphQL.js v17 they are consolidated into a single
+`findSchemaChanges` function.
+
+To implement breaking change detection:
+
+- Integrate it into your CI/CD pipeline
+- Fail builds that introduce breaking changes without explicit approval
+- Store the baseline schema in version control
+- Generate a detailed report of all changes, not just breaking ones
+- Consider allowing breaking changes with an override flag for intentional releases
+
+### Use GraphQL Inspector
+
+Leverage existing tools for comprehensive schema validation.
+
+```javascript
+import { diff } from '@graphql-inspector/core';
+
+export async function validateSchemaChange(oldSchemaPath, newSchemaPath) {
+  const changes = await diff(oldSchemaPath, newSchemaPath);
+  
+  const breakingChanges = changes.filter(change => 
+    change.criticality.level === 'BREAKING'
+  );
+  
+  if (breakingChanges.length > 0) {
+    console.error('Breaking changes detected:');
+    breakingChanges.forEach(change => {
+      console.error(`- ${change.message}`);
+      console.error(`  Path: ${change.path}`);
+    });
+    
+    process.exit(1);
+  }
+  
+  const safeChanges = changes.filter(change => 
+    change.criticality.level !== 'BREAKING'
+  );
+  
+  console.log(`Schema validation passed. ${safeChanges.length} safe changes detected.`);
+}
+```
+
+GraphQL Inspector analyzes schemas and categorizes changes by severity. This example fails the validation if breaking changes exist.
+
+When using schema validation tools:
+
+- Run them in CI before merging changes
+- Configure rules for which changes require manual review
+- Generate reports that teams can review before deployment
+- Integrate with pull request workflows to show schema changes inline
+- Replace GraphQL Inspector with your preferred schema tooling while maintaining the same validation approach
+
+### Monitor field usage
+
+Track which fields clients actually query to understand the impact of removing fields.
+
+```javascript
+import { execute } from 'graphql';
+
+const fieldUsage = new Map();
+
+export function trackFieldUsage(schema, document, contextValue) {
+  return execute({
+    schema,
+    document,
+    contextValue,
+    fieldResolver: (source, args, context, info) => {
+      const fieldPath = `${info.parentType.name}.${info.fieldName}`;
+      
+      fieldUsage.set(fieldPath, {
+        count: (fieldUsage.get(fieldPath)?.count || 0) + 1,
+        lastUsed: new Date().toISOString()
+      });
+      
+      const resolver = info.parentType.getFields()[info.fieldName].resolve;
+      if (resolver) {
+        return resolver(source, args, context, info);
+      }
+      return source?.[info.fieldName];
+    }
+  });
+}
+
+export function getUnusedFields(schema, daysUnused = 30) {
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - daysUnused);
+  
+  const allFields = [];
+  const typeMap = schema.getTypeMap();
+  
+  for (const typeName in typeMap) {
+    if (typeName.startsWith('__')) continue;
+    
+    const type = typeMap[typeName];
+    if (type.getFields) {
+      const fields = type.getFields();
+      for (const fieldName in fields) {
+        allFields.push(`${typeName}.${fieldName}`);
+      }
+    }
+  }
+  
+  return allFields.filter(field => {
+    const usage = fieldUsage.get(field);
+    if (!usage) return true;
+    return new Date(usage.lastUsed) < cutoffDate;
+  });
+}
+```
+
+This implementation tracks every field access during query execution and provides a list of fields that haven't been queried recently.
+
+To monitor field usage effectively:
+
+- Export usage data to your analytics system
+- Set appropriate timeframes based on your client update cycles
+- Consider seasonal usage patterns before marking fields as unused
+- Combine usage data with deprecation decisions
+- Use usage data to prioritize which deprecated fields to remove first
+
+## Implement deprecation workflows
+
+Communicate planned changes to clients and give them time to migrate before removing fields.
+
+### Mark fields as deprecated
+
+Use GraphQL's built-in deprecation to signal fields will be removed.
+
+```javascript
+import { GraphQLObjectType, GraphQLString } from 'graphql';
+
+const UserType = new GraphQLObjectType({
+  name: 'User',
+  fields: {
+    id: { type: GraphQLString },
+    username: {
+      type: GraphQLString,
+      deprecationReason: 'Use `name` instead. Will be removed on 2025-03-01.'
+    },
+    name: { type: GraphQLString },
+    email: { type: GraphQLString }
+  }
+});
+```
+
+Deprecated fields appear in introspection with their deprecation reason, alerting client developers to migrate.
+
+When deprecating fields:
+
+- Provide clear migration instructions in the deprecation message
+- Include a removal date to set expectations
+- Offer a direct replacement field when possible
+- Keep deprecated fields functional during the deprecation period
+- Document deprecations in your changelog and API documentation beyond just the introspection
+
+### Communicate deprecations
+
+Notify client teams about deprecated fields they're using.
+
+```javascript
+import { execute } from 'graphql';
+
+export async function executeWithDeprecationWarnings(
+  schema,
+  document,
+  contextValue
+) {
+  const deprecatedFields = [];
+  
+  const result = await execute({
+    schema,
+    document,
+    contextValue,
+    fieldResolver: (source, args, context, info) => {
+      const field = info.parentType.getFields()[info.fieldName];
+      
+      if (field.deprecationReason) {
+        deprecatedFields.push({
+          field: `${info.parentType.name}.${info.fieldName}`,
+          reason: field.deprecationReason,
+          path: info.path
+        });
+      }
+      
+      if (field.resolve) {
+        return field.resolve(source, args, context, info);
+      }
+      return source?.[info.fieldName];
+    }
+  });
+  
+  if (deprecatedFields.length > 0) {
+    console.warn('Deprecated fields used:', {
+      operationName: contextValue.operationName,
+      userId: contextValue.userId,
+      fields: deprecatedFields
+    });
+  }
+  
+  return result;
+}
+```
+
+This execution wrapper detects when clients query deprecated fields and logs warnings with context about which clients need to migrate.
+
+To communicate deprecations effectively:
+
+- Track which clients use deprecated fields
+- Send targeted notifications to teams using deprecated APIs
+- Provide migration guides with code examples
+- Set up alerts when deprecated field usage increases
+- Include deprecation warnings in GraphQL response extensions during a grace period
+
+### Phase out deprecated fields
+
+Remove deprecated fields after sufficient notice and client migration time.
+
+```javascript
+const UserTypePhase1 = new GraphQLObjectType({
+  name: 'User',
+  fields: {
+    username: { type: GraphQLString },
+    name: { type: GraphQLString }
+  }
+});
+
+const UserTypePhase2 = new GraphQLObjectType({
+  name: 'User',
+  fields: {
+    username: {
+      type: GraphQLString,
+      deprecationReason: 'Use `name` instead. Will be removed on 2025-03-01.'
+    },
+    name: { type: GraphQLString }
+  }
+});
+
+const UserTypePhase3 = new GraphQLObjectType({
+  name: 'User',
+  fields: {
+    name: { type: GraphQLString }
+  }
+});
+```
+
+This example shows three phases of field deprecation. Phase 1 adds the new name field alongside the existing username field on December 1, 2024. Phase 2 marks username as deprecated on January 1, 2025. Phase 3 removes the deprecated username field on March 1, 2025. This gives clients two months to discover the new field and another two months to migrate before the old field disappears.
+
+When removing deprecated fields:
+
+- Verify no clients are still using them through usage monitoring
+- Provide a final warning before removal
+- Document the removal in your changelog
+- Consider a longer deprecation period for public APIs than internal ones
+- Have a rollback plan if the removal causes unexpected issues
+
+## Establish governance processes
+
+Create consistent processes for reviewing and approving schema changes across teams.
+
+### Review schema changes
+
+Implement a review process before schema modifications reach production.
+
+```javascript
+export const reviewChecklist = {
+  breakingChanges: {
+    description: 'Does this change break existing clients?',
+    required: true,
+    check: (changes) => {
+      return changes.filter(c => c.type === 'BREAKING').length === 0;
+    }
+  },
+  
+  documentation: {
+    description: 'Are all new fields documented?',
+    required: true,
+    check: (schema, changes) => {
+      const newFields = changes.filter(c => c.type === 'FIELD_ADDED');
+      return newFields.every(field => field.description);
+    }
+  },
+  
+  naming: {
+    description: 'Do field names follow naming conventions?',
+    required: true,
+    check: (changes) => {
+      const fieldChanges = changes.filter(c => c.type === 'FIELD_ADDED');
+      return fieldChanges.every(field => {
+        return /^[a-z][a-zA-Z0-9]*$/.test(field.name);
+      });
+    }
+  },
+  
+  deprecationReason: {
+    description: 'Do deprecated fields have clear reasons?',
+    required: true,
+    check: (changes) => {
+      const deprecated = changes.filter(c => c.type === 'FIELD_DEPRECATED');
+      return deprecated.every(field => 
+        field.deprecationReason && 
+        field.deprecationReason.length > 10
+      );
+    }
+  }
+};
+
+export function runSchemaReview(schema, changes) {
+  const results = [];
+  
+  for (const [checkName, check] of Object.entries(reviewChecklist)) {
+    const passed = check.check(schema, changes);
+    
+    results.push({
+      check: checkName,
+      description: check.description,
+      passed,
+      required: check.required
+    });
+  }
+  
+  const failedRequired = results.filter(r => r.required && !r.passed);
+  
+  if (failedRequired.length > 0) {
+    console.error('Schema review failed:');
+    failedRequired.forEach(r => {
+      console.error(`- ${r.description}`);
+    });
+    process.exit(1);
+  }
+  
+  console.log('Schema review passed');
+  return results;
+}
+```
+
+This checklist validates schema changes against governance rules before allowing deployment.
+
+To implement schema reviews:
+
+- Integrate them into your pull request process
+- Require passing reviews before merging schema changes
+- Customize the checklist for your organization's requirements
+- Add checks for your specific naming conventions and patterns
+- Consider different review levels for different types of changes
+
+### Document schema standards
+
+Create guidelines for consistent schema design across your organization.
+
+```markdown
+# GraphQL schema standards
+
+## Naming conventions
+
+- Types: PascalCase (User, BlogPost)
+- Fields: camelCase (firstName, createdAt)
+- Arguments: camelCase (userId, pageSize)
+- Enums: SCREAMING_SNAKE_CASE (ACTIVE, PENDING_APPROVAL)
+
+## Field guidelines
+
+- Use nullable fields by default
+- Make fields non-null only when guaranteed
+- Prefix boolean fields with "is" or "has" (isActive, hasAccess)
+- Use consistent naming across types (createdAt, not creationDate)
+
+## Deprecation policy
+
+- Minimum 60-day deprecation period for public APIs
+- Minimum 30-day deprecation period for internal APIs
+- Include removal date in deprecation message
+- Provide migration path in deprecation reason
+
+## Breaking changes
+
+- Require VP approval for any breaking change
+- Document all breaking changes in changelog
+- Notify affected teams 30 days before deployment
+- Provide migration guides for all breaking changes
+```
+
+This document establishes consistent standards that all schema contributors follow.
+
+When creating schema standards:
+
+- Involve stakeholders from all teams using your GraphQL API
+- Update standards as you learn what works for your organization
+- Include examples of good and bad patterns
+- Make standards easily accessible to all developers
+- Review and update standards annually to reflect evolved practices
+
+### Control schema deployment
+
+Implement gates that prevent problematic schemas from reaching production.
+
+```javascript
+import { validateSchema } from './schema-validator.js';
+import { runSchemaReview } from './schema-review.js';
+import { detectBreakingChanges } from './breaking-changes.js';
+
+export async function deploymentGate(proposedSchema) {
+  console.log('Running schema deployment validation...');
+  
+  const validationErrors = validateSchema(proposedSchema);
+  if (validationErrors.length > 0) {
+    console.error('Schema validation failed:', validationErrors);
+    return false;
+  }
+  
+  const breakingChanges = await detectBreakingChanges(proposedSchema);
+  if (breakingChanges.length > 0 && !process.env.ALLOW_BREAKING_CHANGES) {
+    console.error('Breaking changes detected:', breakingChanges);
+    return false;
+  }
+  
+  const reviewResults = runSchemaReview(proposedSchema);
+  const failed = reviewResults.filter(r => r.required && !r.passed);
+  if (failed.length > 0) {
+    console.error('Schema review checks failed:', failed);
+    return false;
+  }
+  
+  const testsPassed = await runSchemaTests();
+  if (!testsPassed) {
+    console.error('Schema tests failed');
+    return false;
+  }
+  
+  console.log('Schema deployment validation passed');
+  return true;
+}
+```
+
+This deployment gate runs multiple checks before allowing a schema to deploy. It validates that the schema is valid GraphQL, checks for breaking changes, runs governance checks, and verifies all tests pass. Any failure prevents deployment and prevents governance violations from reaching production.
+
+To implement deployment gates:
+
+- Integrate them into your CI/CD pipeline
+- Make gates strict enough to catch problems but not so strict they block legitimate changes
+- Provide clear error messages when gates fail
+- Allow override mechanisms for emergency deployments with appropriate approval
+- Log all gate decisions for audit trails
+
+## Additional schema management considerations
+
+Several other aspects support effective schema management in production:
+
+- **Schema federation**: Coordinate schema changes across multiple GraphQL services in a federated architecture
+- **Schema stitching**: Manage schemas from multiple sources while maintaining consistency
+- **Client-driven contracts**: Let client teams propose schema changes through a formal process
+- **Schema testing**: Write tests that verify schema behavior and catch unintended changes
+- **Documentation generation**: Automatically generate API documentation from your schema and keep it updated with changes
