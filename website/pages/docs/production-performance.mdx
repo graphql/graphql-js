@@ -1,0 +1,482 @@
+---
+title: Improve GraphQL Performance in Production
+description: Identify bottlenecks, batch database operations, implement caching strategies, and optimize query execution for production GraphQL.js applications.
+---
+
+import { Callout } from 'nextra/components';
+
+# Improve GraphQL Performance in Production
+
+Production GraphQL servers require careful attention to performance. 
+Client-driven queries can create unexpected loads, nested resolvers can cascade 
+into hundreds of database calls, and caching strategies need to balance freshness 
+with efficiency. 
+
+This guide covers essential patterns for identifying and resolving performance 
+issues in GraphQL.js applications.
+
+## Identify performance bottlenecks
+
+Before optimizing, measure where your GraphQL server spends time. Add 
+instrumentation to track operation latency and resolver execution.
+
+### Measure operation timing
+
+Track how long each GraphQL operation takes to identify slow queries.
+
+```javascript
+import { graphql } from 'graphql';
+
+export async function executeGraphQLRequest(schema, source, contextValue) {
+  const startTime = Date.now();
+  const operationName = extractOperationName(source);
+  
+  const result = await graphql({ schema, source, contextValue });
+  
+  const duration = Date.now() - startTime;
+  
+  if (duration > 1000) {
+    console.warn('Slow operation', { operationName, duration });
+  }
+  
+  return result;
+}
+
+function extractOperationName(source) {
+  const match = source.match(/(?:query|mutation|subscription)\s+(\w+)/);
+  return match ? match[1] : 'anonymous';
+}
+```
+
+This example measures total execution time for each operation and logs 
+warnings when operations exceed one second.
+
+To track timing in production, send these metrics to your monitoring system 
+instead of logging them. Add request IDs and user identifiers to correlate 
+slow operations with specific usage patterns. Set thresholds based on your 
+service level objectives.
+
+### Profile resolver execution
+
+Measure individual resolver performance to find bottlenecks in specific fields.
+
+```javascript
+export function wrapResolverWithTiming(resolver, typeName, fieldName) {
+  return async (parent, args, context, info) => {
+    const startTime = Date.now();
+    
+    try {
+      const result = await resolver(parent, args, context, info);
+      const duration = Date.now() - startTime;
+      
+      context.metrics.recordResolverDuration(`${typeName}.${fieldName}`, duration);
+      
+      return result;
+    } catch (error) {
+      context.metrics.recordResolverError(`${typeName}.${fieldName}`);
+      throw error;
+    }
+  };
+}
+```
+
+This pattern wraps resolvers to track execution time and error status 
+through a metrics object in your GraphQL context.
+
+To apply this wrapper across your schema, iterate through type 
+definitions and wrap each resolver function. For high-traffic applications, 
+use sampling to reduce overhead by only instrumenting a percentage of executions. 
+Focus on resolvers that access databases or external services, as these 
+typically cause the most performance issues.
+
+## Batch database operations
+
+Resolvers that load data individually create N+1 query problems where a 
+single GraphQL operation triggers hundreds of database queries. Batching 
+consolidates these into fewer, more efficient queries.
+
+### Use DataLoader for request-scoped batching
+
+DataLoader batches multiple data requests that occur within the same 
+execution into single queries.
+
+```javascript
+import DataLoader from 'dataloader';
+
+export function createContext(req) {
+  return {
+    userLoader: new DataLoader(async (userIds) => {
+      const users = await db.query(
+        'SELECT * FROM users WHERE id = ANY($1)',
+        [userIds]
+      );
+      
+      const userMap = new Map(users.map(u => [u.id, u]));
+      return userIds.map(id => userMap.get(id) || null);
+    })
+  };
+}
+
+// In resolver
+const UserType = new GraphQLObjectType({
+  name: 'User',
+  fields: {
+    author: {
+      type: UserType,
+      resolve: (post, args, context) => {
+        return context.userLoader.load(post.authorId);
+      }
+    }
+  }
+});
+```
+
+This example creates a DataLoader that batches user fetches. When 
+multiple resolvers request users during one operation, DataLoader 
+collects all user IDs and fetches them in a single database query.
+
+To implement this pattern, create new DataLoader instances for each 
+request in your context. The batch function must return results in the 
+same order as the input keys. Replace the SQL query with your database 
+client's bulk fetch method. Add DataLoaders for each type of data your 
+resolvers fetch.
+
+### Monitor database query patterns
+
+Track database queries to understand how GraphQL operations translate to database load.
+
+```javascript
+export function createDatabaseMonitor() {
+  const queries = [];
+  
+  return {
+    recordQuery: (sql, duration) => {
+      queries.push({ sql, duration, timestamp: Date.now() });
+    },
+    
+    getSlowQueries: (threshold = 100) => {
+      return queries.filter(q => q.duration > threshold);
+    },
+    
+    reset: () => {
+      queries.length = 0;
+    }
+  };
+}
+
+export async function executeGraphQLRequest(schema, source) {
+  const dbMonitor = createDatabaseMonitor();
+  const context = { dbMonitor };
+  
+  const result = await graphql({ schema, source, contextValue: context });
+  
+  const slowQueries = dbMonitor.getSlowQueries();
+  if (slowQueries.length > 0) {
+    console.warn('Slow queries detected', { count: slowQueries.length });
+  }
+  
+  return result;
+}
+```
+
+This monitor tracks all database queries during a request and 
+identifies slow queries after execution completes.
+
+To integrate this pattern, modify your database access functions to 
+call `context.dbMonitor.recordQuery` when executing queries. Add the 
+SQL text and duration to each recording. Use the slow query report to 
+identify missing indexes or inefficient queries that need optimization.
+
+## Implement caching strategies
+
+Caching prevents redundant computation and data fetching. GraphQL benefits 
+from multiple caching layers at different scopes.
+
+### Cache within single requests
+
+Store computed results for the duration of one GraphQL request to avoid redundant work.
+
+```javascript
+export function createRequestCache() {
+  const cache = new Map();
+  
+  return {
+    get: (key) => cache.get(key),
+    set: (key, value) => cache.set(key, value),
+    has: (key) => cache.has(key)
+  };
+}
+
+export async function executeGraphQLRequest(schema, source) {
+  const context = {
+    cache: createRequestCache()
+  };
+  
+  return graphql({ schema, source, contextValue: context });
+}
+
+// In resolver
+resolve: (user, args, context) => {
+  const cacheKey = `fullName:${user.id}`;
+  
+  if (context.cache.has(cacheKey)) {
+    return context.cache.get(cacheKey);
+  }
+  
+  const fullName = `${user.firstName} ${user.lastName}`;
+  context.cache.set(cacheKey, fullName);
+  return fullName;
+}
+```
+
+This pattern provides an in-memory cache through the GraphQL context 
+that automatically clears after each request completes.
+
+Use request-scoped caching for expensive computations, permission checks, 
+or derived data that multiple resolvers might calculate. The cache prevents 
+duplicate work when the same data appears multiple times in a response. 
+Replace the simple example with caching for operations specific to your schema.
+
+### Add application-level caching
+
+Cache data across multiple requests using a shared cache with time-to-live settings.
+
+```javascript
+import Redis from 'ioredis';
+
+const redis = new Redis();
+
+export async function getCachedData(key, fetchFunction, ttlSeconds = 300) {
+  const cached = await redis.get(key);
+  
+  if (cached) {
+    return JSON.parse(cached);
+  }
+  
+  const data = await fetchFunction();
+  await redis.setex(key, ttlSeconds, JSON.stringify(data));
+  
+  return data;
+}
+
+// In resolver
+resolve: async (parent, args) => {
+  return getCachedData(
+    `user:${args.id}`,
+    () => fetchUserById(args.id),
+    600
+  );
+}
+```
+
+This example checks the cache before executing the fetch function, 
+stores results with a 10-minute TTL, and returns cached data when available.
+
+When implementing application-level caching, clear or update cache 
+entries after mutations to maintain consistency. Adjust TTL values 
+based on how frequently your data changes. Replace Redis with your 
+chosen cache backend and handle connection errors appropriately.
+
+<Callout type="warning">
+A shared cache is not aware of who is making the request. If you cache 
+data that depends on the caller's authorization or other request-specific 
+context, a naive cache key can leak one user's data to another. In the 
+example above, `user:${args.id}` is safe because the key fully identifies 
+the cached value, but a key like `currentUserProfile` would return the 
+first caller's profile to everyone.
+
+Include any authorization-relevant context in the cache key (for example, 
+the viewer's ID, role, or tenant), or only cache data that is identical 
+for every viewer. When in doubt, scope the cache to the authenticated 
+principal so that access checks still apply to each request.
+</Callout>
+
+### Control HTTP caching
+
+Set cache headers on GraphQL responses to enable client and CDN caching.
+
+```javascript
+export async function handleGraphQLRequest(req, res) {
+  const result = await graphql({
+    schema,
+    source: req.body.query,
+    variableValues: req.body.variables
+  });
+  
+  if (req.body.query.includes('mutation')) {
+    res.setHeader('Cache-Control', 'no-store');
+  } else if (req.body.query.includes('currentUser')) {
+    res.setHeader('Cache-Control', 'private, max-age=60');
+  } else {
+    res.setHeader('Cache-Control', 'public, max-age=300');
+  }
+  
+  res.json(result);
+}
+```
+
+This handler sets cache headers based on operation type. Mutations 
+remain uncacheable, user-specific queries cache privately for one minute, 
+and public queries cache for five minutes.
+
+To implement more sophisticated caching, analyze which fields each query 
+requests and apply the most restrictive policy. Add cache control directives 
+to your schema to mark fields with specific caching requirements. Consider 
+using ETags for more efficient cache validation when appropriate.
+
+## Limit query complexity
+
+Prevent expensive operations by calculating query cost before execution 
+and rejecting queries that exceed thresholds.
+
+```javascript
+import { getComplexity, simpleEstimator } from 'graphql-query-complexity';
+import { parse, validate } from 'graphql';
+
+export async function executeGraphQLRequest(schema, source) {
+  const document = parse(source);
+  const errors = validate(schema, document);
+  
+  if (errors.length > 0) {
+    return { errors };
+  }
+  
+  const complexity = getComplexity({
+    schema,
+    query: document,
+    estimators: [simpleEstimator({ defaultComplexity: 1 })]
+  });
+  
+  if (complexity > 1000) {
+    return {
+      errors: [{
+        message: `Query complexity of ${complexity} exceeds maximum of 1000`
+      }]
+    };
+  }
+  
+  return graphql({ schema, source });
+}
+```
+
+This example calculates query complexity before execution and rejects 
+queries that exceed the threshold. Each field defaults to a cost of one.
+
+To customize costs for specific fields, add complexity estimators that 
+account for field arguments and list sizes. Set thresholds based on your 
+server capacity and monitor rejected queries to identify legitimate use 
+cases that need optimization. Adjust complexity calculations to reflect 
+actual computational costs in your schema.
+
+## Optimize database access
+
+Configure connection pooling and index your data to reduce database query time.
+
+### Use connection pooling
+
+Maintain a pool of database connections that queries can reuse instead of 
+opening new connections for each request.
+
+```javascript
+import pg from 'pg';
+
+const pool = new pg.Pool({
+  host: 'localhost',
+  database: 'myapp',
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000
+});
+
+export async function executeQuery(sql, params) {
+  const client = await pool.connect();
+  
+  try {
+    const result = await client.query(sql, params);
+    return result.rows;
+  } finally {
+    client.release();
+  }
+}
+```
+
+This pattern creates a connection pool that maintains up to 20 
+database connections. Queries acquire connections from the pool, execute, 
+and return connections for reuse.
+
+Configure pool size based on your database server's connection limit and 
+expected concurrent load. Set connection timeouts to fail fast when the pool 
+exhausts. Monitor pool utilization to identify when you need more capacity. 
+Replace the PostgreSQL example with your database client's pooling mechanism.
+
+### Add database indexes
+
+Create indexes for columns frequently used in WHERE clauses and JOIN conditions.
+
+```sql
+CREATE INDEX idx_posts_user_id ON posts(user_id);
+CREATE INDEX idx_posts_status ON posts(status);
+CREATE INDEX idx_posts_created_at ON posts(created_at);
+```
+
+These indexes speed up common GraphQL query patterns where resolvers filter or 
+join on these columns.
+
+Monitor slow queries to identify missing indexes. Look for queries that scan 
+large tables or perform expensive operations. Add indexes for columns frequently 
+filtered or joined. Balance index creation with write performance costs, as 
+indexes slow down INSERT and UPDATE operations.
+
+## Test performance under load
+
+Simulate production traffic to validate optimizations and identify capacity limits.
+
+```javascript
+import autocannon from 'autocannon';
+
+const queries = [
+  '{ users { id name posts { id title } } }',
+  '{ user(id: "123") { name email } }'
+];
+
+async function loadTest() {
+  const results = await autocannon({
+    url: 'http://localhost:4000/graphql',
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      query: queries[Math.floor(Math.random() * queries.length)]
+    }),
+    connections: 100,
+    duration: 30
+  });
+  
+  console.log('Requests/sec:', results.requests.average);
+  console.log('Latency p95:', results.latency.p95);
+  console.log('Latency p99:', results.latency.p99);
+}
+```
+
+This example sends concurrent requests to your GraphQL server and measures 
+throughput and latency over a 30-second period.
+
+To create realistic load tests, collect actual queries from production 
+traffic and replay them with similar distributions. Vary connection counts to 
+simulate different load levels. Run tests before and after optimizations to 
+measure improvement. Replace the simple random selection with weighted sampling 
+that reflects your actual query distribution.
+
+## Additional performance considerations
+
+Several other aspects contribute to production performance:
+
+- **Query depth limiting**: Prevent deeply nested queries that could cause 
+  performance problems by validating query depth before execution
+- **Persisted queries**: Reduce parse and validation overhead by allowing clients 
+  to reference pre-registered queries by ID
+- **Response compression**: Enable gzip or brotli compression to reduce response 
+  sizes and network transfer time
+- **APM integration**: Connect application performance monitoring tools to track 
+  GraphQL operations alongside other application metrics
+- **Schema design**: Structure your schema to minimize resolver nesting and 
+  enable efficient data fetching patterns
