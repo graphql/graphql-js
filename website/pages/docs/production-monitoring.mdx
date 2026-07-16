@@ -1,0 +1,554 @@
+---
+title: Monitor GraphQL applications in production
+description: Implement structured logging, metrics collection, distributed tracing, and error tracking to maintain visibility into your GraphQL.js application's health and performance.
+---
+
+Monitoring and observability give you visibility into how your GraphQL application behaves 
+in production. They help you detect issues before users report them, diagnose problems when 
+they occur, and understand usage patterns.
+
+This guide shows you how to add logging, metrics, tracing, and error tracking to your 
+GraphQL.js application. You'll learn what data to collect at each 
+layer of your GraphQL execution, how to structure that data for analysis, and how to 
+use it to maintain reliable service. The patterns work across different monitoring tools 
+and platforms, so you can adapt them to your infrastructure.
+
+## Add structured logging
+
+Structured logging captures events in a consistent, machine-readable format that 
+monitoring systems can parse and analyze. Instead of plain text messages, you output 
+JSON objects with predictable fields. This makes it easier to filter logs, aggregate 
+metrics, and trace requests across services.
+
+For GraphQL applications, you want to log three types of events: incoming operations, 
+resolver execution, and errors. Each type provides different insights into your 
+application's behavior.
+
+### Log GraphQL operations
+
+Capture details about each GraphQL request your server receives. This creates an 
+audit trail and helps you understand usage patterns.
+
+```javascript
+import { graphql } from 'graphql';
+import { logger } from './logger.js';
+
+export async function executeGraphQLRequest(schema, source, contextValue) {
+  const startTime = Date.now();
+  
+  const result = await graphql({
+    schema,
+    source,
+    contextValue
+  });
+  
+  const duration = Date.now() - startTime;
+  
+  logger.info('graphql_operation', {
+    operationType: result.operationType,
+    operationName: contextValue.operationName,
+    duration,
+    hasErrors: !!result.errors,
+    timestamp: new Date().toISOString()
+  });
+  
+  return result;
+}
+```
+
+This example wraps the GraphQL execution and logs basic operation details after each 
+request completes. The logger captures the operation type, the operation name if provided, 
+how long execution took, and whether errors occurred.
+
+To adapt this pattern, replace `logger` with your chosen logging library. Add 
+fields relevant to your application like user IDs, client versions, or geographic 
+regions. Attach this logging to your GraphQL endpoint handler so every operation 
+gets recorded.
+
+### Log resolver performance
+
+Track how long individual resolvers take to execute. This helps identify 
+slow data fetches or bottlenecks.
+
+```javascript
+export function instrumentResolver(resolverFn, fieldName) {
+  return async function(parent, args, context, info) {
+    const startTime = Date.now();
+    
+    try {
+      const result = await resolverFn(parent, args, context, info);
+      
+      logger.debug('resolver_execution', {
+        fieldName,
+        parentType: info.parentType.name,
+        duration: Date.now() - startTime,
+        traceId: context.traceId
+      });
+      
+      return result;
+    } catch (error) {
+      logger.error('resolver_error', {
+        fieldName,
+        parentType: info.parentType.name,
+        error: error.message,
+        traceId: context.traceId
+      });
+      throw error;
+    }
+  };
+}
+```
+
+The example wrapper measures resolver execution time and logs it on success, or logs 
+error details if the resolver throws.
+
+Apply this wrapper to resolvers you want to monitor. For high-traffic applications, 
+use sampling to log only a percentage of resolver executions to reduce log volume. 
+Include a `traceId` from your context to correlate resolver logs with operation logs.
+
+### Structure logs for analysis
+
+Use consistent field names and data types across all log entries. This makes it 
+easier to query and aggregate logs in your monitoring system.
+
+```javascript
+{
+  "level": "info",
+  "type": "graphql_operation",
+  "operationName": "GetUser",
+  "operationType": "query",
+  "duration": 145,
+  "hasErrors": false,
+  "traceId": "abc123",
+  "timestamp": "2025-10-31T10:30:00.000Z"
+}
+
+{
+  "level": "debug",
+  "type": "resolver_execution",
+  "fieldName": "user",
+  "parentType": "Query",
+  "duration": 23,
+  "traceId": "abc123",
+  "timestamp": "2025-10-31T10:30:00.050Z"
+}
+```
+
+These example structures provide consistent fields for querying across your 
+monitoring system.
+
+When implementing this structure, standardize on ISO timestamps for all time 
+values. Use millisecond durations for consistency. Use boolean flags rather 
+than strings for true/false values. Keep frequently queried fields at the top 
+level rather than nested in objects.
+
+### Correlate logs across services
+
+When your GraphQL server calls other services, propagate a trace ID so you can 
+follow a request through your entire system.
+
+```javascript
+import { randomUUID } from 'crypto';
+
+export function createContext(req) {
+  const traceId = req.headers['x-trace-id'] || randomUUID();
+  
+  return {
+    traceId,
+    fetch: (url, options = {}) => {
+      return fetch(url, {
+        ...options,
+        headers: {
+          ...options.headers,
+          'x-trace-id': traceId
+        }
+      });
+    }
+  };
+}
+```
+
+This example checks for an incoming trace ID in request headers, generates a new 
+one if none exists, and provides a fetch wrapper that automatically propagates 
+the trace ID to downstream services.
+
+To integrate this approach, include the trace ID in every log entry you create. 
+Configure downstream services to extract and use the same trace ID. Use a 
+consistent header name across all your services. This creates a connected chain 
+of logs you can search to see how a request moved through your infrastructure.
+
+### Control log verbosity
+
+Balance the detail you capture with the performance impact and storage costs. 
+Not every application needs resolver-level logging in production.
+
+Consider these log levels for different scenarios. Use error level to always 
+log errors with full context for debugging. Use info level to log all GraphQL 
+operations for visibility into usage. Use debug level to log resolver execution 
+only in development or when troubleshooting specific issues.
+
+Set log levels through environment variables so you can adjust verbosity without 
+code changes. Use sampling for high-volume debug logs by logging every Nth request 
+instead of everything when debug logging is enabled.
+
+### Avoid logging sensitive data
+
+Never log passwords, API keys, tokens, or personally identifiable information. 
+Sanitize variables and context before logging.
+```javascript
+function sanitizeVariables(variables) {
+  const sensitiveFields = ['password', 'token', 'apiKey', 'ssn'];
+  const sanitized = { ...variables };
+  
+  for (const field of sensitiveFields) {
+    if (field in sanitized) {
+      sanitized[field] = '[REDACTED]';
+    }
+  }
+  
+  return sanitized;
+}
+
+logger.info('graphql_operation', {
+  operationName: contextValue.operationName,
+  variables: sanitizeVariables(contextValue.variables)
+});
+```
+
+The example function creates a copy of the variables object and replaces sensitive field 
+values with a redaction marker.
+
+To adapt this for your schema, customize the `sensitiveFields` list to match your 
+sensitive data. Consider using allowlists instead of denylists for higher 
+security by only logging fields you explicitly mark as safe.
+
+## Collect metrics
+
+Metrics give you quantitative data about your GraphQL server's behavior over time. 
+Unlike logs that capture individual events, metrics aggregate data into counts, rates, 
+and distributions. This helps you spot trends, set alerts, and measure performance 
+against targets.
+
+You need metrics at multiple levels. Track operations to understand how many queries 
+run. Track resolvers to see where time is spent. Track schema usage to know which 
+fields get used. Collecting these metrics requires instrumenting your GraphQL 
+execution pipeline.
+
+### Track operation metrics
+
+Measure the volume, latency, and success rate of GraphQL operations. These top-level 
+metrics indicate overall service health.
+
+```javascript
+import { graphql } from 'graphql';
+
+const operationMetrics = {
+  count: 0,
+  errors: 0,
+  durations: []
+};
+
+export async function executeGraphQLRequest(schema, source, contextValue) {
+  const startTime = Date.now();
+  operationMetrics.count++;
+  
+  const result = await graphql({
+    schema,
+    source,
+    contextValue
+  });
+  
+  const duration = Date.now() - startTime;
+  operationMetrics.durations.push(duration);
+  
+  if (result.errors) {
+    operationMetrics.errors++;
+  }
+  
+  return result;
+}
+
+export function getOperationMetrics() {
+  return {
+    totalOperations: operationMetrics.count,
+    errorRate: operationMetrics.errors / operationMetrics.count,
+    p95Latency: calculatePercentile(operationMetrics.durations, 0.95),
+    p99Latency: calculatePercentile(operationMetrics.durations, 0.99)
+  };
+}
+```
+
+This example tracks basic counters and timing data in memory, then calculates metrics 
+like error rate and latency percentiles.
+
+To implement this in production, replace the in-memory storage with your 
+metrics library's counters and histograms. Export these metrics through an 
+HTTP endpoint that your monitoring system can scrape. Track metrics separately 
+by operation name and type to identify which operations cause issues.
+
+### Instrument resolver execution
+
+Resolver metrics reveal which parts of your schema are slow or problematic. 
+This granular data helps you optimize specific fields rather than entire operations.
+
+```javascript
+export function createInstrumentedResolver(resolverFn, typeName, fieldName) {
+  const metricKey = `${typeName}.${fieldName}`;
+  
+  return async function(parent, args, context, info) {
+    const startTime = Date.now();
+    
+    try {
+      const result = await resolverFn(parent, args, context, info);
+      const duration = Date.now() - startTime;
+      
+      context.metrics.recordResolverDuration(metricKey, duration);
+      
+      return result;
+    } catch (error) {
+      context.metrics.incrementResolverErrors(metricKey);
+      throw error;
+    }
+  };
+}
+
+const resolvers = {
+  Query: {
+    user: createInstrumentedResolver(userResolver, 'Query', 'user'),
+    posts: createInstrumentedResolver(postsResolver, 'Query', 'posts')
+  }
+};
+```
+
+This example wrapper measures how long the resolver takes to execute and records it using a 
+metric key that combines the type and field name. If the resolver throws an error, 
+it increments an error counter before re-throwing.
+
+When integrating this pattern, add the `metrics` object to your GraphQL context 
+with methods that call your metrics library. For large schemas, use automated 
+wrapping to instrument all resolvers without manual work. Be cautious with 
+cardinality: if you have thousands of fields, consider sampling or instrumenting 
+only high-value resolvers.
+
+### Monitor schema field usage
+
+Track which fields clients actually query. This data informs schema evolution 
+decisions. You'll know which fields are safe to deprecate and which need optimization.
+
+```javascript
+import { execute } from 'graphql';
+
+export async function executeWithFieldTracking(args) {
+  const fieldUsage = new Map();
+  
+  const result = await execute({
+    ...args,
+    fieldResolver: (source, args, context, info) => {
+      const fieldPath = `${info.parentType.name}.${info.fieldName}`;
+      fieldUsage.set(fieldPath, (fieldUsage.get(fieldPath) || 0) + 1);
+      
+      const resolver = info.parentType.getFields()[info.fieldName].resolve;
+      if (resolver) {
+        return resolver(source, args, context, info);
+      }
+      return source?.[info.fieldName];
+    }
+  });
+  
+  for (const [field, count] of fieldUsage) {
+    context.metrics.recordFieldUsage(field, count);
+  }
+  
+  return result;
+}
+```
+
+The custom field resolver in this example intercepts every field access and increments a 
+counter for that field path. After execution completes, it exports all the 
+field usage counts to your metrics system.
+
+To use this effectively, adapt this pattern to your metrics library. Aggregate 
+field usage over time windows to track trends. Combine this with operation 
+names to understand which clients use which fields.
+
+### Expose metrics for collection
+
+Make your metrics available to monitoring systems. The approach depends on whether 
+you use push-based or pull-based collection.
+
+Pull-based systems like Prometheus scrape metrics from an HTTP endpoint you expose:
+
+```javascript
+import express from 'express';
+import { register } from 'prom-client';
+
+const app = express();
+
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', register.contentType);
+  const metrics = await register.metrics();
+  res.send(metrics);
+});
+```
+
+This example uses the Prometheus client library to expose metrics via HTTP endpoint. 
+Your monitoring tool periodically requests the `/metrics` endpoint to collect current 
+values.
+
+Push-based systems require you to send metrics to a collector at regular intervals:
+
+```javascript
+import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
+
+const exporter = new OTLPMetricExporter({
+  url: 'http://your-collector:4318/v1/metrics'
+});
+
+const meterProvider = new MeterProvider({
+  readers: [
+    new PeriodicExportingMetricReader({
+      exporter,
+      exportIntervalMillis: 60000
+    })
+  ]
+});
+
+const meter = meterProvider.getMeter('graphql-server');
+const operationCounter = meter.createCounter('graphql.operations');
+```
+
+This example configures OpenTelemetry to push metrics every 60 seconds to a 
+collector endpoint.
+
+When choosing an approach, consider that pull-based works well for Kubernetes 
+environments with Prometheus. Push-based integrates better with cloud-native 
+monitoring services. Configure export intervals to balance freshness with 
+network overhead. Replace the collector URL with your actual endpoint.
+
+### Calculate query complexity metrics
+
+Track the complexity of operations to identify expensive queries. Complexity 
+scores help you set rate limits and optimize schema design.
+
+```javascript
+import { visit } from 'graphql';
+
+function calculateComplexity(document, schema) {
+  let complexity = 0;
+  
+  visit(document, {
+    Field(node) {
+      complexity++;
+      
+      const fieldDef = schema.getType(node.parentType)?.getFields()[node.name];
+      if (fieldDef?.type?.ofType?.name || fieldDef?.type?.name) {
+        const typeName = fieldDef.type.ofType?.name || fieldDef.type.name;
+        const fieldType = schema.getType(typeName);
+        if (fieldType?.astNode?.kind === 'ListType') {
+          complexity += 5;
+        }
+      }
+    }
+  });
+  
+  return complexity;
+}
+
+export async function executeWithComplexityTracking(schema, document, contextValue) {
+  const complexity = calculateComplexity(document, schema);
+  contextValue.metrics.recordComplexity(complexity);
+  
+  return graphql({ schema, document, contextValue });
+}
+```
+
+Each field adds 1 to the complexity score. List fields add an additional 
+5 points since they typically require more resources. The execution 
+wrapper calculates complexity before running the query and records it as a metric.
+
+To customize this example for your needs, adjust the complexity calculation for your schema. 
+Assign different weights to expensive fields. Record complexity as a histogram to 
+track distribution over time, not just averages.
+
+### Sample high-volume metrics
+
+For high-traffic applications, recording every resolver execution creates too 
+much data. Use sampling to capture a representative subset.
+
+```javascript
+export function createSampledResolver(resolverFn, typeName, fieldName, sampleRate = 0.1) {
+  const metricKey = `${typeName}.${fieldName}`;
+  
+  return async function(parent, args, context, info) {
+    const shouldSample = Math.random() < sampleRate;
+    
+    if (!shouldSample) {
+      return resolverFn(parent, args, context, info);
+    }
+    
+    const startTime = Date.now();
+    const result = await resolverFn(parent, args, context, info);
+    const duration = Date.now() - startTime;
+    
+    context.metrics.recordResolverDuration(metricKey, duration, 1 / sampleRate);
+    
+    return result;
+  };
+}
+```
+
+The function randomly decides whether to sample each resolver execution 
+based on the sample rate. When sampled, it records the duration adjusted by the 
+inverse of the sample rate to maintain accurate aggregates.
+
+When implementing sampling, set sample rates based on traffic 
+volume. Adjust recorded metric values to account for sampling. This gives you 
+accurate aggregates while reducing overhead.
+
+### Monitor resource utilization
+
+Track system resources your GraphQL server consumes. Memory leaks, CPU spikes, 
+and connection pool exhaustion all impact performance.
+
+```javascript
+import { register, collectDefaultMetrics } from 'prom-client';
+
+collectDefaultMetrics({ register });
+
+export function recordResourceMetrics(context) {
+  const usage = process.memoryUsage();
+  
+  context.metrics.recordGauge('nodejs.memory.heap.used', usage.heapUsed);
+  context.metrics.recordGauge('nodejs.memory.heap.total', usage.heapTotal);
+  context.metrics.recordGauge('nodejs.memory.external', usage.external);
+  
+  const cpuUsage = process.cpuUsage();
+  context.metrics.recordGauge('nodejs.cpu.user', cpuUsage.user);
+  context.metrics.recordGauge('nodejs.cpu.system', cpuUsage.system);
+}
+```
+
+The first line in this example enables automatic collection of standard Node.js metrics 
+like event loop lag and garbage collection statistics. The function 
+adds custom metrics for memory and CPU usage.
+
+When implementing this pattern, collect these metrics periodically rather than 
+per-request. Add database connection pool metrics if you use connection 
+pooling. Monitor event loop lag to detect when Node.js can't keep up with 
+incoming requests.
+
+## Additional monitoring considerations
+
+Several other aspects are important for comprehensive production monitoring:
+
+- **Distributed tracing**: Propagate trace context through GraphQL operations and 
+  instrument resolvers to visualize request flow across services
+- **Error tracking**: Categorize and capture GraphQL errors with context for 
+  debugging, set up aggregation and alerting patterns
+- **Monitoring dashboards**: Create dashboards that display request metrics, 
+  error rates, query complexity, and schema usage for different stakeholders
+- **Service level objectives**: Establish SLIs and SLOs for critical GraphQL 
+  operations, including latency targets and error budgets
+- **Testing your setup**: Verify that logging, metrics, tracing, and alerting 
+  work as expected before production deployment
