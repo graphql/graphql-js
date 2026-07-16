@@ -3,6 +3,8 @@ title: Manage GraphQL Schemas
 description: Version schemas safely, detect breaking changes, implement deprecation workflows, and establish governance processes for production GraphQL.js applications.
 ---
 
+import { Callout } from 'nextra/components';
+
 # Manage GraphQL Schemas
 
 GraphQL schemas change as products evolve. Adding features, fixing issues, and improving APIs require schema modifications. Managing these changes without breaking existing clients requires careful planning and consistent processes.
@@ -172,6 +174,32 @@ export function detectSchemaChanges(currentSchema, proposedSchema) {
 ```
 
 This function compares two schemas and identifies removed types. A complete implementation would check fields, arguments, and type changes.
+
+<Callout type="info">
+Before hand-rolling schema comparison, reach for the utilities GraphQL.js
+already ships. `findBreakingChanges` and `findDangerousChanges` take two
+schemas and return structured lists of changes, covering the common cases
+(removed types and fields, changed argument and field types, enum value
+removals, and more) without any extra dependencies.
+</Callout>
+
+```javascript
+import { findBreakingChanges, findDangerousChanges } from 'graphql';
+
+export function detectSchemaChanges(oldSchema, newSchema) {
+  const breaking = findBreakingChanges(oldSchema, newSchema);
+  const dangerous = findDangerousChanges(oldSchema, newSchema);
+
+  // Each change is { type, description }, for example:
+  // { type: 'FIELD_REMOVED', description: 'User.age was removed.' }
+  return { breaking, dangerous };
+}
+```
+
+These built-ins are more rudimentary than a dedicated tool like GraphQL
+Inspector, but they are enough for many pipelines and require nothing beyond
+the `graphql` package. In GraphQL.js v17 they are consolidated into a single
+`findSchemaChanges` function.
 
 To implement breaking change detection:
 
