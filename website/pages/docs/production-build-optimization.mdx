@@ -1,38 +1,69 @@
 ---
 title: Optimize your GraphQL build for production
-description:
+description: Bundle, tree-shake, and configure GraphQL.js applications for production, and skip validation safely for trusted schemas and operations.
 ---
 
-When you deploy your GraphQL application to production, you 
-need to remove development-only code and minimize your file 
-sizes. This guide shows you principles and techniques for 
-preparing GraphQL.js applications for production deployment.
+import { Callout } from 'nextra/components';
 
-## Preparing GraphQL builds for production
+When you deploy your GraphQL application to production, you
+want to ship the smallest, fastest bundle you can. This guide shows you
+the general build techniques that apply to any JavaScript application, plus
+the few things that are specific to GraphQL.js.
 
-GraphQL.js includes features designed specifically for development
-that are not needed in production environments. These features
-include:
+## What production builds change for GraphQL.js
 
-- **Schema validation checks**: GraphQL.js validates your schema structure
-and resolver implementations on every request during development. This
-catches bugs early, but adds computational overhead that isn't needed
-once your application is tested and stable.
-- **Detailed error messages**: Development builds include full stack traces,
-internal implementation details, and debugging hints. These messages help
-developers diagnose issues, but can expose sensitive information to end users
-and increase response sizes.
-- **Type assertions and debugging utilities**: GraphQL.js performs extensive
-type checking and includes debugging helpers that slow down execution and
-increase memory usage without providing value to production users.
-- **Introspection capabilities**: GraphQL's introspection feature lets development
-tools explore your schema structure. While useful for GraphQL playgrounds
-and development tooling, introspection can reveal your entire API structure to
-potential attackers.
+Optimizing a GraphQL.js application for production is mostly the same work as
+optimizing any JavaScript application: you bundle your code, eliminate what you
+don't use, and minify the result. On top of that general work, there are two
+GraphQL.js-specific things to understand—one that your environment controls, and
+a few validation steps you can choose to skip for trusted schemas and operations.
 
-Production environments prioritize speed, security, efficiency, and
-reliability. Removing development features addresses all these requirements
-while maintaining full GraphQL functionality.
+### The one behavior tied to NODE_ENV
+
+Internally, GraphQL.js reads `process.env.NODE_ENV` in a single place: its
+`instanceOf` check, which backs every type predicate such as `isObjectType`
+and `isSchema`. In development, that check does extra work to detect when two
+copies of the `graphql` package are loaded at once—a common and hard-to-debug
+problem—and throws a descriptive error. In production, it falls back to a plain
+`instanceof`.
+
+Setting `NODE_ENV=production` removes this small per-call overhead and lets your
+bundler drop the development-only code path. It does **not** disable schema
+validation, change how errors are formatted, or turn off introspection—those are
+separate, explicit choices. For a full explanation of development mode, the
+duplicate-module check, and how this changes in v17, see
+[Development Mode](./development-mode).
+
+<Callout type="info">
+In GraphQL.js v17 this behavior is no longer driven by `NODE_ENV`. It is
+selected by the `production` and `development` conditional exports instead, with
+production behavior enabled by default. See
+[graphql-js#4551](https://github.com/graphql/graphql-js/pull/4551).
+</Callout>
+
+### Validation you can skip for trusted schemas and operations
+
+By default, `validate()` and `execute()` call `assertValidSchema()`, and servers
+typically call `validate()` on every incoming operation. These checks are
+valuable while you develop, but redundant once a schema and its operations are
+known to be correct. GraphQL.js lets you opt out:
+
+- **Trust a schema.** Build it with `assumeValid` so the automatic schema
+  validation short-circuits:
+
+  ```js
+  const schema = new GraphQLSchema({ query, assumeValid: true });
+  ```
+
+  When building from SDL, pass `assumeValid` or `assumeValidSDL` to
+  `buildSchema`, `buildASTSchema`, or `extendSchema` to skip SDL validation.
+- **Trust an operation.** For persisted or otherwise pre-validated operations,
+  you can skip the per-request `validate()` call and execute the parsed document
+  directly.
+
+Only skip validation for schemas and operations you control. Validating
+untrusted, client-supplied operations is a security boundary, not just a
+development convenience.
 
 ## Build tools and bundling
 
@@ -46,72 +77,43 @@ combine them into one or more bundles.
 in your target environments.
 - **Remove unused code**: Analyze your code and eliminate functions, variables,
 and entire modules that your application never uses.
-- **Replace variables**: Substitute configuration values 
+- **Replace variables**: Substitute configuration values
 (like environment variables) with their actual values.
 - **Compress files**: Minimize file sizes by removing whitespace, shortening
 variable names, and applying other size reductions.
 
-Some common build tools include [Webpack](https://webpack.js.org/), 
-[Vite](https://vite.dev/), [Rollup](https://rollupjs.org/), 
-[esbuild](https://esbuild.github.io/), and [Parcel](https://parceljs.org/). 
+Some common build tools include [Webpack](https://webpack.js.org/),
+[Vite](https://vite.dev/), [Rollup](https://rollupjs.org/),
+[esbuild](https://esbuild.github.io/), and [Parcel](https://parceljs.org/).
 Each tool has different configuration syntax, but supports the same
 core concepts needed for GraphQL production preparation.
 
 ## Configure environment variables
 
-Environment variables are the primary mechanism for removing 
-GraphQL.js development features.
+Setting `NODE_ENV` to `'production'` at build time is what lets your bundler
+drop the development-only `instanceOf` path described above. Many other
+libraries (including Express) follow the same convention, so a single setting
+optimizes your whole dependency tree.
 
 ### Set NODE_ENV to production
 
-The most critical step is ensuring your build tool sets `NODE_ENV` to 
-the string `'production'`. GraphQL.js checks this variable throughout its 
-codebase to decide whether to include development features.
-
-Here's how GraphQL.js uses this variable internally:
+Ensure your build tool replaces `process.env.NODE_ENV` with the string
+`'production'` during the build process, not at runtime.
 
 ```js
+// Before build-time replacement
 if (process.env.NODE_ENV !== 'production') {
-  validateSchema(schema);
-  includeStackTraces(error);
-  enableIntrospection();
+  // GraphQL.js runs its development-only instanceof safety check here
 }
 ```
 
-Your build tool must replace `process.env.NODE_ENV` with the
-string `'production'` during the build process, not at runtime.
-
-### Configure additional GraphQL variables
-
-You can also set these GraphQL-specific environment variables for finer control:
-
-```js
-process.env.NODE_ENV = 'production'
-process.env.GRAPHQL_DISABLE_INTROSPECTION = 'true'
-process.env.GRAPHQL_ENABLE_METRICS = 'false'
-```
-
-### Ensure proper variable replacement
-
-Your build tool should replace these environment variables with their 
-actual values, allowing unused code branches to be completely removed.
-
-Before build-time replacement:
-
-```js
-if (process.env.NODE_ENV !== 'production') {
-  console.log('Development mode active');
-  validateEveryRequest();
-}
-```
-
-After replacement and dead code elimination: The entire if block gets
-removed from your production bundle because the build tool knows the condition
-will never be true.
+Once your build tool substitutes `'production'` for `process.env.NODE_ENV`, the
+condition becomes statically false, and dead code elimination removes the branch
+entirely from your production bundle.
 
 ## Enable dead code elimination
 
-Dead code elimination (also called tree shaking) is essential for removing 
+Dead code elimination (also called tree shaking) is essential for removing
 GraphQL.js development code from your production bundle.
 
 ### Configure your build tool
@@ -141,21 +143,21 @@ While syntax varies by tool, most build tools support this pattern:
 }
 ```
 
-This configuration enables the build tool to safely remove any GraphQL.js code that 
+This configuration enables the build tool to safely remove any GraphQL.js code that
 won't execute in production.
 
 ## Handle browser compatibility
 
-If your GraphQL application runs in web browsers, you need to address Node.js 
+If your GraphQL application runs in web browsers, you need to address Node.js
 compatibility issues.
 
 ### Provide process polyfills
 
-GraphQL.js assumes Node.js globals like `process` are available. Browsers don't 
-have these globals, so your build tool needs to provide them or replace references 
+GraphQL.js assumes Node.js globals like `process` are available. Browsers don't
+have these globals, so your build tool needs to provide them or replace references
 to them.
 
-Most build tools let you define global variables that get replaced throughout 
+Most build tools let you define global variables that get replaced throughout
 your code:
 
 ```js
@@ -171,13 +173,13 @@ GraphQL.js's needs.
 
 ### Avoid Node.js-specific APIs
 
-Ensure your GraphQL client code doesn't use Node.js-specific APIs like `fs` 
-(file system) or path. These APIs don't exist in browsers and will cause runtime 
+Ensure your GraphQL client code doesn't use Node.js-specific APIs like `fs`
+(file system) or path. These APIs don't exist in browsers and will cause runtime
 errors.
 
 ## Configure code splitting
 
-Code splitting separates your GraphQL code into its own bundle file, which can 
+Code splitting separates your GraphQL code into its own bundle file, which can
 improve loading performance and caching. Benefits of code splitting include
 better caching, parallel loading, and selective loading.
 
@@ -199,15 +201,15 @@ Most build tools support splitting specific packages into separate bundles:
 }
 ```
 
-This configuration creates a separate bundle file containing all 
+This configuration creates a separate bundle file containing all
 GraphQL-related code.
 
 ## Apply build tool configurations
 
-These examples show how to apply the universal principles using 
+These examples show how to apply the universal principles using
 different build tools. Adapt these patterns to your specific tooling.
 
-Note: These are illustrative examples showing common patterns. Consult 
+Note: These are illustrative examples showing common patterns. Consult
 your specific build tool's documentation for exact syntax and available features.
 
 ### Webpack configuration
@@ -219,14 +221,14 @@ import webpack from 'webpack';
 
 export default {
   mode: 'production',
-  
+
   plugins: [
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('production'),
       'globalThis.process': JSON.stringify(true),
     }),
   ],
-  
+
   optimization: {
     usedExports: true,
     sideEffects: false,
@@ -234,7 +236,7 @@ export default {
 };
 ```
 
-The DefinePlugin replaces environment variables at build time. The 
+The DefinePlugin replaces environment variables at build time. The
 optimization section enables dead code elimination.
 
 ### Rollup configuration
@@ -254,7 +256,7 @@ export default {
 };
 ```
 
-The replace plugin substitutes environment variables with their 
+The replace plugin substitutes environment variables with their
 values throughout your code.
 
 ### esbuild configuration
@@ -271,12 +273,12 @@ esbuild uses a configuration object to control build behavior:
 }
 ```
 
-The define section replaces variables, and treeShaking enables 
+The define section replaces variables, and treeShaking enables
 dead code elimination.
 
 ## Measure your results
 
-You should measure your bundle size before and after these 
+You should measure your bundle size before and after these
 changes to verify they're working correctly.
 
 ### Install analysis tools
@@ -287,24 +289,18 @@ and dependency analyzers.
 
 ### Expected improvements
 
-Proper GraphQL.js production preparation typically produces the following results:
+Bundling, tree shaking, and minification typically shrink a GraphQL.js
+application's bundle noticeably. The exact reduction depends on how much of
+GraphQL.js you use and how effectively your build tool eliminates unused code,
+so measure your own before-and-after numbers rather than relying on a fixed
+figure. In a well-configured build you should see:
 
-Before preparation example:
+- A smaller compressed bundle after tree shaking and minification.
+- The development-only `instanceOf` code path removed from the output.
 
-- GraphQL code: ~156 KB compressed
-- Development checks active: Yes
-- Introspection enabled: Yes
-- Total bundle reduction: 0%
-
-After preparation example:
-
-- GraphQL code: ~89 KB compressed
-- Development checks active: No
-- Introspection enabled: No
-- Total bundle reduction: 20-35%
-
-The exact reduction depends on how much you use GraphQL.js features and 
-how your build tool eliminates unused code.
+Disabling introspection is a separate, runtime concern rather than a build-time
+optimization. See [Going to Production](./going-to-production) for how to turn it
+off with a validation rule.
 
 ## Test production preparation
 
@@ -318,7 +314,7 @@ Search your built files to ensure environment variables were replaced:
 grep -r "process.env.NODE_ENV" your-build-directory/
 ```
 
-This command should return no results. If you find unreplaced variables, 
+This command should return no results. If you find unreplaced variables,
 your build tool isn't performing build-time replacement correctly.
 
 ### Confirm development code removal
@@ -331,7 +327,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 ```
 
-Build your application and load it in a browser. If this console message 
+Build your application and load it in a browser. If this console message
 appears, your dead code elimination isn't working.
 
 ### Test GraphQL functionality
@@ -339,6 +335,6 @@ appears, your dead code elimination isn't working.
 Deploy your prepared build to a test environment and verify:
 
 - GraphQL queries execute successfully
-- Error handling works (but without development details)
+- Error handling still works as expected
 - Application performance improved
 - No new runtime errors occur
