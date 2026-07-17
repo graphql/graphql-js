@@ -1,5 +1,5 @@
-import { getBySet } from '../../jsutils/getBySet.ts';
 import { isSameSet } from '../../jsutils/isSameSet.ts';
+import { SetMap } from '../../jsutils/SetMap.ts';
 
 import type {
   DeferUsage,
@@ -13,7 +13,7 @@ export type DeferUsageSet = ReadonlySet<DeferUsage>;
 /** @internal */
 export interface ExecutionPlan {
   groupedFieldSet: GroupedFieldSet;
-  newGroupedFieldSets: Map<DeferUsageSet, GroupedFieldSet>;
+  newGroupedFieldSets: SetMap<DeferUsage, GroupedFieldSet>;
 }
 
 /** @internal */
@@ -22,8 +22,8 @@ export function buildExecutionPlan(
   parentDeferUsages: DeferUsageSet = new Set<DeferUsage>(),
 ): ExecutionPlan {
   const groupedFieldSet = new Map<string, FieldDetailsList>();
-  const newGroupedFieldSets = new Map<
-    DeferUsageSet,
+  const newGroupedFieldSets = new SetMap<
+    DeferUsage,
     Map<string, FieldDetailsList>
   >();
   for (const [responseKey, fieldDetailsList] of originalGroupedFieldSet) {
@@ -34,14 +34,10 @@ export function buildExecutionPlan(
       continue;
     }
 
-    let newGroupedFieldSet = getBySet(
-      newGroupedFieldSets,
+    const newGroupedFieldSet = newGroupedFieldSets.getOrInsertComputed(
       filteredDeferUsageSet,
+      () => new Map(),
     );
-    if (newGroupedFieldSet === undefined) {
-      newGroupedFieldSet = new Map();
-      newGroupedFieldSets.set(filteredDeferUsageSet, newGroupedFieldSet);
-    }
     newGroupedFieldSet.set(responseKey, fieldDetailsList);
   }
 

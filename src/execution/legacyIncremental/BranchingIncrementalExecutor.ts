@@ -1,12 +1,12 @@
 /** @category Legacy Incremental Execution */
 
 import { AccumulatorMap } from '../../jsutils/AccumulatorMap.ts';
-import { getBySet } from '../../jsutils/getBySet.ts';
 import { invariant } from '../../jsutils/invariant.ts';
 import { isSameSet } from '../../jsutils/isSameSet.ts';
 import { memoize1 } from '../../jsutils/memoize1.ts';
 import { memoize2 } from '../../jsutils/memoize2.ts';
 import type { ObjMap } from '../../jsutils/ObjMap.ts';
+import { SetMap } from '../../jsutils/SetMap.ts';
 
 import type {
   GraphQLError,
@@ -344,8 +344,8 @@ function buildBranchingExecutionPlan(
 ): ExecutionPlan {
   const groupedFieldSet = new AccumulatorMap<string, FieldDetails>();
 
-  const newGroupedFieldSets = new Map<
-    DeferUsageSet,
+  const newGroupedFieldSets = new SetMap<
+    DeferUsage,
     AccumulatorMap<string, FieldDetails>
   >();
 
@@ -359,11 +359,10 @@ function buildBranchingExecutionPlan(
       if (isSameSet(parentDeferUsages, deferUsageSet)) {
         groupedFieldSet.add(responseKey, fieldDetails);
       } else {
-        let newGroupedFieldSet = getBySet(newGroupedFieldSets, deferUsageSet);
-        if (newGroupedFieldSet === undefined) {
-          newGroupedFieldSet = new AccumulatorMap();
-          newGroupedFieldSets.set(deferUsageSet, newGroupedFieldSet);
-        }
+        const newGroupedFieldSet = newGroupedFieldSets.getOrInsertComputed(
+          deferUsageSet,
+          () => new AccumulatorMap(),
+        );
         newGroupedFieldSet.add(responseKey, fieldDetails);
       }
     }
