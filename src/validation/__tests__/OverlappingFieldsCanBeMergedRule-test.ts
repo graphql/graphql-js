@@ -1405,8 +1405,8 @@ describe('Validate: Overlapping fields can be merged', () => {
       `);
     });
 
-    it('allows operations with overlapping fields with identical variable arguments passed via fragment arguments', () => {
-      expectValid(`
+    it('rejects overlapping fields whose variables have different definitions', () => {
+      expectErrors(`
         query ($y: Int = 1) {
           a(x: $y)
           ...WithArgs(x: $y)
@@ -1414,11 +1414,20 @@ describe('Validate: Overlapping fields can be merged', () => {
         fragment WithArgs($x: Int) on Type {
           a(x: $x)
         }
-      `);
+      `).toDeepEqual([
+        {
+          message:
+            'Fields "a" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 3, column: 11 },
+            { line: 7, column: 11 },
+          ],
+        },
+      ]);
     });
 
-    it('allows operations with overlapping fields with identical variable arguments passed via nested fragment arguments', () => {
-      expectValid(`
+    it('rejects overlapping fields with different nested variable definitions', () => {
+      expectErrors(`
         query ($z: Int = 1) {
           a(x: $z)
           ...WithArgs(y: $z)
@@ -1429,11 +1438,20 @@ describe('Validate: Overlapping fields can be merged', () => {
         fragment NestedWithArgs($x: Int) on Type {
           a(x: $x)
         }
-      `);
+      `).toDeepEqual([
+        {
+          message:
+            'Fields "a" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 3, column: 11 },
+            { line: 10, column: 11 },
+          ],
+        },
+      ]);
     });
 
-    it('allows operations with overlapping fields with identical arguments via fragment variable defaults', () => {
-      expectValid(`
+    it('rejects a fragment variable even when its default matches a literal', () => {
+      expectErrors(`
         query {
           a(x: 1)
           ...WithArgs
@@ -1441,7 +1459,37 @@ describe('Validate: Overlapping fields can be merged', () => {
         fragment WithArgs($x: Int = 1) on Type {
           a(x: $x)
         }
-      `);
+      `).toDeepEqual([
+        {
+          message:
+            'Fields "a" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 3, column: 11 },
+            { line: 7, column: 11 },
+          ],
+        },
+      ]);
+    });
+
+    it('keeps an omitted fragment variable distinct from a shadowed operation variable', () => {
+      expectErrors(`
+        query ($x: Int) {
+          a(x: $x)
+          ...WithArgs
+        }
+        fragment WithArgs($x: Int) on Type {
+          a(x: $x)
+        }
+      `).toDeepEqual([
+        {
+          message:
+            'Fields "a" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 3, column: 11 },
+            { line: 7, column: 11 },
+          ],
+        },
+      ]);
     });
 
     it('raises errors with overlapping fields with arguments that conflict via operation variables even with defaults and fragment variable defaults', () => {
@@ -1465,8 +1513,8 @@ describe('Validate: Overlapping fields can be merged', () => {
       ]);
     });
 
-    it('allows operations with overlapping list fields with identical variable arguments passed via fragment arguments', () => {
-      expectValid(`
+    it('rejects overlapping fields using list variables with different definitions', () => {
+      expectErrors(`
         query Query($stringListVarY: [String]) {
           complicatedArgs {
             stringListArgField(stringListArg: $stringListVarY)
@@ -1476,25 +1524,43 @@ describe('Validate: Overlapping fields can be merged', () => {
         fragment WithArgs($stringListVarX: [String]) on Type {
           stringListArgField(stringListArg: $stringListVarX)
         }
-      `);
+      `).toDeepEqual([
+        {
+          message:
+            'Fields "stringListArgField" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 4, column: 13 },
+            { line: 9, column: 11 },
+          ],
+        },
+      ]);
     });
 
-    it('allows operations with overlapping list fields with identical variable arguments in item position passed via fragment arguments', () => {
-      expectValid(`
+    it('rejects nested list values with different variable definitions', () => {
+      expectErrors(`
         query Query($stringListVarY: [String]) {
           complicatedArgs {
-            stringListArgField(stringListArg: [$stringListVarY])
+            stringListArgField(stringListArg: [$stringListVarY, "fixed"])
             ...WithArgs(stringListVarX: $stringListVarY)
           }
         }
         fragment WithArgs($stringListVarX: [String]) on Type {
-          stringListArgField(stringListArg: [$stringListVarX])
+          stringListArgField(stringListArg: [$stringListVarX, "fixed"])
         }
-      `);
+      `).toDeepEqual([
+        {
+          message:
+            'Fields "stringListArgField" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 4, column: 13 },
+            { line: 9, column: 11 },
+          ],
+        },
+      ]);
     });
 
-    it('allows operations with overlapping input object fields with identical variable arguments passed via fragment arguments', () => {
-      expectValid(`
+    it('rejects overlapping fields using input object variables with different definitions', () => {
+      expectErrors(`
         query Query($complexVarY: ComplexInput) {
           complicatedArgs {
             complexArgField(complexArg: $complexVarY)
@@ -1504,11 +1570,20 @@ describe('Validate: Overlapping fields can be merged', () => {
         fragment WithArgs($complexVarX: ComplexInput) on Type {
           complexArgField(complexArg: $complexVarX)
         }
-      `);
+      `).toDeepEqual([
+        {
+          message:
+            'Fields "complexArgField" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 4, column: 13 },
+            { line: 9, column: 11 },
+          ],
+        },
+      ]);
     });
 
-    it('allows operations with overlapping input object fields with identical variable arguments in field position passed via fragment arguments', () => {
-      expectValid(`
+    it('rejects nested input values with different variable definitions', () => {
+      expectErrors(`
         query Query($boolVarY: Boolean) {
           complicatedArgs {
             complexArgField(complexArg: {requiredArg: $boolVarY})
@@ -1517,6 +1592,54 @@ describe('Validate: Overlapping fields can be merged', () => {
         }
         fragment WithArgs($boolVarX: Boolean) on Type {
           complexArgField(complexArg: {requiredArg: $boolVarX})
+        }
+      `).toDeepEqual([
+        {
+          message:
+            'Fields "complexArgField" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 4, column: 13 },
+            { line: 9, column: 11 },
+          ],
+        },
+      ]);
+    });
+
+    it('rejects fragment spreads whose variables have different definitions', () => {
+      expectErrors(`
+        query Query($value: Int) {
+          ...A(value: $value)
+          ...B(value: $value)
+        }
+        fragment A($value: Int) on Type {
+          ...Shared(size: $value)
+        }
+        fragment B($value: Int) on Type {
+          ...Shared(size: $value)
+        }
+        fragment Shared($size: Int) on Type {
+          a(x: $size)
+        }
+      `).toDeepEqual([
+        {
+          message:
+            'Spreads "Shared" conflict because Shared(size: $value) and Shared(size: $value) have different fragment arguments.',
+          locations: [
+            { line: 7, column: 11 },
+            { line: 10, column: 11 },
+          ],
+        },
+      ]);
+    });
+
+    it('allows repeated spreads with the same local variable definitions', () => {
+      expectValid(`
+        query Query($size: Int) {
+          ...Wrapper(size: $size)
+          ...Wrapper(size: $size)
+        }
+        fragment Wrapper($size: Int) on Type {
+          a(x: $size)
         }
       `);
     });
