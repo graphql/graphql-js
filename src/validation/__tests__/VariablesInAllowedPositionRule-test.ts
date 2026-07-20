@@ -397,6 +397,28 @@ describe('Validate: Variables are in allowed positions', () => {
   });
 
   describe('Fragment arguments are validated', () => {
+    it('validates fragment variables defined before the operation', () => {
+      expectErrors(`
+        fragment A($intVar: Int) on ComplicatedArgs {
+          nonNullIntArgField(nonNullIntArg: $intVar)
+        }
+        query Query($intVar: Int!) {
+          complicatedArgs {
+            ...A(i: $intVar)
+          }
+        }
+      `).toDeepEqual([
+        {
+          message:
+            'Variable "$intVar" of type "Int" used in position expecting type "Int!".',
+          locations: [
+            { line: 2, column: 20 },
+            { line: 3, column: 45 },
+          ],
+        },
+      ]);
+    });
+
     it('Boolean => Boolean', () => {
       expectValid(`
         query Query($booleanArg: Boolean)
