@@ -104,6 +104,29 @@ describe('Validate: Defer/Stream directive on root field', () => {
       },
     ]);
   });
+  it('Fragment spread cycle on root mutation field', () => {
+    expectValid(`
+      mutation {
+        ...rootFragment
+      }
+      fragment rootFragment on MutationRoot {
+        ...otherFragment
+      }
+      fragment otherFragment on MutationRoot {
+        ...rootFragment
+      }
+    `);
+  });
+  it('Self-referencing fragment spread on root mutation field', () => {
+    expectValid(`
+      mutation {
+        ...rootFragment
+      }
+      fragment rootFragment on MutationRoot {
+        ...rootFragment
+      }
+    `);
+  });
   it('Defer inline fragment spread on root mutation field', () => {
     expectErrors(`
       mutation {
