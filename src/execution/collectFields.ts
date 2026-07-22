@@ -69,12 +69,19 @@ export interface FragmentDetails {
   variableSignatures?: ObjMap<GraphQLVariableSignature> | undefined;
 }
 
+interface VisitedFragmentNames {
+  // Fragments that have been visited without @defer.
+  immediateFragments: Set<string>;
+  // Map of fragment name to a set of labels that have been visited with @defer.
+  deferredFragments: Map<string, Set<string | null>>;
+}
+
 interface CollectFieldsContext {
   schema: GraphQLSchema;
   fragments: ObjMap<FragmentDetails>;
   variableValues: VariableValues;
   runtimeType: GraphQLObjectType;
-  visitedFragmentNames: Map<string, boolean>;
+  visitedFragmentNames: VisitedFragmentNames;
   hideSuggestions: boolean;
   forbiddenDirectiveInstances: Array<DirectiveNode>;
   forbidSkipAndInclude: boolean;
@@ -110,7 +117,10 @@ export function collectFields(
     fragments,
     variableValues,
     runtimeType,
-    visitedFragmentNames: new Map(),
+    visitedFragmentNames: {
+      immediateFragments: new Set(),
+      deferredFragments: new Map(),
+    },
     hideSuggestions,
     forbiddenDirectiveInstances: [],
     forbidSkipAndInclude,
@@ -151,7 +161,10 @@ export function collectSubfields(
     fragments,
     variableValues,
     runtimeType: returnType,
-    visitedFragmentNames: new Map(),
+    visitedFragmentNames: {
+      immediateFragments: new Set(),
+      deferredFragments: new Map(),
+    },
     hideSuggestions,
     forbiddenDirectiveInstances: [],
     forbidSkipAndInclude: false,
@@ -291,26 +304,38 @@ function collectFieldsImpl(
           deferUsage,
         );
 
-        const visitedAsDeferred = visitedFragmentNames.get(fragName);
+        const visitedAsImmediate =
+          visitedFragmentNames.immediateFragments.has(fragName);
+
+        if (visitedAsImmediate) {
+          // Even if the fragment is deferred, we don't need to
+          // collect it again if it has already been visited without @defer.
+          continue;
+        }
 
         let maybeNewDeferUsage: DeferUsage | undefined;
-        if (!newDeferUsage) {
-          // If this spread is not deferred, it may be skipped when already visited
-          // as a non-deferred spread. If it was previously visited as a deferred spread,
-          // it must be revisited.
-          if (visitedAsDeferred === false) {
+
+        if (newDeferUsage) {
+          let visitedAsDeferredByLabelSet =
+            visitedFragmentNames.deferredFragments.get(fragName);
+          if (!visitedAsDeferredByLabelSet) {
+            visitedAsDeferredByLabelSet = new Set();
+            visitedFragmentNames.deferredFragments.set(
+              fragName,
+              visitedAsDeferredByLabelSet,
+            );
+          }
+          if (visitedAsDeferredByLabelSet.has(newDeferUsage.label ?? null)) {
+            // If the fragment has already been visited as deferred by the same
+            // label, skip it.
             continue;
           }
-          visitedFragmentNames.set(fragName, false);
-          maybeNewDeferUsage = deferUsage;
-        } else {
-          // If this spread is deferred, it can be skipped if it has already been visited.
-          if (visitedAsDeferred !== undefined) {
-            continue;
-          }
-          visitedFragmentNames.set(fragName, true);
           newDeferUsages.push(newDeferUsage);
           maybeNewDeferUsage = newDeferUsage;
+          visitedAsDeferredByLabelSet.add(newDeferUsage.label ?? null);
+        } else {
+          maybeNewDeferUsage = deferUsage;
+          visitedFragmentNames.immediateFragments.add(fragName);
         }
 
         const fragmentVariableSignatures = fragment.variableSignatures;

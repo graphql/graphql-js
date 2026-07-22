@@ -106,5 +106,26 @@ describe('collectFields', () => {
 
       expect(fieldDetailsList).to.have.lengthOf(1);
     });
+
+    it('prevents infinite loop when deferred fragment is used with same label', () => {
+      const { newDeferUsages } = collectRootFields(`
+        query {
+          ...FragmentOne @defer(label: "Foo")
+        }
+        fragment FragmentOne on Query {
+          ...FragmentTwo @defer(label: "Bar")
+          field
+        }
+        fragment FragmentTwo on Query {
+          ...FragmentThree @defer(label: "Baz")
+          }
+        fragment FragmentThree on Query {
+          ...FragmentOne @defer(label: "Qux")
+          field
+        }
+      `);
+
+      expect(newDeferUsages).to.have.lengthOf(4);
+    });
   });
 });

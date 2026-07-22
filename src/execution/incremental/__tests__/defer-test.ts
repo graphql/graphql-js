@@ -673,6 +673,90 @@ describe('Execute: defer directive', () => {
     });
   });
 
+  it('Can defer same fragment with different labels', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          ...TopFragment @defer(label: "DeferTop1")
+          ...TopFragment @defer(label: "DeferTop2")
+        }
+      }
+      fragment TopFragment on Hero {
+        name
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: { hero: {} },
+        pending: [
+          { id: '0', path: ['hero'], label: 'DeferTop1' },
+          { id: '1', path: ['hero'], label: 'DeferTop2' },
+        ],
+        hasNext: true,
+      },
+      {
+        hasNext: false,
+        incremental: [{ id: '0', data: { name: 'Luke' } }],
+        completed: [{ id: '0' }, { id: '1' }],
+      },
+    ]);
+  });
+
+  it('Can skip deferred fragment if same label is used', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          ...TopFragment @defer(label: "DeferTop")
+          ...TopFragment @defer(label: "DeferTop")
+        }
+      }
+      fragment TopFragment on Hero {
+        name
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: { hero: {} },
+        pending: [{ id: '0', path: ['hero'], label: 'DeferTop' }],
+        hasNext: true,
+      },
+      {
+        hasNext: false,
+        incremental: [{ id: '0', data: { name: 'Luke' } }],
+        completed: [{ id: '0' }],
+      },
+    ]);
+  });
+
+  it('Can skip deferred fragment if no label is used', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          ...TopFragment @defer
+          ...TopFragment @defer
+        }
+      }
+      fragment TopFragment on Hero {
+        name
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: { hero: {} },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        hasNext: false,
+        incremental: [{ id: '0', data: { name: 'Luke' } }],
+        completed: [{ id: '0' }],
+      },
+    ]);
+  });
+
   it('Can defer an inline fragment', async () => {
     const document = parse(`
       query HeroNameQuery {
