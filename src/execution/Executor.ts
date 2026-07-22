@@ -741,11 +741,6 @@ export class Executor<
       // In this mode, the client takes responsibility for error handling, so we
       // treat the field as if it were nullable.
       /* c8 ignore next 6 */
-    } else {
-      invariant(
-        false,
-        'Unexpected errorBehavior setting: ' + inspect(errorBehavior),
-      );
     }
 
     // Otherwise, error protection is applied, logging the error and resolving
