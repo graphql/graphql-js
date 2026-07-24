@@ -3,7 +3,8 @@ import { SetMap } from '../../../jsutils/SetMap.ts';
 
 import { GraphQLError } from '../../../error/GraphQLError.ts';
 
-import type { FieldNode } from '../../../language/ast.ts';
+import type { FieldNode, FragmentSpreadNode } from '../../../language/ast.ts';
+import { print } from '../../../language/printer.ts';
 
 import type { FieldOccurrence } from './FieldOccurrence.ts';
 
@@ -31,7 +32,12 @@ interface FieldConflict {
   nodesByBranch: readonly [Set<FieldNode>, Set<FieldNode>];
 }
 
-type ConflictKind = 'field call' | 'response shape' | 'stream';
+type ConflictNode = FieldNode | FragmentSpreadNode;
+type ConflictKind =
+  | 'field call'
+  | 'fragment arguments'
+  | 'response shape'
+  | 'stream';
 
 interface ConflictReporterContext {
   reportError: (error: GraphQLError) => void;
@@ -54,7 +60,7 @@ export class ConflictReporter {
   private _context: ConflictReporterContext;
   private _fieldAncestry: FieldAncestry;
   private _reportedConflicts:
-    | SetMap<FieldNode | ConflictKind, true>
+    | SetMap<ConflictNode | ConflictKind, true>
     | undefined;
   private _pendingConflicts:
     | WeakMap<ContainingFieldPath, FieldConflict>
@@ -63,6 +69,26 @@ export class ConflictReporter {
   constructor(context: ConflictReporterContext, fieldAncestry: FieldAncestry) {
     this._context = context;
     this._fieldAncestry = fieldAncestry;
+  }
+
+  reportFragmentArgumentConflict(
+    spreads: readonly [FragmentSpreadNode, FragmentSpreadNode],
+  ): void {
+    const [spread1, spread2] = spreads;
+    if (!this._shouldReport(spread1, spread2, 'fragment arguments')) {
+      return;
+    }
+    const fragmentName = spread1.name.value;
+    const description1 = fragmentSpreadDescription(spread1);
+    const description2 = fragmentSpreadDescription(spread2);
+    const message =
+      `Spreads "${fragmentName}" conflict because ${description1} and ` +
+      `${description2} have different fragment arguments.`;
+    this._context.reportError(
+      new GraphQLError(message, {
+        nodes: [spread1, spread2],
+      }),
+    );
   }
 
   reportResponseShapeConflict(
@@ -201,17 +227,17 @@ export class ConflictReporter {
   }
 
   private _shouldReport(
-    node1: FieldNode,
-    node2: FieldNode,
+    node1: ConflictNode,
+    node2: ConflictNode,
     conflictKind: ConflictKind,
   ): boolean {
-    const identity = new Set<FieldNode | ConflictKind>([
+    const identity = new Set<ConflictNode | ConflictKind>([
       node1,
       node2,
       conflictKind,
     ]);
     const reportedConflicts = (this._reportedConflicts ??= new SetMap<
-      FieldNode | ConflictKind,
+      ConflictNode | ConflictKind,
       true
     >());
     const shouldReport = !reportedConflicts.has(identity);
@@ -259,6 +285,11 @@ export class ConflictReporter {
       }),
     );
   }
+}
+
+function fragmentSpreadDescription(fragmentSpread: FragmentSpreadNode): string {
+  // Remove the leading `...` from the printed spread.
+  return print({ ...fragmentSpread, directives: [] }).slice(3);
 }
 
 function responseShapeConflictReason(

@@ -44,19 +44,6 @@ import { ConflictDetector } from './OverlappingFieldsCanBeMergedHelpers/Conflict
 // This file contains a lot of such errors but we plan to refactor it anyway
 // so just disable it for entire file.
 
-function reasonMessage(reason: ConflictReasonMessage): string {
-  if (Array.isArray(reason)) {
-    return reason
-      .map(
-        ([responseName, subReason]) =>
-          `subfields "${responseName}" conflict because ` +
-          reasonMessage(subReason),
-      )
-      .join(' and ');
-  }
-  return reason;
-}
-
 /**
  * Overlapping fields can be merged
  *
@@ -105,21 +92,27 @@ function reasonMessage(reason: ConflictReasonMessage): string {
 export function OverlappingFieldsCanBeMergedRule(
   context: ValidationContext,
 ): ASTVisitor {
-  const usesFragmentArguments = context
-    .getDocument()
-    .definitions.some(
-      (definition) =>
-        definition.kind === Kind.FRAGMENT_DEFINITION &&
-        (definition.variableDefinitions?.length ?? 0) !== 0,
-    );
-  if (usesFragmentArguments) {
-    return legacyOverlappingFieldsCanBeMergedRule(context);
-  }
   return new ConflictDetector(context).getVisitor();
 }
 
 /* node:coverage disable */
+function reasonMessage(reason: ConflictReasonMessage): string {
+  if (Array.isArray(reason)) {
+    return reason
+      .map(
+        ([responseName, subReason]) =>
+          `subfields "${responseName}" conflict because ` +
+          reasonMessage(subReason),
+      )
+      .join(' and ');
+  }
+  return reason;
+}
+
 /** @internal */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore -- Retained for removal in the next commit.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function legacyOverlappingFieldsCanBeMergedRule(
   context: ValidationContext,
 ): ASTVisitor {

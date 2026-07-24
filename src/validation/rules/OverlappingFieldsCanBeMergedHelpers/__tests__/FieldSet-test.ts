@@ -72,6 +72,8 @@ function fieldSetFixture(
           return context.getSchema();
         },
       },
+      usesFragmentArguments: false,
+      getFragmentSignature: context.getFragmentSignatureByName(),
     },
     definition.selectionSet,
     parentType,

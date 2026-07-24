@@ -1818,7 +1818,7 @@ describe('Validate: Overlapping fields can be merged', () => {
           a(x: $y)
           ...WithArgs(x: $y)
         }
-        fragment WithArgs($x: Int) on Type {
+        fragment WithArgs($x: Int) on QueryRoot {
           a(x: $x)
         }
       `).toDeepEqual([
@@ -1839,10 +1839,10 @@ describe('Validate: Overlapping fields can be merged', () => {
           a(x: $z)
           ...WithArgs(y: $z)
         }
-        fragment WithArgs($y: Int) on Type {
+        fragment WithArgs($y: Int) on QueryRoot {
           ...NestedWithArgs(x: $y)
         }
-        fragment NestedWithArgs($x: Int) on Type {
+        fragment NestedWithArgs($x: Int) on QueryRoot {
           a(x: $x)
         }
       `).toDeepEqual([
@@ -1863,7 +1863,7 @@ describe('Validate: Overlapping fields can be merged', () => {
           a(x: 1)
           ...WithArgs
         }
-        fragment WithArgs($x: Int = 1) on Type {
+        fragment WithArgs($x: Int = 1) on QueryRoot {
           a(x: $x)
         }
       `).toDeepEqual([
@@ -1884,7 +1884,7 @@ describe('Validate: Overlapping fields can be merged', () => {
           a(x: $x)
           ...WithArgs
         }
-        fragment WithArgs($x: Int) on Type {
+        fragment WithArgs($x: Int) on QueryRoot {
           a(x: $x)
         }
       `).toDeepEqual([
@@ -1905,7 +1905,7 @@ describe('Validate: Overlapping fields can be merged', () => {
           a(x: $y)
           ...WithArgs
         }
-        fragment WithArgs($x: Int = 1) on Type {
+        fragment WithArgs($x: Int = 1) on QueryRoot {
           a(x: $x)
         }
       `).toDeepEqual([
@@ -1928,7 +1928,7 @@ describe('Validate: Overlapping fields can be merged', () => {
             ...WithArgs(stringListVarX: $stringListVarY)
           }
         }
-        fragment WithArgs($stringListVarX: [String]) on Type {
+        fragment WithArgs($stringListVarX: [String]) on ComplicatedArgs {
           stringListArgField(stringListArg: $stringListVarX)
         }
       `).toDeepEqual([
@@ -1951,7 +1951,7 @@ describe('Validate: Overlapping fields can be merged', () => {
             ...WithArgs(stringListVarX: $stringListVarY)
           }
         }
-        fragment WithArgs($stringListVarX: [String]) on Type {
+        fragment WithArgs($stringListVarX: [String]) on ComplicatedArgs {
           stringListArgField(stringListArg: [$stringListVarX, "fixed"])
         }
       `).toDeepEqual([
@@ -1974,7 +1974,7 @@ describe('Validate: Overlapping fields can be merged', () => {
             ...WithArgs(complexVarX: $complexVarY)
           }
         }
-        fragment WithArgs($complexVarX: ComplexInput) on Type {
+        fragment WithArgs($complexVarX: ComplexInput) on ComplicatedArgs {
           complexArgField(complexArg: $complexVarX)
         }
       `).toDeepEqual([
@@ -1997,7 +1997,7 @@ describe('Validate: Overlapping fields can be merged', () => {
             ...WithArgs(boolVarX: $boolVarY)
           }
         }
-        fragment WithArgs($boolVarX: Boolean) on Type {
+        fragment WithArgs($boolVarX: Boolean) on ComplicatedArgs {
           complexArgField(complexArg: {requiredArg: $boolVarX})
         }
       `).toDeepEqual([
@@ -2072,9 +2072,9 @@ describe('Validate: Overlapping fields can be merged', () => {
           message:
             'Fields "mother" conflict because subfields "doesKnowCommand" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
           locations: [
-            { line: 5, column: 13 },
-            { line: 13, column: 13 },
             { line: 12, column: 11 },
+            { line: 13, column: 13 },
+            { line: 5, column: 13 },
             { line: 11, column: 11 },
           ],
         },
@@ -2091,7 +2091,7 @@ describe('Validate: Overlapping fields can be merged', () => {
           }
           ...Connection
         }
-        fragment Connection on Type {
+        fragment Connection on QueryRoot {
           connection {
             edges {
               ...WithArgs(x: 4)
@@ -2114,6 +2114,17 @@ describe('Validate: Overlapping fields can be merged', () => {
               column: 15,
               line: 13,
             },
+          ],
+        },
+        {
+          message:
+            'Fields "connection" conflict because subfields "edges" conflict because subfields "a" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 3, column: 11 },
+            { line: 4, column: 13 },
+            { line: 18, column: 11 },
+            { line: 11, column: 11 },
+            { line: 12, column: 13 },
           ],
         },
       ]);

@@ -200,6 +200,103 @@ describe('FieldSetGraph', () => {
     );
   });
 
+  it('distinguishes operation and fragment variable scopes', () => {
+    const { graph, petFieldSet } = graphFor(`
+      query ($x: Int) { pet { ...F(x: $x) ...F(x: $x) } }
+      fragment F($x: Int) on Pet {
+        value(arg: $x)
+        ...G(x: $x)
+      }
+      fragment G($x: Int) on Pet { child { name } }
+    `);
+    const expanded = Array.from(
+      graph.getEffectiveFieldSet(new Set([petFieldSet])).getFieldSets(),
+    );
+    const firstSpread = petFieldSet.getFragmentSpreadsByName().get('F')?.[0];
+    const valueField = expanded
+      .flatMap(
+        (fieldSet) =>
+          fieldSet.getFieldGroupsByResponseName().get('value')?.getFields() ??
+          [],
+      )
+      .at(0);
+
+    expect(firstSpread?.argumentsKey).to.contain('operation');
+    expect(valueField?.getArgumentsKey()).to.contain('fragment');
+  });
+
+  it('reuses bindings for identical fragment argument scopes', () => {
+    const { graph, fieldSetsToCheck } = graphFor(`
+      query ($x: Int) {
+        pet { ...F(x: $x) }
+        pet { ...F(x: $x) }
+      }
+      fragment F($x: Int) on Pet { value(arg: $x) }
+    `);
+    const petFieldSets = fieldSetsToCheck.filter(
+      ({ parentType }) => parentType?.name === 'Pet',
+    );
+    const first = petFieldSets[0];
+    const second = petFieldSets[1];
+    const firstFragmentFieldSet =
+      first === undefined
+        ? undefined
+        : Array.from(
+            graph.getEffectiveFieldSet(new Set([first])).getFieldSets(),
+          ).find((fieldSet) =>
+            fieldSet.getFieldGroupsByResponseName().has('value'),
+          );
+    const secondFragmentFieldSet =
+      second === undefined
+        ? undefined
+        : Array.from(
+            graph.getEffectiveFieldSet(new Set([second])).getFieldSets(),
+          ).find((fieldSet) =>
+            fieldSet.getFieldGroupsByResponseName().has('value'),
+          );
+
+    expect(firstFragmentFieldSet).not.to.equal(undefined);
+    expect(firstFragmentFieldSet).to.equal(secondFragmentFieldSet);
+  });
+
+  it('keys nested spreads by their lexical variable scope', () => {
+    const { graph, petFieldSet } = graphFor(`
+      query ($x: Int) { pet { ...F(x: $x) } }
+      fragment F($x: Int) on Pet { ...G(x: $x) }
+      fragment G($x: Int) on Pet { child { name } }
+    `);
+    const nestedSpread = graph.getEffectiveFieldSet(new Set([petFieldSet]));
+    const nestedSpreadOccurrence = Array.from(nestedSpread.getFieldSets())
+      .flatMap((fieldSet) => fieldSet.getFragmentSpreadsByName().get('G') ?? [])
+      .at(0);
+
+    expect(nestedSpreadOccurrence?.argumentsKey).to.contain('fragment');
+  });
+
+  it('keeps forwarded variable identities compact', () => {
+    const fragments = Array.from({ length: 30 }, (_, index) => {
+      const selection =
+        index === 29 ? 'value(arg: $x)' : `...F${index + 1}(x: $x)`;
+      return `fragment F${index}($x: Int) on Pet { ${selection} }`;
+    }).join('\n');
+    const { graph, petFieldSet } = graphFor(`
+      query ($x: Int) { pet { ...F0(x: $x) ...F0(x: $x) } }
+      ${fragments}
+    `);
+
+    const effective = graph.getEffectiveFieldSet(new Set([petFieldSet]));
+    const value = Array.from(effective.getFieldSets())
+      .flatMap(
+        (fieldSet) =>
+          fieldSet.getFieldGroupsByResponseName().get('value')?.getFields() ??
+          [],
+      )
+      .at(0);
+    expect(value?.getArgumentsKey()).to.match(
+      /^\[\["arg",\["Variable","fragment:\d+:x"\]\]\]$/,
+    );
+  });
+
   it('expands distinct fragments before their shared dependency', () => {
     const { graph, petFieldSet } = graphFor(`
       {

@@ -71,6 +71,20 @@ function detect(
 }
 
 describe('ConflictDetector', () => {
+  it('terminates variable forwarding through a fragment cycle', () => {
+    expect(
+      detect(`
+        query ($surname: Boolean) {
+          pet { ...F(surname: $surname) }
+        }
+        fragment F($surname: Boolean) on Pet {
+          name(surname: $surname)
+          child { ...F(surname: $surname) }
+        }
+      `),
+    ).to.deep.equal([]);
+  });
+
   it('accepts repeated fields reached through inline and named fragments', () => {
     expect(
       detect(`
@@ -336,6 +350,62 @@ describe('ConflictDetector', () => {
     `);
 
     expect(errors).to.have.length(1);
+  });
+
+  it('continues checking nested response levels after fragment argument conflicts', () => {
+    const errors = detect(`
+      fragment A on Pet {
+        ...F(surname: true)
+        ...F(surname: false)
+      }
+      fragment F($surname: Boolean) on Pet {
+        name(surname: $surname)
+        child { value: name value: nickname }
+      }
+    `);
+
+    expect(errors).to.have.length(2);
+  });
+
+  it('checks fragment arguments in starting sets without fields', () => {
+    const errors = detect(`
+      fragment A on Pet {
+        ...F(surname: true)
+        ...F(surname: false)
+        ...B
+      }
+      fragment F($surname: Boolean) on Pet {
+        name(surname: $surname)
+      }
+      fragment B on Pet { child { name } }
+    `);
+
+    expect(errors.map(({ message }) => message)).to.deep.equal([
+      'Spreads "F" conflict because F(surname: true) and F(surname: false) have different fragment arguments.',
+    ]);
+  });
+
+  it('reports independent field and fragment argument conflicts together', () => {
+    const errors = detect(`
+      query { pet { ...A ...B } }
+      fragment A on Pet {
+        ...F(surname: true)
+        value: name
+        value: nickname
+      }
+      fragment B on Pet { ...F(surname: false) }
+      fragment F($surname: Boolean) on Pet {
+        name(surname: $surname)
+      }
+    `);
+
+    expect(errors).to.have.length(2);
+    expect(
+      errors.some(({ message }) => message.startsWith('Spreads "F"')),
+    ).to.equal(true);
+    expect(
+      errors.some(({ message }) => message.startsWith('Fields "value"')),
+    ).to.equal(true);
   });
 
   it('does not duplicate a streamed field reached through repeated fragments', () => {

@@ -4,7 +4,10 @@ import { expect } from 'chai';
 
 import type { GraphQLError } from '../../../../error/GraphQLError.ts';
 
-import type { FieldNode } from '../../../../language/ast.ts';
+import type {
+  FieldNode,
+  FragmentSpreadNode,
+} from '../../../../language/ast.ts';
 import { Kind } from '../../../../language/kinds.ts';
 import { parse } from '../../../../language/parser.ts';
 
@@ -58,7 +61,51 @@ function reporterForAncestry(
   );
 }
 
+function fragmentSpreadPair() {
+  const operation = parse('{ ...F(value: { z: 1, a: 2 }) ...F }', {
+    experimentalFragmentArguments: true,
+  }).definitions[0];
+  if (operation.kind !== Kind.OPERATION_DEFINITION) {
+    throw new Error('Expected operation definition.');
+  }
+  const [firstNode, secondNode] = operation.selectionSet.selections;
+  if (
+    firstNode?.kind !== Kind.FRAGMENT_SPREAD ||
+    secondNode?.kind !== Kind.FRAGMENT_SPREAD
+  ) {
+    throw new Error('Expected fragment spreads.');
+  }
+  return [firstNode, secondNode] as const;
+}
+
 describe('ConflictReporter', () => {
+  it('describes conflicting fragment spreads in source form', () => {
+    const errors: Array<GraphQLError> = [];
+    const reporter = reporterFor(errors);
+    const [first, second] = fragmentSpreadPair();
+
+    reporter.reportFragmentArgumentConflict([first, second]);
+
+    expect(errors[0]?.message).to.equal(
+      'Spreads "F" conflict because F(value: { z: 1, a: 2 }) and F have different fragment arguments.',
+    );
+    expect(errors[0]?.nodes).to.deep.equal([
+      first,
+      second,
+    ] satisfies ReadonlyArray<FragmentSpreadNode>);
+  });
+
+  it('deduplicates fragment spread pairs regardless of order', () => {
+    const errors: Array<GraphQLError> = [];
+    const reporter = reporterFor(errors);
+    const [first, second] = fragmentSpreadPair();
+
+    reporter.reportFragmentArgumentConflict([first, second]);
+    reporter.reportFragmentArgumentConflict([second, first]);
+
+    expect(errors).to.have.length(1);
+  });
+
   it('reports conflicting field names', () => {
     const errors: Array<GraphQLError> = [];
     const reporter = reporterFor(errors);

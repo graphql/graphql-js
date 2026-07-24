@@ -2,6 +2,7 @@ import { AccumulatorMap } from '../../../jsutils/AccumulatorMap.ts';
 import type { Maybe } from '../../../jsutils/Maybe.ts';
 
 import type {
+  FragmentArgumentNode,
   FragmentDefinitionNode,
   FragmentSpreadNode,
   SelectionSetNode,
@@ -13,18 +14,22 @@ import { isCompositeType } from '../../../type/definition.ts';
 import type { GraphQLSchema } from '../../../type/schema.ts';
 
 import { typeFromAST } from '../../../utilities/typeFromAST.ts';
+import type { FragmentSignature } from '../../../utilities/TypeInfo.ts';
 
+import type { VariableScope } from './argumentsKey.ts';
+import { argumentsKey } from './argumentsKey.ts';
 import { FieldGroup } from './FieldGroup.ts';
 import { FieldOccurrence } from './FieldOccurrence.ts';
 
 /**
- * A defined fragment spread retained while expanding effective field sets.
+ * A defined fragment spread and its canonical fragment-argument key.
  *
  * @internal
  */
 export interface FragmentSpreadOccurrence {
   node: FragmentSpreadNode;
   fragmentDefinition: FragmentDefinitionNode;
+  argumentsKey: string;
 }
 
 /** @internal */
@@ -33,6 +38,8 @@ export interface FieldSetContext {
     getFragment: (fragmentName: string) => Maybe<FragmentDefinitionNode>;
     getSchema: () => GraphQLSchema;
   };
+  usesFragmentArguments: boolean;
+  getFragmentSignature: (fragmentName: string) => Maybe<FragmentSignature>;
 }
 
 interface FieldSetContents {
@@ -58,6 +65,11 @@ const EMPTY_FRAGMENT_SPREADS_BY_NAME: ReadonlyMap<
 export class FieldSet {
   selectionSet: SelectionSetNode;
   parentType: Maybe<GraphQLNamedType>;
+  boundFieldSets?: Map<VariableScope, FieldSet>;
+  binding?: {
+    template: FieldSet;
+    variableScope: VariableScope;
+  };
   private _context: FieldSetContext;
   private _contents: FieldSetContents | undefined;
 
@@ -65,10 +77,17 @@ export class FieldSet {
     context: FieldSetContext,
     selectionSet: SelectionSetNode,
     parentType: Maybe<GraphQLNamedType>,
+    binding?: {
+      template: FieldSet;
+      variableScope: VariableScope;
+    },
   ) {
     this._context = context;
     this.selectionSet = selectionSet;
     this.parentType = parentType;
+    if (binding !== undefined) {
+      this.binding = binding;
+    }
   }
 
   getFieldGroupsByResponseName(): ReadonlyMap<string, FieldGroup> {
@@ -128,6 +147,7 @@ export class FieldSet {
         validationContext,
         parentType,
         selection,
+        this.binding?.variableScope,
       );
       const responseName = field.node.alias?.value ?? field.node.name.value;
       const fieldGroups = (contents.fieldGroupsByResponseName ??= new Map());
@@ -151,9 +171,35 @@ export class FieldSet {
     if (fragmentDefinition == null) {
       return;
     }
+    let spreadArgumentsKey = '[]';
+    if (this._context.usesFragmentArguments) {
+      const signature = this._context.getFragmentSignature(fragmentName);
+      // Unknown arguments are reported elsewhere. Without a signature there
+      // is no reliable set of fragment variables to bind or compare here.
+      let knownArguments: Array<FragmentArgumentNode> | undefined;
+      if (signature !== null && signature !== undefined) {
+        const suppliedArguments = node.arguments;
+        if (suppliedArguments !== undefined) {
+          knownArguments = [];
+          for (const argument of suppliedArguments) {
+            if (signature.variableDefinitions.has(argument.name.value)) {
+              knownArguments.push(argument);
+            }
+          }
+        }
+      }
+      spreadArgumentsKey = argumentsKey(
+        knownArguments,
+        this.binding?.variableScope,
+      );
+    }
     (contents.fragmentSpreadsByName ??= new AccumulatorMap()).add(
       fragmentName,
-      { node, fragmentDefinition },
+      {
+        node,
+        fragmentDefinition,
+        argumentsKey: spreadArgumentsKey,
+      },
     );
   }
 }

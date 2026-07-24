@@ -18,7 +18,9 @@ import { getNamedType, isCompositeType } from '../../../type/definition.ts';
 import type { GraphQLSchema } from '../../../type/schema.ts';
 
 import { typeFromAST } from '../../../utilities/typeFromAST.ts';
+import type { FragmentSignature } from '../../../utilities/TypeInfo.ts';
 
+import type { VariableScope } from './argumentsKey.ts';
 import { EffectiveFieldSet } from './EffectiveFieldSet.ts';
 import type { FieldOccurrence } from './FieldOccurrence.ts';
 import type { FieldSetContext, FragmentSpreadOccurrence } from './FieldSet.ts';
@@ -26,6 +28,9 @@ import { FieldSet } from './FieldSet.ts';
 
 interface FieldSetGraphContext {
   getFragment: (fragmentName: string) => Maybe<FragmentDefinitionNode>;
+  getFragmentSignatureByName: () => (
+    fragmentName: string,
+  ) => Maybe<FragmentSignature>;
   getParentType: () => Maybe<GraphQLCompositeType>;
   getSchema: () => GraphQLSchema;
 }
@@ -39,7 +44,10 @@ interface FieldSetGraphContext {
 export class FieldSetGraph {
   private _context: FieldSetGraphContext;
   private _fieldSetContext: FieldSetContext;
+  private _currentVariableScope: VariableScope | undefined;
+  private _nextVariableScopeId = 0;
   private _fieldSetsBySelectionSet = new WeakMap<SelectionSetNode, FieldSet>();
+  private _variableScopesByKey: Map<string, VariableScope> | undefined;
   private _effectiveFieldSetsByStartingFieldSets:
     | SetMap<FieldSet, EffectiveFieldSet>
     | undefined;
@@ -48,7 +56,13 @@ export class FieldSetGraph {
     this._context = context;
     this._fieldSetContext = {
       validationContext: context,
+      usesFragmentArguments: false,
+      getFragmentSignature: context.getFragmentSignatureByName(),
     };
+  }
+
+  usesFragmentArguments(): boolean {
+    return this._fieldSetContext.usesFragmentArguments;
   }
 
   getVisitor(
@@ -56,7 +70,27 @@ export class FieldSetGraph {
     onComplete?: () => void,
   ): ASTVisitor {
     return {
-      Document: { leave: onComplete },
+      // TypeInfo installs this document's fragment signatures on entry.
+      Document: {
+        enter: () => {
+          this._fieldSetContext.getFragmentSignature =
+            this._context.getFragmentSignatureByName();
+        },
+        leave: onComplete,
+      },
+      FragmentDefinition: {
+        enter: (node: FragmentDefinitionNode) => {
+          if ((node.variableDefinitions?.length ?? 0) !== 0) {
+            this._fieldSetContext.usesFragmentArguments = true;
+            this._currentVariableScope = this._getOrCreateVariableScope(
+              this._fieldSetContext.getFragmentSignature(node.name.value),
+            );
+          }
+        },
+        leave: () => {
+          this._currentVariableScope = undefined;
+        },
+      },
       SelectionSet: (node, _key, parent) => {
         // Inline fragments do not create a new response level. Their
         // selections are collected into the enclosing FieldSet using the
@@ -90,7 +124,11 @@ export class FieldSetGraph {
       const selectionSet = field.node.selectionSet;
       if (selectionSet !== undefined) {
         startingFieldSets.add(
-          this._getSubfieldSet(selectionSet, field.getOutputType()),
+          this._getSubfieldSet(
+            selectionSet,
+            field.getOutputType(),
+            field.variableScope,
+          ),
         );
       }
     }
@@ -108,7 +146,11 @@ export class FieldSetGraph {
       return false;
     }
     return this._fieldSetContainsField(
-      this._getSubfieldSet(selectionSet, containingField.getOutputType()),
+      this._getSubfieldSet(
+        selectionSet,
+        containingField.getOutputType(),
+        containingField.variableScope,
+      ),
       descendantField,
       new Set(),
     );
@@ -125,14 +167,21 @@ export class FieldSetGraph {
     visited.add(fieldSet);
     for (const fieldGroup of fieldSet.getFieldGroupsByResponseName().values()) {
       for (const field of fieldGroup.getFields()) {
-        if (field.node === targetField.node) {
+        if (
+          field.node === targetField.node &&
+          field.variableScope === targetField.variableScope
+        ) {
           return true;
         }
         const selectionSet = field.node.selectionSet;
         if (
           selectionSet !== undefined &&
           this._fieldSetContainsField(
-            this._getSubfieldSet(selectionSet, field.getOutputType()),
+            this._getSubfieldSet(
+              selectionSet,
+              field.getOutputType(),
+              field.variableScope,
+            ),
             targetField,
             visited,
           )
@@ -161,29 +210,43 @@ export class FieldSetGraph {
     fragmentSpread: FragmentSpreadOccurrence,
   ): FieldSet {
     const fragmentDefinition = fragmentSpread.fragmentDefinition;
-    let fragmentFieldSet = this._fieldSetsBySelectionSet.get(
+    let templateFieldSet = this._fieldSetsBySelectionSet.get(
       fragmentDefinition.selectionSet,
     );
-    if (fragmentFieldSet === undefined) {
+    if (templateFieldSet === undefined) {
       const type = typeFromAST(
         this._context.getSchema(),
         fragmentDefinition.typeCondition,
       );
-      fragmentFieldSet = this._getOrCreateFieldSet(
+      templateFieldSet = this._getOrCreateFieldSet(
         fragmentDefinition.selectionSet,
         isCompositeType(type) ? type : undefined,
       );
     }
-    return fragmentFieldSet;
+    return this._bindFieldSet(
+      templateFieldSet,
+      this.usesFragmentArguments()
+        ? this._getOrCreateVariableScope(
+            this._fieldSetContext.getFragmentSignature(
+              fragmentDefinition.name.value,
+            ),
+            fragmentSpread.argumentsKey,
+          )
+        : undefined,
+    );
   }
 
   private _getSubfieldSet(
     selectionSet: SelectionSetNode,
     outputType: GraphQLOutputType | undefined,
+    variableScope: VariableScope | undefined,
   ): FieldSet {
-    return this._getOrCreateFieldSet(
-      selectionSet,
-      outputType === undefined ? undefined : getNamedType(outputType),
+    return this._bindFieldSet(
+      this._getOrCreateFieldSet(
+        selectionSet,
+        outputType === undefined ? undefined : getNamedType(outputType),
+      ),
+      variableScope,
     );
   }
 
@@ -191,7 +254,43 @@ export class FieldSetGraph {
     parentType: Maybe<GraphQLNamedType>,
     node: SelectionSetNode,
   ): FieldSet {
-    return this._getOrCreateFieldSet(node, parentType);
+    return this._bindFieldSet(
+      this._getOrCreateFieldSet(node, parentType),
+      this._currentVariableScope,
+    );
+  }
+
+  private _getOrCreateVariableScope(
+    fragmentSignature: FragmentSignature | null | undefined,
+    spreadArgumentsKey?: string,
+  ): VariableScope | undefined {
+    // Another validation error can leave a fragment without a signature. Keep
+    // collecting it as an unbound field set so this rule remains best-effort.
+    if (
+      fragmentSignature == null ||
+      fragmentSignature.variableDefinitions.size === 0
+    ) {
+      return undefined;
+    }
+    const fragmentName = fragmentSignature.definition.name.value;
+    const scopeKey = JSON.stringify([
+      fragmentName,
+      spreadArgumentsKey ?? 'definition',
+    ]);
+    const variableScopesByKey = (this._variableScopesByKey ??= new Map());
+    let variableScope = variableScopesByKey.get(scopeKey);
+    if (variableScope === undefined) {
+      // Compact lexical IDs avoid embedding the full chain of forwarded
+      // argument keys.
+      const scopeId = this._nextVariableScopeId++;
+      const createdVariableScope = new Map<string, string>();
+      for (const name of fragmentSignature.variableDefinitions.keys()) {
+        createdVariableScope.set(name, `fragment:${scopeId}:${name}`);
+      }
+      variableScope = createdVariableScope;
+      variableScopesByKey.set(scopeKey, variableScope);
+    }
+    return variableScope;
   }
 
   private _getOrCreateFieldSet(
@@ -209,5 +308,26 @@ export class FieldSetGraph {
     );
     this._fieldSetsBySelectionSet.set(selectionSet, fieldSet);
     return fieldSet;
+  }
+
+  private _bindFieldSet(
+    templateFieldSet: FieldSet,
+    variableScope: VariableScope | undefined,
+  ): FieldSet {
+    if (variableScope === undefined) {
+      return templateFieldSet;
+    }
+    const boundFieldSets = (templateFieldSet.boundFieldSets ??= new Map());
+    let boundFieldSet = boundFieldSets.get(variableScope);
+    if (boundFieldSet === undefined) {
+      boundFieldSet = new FieldSet(
+        this._fieldSetContext,
+        templateFieldSet.selectionSet,
+        templateFieldSet.parentType,
+        { template: templateFieldSet, variableScope },
+      );
+      boundFieldSets.set(variableScope, boundFieldSet);
+    }
+    return boundFieldSet;
   }
 }

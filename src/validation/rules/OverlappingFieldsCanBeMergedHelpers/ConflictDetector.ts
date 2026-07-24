@@ -1,3 +1,5 @@
+import { AccumulatorMap } from '../../../jsutils/AccumulatorMap.ts';
+
 import type { ASTVisitor } from '../../../language/visitor.ts';
 
 import type { ValidationContext } from '../../ValidationContext.ts';
@@ -9,7 +11,7 @@ import { doTypesConflict } from './doTypesConflict.ts';
 import type { EffectiveFieldSet } from './EffectiveFieldSet.ts';
 import type { FieldGroup } from './FieldGroup.ts';
 import type { FieldOccurrence } from './FieldOccurrence.ts';
-import type { FieldSet } from './FieldSet.ts';
+import type { FieldSet, FragmentSpreadOccurrence } from './FieldSet.ts';
 import { FieldSetGraph } from './FieldSetGraph.ts';
 import { FieldSetProofCache } from './FieldSetProofCache.ts';
 
@@ -26,8 +28,8 @@ interface ResponseLevel {
  * selection set. Inline fragments belong to the enclosing FieldSet; named
  * fragment bodies have separate FieldSets.
  *
- * **FieldOccurrence** One selected field together with the type in which it
- * occurs.
+ * **FieldOccurrence** One selected field together with the type and variable
+ * scope in which it occurs.
  *
  * **FieldGroup** The occurrences with one response name contributed by one
  * FieldSet.
@@ -40,6 +42,10 @@ interface ResponseLevel {
  *
  * **Common-parent proof** Checks fields that may execute for the same concrete
  * object for compatible field names and arguments.
+ *
+ * **Fragment-argument check** Checks invocations of the same named fragment
+ * for compatible arguments. Unlike the two proofs, it compares fragment
+ * spreads rather than field occurrences.
  *
  * The document visitor records FieldSets and their fragment relationships,
  * then validation checks each recorded FieldSet. Each proof also checks the
@@ -90,8 +96,38 @@ export class ConflictDetector {
       effectiveFieldSet,
       containingPath: undefined,
     };
+    this._checkFragmentArgumentsAtResponseLevel(responseLevel);
     this._checkResponseShapeAtLevel(responseLevel);
     this._checkFieldsForCommonParentsAtLevel(responseLevel);
+  }
+
+  private _checkFragmentArguments(fieldSets: ReadonlySet<FieldSet>): void {
+    const spreadsByName = new AccumulatorMap<
+      string,
+      FragmentSpreadOccurrence
+    >();
+    for (const fieldSet of fieldSets) {
+      for (const [
+        fragmentName,
+        spreads,
+      ] of fieldSet.getFragmentSpreadsByName()) {
+        for (const spread of spreads) {
+          spreadsByName.add(fragmentName, spread);
+        }
+      }
+    }
+
+    for (const spreads of spreadsByName.values()) {
+      for (const conflictingSpreads of conflictingPairs(
+        spreads,
+        (first, second) => first.argumentsKey !== second.argumentsKey,
+      )) {
+        this._getReporter().reportFragmentArgumentConflict([
+          conflictingSpreads[0].node,
+          conflictingSpreads[1].node,
+        ]);
+      }
+    }
   }
 
   private _checkResponseShapeAtLevel(responseLevel: ResponseLevel): void {
@@ -120,6 +156,7 @@ export class ConflictDetector {
         responseLevel.containingPath,
       );
       if (subfieldResponseLevel !== undefined) {
+        this._checkFragmentArgumentsAtResponseLevel(subfieldResponseLevel);
         this._checkResponseShapeAtLevel(subfieldResponseLevel);
         const { containingPath } = subfieldResponseLevel;
         if (
@@ -130,6 +167,17 @@ export class ConflictDetector {
         }
       }
     }
+  }
+
+  private _checkFragmentArgumentsAtResponseLevel(
+    responseLevel: ResponseLevel,
+  ): void {
+    if (!this._fieldSetGraph.usesFragmentArguments()) {
+      return;
+    }
+    this._checkFragmentArguments(
+      responseLevel.effectiveFieldSet.getFieldSets(),
+    );
   }
 
   private _checkResponseConflicts(

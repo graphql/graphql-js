@@ -41,7 +41,10 @@ export class EffectiveFieldSet {
         fragmentName,
         spreads,
       ] of fieldSet.getFragmentSpreadsByName()) {
-        if (expandedFragmentNames.has(fragmentName)) {
+        if (
+          !this.startingFieldSets.has(fieldSet) &&
+          expandedFragmentNames.has(fragmentName)
+        ) {
           continue;
         }
         expandedFragmentNames.add(fragmentName);

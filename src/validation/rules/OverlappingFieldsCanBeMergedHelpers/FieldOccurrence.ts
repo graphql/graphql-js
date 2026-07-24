@@ -9,6 +9,7 @@ import type {
 import { isCompositeType } from '../../../type/definition.ts';
 import type { GraphQLSchema } from '../../../type/schema.ts';
 
+import type { VariableScope } from './argumentsKey.ts';
 import { argumentsKey } from './argumentsKey.ts';
 
 interface FieldOccurrenceContext {
@@ -16,14 +17,15 @@ interface FieldOccurrenceContext {
 }
 
 /**
- * One field selection together with its parent type, used to determine
- * whether it can be merged with another selection.
+ * One field selection together with its parent type and lexical variable
+ * scope, used to determine whether it can be merged with another selection.
  *
  * @internal
  */
 export class FieldOccurrence {
   parentType: Maybe<GraphQLNamedType>;
   node: FieldNode;
+  variableScope: VariableScope | undefined;
   private _context: FieldOccurrenceContext;
   private _outputType: GraphQLOutputType | null | undefined;
   private _argumentsKey: string | undefined;
@@ -33,10 +35,12 @@ export class FieldOccurrence {
     context: FieldOccurrenceContext,
     parentType: Maybe<GraphQLNamedType>,
     node: FieldNode,
+    variableScope?: VariableScope,
   ) {
     this._context = context;
     this.parentType = parentType;
     this.node = node;
+    this.variableScope = variableScope;
   }
 
   getOutputType(): GraphQLOutputType | undefined {
@@ -52,14 +56,19 @@ export class FieldOccurrence {
   }
 
   getArgumentsKey(): string {
-    return (this._argumentsKey ??= argumentsKey(this.node.arguments));
+    return (this._argumentsKey ??= argumentsKey(
+      this.node.arguments,
+      this.variableScope,
+    ));
   }
 
   getStreamArgumentsKey(): string | undefined {
     if (this._streamArgumentsKey === undefined) {
       const stream = getStreamDirective(this.node.directives);
       this._streamArgumentsKey =
-        stream === undefined ? null : argumentsKey(stream.arguments);
+        stream === undefined
+          ? null
+          : argumentsKey(stream.arguments, this.variableScope);
     }
     return this._streamArgumentsKey ?? undefined;
   }
