@@ -21,6 +21,8 @@ import { argumentsKey } from './argumentsKey.ts';
 import { FieldGroup } from './FieldGroup.ts';
 import { FieldOccurrence } from './FieldOccurrence.ts';
 
+const SELECTION_WORK = 2_000;
+
 /**
  * A defined fragment spread and its canonical fragment-argument key.
  *
@@ -35,6 +37,7 @@ export interface FragmentSpreadOccurrence {
 /** @internal */
 export interface FieldSetContext {
   validationContext: {
+    addValidationWork: (work: number) => void;
     getFragment: (fragmentName: string) => Maybe<FragmentDefinitionNode>;
     getSchema: () => GraphQLSchema;
   };
@@ -127,6 +130,9 @@ export class FieldSet {
     contents: FieldSetContents,
   ): void {
     const validationContext = this._context.validationContext;
+    validationContext.addValidationWork(
+      SELECTION_WORK * selectionSet.selections.length,
+    );
     for (const selection of selectionSet.selections) {
       if (selection.kind === Kind.FRAGMENT_SPREAD) {
         this._addFragmentSpread(selection, contents);
@@ -165,9 +171,9 @@ export class FieldSet {
     node: FragmentSpreadNode,
     contents: FieldSetContents,
   ): void {
+    const validationContext = this._context.validationContext;
     const fragmentName = node.name.value;
-    const fragmentDefinition =
-      this._context.validationContext.getFragment(fragmentName);
+    const fragmentDefinition = validationContext.getFragment(fragmentName);
     if (fragmentDefinition == null) {
       return;
     }
@@ -191,6 +197,7 @@ export class FieldSet {
       spreadArgumentsKey = argumentsKey(
         knownArguments,
         this.binding?.variableScope,
+        validationContext,
       );
     }
     (contents.fragmentSpreadsByName ??= new AccumulatorMap()).add(

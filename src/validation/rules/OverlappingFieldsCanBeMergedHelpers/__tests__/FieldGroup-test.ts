@@ -15,7 +15,10 @@ import { FieldGroup } from '../FieldGroup.ts';
 import { FieldOccurrence } from '../FieldOccurrence.ts';
 
 const schema = new GraphQLSchema({});
-const context = { getSchema: () => schema };
+const context = {
+  addValidationWork: () => undefined,
+  getSchema: () => schema,
+};
 
 function field(
   name: string,

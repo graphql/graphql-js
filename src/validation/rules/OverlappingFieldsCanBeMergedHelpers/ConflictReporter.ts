@@ -40,6 +40,7 @@ type ConflictKind =
   | 'stream';
 
 interface ConflictReporterContext {
+  addValidationWork: (work: number) => void;
   reportError: (error: GraphQLError) => void;
 }
 
@@ -49,6 +50,8 @@ interface FieldAncestry {
     descendantField: FieldOccurrence,
   ) => boolean;
 }
+
+const FIELD_OCCURRENCE_WORK = 2_000;
 
 /**
  * Reports merge conflicts using their containing response fields to preserve
@@ -180,6 +183,7 @@ export class ConflictReporter {
       field1,
       field2,
       this._fieldAncestry,
+      this._context,
     );
     const outermostPath = containingFields[0];
     const pendingConflict =
@@ -344,6 +348,7 @@ function resolveContainingFieldPath(
   field1: FieldOccurrence,
   field2: FieldOccurrence,
   fieldAncestry: FieldAncestry,
+  context: ConflictReporterContext,
 ): Array<ResolvedContainingField> {
   const resolvedPath: Array<ResolvedContainingField> = [];
   let descendantFields: readonly [FieldOccurrence, FieldOccurrence] = [
@@ -357,6 +362,7 @@ function resolveContainingFieldPath(
       descendantFields[0],
       descendantFields[1],
       fieldAncestry,
+      context,
     );
     if (fields !== undefined) {
       resolvedPath.push({ path, fields });
@@ -372,7 +378,9 @@ function matchingContainingFieldPair(
   field1: FieldOccurrence,
   field2: FieldOccurrence,
   fieldAncestry: FieldAncestry,
+  context: ConflictReporterContext,
 ): readonly [FieldOccurrence, FieldOccurrence] | undefined {
+  context.addValidationWork(FIELD_OCCURRENCE_WORK * fields.length);
   // A containing level belongs to the reported path only when distinct fields
   // separate the two branches. A field that contains both descendants through
   // a shared fragment does not extend the conflict's ancestry.

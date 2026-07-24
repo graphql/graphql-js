@@ -18,7 +18,10 @@ import { ConflictReporter } from '../ConflictReporter.ts';
 import { FieldOccurrence } from '../FieldOccurrence.ts';
 
 const schema = new GraphQLSchema({});
-const context = { getSchema: () => schema };
+const context = {
+  addValidationWork: () => undefined,
+  getSchema: () => schema,
+};
 
 function field(nodeOrName: FieldNode | string): FieldOccurrence {
   return new FieldOccurrence(
@@ -33,9 +36,13 @@ function field(nodeOrName: FieldNode | string): FieldOccurrence {
   );
 }
 
-function reporterFor(errors: Array<GraphQLError>): ConflictReporter {
+function reporterFor(
+  errors: Array<GraphQLError>,
+  addValidationWork = (_work: number) => undefined,
+): ConflictReporter {
   return new ConflictReporter(
     {
+      addValidationWork,
       reportError(error: GraphQLError) {
         errors.push(error);
       },
@@ -53,6 +60,7 @@ function reporterForAncestry(
 ): ConflictReporter {
   return new ConflictReporter(
     {
+      addValidationWork: () => undefined,
       reportError(error: GraphQLError) {
         errors.push(error);
       },
@@ -183,7 +191,10 @@ describe('ConflictReporter', () => {
 
   it('reports a conflict from the nearest common containing path', () => {
     const errors: Array<GraphQLError> = [];
-    const reporter = reporterFor(errors);
+    let validationWork = 0;
+    const reporter = reporterFor(errors, (work) => {
+      validationWork += work;
+    });
     const operation = parse(`
       {
         outer { inner { value: one } }
@@ -237,6 +248,7 @@ describe('ConflictReporter', () => {
     expect(errors.map(({ message }) => message)).to.deep.equal([
       'Fields "inner" conflict because subfields "value" conflict because "one" and "two" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
     ]);
+    expect(validationWork).to.equal(8_000);
   });
 
   it('reports conflicts without a containing path immediately', () => {

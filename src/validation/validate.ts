@@ -21,6 +21,7 @@ import type { SDLValidationRule, ValidationRule } from './ValidationContext.ts';
 import {
   SDLValidationContext,
   ValidationContext,
+  validationWorkLimitError,
 } from './ValidationContext.ts';
 
 /**
@@ -30,6 +31,11 @@ import {
 export interface ValidationOptions {
   /** Maximum number of validation errors before validation stops. */
   maxErrors?: number;
+  /**
+   * Maximum validation work reported by rules before validation stops.
+   * Defaults to 100,000,000.
+   */
+  maxValidationWork?: number;
   /** Whether suggestion text should be omitted from validation errors. */
   hideSuggestions?: Maybe<boolean>;
 }
@@ -44,6 +50,7 @@ const QueryDocumentKeysToValidate = mapValue(
 const tooManyValidationErrorsError = new GraphQLError(
   'Too many validation errors, error limit reached. Validation aborted.',
 );
+const DEFAULT_MAX_VALIDATION_WORK = 100_000_000;
 
 /**
  * Implements the "Validation" section of the spec.
@@ -61,10 +68,12 @@ const tooManyValidationErrorsError = new GraphQLError(
  * Validate will stop validation after a `maxErrors` limit has been reached.
  * Attackers can send pathologically invalid queries to induce a DoS attack,
  * so `maxErrors` defaults to 100 errors.
+ * Validation also stops after rules report more than `maxValidationWork` work
+ * units, which defaults to 100,000,000.
  * @param schema - Schema to validate against.
  * @param documentAST - Document AST to validate.
  * @param rules - Validation rules to apply.
- * @param options - Validation options, including error limits and suggestions.
+ * @param options - Validation limits and suggestion options.
  * @returns Validation errors, or an empty array when the document is valid.
  * @example
  * ```ts
@@ -136,6 +145,8 @@ function validateImpl(
   options: ValidationOptions | undefined,
 ): ReadonlyArray<GraphQLError> {
   const maxErrors = options?.maxErrors ?? 100;
+  const maxValidationWork =
+    options?.maxValidationWork ?? DEFAULT_MAX_VALIDATION_WORK;
   const hideSuggestions = options?.hideSuggestions ?? false;
 
   // If the schema used for validation is invalid, throw an error.
@@ -154,22 +165,23 @@ function validateImpl(
       errors.push(error);
     },
     hideSuggestions,
+    maxValidationWork,
   );
 
-  // This uses a specialized visitor which runs multiple visitors in parallel,
-  // while maintaining the visitor skip and break API.
-  const visitor = visitInParallel(rules.map((rule) => rule(context)));
-
-  // Visit the whole document with each instance of all provided rules.
   try {
+    // This uses a specialized visitor which runs multiple visitors in parallel,
+    // while maintaining the visitor skip and break API.
+    const visitor = visitInParallel(rules.map((rule) => rule(context)));
+
+    // Visit the whole document with each instance of all provided rules.
     visit(
       documentAST,
       visitWithTypeInfo(typeInfo, visitor),
       QueryDocumentKeysToValidate,
     );
   } catch (e: unknown) {
-    if (e === tooManyValidationErrorsError) {
-      errors.push(tooManyValidationErrorsError);
+    if (e === tooManyValidationErrorsError || e === validationWorkLimitError) {
+      errors.push(e as GraphQLError);
     } else {
       throw e;
     }

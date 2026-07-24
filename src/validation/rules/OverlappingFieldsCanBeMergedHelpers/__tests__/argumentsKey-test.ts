@@ -3,9 +3,12 @@ import { describe, it } from 'node:test';
 import { expect } from 'chai';
 
 import type {
+  ArgumentNode,
   FieldNode,
   OperationDefinitionNode,
+  ValueNode,
 } from '../../../../language/ast.ts';
+import { Kind } from '../../../../language/kinds.ts';
 import { parse } from '../../../../language/parser.ts';
 
 import type { VariableScope } from '../argumentsKey.ts';
@@ -50,5 +53,62 @@ describe('argumentsKey', () => {
     const fragmentScope = new Map([['value', 'fragment:value']]);
 
     expect(key('a: $value')).not.to.equal(key('a: $value', fragmentScope));
+  });
+
+  it('records work for argument and value nodes', () => {
+    const operation = parse('{ field(a: { x: [null, $value], y: true }) }')
+      .definitions[0] as OperationDefinitionNode;
+    const field = operation.selectionSet.selections[0] as FieldNode;
+    let work = 0;
+
+    argumentsKey(field.arguments, undefined, {
+      addValidationWork(value) {
+        work += value;
+      },
+    });
+
+    expect(work).to.equal(12_000);
+  });
+
+  it('flushes work before processing a large argument list', () => {
+    const value: ValueNode = { kind: Kind.INT, value: '1' };
+    const args = Array.from<unknown, ArgumentNode>(
+      { length: 50 },
+      (_, index) => ({
+        kind: Kind.ARGUMENT,
+        name: { kind: Kind.NAME, value: `value${index}` },
+        value,
+      }),
+    );
+    const work: Array<number> = [];
+
+    argumentsKey(args, undefined, {
+      addValidationWork(valueToAdd) {
+        work.push(valueToAdd);
+      },
+    });
+
+    expect(work).to.deep.equal([100_000, 100_000]);
+  });
+
+  it('flushes work while processing a large input collection', () => {
+    const values = Array.from<ValueNode>({ length: 50 }).fill({
+      kind: Kind.INT,
+      value: '1',
+    });
+    const argument: ArgumentNode = {
+      kind: Kind.ARGUMENT,
+      name: { kind: Kind.NAME, value: 'values' },
+      value: { kind: Kind.LIST, values },
+    };
+    const work: Array<number> = [];
+
+    argumentsKey([argument], undefined, {
+      addValidationWork(valueToAdd) {
+        work.push(valueToAdd);
+      },
+    });
+
+    expect(work).to.deep.equal([100_000, 4_000]);
   });
 });

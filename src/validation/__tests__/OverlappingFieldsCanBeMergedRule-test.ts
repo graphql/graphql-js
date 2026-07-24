@@ -1,14 +1,20 @@
 import { describe, it } from 'node:test';
 
+import { expectJSON } from '../../__testUtils__/expectJSON.ts';
+
+import { parse } from '../../language/parser.ts';
+
 import type { GraphQLSchema } from '../../type/schema.ts';
 
 import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
 import { OverlappingFieldsCanBeMergedRule } from '../rules/OverlappingFieldsCanBeMergedRule.ts';
+import { validate } from '../validate.ts';
 
 import {
   expectValidationErrors,
   expectValidationErrorsWithSchema,
+  testSchema,
 } from './harness.ts';
 
 function expectErrors(queryStr: string) {
@@ -404,6 +410,39 @@ describe('Validate: Overlapping fields can be merged', () => {
         value: nickname
       }
     `);
+  });
+
+  it('counts nested argument values toward validation work', () => {
+    const withoutArguments = parse(`
+      fragment Fields on Dog {
+        value: name
+        value: name
+      }
+    `);
+    const withNestedArguments = parse(`
+      fragment Fields on Dog {
+        value: name(arg: { nested: [[[1]]] })
+        value: name(arg: { nested: [[[1]]] })
+      }
+    `);
+    const options = { maxValidationWork: 30_000 };
+
+    expectJSON(
+      validate(
+        testSchema,
+        withoutArguments,
+        [OverlappingFieldsCanBeMergedRule],
+        options,
+      ),
+    ).toDeepEqual([]);
+    expectJSON(
+      validate(
+        testSchema,
+        withNestedArguments,
+        [OverlappingFieldsCanBeMergedRule],
+        options,
+      ),
+    ).toDeepEqual([{ message: 'Validation aborted.' }]);
   });
 
   it('Same aliases with different field targets', () => {

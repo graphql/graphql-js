@@ -66,6 +66,7 @@ function fieldSetFixture(
   return new FieldSet(
     {
       validationContext: {
+        addValidationWork: (work) => context.addValidationWork(work),
         getFragment: (fragmentName) => context.getFragment(fragmentName),
         getSchema: () => {
           onCollect?.();

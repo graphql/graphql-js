@@ -13,6 +13,7 @@ import type { VariableScope } from './argumentsKey.ts';
 import { argumentsKey } from './argumentsKey.ts';
 
 interface FieldOccurrenceContext {
+  addValidationWork: (work: number) => void;
   getSchema: () => GraphQLSchema;
 }
 
@@ -59,6 +60,7 @@ export class FieldOccurrence {
     return (this._argumentsKey ??= argumentsKey(
       this.node.arguments,
       this.variableScope,
+      this._context,
     ));
   }
 
@@ -68,7 +70,7 @@ export class FieldOccurrence {
       this._streamArgumentsKey =
         stream === undefined
           ? null
-          : argumentsKey(stream.arguments, this.variableScope);
+          : argumentsKey(stream.arguments, this.variableScope, this._context);
     }
     return this._streamArgumentsKey ?? undefined;
   }

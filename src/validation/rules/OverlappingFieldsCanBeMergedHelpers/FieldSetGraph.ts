@@ -28,6 +28,7 @@ import type { FieldSetContext, FragmentSpreadOccurrence } from './FieldSet.ts';
 import { FieldSet } from './FieldSet.ts';
 
 interface FieldSetGraphContext {
+  addValidationWork: (work: number) => void;
   getFragment: (fragmentName: string) => Maybe<FragmentDefinitionNode>;
   getFragmentSignatureByName: () => (
     fragmentName: string,
@@ -35,6 +36,11 @@ interface FieldSetGraphContext {
   getParentType: () => Maybe<GraphQLCompositeType>;
   getSchema: () => GraphQLSchema;
 }
+
+const FIELD_SET_WORK = 2_000;
+const FIELD_GROUP_WORK = 2_000;
+const FIELD_OCCURRENCE_WORK = 2_000;
+const FRAGMENT_SPREAD_WORK = 16_000;
 
 /**
  * Represents the relationships between document selection sets, field child
@@ -130,8 +136,10 @@ export class FieldSetGraph {
       new SetMap()).getOrInsertComputed(
       startingFieldSets,
       (canonicalStartingFieldSets) =>
-        new EffectiveFieldSet(canonicalStartingFieldSets, (fragmentSpread) =>
-          this._getFragmentFieldSet(fragmentSpread),
+        new EffectiveFieldSet(
+          this._context,
+          canonicalStartingFieldSets,
+          (fragmentSpread) => this._getFragmentFieldSet(fragmentSpread),
         ),
     );
   }
@@ -185,8 +193,13 @@ export class FieldSetGraph {
       return false;
     }
     visited.add(fieldSet);
+    this._context.addValidationWork(FIELD_SET_WORK);
     for (const fieldGroup of fieldSet.getFieldGroupsByResponseName().values()) {
-      for (const field of fieldGroup.getFields()) {
+      const fields = fieldGroup.getFields();
+      this._context.addValidationWork(
+        FIELD_GROUP_WORK + FIELD_OCCURRENCE_WORK * fields.length,
+      );
+      for (const field of fields) {
         if (
           field.node === targetField.node &&
           field.variableScope === targetField.variableScope
@@ -211,6 +224,7 @@ export class FieldSetGraph {
       }
     }
     for (const spreads of fieldSet.getFragmentSpreadsByName().values()) {
+      this._context.addValidationWork(FRAGMENT_SPREAD_WORK * spreads.length);
       for (const spread of spreads) {
         if (
           this._fieldSetContainsField(

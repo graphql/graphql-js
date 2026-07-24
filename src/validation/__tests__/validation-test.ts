@@ -146,6 +146,59 @@ describe('Validate: Limit maximum number of validation errors', () => {
   });
 });
 
+describe('Validate: Validation work limit', () => {
+  it('stops validation with a generic error', () => {
+    const errors = validate(
+      testSchema,
+      parse('{ human { name } }'),
+      undefined,
+      { maxValidationWork: 0 },
+    );
+    expectJSON(errors).toDeepEqual([{ message: 'Validation aborted.' }]);
+  });
+
+  it('shares work between validation rules', () => {
+    function customRule(context: ValidationContext) {
+      return {
+        Document() {
+          context.addValidationWork(1);
+        },
+      };
+    }
+
+    expect(
+      validate(testSchema, parse('{ human { name } }'), [customRule], {
+        maxValidationWork: 1,
+      }),
+    ).to.deep.equal([]);
+
+    const errors = validate(
+      testSchema,
+      parse('{ human { name } }'),
+      [customRule, customRule],
+      { maxValidationWork: 1 },
+    );
+    expectJSON(errors).toDeepEqual([{ message: 'Validation aborted.' }]);
+  });
+
+  it('accepts an infinite limit', () => {
+    expect(
+      validate(
+        testSchema,
+        parse('{ human { name } }'),
+        [
+          (context) => ({
+            Document() {
+              context.addValidationWork(Number.MAX_VALUE);
+            },
+          }),
+        ],
+        { maxValidationWork: Infinity },
+      ),
+    ).to.deep.equal([]);
+  });
+});
+
 describe('operation and variable definition descriptions', () => {
   it('validates operation with description and variable descriptions', () => {
     const schema = buildSchema(

@@ -3,6 +3,14 @@ import { AccumulatorMap } from '../../../jsutils/AccumulatorMap.ts';
 import type { FieldGroup } from './FieldGroup.ts';
 import type { FieldSet, FragmentSpreadOccurrence } from './FieldSet.ts';
 
+interface EffectiveFieldSetContext {
+  addValidationWork: (work: number) => void;
+}
+
+const FIELD_SET_WORK = 2_000;
+const FIELD_GROUP_WORK = 2_000;
+const FRAGMENT_SPREAD_WORK = 16_000;
+
 /**
  * The FieldSets that contribute to one response level, including every named
  * fragment reachable from the FieldSets where the check starts.
@@ -11,6 +19,7 @@ import type { FieldSet, FragmentSpreadOccurrence } from './FieldSet.ts';
  */
 export class EffectiveFieldSet {
   startingFieldSets: ReadonlySet<FieldSet>;
+  private _context: EffectiveFieldSetContext;
   private _getFragmentFieldSet: (
     fragmentSpread: FragmentSpreadOccurrence,
   ) => FieldSet;
@@ -21,9 +30,11 @@ export class EffectiveFieldSet {
     | undefined;
 
   constructor(
+    context: EffectiveFieldSetContext,
     startingFieldSets: ReadonlySet<FieldSet>,
     getFragmentFieldSet: (fragmentSpread: FragmentSpreadOccurrence) => FieldSet,
   ) {
+    this._context = context;
     this.startingFieldSets = startingFieldSets;
     this._getFragmentFieldSet = getFragmentFieldSet;
   }
@@ -37,10 +48,11 @@ export class EffectiveFieldSet {
     // Set iteration visits appended bodies; names terminate cycles and make
     // each fragment body appear only once in an effective field set.
     for (const fieldSet of expanded) {
-      for (const [
-        fragmentName,
-        spreads,
-      ] of fieldSet.getFragmentSpreadsByName()) {
+      const fragmentSpreads = fieldSet.getFragmentSpreadsByName();
+      this._context.addValidationWork(
+        FIELD_SET_WORK + FRAGMENT_SPREAD_WORK * fragmentSpreads.size,
+      );
+      for (const [fragmentName, spreads] of fragmentSpreads) {
         if (
           !this.startingFieldSets.has(fieldSet) &&
           expandedFragmentNames.has(fragmentName)
@@ -75,14 +87,15 @@ export class EffectiveFieldSet {
       return this._overlappingFieldGroupsByResponseName;
     }
     const fieldGroupsByResponseName = new AccumulatorMap<string, FieldGroup>();
+    let work = 0;
     for (const fieldSet of this.getFieldSets()) {
-      for (const [
-        responseName,
-        fieldGroup,
-      ] of fieldSet.getFieldGroupsByResponseName()) {
+      const fieldGroups = fieldSet.getFieldGroupsByResponseName();
+      work += FIELD_SET_WORK + FIELD_GROUP_WORK * fieldGroups.size;
+      for (const [responseName, fieldGroup] of fieldGroups) {
         fieldGroupsByResponseName.add(responseName, fieldGroup);
       }
     }
+    this._context.addValidationWork(work);
     for (const [responseName, fieldGroups] of fieldGroupsByResponseName) {
       if (
         fieldGroups.length === 1 &&

@@ -23,6 +23,15 @@ interface ResponseLevel {
   containingPath: ContainingFieldPath | undefined;
 }
 
+interface ValidationWorkContext {
+  addValidationWork: (work: number) => void;
+}
+
+const FIELD_GROUP_WORK = 2_000;
+const FIELD_OCCURRENCE_WORK = 2_000;
+const COMPARISON_WORK = 2_000;
+const CONFLICT_WORK = 2_000;
+
 /**
  * Checks whether fields that may contribute to the same response object can
  * be merged.
@@ -154,6 +163,7 @@ export class ConflictDetector {
       for (const conflictingSpreads of conflictingPairs(
         spreads,
         (first, second) => first.argumentsKey !== second.argumentsKey,
+        this._context,
       )) {
         this._getReporter().reportFragmentArgumentConflict([
           conflictingSpreads[0].node,
@@ -218,14 +228,16 @@ export class ConflictDetector {
     fieldGroups: ReadonlyArray<FieldGroup>,
     containingPath: ContainingFieldPath | undefined,
   ): ReadonlyArray<FieldOccurrence> {
+    this._context.addValidationWork(FIELD_GROUP_WORK * fieldGroups.length);
     const fields: Array<FieldOccurrence> = [];
     for (const fieldGroup of fieldGroups) {
       for (const field of fieldGroup.getFields()) {
         fields.push(field);
       }
     }
+    this._context.addValidationWork(FIELD_OCCURRENCE_WORK * fields.length);
 
-    for (const conflictingFields of streamConflicts(fields)) {
+    for (const conflictingFields of streamConflicts(fields, this._context)) {
       this._getReporter().reportStreamConflict(
         responseName,
         conflictingFields,
@@ -246,6 +258,7 @@ export class ConflictDetector {
           doTypesConflict(outputType1, outputType2)
         );
       },
+      this._context,
       (field) => field.getOutputType() !== undefined,
     )) {
       this._getReporter().reportResponseShapeConflict(
@@ -274,6 +287,14 @@ export class ConflictDetector {
       responseName,
       fieldGroups,
     ] of overlappingFieldGroupsByResponseName) {
+      let fieldCount = 0;
+      for (const fieldGroup of fieldGroups) {
+        fieldCount += fieldGroup.getFields().length;
+      }
+      this._context.addValidationWork(
+        FIELD_GROUP_WORK * fieldGroups.length +
+          FIELD_OCCURRENCE_WORK * fieldCount,
+      );
       for (const fields of commonParentFieldGroups(fieldGroups)) {
         this._checkFieldsForCommonParent(
           responseName,
@@ -292,6 +313,7 @@ export class ConflictDetector {
     for (const conflictingFields of conflictingPairs(
       fields,
       (first, second) => !fieldsHaveSameCall(first, second),
+      this._context,
     )) {
       this._getReporter().reportFieldCallConflict(
         responseName,
@@ -349,6 +371,7 @@ export class ConflictDetector {
 function* conflictingPairs<T>(
   occurrences: ReadonlyArray<T>,
   conflicts: (occurrence1: T, occurrence2: T) => boolean,
+  context: ValidationWorkContext,
   shouldCompare?: (occurrence: T) => boolean,
 ): IterableIterator<readonly [T, T]> {
   const groups: Array<{ canonical: T; occurrences: Array<T> }> = [];
@@ -357,8 +380,10 @@ function* conflictingPairs<T>(
       continue;
     }
     let matchingGroup: { canonical: T; occurrences: Array<T> } | undefined;
+    context.addValidationWork(COMPARISON_WORK * groups.length);
     for (const group of groups) {
       if (conflicts(group.canonical, occurrence)) {
+        context.addValidationWork(CONFLICT_WORK * group.occurrences.length);
         for (const conflictingOccurrence of group.occurrences) {
           yield [conflictingOccurrence, occurrence];
         }
@@ -377,6 +402,7 @@ function* conflictingPairs<T>(
 // Yields each field pair with at least one streamed field exactly once.
 function* streamConflicts(
   fields: ReadonlyArray<FieldOccurrence>,
+  context: ValidationWorkContext,
 ): IterableIterator<readonly [FieldOccurrence, FieldOccurrence]> {
   const previousFields: Array<FieldOccurrence> = [];
   const streamedFields: Array<FieldOccurrence> = [];
@@ -384,6 +410,7 @@ function* streamConflicts(
     const streamArgumentsKey = field.getStreamArgumentsKey();
     const conflictingFields =
       streamArgumentsKey === undefined ? streamedFields : previousFields;
+    context.addValidationWork(CONFLICT_WORK * conflictingFields.length);
     for (const conflictingField of conflictingFields) {
       yield [conflictingField, field];
     }
