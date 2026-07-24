@@ -38,6 +38,8 @@ import { typeFromAST } from '../../utilities/typeFromAST.ts';
 
 import type { ValidationContext } from '../ValidationContext.ts';
 
+import { ConflictDetector } from './OverlappingFieldsCanBeMergedHelpers/ConflictDetector.ts';
+
 /* eslint-disable max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway
 // so just disable it for entire file.
@@ -101,6 +103,24 @@ function reasonMessage(reason: ConflictReasonMessage): string {
  * ```
  */
 export function OverlappingFieldsCanBeMergedRule(
+  context: ValidationContext,
+): ASTVisitor {
+  const usesFragmentArguments = context
+    .getDocument()
+    .definitions.some(
+      (definition) =>
+        definition.kind === Kind.FRAGMENT_DEFINITION &&
+        (definition.variableDefinitions?.length ?? 0) !== 0,
+    );
+  if (usesFragmentArguments) {
+    return legacyOverlappingFieldsCanBeMergedRule(context);
+  }
+  return new ConflictDetector(context).getVisitor();
+}
+
+/* node:coverage disable */
+/** @internal */
+function legacyOverlappingFieldsCanBeMergedRule(
   context: ValidationContext,
 ): ASTVisitor {
   // A memoization for when fields and a fragment or two fragments are compared
@@ -1162,3 +1182,4 @@ class PairSet<T> {
     }
   }
 }
+/* node:coverage enable */
