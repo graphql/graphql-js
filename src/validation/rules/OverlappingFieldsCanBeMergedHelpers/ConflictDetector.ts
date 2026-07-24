@@ -1,5 +1,7 @@
 import { AccumulatorMap } from '../../../jsutils/AccumulatorMap.ts';
+import { invariant } from '../../../jsutils/invariant.ts';
 
+import type { FragmentDefinitionNode } from '../../../language/ast.ts';
 import type { ASTVisitor } from '../../../language/visitor.ts';
 
 import type { ValidationContext } from '../../ValidationContext.ts';
@@ -14,6 +16,7 @@ import type { FieldOccurrence } from './FieldOccurrence.ts';
 import type { FieldSet, FragmentSpreadOccurrence } from './FieldSet.ts';
 import { FieldSetGraph } from './FieldSetGraph.ts';
 import { FieldSetProofCache } from './FieldSetProofCache.ts';
+import { FieldSetValidationOrder } from './FieldSetValidationOrder.ts';
 
 interface ResponseLevel {
   effectiveFieldSet: EffectiveFieldSet;
@@ -47,35 +50,65 @@ interface ResponseLevel {
  * for compatible arguments. Unlike the two proofs, it compares fragment
  * spreads rather than field occurrences.
  *
- * The document visitor records FieldSets and their fragment relationships,
- * then validation checks each recorded FieldSet. Each proof also checks the
- * child selection sets of every field group it compares.
+ * The document visitor records FieldSets and their fragment relationships.
+ * Validation checks operation FieldSets and every fragment definition they
+ * reach, then checks the remaining fragment graphs source-first. Each proof
+ * also checks the child selection sets of every field group it compares.
  *
  * @internal
  */
 export class ConflictDetector {
   private _context: ValidationContext;
   private _fieldSetGraph: FieldSetGraph;
+  private _validationOrder: FieldSetValidationOrder;
   private _proofCache: FieldSetProofCache | undefined;
   private _reporter: ConflictReporter | undefined;
 
   constructor(context: ValidationContext) {
     this._context = context;
     this._fieldSetGraph = new FieldSetGraph(context);
+    this._validationOrder = new FieldSetValidationOrder();
   }
 
   getVisitor(): ASTVisitor {
-    const fieldSets: Array<FieldSet> = [];
     return this._fieldSetGraph.getVisitor(
-      (fieldSet) => {
-        fieldSets.push(fieldSet);
-      },
+      (fieldSet, definition) => this._validationOrder.add(fieldSet, definition),
       () => {
-        for (const fieldSet of fieldSets) {
+        const operationReachableFragments = new Set<FragmentDefinitionNode>();
+        this._checkOperationReachableFieldSets(
+          this._validationOrder.getOperationFieldSets(),
+          operationReachableFragments,
+        );
+        for (const fieldSet of this._validationOrder.fragmentFieldSetsToCheck(
+          operationReachableFragments,
+        )) {
           this._checkFieldSet(fieldSet);
         }
       },
     );
+  }
+
+  private _checkOperationReachableFieldSets(
+    fieldSets: ReadonlyArray<FieldSet>,
+    operationReachableFragments: Set<FragmentDefinitionNode>,
+  ): void {
+    for (const fieldSet of fieldSets) {
+      this._checkFieldSet(fieldSet);
+      for (const spreads of fieldSet.getFragmentSpreadsByName().values()) {
+        const fragmentDefinition = spreads[0].fragmentDefinition;
+        if (operationReachableFragments.has(fragmentDefinition)) {
+          continue;
+        }
+        const fragmentFieldSets =
+          this._validationOrder.getFragmentFieldSets(fragmentDefinition);
+        invariant(fragmentFieldSets !== undefined);
+        operationReachableFragments.add(fragmentDefinition);
+        this._checkOperationReachableFieldSets(
+          fragmentFieldSets,
+          operationReachableFragments,
+        );
+      }
+    }
   }
 
   private _checkFieldSet(startingFieldSet: FieldSet): void {

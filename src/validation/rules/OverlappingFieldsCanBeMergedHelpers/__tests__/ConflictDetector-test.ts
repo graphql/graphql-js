@@ -70,6 +70,19 @@ function detect(
   return errors;
 }
 
+function fragmentDefinitions(
+  count: number,
+  selections = '',
+  prefix = 'F',
+): string {
+  return Array.from({ length: count }, (_, offset) => {
+    const index = count - offset;
+    const dependency = index === count ? '' : `...${prefix}${index + 1}`;
+    const finalSelections = index === count ? selections : '';
+    return `fragment ${prefix}${index} on Pet { ${prefix.toLowerCase()}${index}: name ${finalSelections} ${dependency} }`;
+  }).join('\n');
+}
+
 describe('ConflictDetector', () => {
   it('terminates variable forwarding through a fragment cycle', () => {
     expect(
@@ -352,6 +365,85 @@ describe('ConflictDetector', () => {
     expect(errors).to.have.length(1);
   });
 
+  it('checks operations before fragment definitions with shared dependencies', () => {
+    const spreads = Array.from(
+      { length: 100 },
+      (_, index) => `...F${100 - index}`,
+    ).join(' ');
+
+    expect(
+      detect(`
+        ${fragmentDefinitions(100)}
+        { pet { ${spreads} } }
+      `),
+    ).to.deep.equal([]);
+  });
+
+  it('does not expand unresolved fragment spreads', () => {
+    expect(detect('{ pet { name ...Missing } }')).to.deep.equal([]);
+  });
+
+  it('checks nested response levels after an operation validates a fragment definition', () => {
+    const errors = detect(`
+      { pet { name ...F } }
+      fragment F on Pet {
+        child { value: name value: nickname }
+      }
+    `);
+
+    expect(errors).to.have.length(1);
+  });
+
+  it('checks nested fragment edges after validating both fragment definitions', () => {
+    const errors = detect(`
+      { pet { ...A ...B } }
+      fragment B on Pet { value: nickname }
+      fragment A on Pet {
+        child { value: name ...B }
+      }
+    `);
+
+    expect(errors).to.have.length(1);
+  });
+
+  it('orders unchecked fragments after operation-reachable fragments', () => {
+    const errors = detect(`
+      ${fragmentDefinitions(250, 'child { value: name value: nickname }')}
+      ${fragmentDefinitions(100, '', 'U')}
+      { pet { ...F1 } }
+    `);
+
+    expect(errors).to.have.length(1);
+  });
+
+  it('shares reachable fragments across operations', () => {
+    expect(
+      detect(`
+        query A { pet { ...F } }
+        query B { pet { ...F } }
+        fragment F on Pet { name }
+      `),
+    ).to.deep.equal([]);
+  });
+
+  it('starts unreferenced fragment graphs at source components', () => {
+    expect(
+      detect(`${fragmentDefinitions(100)}\n{ pet { name } }`),
+    ).to.deep.equal([]);
+  });
+
+  it('checks nested fragment edges from unused source components', () => {
+    const errors = detect(`
+      fragment B on Pet { value: nickname }
+      fragment A on Pet {
+        child { value: name ...B }
+      }
+      { pet { name } }
+    `);
+
+    expect(errors).to.have.length(1);
+  });
+
   it('continues checking nested response levels after fragment argument conflicts', () => {
     const errors = detect(`
       fragment A on Pet {
@@ -406,6 +498,31 @@ describe('ConflictDetector', () => {
     expect(
       errors.some(({ message }) => message.startsWith('Fields "value"')),
     ).to.equal(true);
+  });
+
+  it('schedules fragment argument graphs through inline fragments', () => {
+    expect(
+      detect(`
+        { pet { ...A(surname: true) } }
+        fragment A($surname: Boolean) on Pet {
+          other: name
+          ...F(surname: $surname)
+          ... on Pet { child { name } }
+        }
+        fragment F($surname: Boolean) on Pet {
+          name(surname: $surname)
+        }
+      `),
+    ).to.deep.equal([]);
+  });
+
+  it('checks nested response levels after validating unused source components', () => {
+    const errors = detect(`
+      ${fragmentDefinitions(100, 'child { value: name value: nickname }')}
+      { pet { name } }
+    `);
+
+    expect(errors).to.have.length(1);
   });
 
   it('does not duplicate a streamed field reached through repeated fragments', () => {
@@ -488,6 +605,16 @@ describe('ConflictDetector', () => {
         fragment F on Pet { name }
       `),
     ).to.deep.equal([]);
+  });
+
+  it('checks duplicate fragment definitions independently', () => {
+    expect(
+      detect(`
+        { pet { ...F } }
+        fragment F on Pet { first: name first: nickname }
+        fragment F on Pet { second: name second: nickname }
+      `),
+    ).to.have.length(2);
   });
 
   it('reports conflicts separately for structurally equal fragment bodies', () => {

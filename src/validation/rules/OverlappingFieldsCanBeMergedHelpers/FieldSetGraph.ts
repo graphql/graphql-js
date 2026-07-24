@@ -2,6 +2,7 @@ import type { Maybe } from '../../../jsutils/Maybe.ts';
 import { SetMap } from '../../../jsutils/SetMap.ts';
 
 import type {
+  ExecutableDefinitionNode,
   FragmentDefinitionNode,
   SelectionSetNode,
 } from '../../../language/ast.ts';
@@ -66,9 +67,13 @@ export class FieldSetGraph {
   }
 
   getVisitor(
-    onFieldSet: (fieldSet: FieldSet) => void,
+    onFieldSet: (
+      fieldSet: FieldSet,
+      definition: ExecutableDefinitionNode,
+    ) => void,
     onComplete?: () => void,
   ): ASTVisitor {
+    let definition: ExecutableDefinitionNode | undefined;
     return {
       // TypeInfo installs this document's fragment signatures on entry.
       Document: {
@@ -78,8 +83,17 @@ export class FieldSetGraph {
         },
         leave: onComplete,
       },
+      OperationDefinition: {
+        enter: (node) => {
+          definition = node;
+        },
+        leave: () => {
+          definition = undefined;
+        },
+      },
       FragmentDefinition: {
         enter: (node: FragmentDefinitionNode) => {
+          definition = node;
           if ((node.variableDefinitions?.length ?? 0) !== 0) {
             this._fieldSetContext.usesFragmentArguments = true;
             this._currentVariableScope = this._getOrCreateVariableScope(
@@ -88,6 +102,7 @@ export class FieldSetGraph {
           }
         },
         leave: () => {
+          definition = undefined;
           this._currentVariableScope = undefined;
         },
       },
@@ -98,7 +113,12 @@ export class FieldSetGraph {
         if (isNode(parent) && parent.kind === Kind.INLINE_FRAGMENT) {
           return;
         }
-        onFieldSet(this._addSelectionSet(this._context.getParentType(), node));
+        if (definition !== undefined) {
+          onFieldSet(
+            this._addSelectionSet(this._context.getParentType(), node),
+            definition,
+          );
+        }
       },
     };
   }
