@@ -39,12 +39,13 @@ export class SetMap<T, V> {
   }
 
   getOrInsert(members: ReadonlySet<T>, value: V): V {
-    const entry = this._find(members);
+    const key = this._key(members);
+    const entry = this._entries.get(key);
     if (entry !== undefined) {
       return entry.value;
     }
 
-    this._create(members, value);
+    this._create(key, members, value);
     return value;
   }
 
@@ -52,13 +53,14 @@ export class SetMap<T, V> {
     members: ReadonlySet<T>,
     computeValue: (members: ReadonlySet<T>) => V,
   ): V {
-    const entry = this._find(members);
+    const key = this._key(members);
+    const entry = this._entries.get(key);
     if (entry !== undefined) {
       return entry.value;
     }
 
     const value = computeValue(members);
-    this.set(members, value);
+    this._create(key, members, value);
     return value;
   }
 
@@ -67,13 +69,14 @@ export class SetMap<T, V> {
   }
 
   set(members: ReadonlySet<T>, value: V): this {
-    const entry = this._find(members);
+    const key = this._key(members);
+    const entry = this._entries.get(key);
     if (entry !== undefined) {
       entry.value = value;
       return this;
     }
 
-    this._create(members, value);
+    this._create(key, members, value);
     return this;
   }
 
@@ -103,9 +106,9 @@ export class SetMap<T, V> {
     return this._entries.get(this._key(members));
   }
 
-  _create(members: ReadonlySet<T>, value: V): void {
+  _create(key: string, members: ReadonlySet<T>, value: V): void {
     const entry = { members, value };
-    this._entries.set(this._key(members), entry);
+    this._entries.set(key, entry);
   }
 
   _key(members: ReadonlySet<T>): string {

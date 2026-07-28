@@ -1,14 +1,20 @@
 import { describe, it } from 'node:test';
 
+import { expectJSON } from '../../__testUtils__/expectJSON.ts';
+
+import { parse } from '../../language/parser.ts';
+
 import type { GraphQLSchema } from '../../type/schema.ts';
 
 import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
 import { OverlappingFieldsCanBeMergedRule } from '../rules/OverlappingFieldsCanBeMergedRule.ts';
+import { validate } from '../validate.ts';
 
 import {
   expectValidationErrors,
   expectValidationErrorsWithSchema,
+  testSchema,
 } from './harness.ts';
 
 function expectErrors(queryStr: string) {
@@ -240,6 +246,203 @@ describe('Validate: Overlapping fields can be merged', () => {
         ],
       },
     ]);
+  });
+
+  it('reports field-call and stream conflicts', () => {
+    expectErrors(`
+      fragment mixedConflict on Dog {
+        value: name @stream
+        value: nickname
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Fields "value" conflict because they have overlapping stream directives. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
+      },
+      {
+        message:
+          'Fields "value" conflict because "name" and "nickname" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
+      },
+    ]);
+  });
+
+  it('reports argument and stream conflicts', () => {
+    expectErrors(`
+      fragment mixedConflict on Dog {
+        value: doesKnowCommand(dogCommand: SIT) @stream
+        value: doesKnowCommand(dogCommand: DOWN)
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Fields "value" conflict because they have overlapping stream directives. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
+      },
+      {
+        message:
+          'Fields "value" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
+      },
+    ]);
+  });
+
+  it('reports field-call and return-type conflicts', () => {
+    const schema = buildSchema(`
+      type Dog {
+        name: String
+        parent: Dog
+      }
+
+      type Query {
+        dog: Dog
+      }
+    `);
+
+    expectErrorsWithSchema(
+      schema,
+      `
+        {
+          dog {
+            value: name
+            value: parent { name }
+          }
+        }
+      `,
+    ).toDeepEqual([
+      {
+        message:
+          'Fields "value" conflict because they return conflicting types "String" and "Dog". Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 4, column: 13 },
+          { line: 5, column: 13 },
+        ],
+      },
+      {
+        message:
+          'Fields "value" conflict because "name" and "parent" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 4, column: 13 },
+          { line: 5, column: 13 },
+        ],
+      },
+    ]);
+  });
+
+  it('reports stream and return-type conflicts', () => {
+    const schema = buildSchema(`
+      interface Pet {
+        id: ID
+      }
+
+      type Dog implements Pet {
+        id: ID
+        name: String
+      }
+
+      type Cat implements Pet {
+        id: ID
+        age: Int
+      }
+
+      type Query {
+        pet: Pet
+      }
+    `);
+
+    expectErrorsWithSchema(
+      schema,
+      `
+        {
+          pet {
+            ... on Dog { value: name @stream }
+            ... on Cat { value: age }
+          }
+        }
+      `,
+    ).toDeepEqual([
+      {
+        message:
+          'Fields "value" conflict because they have overlapping stream directives. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 4, column: 26 },
+          { line: 5, column: 26 },
+        ],
+      },
+      {
+        message:
+          'Fields "value" conflict because they return conflicting types "String" and "Int". Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 4, column: 26 },
+          { line: 5, column: 26 },
+        ],
+      },
+    ]);
+  });
+
+  it('does not compare field calls with unknown parent types', () => {
+    expectValid(`
+      {
+        dog {
+          ...Unknown
+          ...Known
+        }
+      }
+
+      fragment Unknown on Missing {
+        value: name
+      }
+
+      fragment Known on Dog {
+        value: nickname
+      }
+    `);
+  });
+
+  it('counts nested argument values toward validation work', () => {
+    const withoutArguments = parse(`
+      fragment Fields on Dog {
+        value: name
+        value: name
+      }
+    `);
+    const withNestedArguments = parse(`
+      fragment Fields on Dog {
+        value: name(arg: { nested: [[[1]]] })
+        value: name(arg: { nested: [[[1]]] })
+      }
+    `);
+    const options = { maxValidationWork: 30_000 };
+
+    expectJSON(
+      validate(
+        testSchema,
+        withoutArguments,
+        [OverlappingFieldsCanBeMergedRule],
+        options,
+      ),
+    ).toDeepEqual([]);
+    expectJSON(
+      validate(
+        testSchema,
+        withNestedArguments,
+        [OverlappingFieldsCanBeMergedRule],
+        options,
+      ),
+    ).toDeepEqual([{ message: 'Validation aborted.' }]);
   });
 
   it('Same aliases with different field targets', () => {
@@ -570,7 +773,7 @@ describe('Validate: Overlapping fields can be merged', () => {
     ]);
   });
 
-  it('does not compare subfields of incompatible parent calls', () => {
+  it('compares subfields of incompatible parent calls', () => {
     expectErrors(`
       fragment incompatibleParents on Dog {
         parent: mother {
@@ -583,16 +786,36 @@ describe('Validate: Overlapping fields can be merged', () => {
     `).toDeepEqual([
       {
         message:
+          'Fields "parent" conflict because subfields "value" conflict because they return conflicting types "String" and "Dog". Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 11 },
+          { line: 6, column: 9 },
+          { line: 7, column: 11 },
+        ],
+      },
+      {
+        message:
           'Fields "parent" conflict because "mother" and "father" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
         locations: [
           { line: 3, column: 9 },
           { line: 6, column: 9 },
         ],
       },
+      {
+        message:
+          'Fields "parent" conflict because subfields "value" conflict because "name" and "mother" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 11 },
+          { line: 6, column: 9 },
+          { line: 7, column: 11 },
+        ],
+      },
     ]);
   });
 
-  it('still compares subfields of each compatible parent-call group', () => {
+  it('reports descendant conflicts alongside every parent-call conflict', () => {
     expectErrors(`
       fragment mixedParents on Dog {
         parent: mother {
@@ -606,7 +829,7 @@ describe('Validate: Overlapping fields can be merged', () => {
     `).toDeepEqual([
       {
         message:
-          'Fields "parent" conflict because subfields "value" conflict because "name" and "mother" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+          'Fields "parent" conflict because subfields "value" conflict because they return conflicting types "String" and "Dog". Use different aliases on the fields to fetch both if this was intentional.',
         locations: [
           { line: 3, column: 9 },
           { line: 4, column: 11 },
@@ -630,10 +853,20 @@ describe('Validate: Overlapping fields can be merged', () => {
           { line: 9, column: 9 },
         ],
       },
+      {
+        message:
+          'Fields "parent" conflict because subfields "value" conflict because "name" and "mother" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 11 },
+          { line: 6, column: 9 },
+          { line: 7, column: 11 },
+        ],
+      },
     ]);
   });
 
-  it('does not compare subfields after a stream conflict', () => {
+  it('compares subfields after a stream conflict', () => {
     expectErrors(`
       fragment streamBarrier on Dog {
         parent: mother @stream { value: name }
@@ -646,6 +879,26 @@ describe('Validate: Overlapping fields can be merged', () => {
         locations: [
           { line: 3, column: 9 },
           { line: 4, column: 9 },
+        ],
+      },
+      {
+        message:
+          'Fields "parent" conflict because subfields "value" conflict because they return conflicting types "String" and "Dog". Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 3, column: 34 },
+          { line: 4, column: 9 },
+          { line: 4, column: 26 },
+        ],
+      },
+      {
+        message:
+          'Fields "parent" conflict because subfields "value" conflict because "name" and "father" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 3, column: 34 },
+          { line: 4, column: 9 },
+          { line: 4, column: 26 },
         ],
       },
     ]);
@@ -712,6 +965,37 @@ describe('Validate: Overlapping fields can be merged', () => {
     ]);
   });
 
+  it('reports a deep conflict through its matching containing fields', () => {
+    expectErrors(`
+      {
+        field { y }
+        field {
+          deepField {
+            x: a
+          }
+        }
+        field {
+          deepField {
+            x: b
+          }
+        }
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Fields "field" conflict because subfields "deepField" conflict because subfields "x" conflict because "a" and "b" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 4, column: 9 },
+          { line: 5, column: 11 },
+          { line: 6, column: 13 },
+          { line: 9, column: 9 },
+          { line: 10, column: 11 },
+          { line: 11, column: 13 },
+        ],
+      },
+    ]);
+  });
+
   it('reports deep conflict to nearest common ancestor in fragments', () => {
     expectErrors(`
       {
@@ -751,6 +1035,36 @@ describe('Validate: Overlapping fields can be merged', () => {
     ]);
   });
 
+  it('reports the containing fields that spread conflicting fragments', () => {
+    expectErrors(`
+      {
+        field { ...Unrelated }
+        field { ...A }
+        field { ...B }
+      }
+      fragment Unrelated on T {
+        y
+      }
+      fragment A on T {
+        x: a
+      }
+      fragment B on T {
+        x: b
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Fields "field" conflict because subfields "x" conflict because "a" and "b" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 4, column: 9 },
+          { line: 11, column: 9 },
+          { line: 5, column: 9 },
+          { line: 14, column: 9 },
+        ],
+      },
+    ]);
+  });
+
   it('reports deep conflict in nested fragments', () => {
     expectErrors(`
       {
@@ -778,14 +1092,14 @@ describe('Validate: Overlapping fields can be merged', () => {
     `).toDeepEqual([
       {
         message:
-          'Fields "field" conflict because subfields "y" conflict because "d" and "c" are different fields and subfields "x" conflict because "b" and "a" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+          'Fields "field" conflict because subfields "y" conflict because "d" and "c" are different fields and subfields "x" conflict because "a" and "b" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
         locations: [
           { line: 3, column: 9 },
           { line: 18, column: 9 },
-          { line: 22, column: 9 },
           { line: 6, column: 9 },
-          { line: 15, column: 9 },
           { line: 11, column: 9 },
+          { line: 15, column: 9 },
+          { line: 22, column: 9 },
         ],
       },
     ]);
@@ -793,13 +1107,13 @@ describe('Validate: Overlapping fields can be merged', () => {
 
   it('reports deep conflict after nested fragments', () => {
     expectErrors(`
-      fragment F on T {
+      fragment F on QueryRoot {
         ...G
       }
-      fragment G on T {
+      fragment G on QueryRoot {
         ...H
       }
-      fragment H on T {
+      fragment H on QueryRoot {
         x: a
       }
       {
@@ -982,7 +1296,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       ]);
     });
 
-    it('does not compare subfields after a response-type conflict', () => {
+    it('compares subfields after a response-type conflict', () => {
       expectErrorsWithSchema(
         schema,
         `
@@ -1004,6 +1318,16 @@ describe('Validate: Overlapping fields can be merged', () => {
           locations: [
             { line: 5, column: 17 },
             { line: 8, column: 17 },
+          ],
+        },
+        {
+          message:
+            'Fields "parent" conflict because subfields "value" conflict because they return conflicting types "String" and "ID". Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 5, column: 17 },
+            { line: 5, column: 36 },
+            { line: 8, column: 17 },
+            { line: 8, column: 32 },
           ],
         },
       ]);
@@ -1298,6 +1622,18 @@ describe('Validate: Overlapping fields can be merged', () => {
       ).toDeepEqual([
         {
           message:
+            'Fields "edges" conflict because subfields "node" conflict because subfields "id" conflict because they return conflicting types "String" and "ID". Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 5, column: 15 },
+            { line: 6, column: 17 },
+            { line: 7, column: 19 },
+            { line: 14, column: 13 },
+            { line: 15, column: 15 },
+            { line: 16, column: 17 },
+          ],
+        },
+        {
+          message:
             'Fields "edges" conflict because subfields "node" conflict because subfields "id" conflict because "name" and "id" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
           locations: [
             { line: 5, column: 15 },
@@ -1391,7 +1727,7 @@ describe('Validate: Overlapping fields can be merged', () => {
         ...fragA
       }
 
-      fragment fragA on Type {
+      fragment fragA on QueryRoot {
         fragA: b
       }
     `).toDeepEqual([
@@ -1521,7 +1857,7 @@ describe('Validate: Overlapping fields can be merged', () => {
           a(x: $y)
           ...WithArgs(x: $y)
         }
-        fragment WithArgs($x: Int) on Type {
+        fragment WithArgs($x: Int) on QueryRoot {
           a(x: $x)
         }
       `).toDeepEqual([
@@ -1542,10 +1878,10 @@ describe('Validate: Overlapping fields can be merged', () => {
           a(x: $z)
           ...WithArgs(y: $z)
         }
-        fragment WithArgs($y: Int) on Type {
+        fragment WithArgs($y: Int) on QueryRoot {
           ...NestedWithArgs(x: $y)
         }
-        fragment NestedWithArgs($x: Int) on Type {
+        fragment NestedWithArgs($x: Int) on QueryRoot {
           a(x: $x)
         }
       `).toDeepEqual([
@@ -1566,7 +1902,7 @@ describe('Validate: Overlapping fields can be merged', () => {
           a(x: 1)
           ...WithArgs
         }
-        fragment WithArgs($x: Int = 1) on Type {
+        fragment WithArgs($x: Int = 1) on QueryRoot {
           a(x: $x)
         }
       `).toDeepEqual([
@@ -1587,7 +1923,7 @@ describe('Validate: Overlapping fields can be merged', () => {
           a(x: $x)
           ...WithArgs
         }
-        fragment WithArgs($x: Int) on Type {
+        fragment WithArgs($x: Int) on QueryRoot {
           a(x: $x)
         }
       `).toDeepEqual([
@@ -1608,7 +1944,7 @@ describe('Validate: Overlapping fields can be merged', () => {
           a(x: $y)
           ...WithArgs
         }
-        fragment WithArgs($x: Int = 1) on Type {
+        fragment WithArgs($x: Int = 1) on QueryRoot {
           a(x: $x)
         }
       `).toDeepEqual([
@@ -1631,7 +1967,7 @@ describe('Validate: Overlapping fields can be merged', () => {
             ...WithArgs(stringListVarX: $stringListVarY)
           }
         }
-        fragment WithArgs($stringListVarX: [String]) on Type {
+        fragment WithArgs($stringListVarX: [String]) on ComplicatedArgs {
           stringListArgField(stringListArg: $stringListVarX)
         }
       `).toDeepEqual([
@@ -1654,7 +1990,7 @@ describe('Validate: Overlapping fields can be merged', () => {
             ...WithArgs(stringListVarX: $stringListVarY)
           }
         }
-        fragment WithArgs($stringListVarX: [String]) on Type {
+        fragment WithArgs($stringListVarX: [String]) on ComplicatedArgs {
           stringListArgField(stringListArg: [$stringListVarX, "fixed"])
         }
       `).toDeepEqual([
@@ -1677,7 +2013,7 @@ describe('Validate: Overlapping fields can be merged', () => {
             ...WithArgs(complexVarX: $complexVarY)
           }
         }
-        fragment WithArgs($complexVarX: ComplexInput) on Type {
+        fragment WithArgs($complexVarX: ComplexInput) on ComplicatedArgs {
           complexArgField(complexArg: $complexVarX)
         }
       `).toDeepEqual([
@@ -1700,7 +2036,7 @@ describe('Validate: Overlapping fields can be merged', () => {
             ...WithArgs(boolVarX: $boolVarY)
           }
         }
-        fragment WithArgs($boolVarX: Boolean) on Type {
+        fragment WithArgs($boolVarX: Boolean) on ComplicatedArgs {
           complexArgField(complexArg: {requiredArg: $boolVarX})
         }
       `).toDeepEqual([
@@ -1775,9 +2111,9 @@ describe('Validate: Overlapping fields can be merged', () => {
           message:
             'Fields "mother" conflict because subfields "doesKnowCommand" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
           locations: [
-            { line: 5, column: 13 },
-            { line: 13, column: 13 },
             { line: 12, column: 11 },
+            { line: 13, column: 13 },
+            { line: 5, column: 13 },
             { line: 11, column: 11 },
           ],
         },
@@ -1794,7 +2130,7 @@ describe('Validate: Overlapping fields can be merged', () => {
           }
           ...Connection
         }
-        fragment Connection on Type {
+        fragment Connection on QueryRoot {
           connection {
             edges {
               ...WithArgs(x: 4)
@@ -1817,6 +2153,17 @@ describe('Validate: Overlapping fields can be merged', () => {
               column: 15,
               line: 13,
             },
+          ],
+        },
+        {
+          message:
+            'Fields "connection" conflict because subfields "edges" conflict because subfields "a" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 3, column: 11 },
+            { line: 4, column: 13 },
+            { line: 18, column: 11 },
+            { line: 11, column: 11 },
+            { line: 12, column: 13 },
           ],
         },
       ]);

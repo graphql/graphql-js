@@ -3,7 +3,7 @@
 import type { Maybe } from '../jsutils/Maybe.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
 
-import type { GraphQLError } from '../error/GraphQLError.ts';
+import { GraphQLError } from '../error/GraphQLError.ts';
 
 import type {
   DocumentNode,
@@ -40,6 +40,11 @@ interface VariableUsage {
   readonly defaultValue: unknown;
   readonly fragmentVariableDefinition: Maybe<VariableDefinitionNode>;
 }
+
+/** @internal */
+export const validationWorkLimitError: GraphQLError = new GraphQLError(
+  'Validation aborted.',
+);
 
 /**
  * An instance of this class is passed as the "this" context to all validators,
@@ -190,6 +195,7 @@ export class ValidationContext extends ASTValidationContext {
     ReadonlyArray<VariableUsage>
   >;
   private _hideSuggestions: boolean;
+  private _remainingValidationWork: number;
 
   /**
    * Creates a ValidationContext instance.
@@ -198,6 +204,7 @@ export class ValidationContext extends ASTValidationContext {
    * @param typeInfo - TypeInfo instance used to track traversal state.
    * @param onError - Callback invoked for each validation error.
    * @param hideSuggestions - Whether suggestion text should be omitted from errors.
+   * @param maxValidationWork - Maximum validation work reported by rules; defaults to no limit.
    * @example
    * ```ts
    * import { parse } from 'graphql/language';
@@ -225,12 +232,14 @@ export class ValidationContext extends ASTValidationContext {
    * errors[0].message; // => 'Example validation error.'
    * ```
    */
+  // eslint-disable-next-line max-params
   constructor(
     schema: GraphQLSchema,
     ast: DocumentNode,
     typeInfo: TypeInfo,
     onError: (error: GraphQLError) => void,
     hideSuggestions?: Maybe<boolean>,
+    maxValidationWork: number = Infinity,
   ) {
     super(ast, onError);
     this._schema = schema;
@@ -238,6 +247,7 @@ export class ValidationContext extends ASTValidationContext {
     this._variableUsages = new Map();
     this._recursiveVariableUsages = new Map();
     this._hideSuggestions = hideSuggestions ?? false;
+    this._remainingValidationWork = maxValidationWork;
   }
 
   /**
@@ -254,6 +264,18 @@ export class ValidationContext extends ASTValidationContext {
    */
   get hideSuggestions(): boolean {
     return this._hideSuggestions;
+  }
+
+  /**
+   * Records validation work performed by rules.
+   * @param work - Number of work units to record.
+   * @internal
+   */
+  addValidationWork(work: number): void {
+    this._remainingValidationWork -= work;
+    if (this._remainingValidationWork < 0) {
+      throw validationWorkLimitError;
+    }
   }
 
   /**
