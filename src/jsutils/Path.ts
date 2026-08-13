@@ -16,7 +16,6 @@ export interface Path {
 
 /**
  * A flattened response path and the nullability metadata for each segment.
- * @internal
  */
 export interface PathDigest {
   /** Response path keys from root to leaf. */
@@ -44,7 +43,6 @@ export function addPath(
  *
  * - path: an Array of the path keys.
  * - pathNonNull: an Array of the `nonNull` value for each path entry.
- * @internal
  * @param pathLinkedList - The linked response path to flatten.
  * @returns The flattened path and nullability metadata.
  * @example

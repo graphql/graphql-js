@@ -57,7 +57,6 @@ export function locatedError(
   nodes: ASTNode | ReadonlyArray<ASTNode> | undefined | null,
   path?: Maybe<ReadonlyArray<string | number>>,
 ): GraphQLError;
-/** @internal */
 export function locatedError(
   rawOriginalError: unknown,
   nodes: ASTNode | ReadonlyArray<ASTNode> | undefined | null,
