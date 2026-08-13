@@ -1077,6 +1077,7 @@ export class Executor<
     const completedResults: Array<unknown> = [];
     let index = 0;
     const iterator = items[Symbol.iterator]();
+    const itemTypeIsNonNull = isNonNullType(itemType);
     try {
       while (true) {
         if (
@@ -1101,12 +1102,7 @@ export class Executor<
 
         // No need to modify the info object containing the path,
         // since from here on it is not ever accessed by resolver functions.
-        const itemPath = addPath(
-          path,
-          index,
-          undefined,
-          isNonNullType(itemType),
-        );
+        const itemPath = addPath(path, index, undefined, itemTypeIsNonNull);
 
         if (
           this.completeMaybePromisedListItemValue(
