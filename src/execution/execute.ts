@@ -701,9 +701,6 @@ function executeFieldsSerially(
         fieldPath,
         fieldDef,
       );
-      if (result === undefined) {
-        return results;
-      }
       if (isPromise(result)) {
         return result.then((resolvedResult) => {
           results[responseName] = resolvedResult;
@@ -758,11 +755,9 @@ function executeFields(
         fieldDef,
       );
 
-      if (result !== undefined) {
-        results[responseName] = result;
-        if (isPromise(result)) {
-          containsPromise = true;
-        }
+      results[responseName] = result;
+      if (isPromise(result)) {
+        containsPromise = true;
       }
     }
   } catch (error) {
@@ -801,7 +796,7 @@ function executeField(
   fieldNodes: ReadonlyArray<FieldNode>,
   path: Path,
   fieldDef: GraphQLField<unknown, unknown>,
-): PromiseOrValue<unknown> {
+): PromiseOrValue<{} | null> {
   const returnType = fieldDef.type;
   const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
 
@@ -949,7 +944,7 @@ function completeValue(
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
-): PromiseOrValue<unknown> {
+): PromiseOrValue<{} | null> {
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
     throw result;
@@ -1111,10 +1106,7 @@ function completeListValue(
  *
  * @internal
  */
-function completeLeafValue(
-  returnType: GraphQLLeafType,
-  result: unknown,
-): unknown {
+function completeLeafValue(returnType: GraphQLLeafType, result: unknown): {} {
   const serializedResult = returnType.serialize(result);
   if (serializedResult == null) {
     throw new Error(
@@ -1122,7 +1114,7 @@ function completeLeafValue(
         `return non-nullable value, returned: ${inspect(serializedResult)}`,
     );
   }
-  return serializedResult;
+  return serializedResult as {};
 }
 
 /**
