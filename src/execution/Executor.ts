@@ -498,9 +498,11 @@ export class Executor<
         if (this.aborted) {
           throw new Error('Aborted!');
         }
+        const firstFieldDetails = fieldDetailsList[0];
+        const firstNode = firstFieldDetails.node;
         const fieldDef = this.validatedExecutionArgs.schema.getField(
           parentType,
-          fieldDetailsList[0].node.name.value,
+          firstNode.name.value,
         );
         if (fieldDef == null) {
           return results;
@@ -557,9 +559,11 @@ export class Executor<
 
     try {
       for (const [responseName, fieldDetailsList] of groupedFieldSet) {
+        const firstFieldDetails = fieldDetailsList[0];
+        const firstNode = firstFieldDetails.node;
         const fieldDef = this.validatedExecutionArgs.schema.getField(
           parentType,
-          fieldDetailsList[0].node.name.value,
+          firstNode.name.value,
         );
         if (fieldDef == null) {
           continue;
