@@ -67,6 +67,7 @@ export function locatedError(
   digestOrPath?: Maybe<PathDigest | ReadonlyArray<string | number>>,
 ): GraphQLError {
   const originalError = toError(rawOriginalError);
+
   // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
   if (isLocatedGraphQLError(originalError)) {
     return originalError;
