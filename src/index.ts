@@ -335,6 +335,7 @@ export type {
   ExecutionArgs,
   ExecutionResult,
   FormattedExecutionResult,
+  PathDigest,
 } from './execution/index';
 
 export type { SubscriptionArgs } from './subscription/index';

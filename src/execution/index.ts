@@ -5,6 +5,7 @@
  * @packageDocumentation
  */
 
+export type { PathDigest } from '../jsutils/Path';
 export {
   pathToArray as responsePathAsArray,
   pathToDigest as getResponsePathDigest,
