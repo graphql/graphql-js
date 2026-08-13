@@ -1,3 +1,14 @@
+/**
+ * Specifies how errors should be handled:
+ *
+ * - `PROPAGATE`: traditional error propagation - an error in a non-nullable
+ *   position will propagate to the closest nullable position
+ * - `NULL`: no error propagation - an error in a non-nullable position will
+ *   set that position to null (the client takes responsibility for ensuring
+ *   the application cannot read a `null` in this position)
+ * - `ABORT`: any error will propagate as far as it can (typically the
+ *   operation root)
+ */
 export type GraphQLErrorBehavior = 'NULL' | 'PROPAGATE' | 'ABORT';
 
 export function isErrorBehavior(
