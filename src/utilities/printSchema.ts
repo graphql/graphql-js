@@ -70,11 +70,7 @@ function printFilteredSchema(
 }
 
 function printSchemaDefinition(schema: GraphQLSchema): Maybe<string> {
-  if (
-    schema.description == null &&
-    schema.defaultErrorBehavior === 'PROPAGATE' &&
-    isSchemaOfCommonNames(schema)
-  ) {
+  if (schema.description == null && isSchemaOfCommonNames(schema)) {
     return;
   }
 
@@ -94,15 +90,8 @@ function printSchemaDefinition(schema: GraphQLSchema): Maybe<string> {
   if (subscriptionType) {
     operationTypes.push(`  subscription: ${subscriptionType.name}`);
   }
-  const directives =
-    schema.defaultErrorBehavior !== 'PROPAGATE'
-      ? `@behavior(onError: ${schema.defaultErrorBehavior}) `
-      : '';
 
-  return (
-    printDescription(schema) +
-    `schema ${directives}{\n${operationTypes.join('\n')}\n}`
-  );
+  return printDescription(schema) + `schema {\n${operationTypes.join('\n')}\n}`;
 }
 
 /**

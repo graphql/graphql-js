@@ -1,7 +1,5 @@
 import type { Maybe } from '../jsutils/Maybe';
 
-import type { GraphQLErrorBehavior } from '../error/ErrorBehavior';
-
 import type { DirectiveLocation } from '../language/directiveLocation';
 
 export interface IntrospectionOptions {
@@ -40,12 +38,6 @@ export interface IntrospectionOptions {
    * Default: false
    */
   oneOf?: boolean;
-
-  /**
-   * Whether target GraphQL server supports changing error behaviors.
-   * Default: false
-   */
-  errorBehavior?: boolean;
 }
 
 /**
@@ -60,7 +52,6 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     schemaDescription: false,
     inputValueDeprecation: false,
     oneOf: false,
-    errorBehavior: false,
     ...options,
   };
 
@@ -73,9 +64,6 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     : '';
   const schemaDescription = optionsWithDefault.schemaDescription
     ? descriptions
-    : '';
-  const defaultErrorBehavior = optionsWithDefault.errorBehavior
-    ? 'defaultErrorBehavior'
     : '';
 
   function inputDeprecation(str: string) {
@@ -90,7 +78,6 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
         queryType { name kind }
         mutationType { name kind }
         subscriptionType { name kind }
-        ${defaultErrorBehavior}
         types {
           ...FullType
         }
@@ -208,7 +195,6 @@ export interface IntrospectionSchema {
   >;
   readonly types: ReadonlyArray<IntrospectionType>;
   readonly directives: ReadonlyArray<IntrospectionDirective>;
-  readonly defaultErrorBehavior?: Maybe<GraphQLErrorBehavior>;
 }
 
 export type IntrospectionType =

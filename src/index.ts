@@ -79,7 +79,6 @@ export {
   __InputValue,
   __EnumValue,
   __TypeKind,
-  __ErrorBehavior,
   // Meta-field definitions.
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
