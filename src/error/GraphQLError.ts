@@ -38,6 +38,7 @@ export interface GraphQLErrorOptions {
   source?: Maybe<Source>;
   positions?: Maybe<ReadonlyArray<number>>;
   path?: Maybe<ReadonlyArray<string | number>>;
+  pathNonNull?: Maybe<ReadonlyArray<boolean>>;
   originalError?: Maybe<Error & { readonly extensions?: unknown }>;
   extensions?: Maybe<GraphQLErrorExtensions>;
 }
@@ -98,6 +99,17 @@ export class GraphQLError extends Error {
   readonly path: ReadonlyArray<string | number> | undefined;
 
   /**
+   * An array describing the schema nullability (true is non-null, false is
+   * nullable) for every position represented by the `path`. Only included for
+   * errors during execution.
+   *
+   * Enumerable, and appears in the result of JSON.stringify().
+   *
+   * @experimental
+   */
+  readonly pathNonNull: ReadonlyArray<boolean> | undefined;
+
+  /**
    * An array of GraphQL AST Nodes corresponding to this error.
    */
   readonly nodes: ReadonlyArray<ASTNode> | undefined;
@@ -140,12 +152,20 @@ export class GraphQLError extends Error {
     extensions?: Maybe<GraphQLErrorExtensions>,
   );
   constructor(message: string, ...rawArgs: BackwardsCompatibleArgs) {
-    const { nodes, source, positions, path, originalError, extensions } =
-      toNormalizedOptions(rawArgs);
+    const {
+      nodes,
+      source,
+      positions,
+      path,
+      pathNonNull,
+      originalError,
+      extensions,
+    } = toNormalizedOptions(rawArgs);
     super(message);
 
     this.name = 'GraphQLError';
     this.path = path ?? undefined;
+    this.pathNonNull = pathNonNull ?? undefined;
     this.originalError = originalError ?? undefined;
 
     // Compute list of blame nodes.
@@ -248,6 +268,10 @@ export class GraphQLError extends Error {
       formattedError.path = this.path;
     }
 
+    if (this.pathNonNull != null) {
+      formattedError.pathNonNull = this.pathNonNull;
+    }
+
     if (this.extensions != null && Object.keys(this.extensions).length > 0) {
       formattedError.extensions = this.extensions;
     }
@@ -284,6 +308,16 @@ export interface GraphQLFormattedError {
    * identify whether a null result is intentional or caused by a runtime error.
    */
   readonly path?: ReadonlyArray<string | number>;
+  /**
+   * If an error can be associated to a particular field in the GraphQL result,
+   * it _must_ contain an entry with the key `pathNonNull` that details the nullability
+   * of each component in the path of the response field which experienced the
+   * error. This allows clients to identify if a null result caused by a
+   * runtime error is subject to error propagation.
+   *
+   * @experimental
+   */
+  readonly pathNonNull?: ReadonlyArray<boolean>;
   /**
    * Reserved for implementors to extend the protocol however they see fit,
    * and hence there are no additional restrictions on its contents.
