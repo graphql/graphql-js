@@ -6,7 +6,10 @@ import { locatedError } from '../locatedError';
 
 describe('locatedError', () => {
   it('passes GraphQLError through', () => {
-    const e = new GraphQLError('msg', { path: ['path', 3, 'to', 'field'] });
+    const e = new GraphQLError('msg', {
+      path: ['path', 3, 'to', 'field'],
+      pathNonNull: [false, true, false, true],
+    });
 
     expect(locatedError(e, [], [])).to.deep.equal(e);
   });

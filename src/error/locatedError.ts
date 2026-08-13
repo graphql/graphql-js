@@ -1,3 +1,4 @@
+import { invariant } from '../jsutils/invariant';
 import type { Maybe } from '../jsutils/Maybe';
 import { toError } from '../jsutils/toError';
 
@@ -14,6 +15,7 @@ export function locatedError(
   rawOriginalError: unknown,
   nodes: ASTNode | ReadonlyArray<ASTNode> | undefined | null,
   path?: Maybe<ReadonlyArray<string | number>>,
+  pathNonNull?: Maybe<ReadonlyArray<boolean>>,
 ): GraphQLError {
   const originalError = toError(rawOriginalError);
 
@@ -22,15 +24,21 @@ export function locatedError(
     return originalError;
   }
 
+  invariant(
+    (path == null) === (pathNonNull == null),
+    'Both path and pathNonNull must be specified, or neither.',
+  );
+
   return new GraphQLError(originalError.message, {
     nodes: (originalError as GraphQLError).nodes ?? nodes,
     source: (originalError as GraphQLError).source,
     positions: (originalError as GraphQLError).positions,
     path,
+    pathNonNull,
     originalError,
   });
 }
 
 function isLocatedGraphQLError(error: any): error is GraphQLError {
-  return Array.isArray(error.path);
+  return Array.isArray(error.path) && Array.isArray(error.pathNonNull);
 }
