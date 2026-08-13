@@ -223,8 +223,9 @@ export interface ExecutionArgs {
   /** Resolver used for the root subscription field. */
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   /**
-   * Experimental. Set to NULL to prevent error propagation. Set to ABORT to
-   * abort a request when any error occurs.
+   * Set to `"NULL"` to disable error propagation. Set to `"ABORT"` to have all
+   * errors propagate as far as possible (typically to the operation root,
+   * resulting in `{ "errors": [...], "data": null }`).
    * @defaultValue `"PROPAGATE"`
    * @experimental
    */
