@@ -2,7 +2,7 @@ import { devAssert } from '../jsutils/devAssert';
 import { inspect } from '../jsutils/inspect';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 import type { Maybe } from '../jsutils/Maybe';
-import { addPath, pathToArray } from '../jsutils/Path';
+import { addPath, pathToDigest } from '../jsutils/Path';
 
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
@@ -10,6 +10,7 @@ import { locatedError } from '../error/locatedError';
 import type { DocumentNode } from '../language/ast';
 
 import type { GraphQLFieldResolver } from '../type/definition';
+import { isNonNullType } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
 
 import { collectFields } from './collectFields';
@@ -225,7 +226,8 @@ async function executeSubscription(
     );
   }
 
-  const path = addPath(undefined, responseName, rootType.name);
+  const fieldNonNull = isNonNullType(fieldDef.type);
+  const path = addPath(undefined, responseName, rootType.name, fieldNonNull);
   const info = buildResolveInfo(
     exeContext,
     fieldDef,
@@ -257,6 +259,6 @@ async function executeSubscription(
     }
     return eventStream;
   } catch (error) {
-    throw locatedError(error, fieldNodes, pathToArray(path));
+    throw locatedError(error, fieldNodes, pathToDigest(path));
   }
 }

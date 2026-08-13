@@ -8,7 +8,7 @@ import type { Maybe } from '../jsutils/Maybe';
 import { memoize3 } from '../jsutils/memoize3';
 import type { ObjMap } from '../jsutils/ObjMap';
 import type { Path } from '../jsutils/Path';
-import { addPath, pathToArray } from '../jsutils/Path';
+import { addPath, pathToDigest } from '../jsutils/Path';
 import { promiseForObject } from '../jsutils/promiseForObject';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import { promiseReduce } from '../jsutils/promiseReduce';
@@ -438,13 +438,27 @@ function executeFieldsSerially(
   return promiseReduce(
     fields.entries(),
     (results, [responseName, fieldNodes]) => {
-      const fieldPath = addPath(path, responseName, parentType.name);
+      const fieldDef = getFieldDef(
+        exeContext.schema,
+        parentType,
+        fieldNodes[0],
+      );
+      if (fieldDef == null) {
+        return results;
+      }
+      const fieldPath = addPath(
+        path,
+        responseName,
+        parentType.name,
+        isNonNullType(fieldDef.type),
+      );
       const result = executeField(
         exeContext,
         parentType,
         sourceValue,
         fieldNodes,
         fieldPath,
+        fieldDef,
       );
       if (result === undefined) {
         return results;
@@ -478,13 +492,27 @@ function executeFields(
 
   try {
     for (const [responseName, fieldNodes] of fields.entries()) {
-      const fieldPath = addPath(path, responseName, parentType.name);
+      const fieldDef = getFieldDef(
+        exeContext.schema,
+        parentType,
+        fieldNodes[0],
+      );
+      if (fieldDef == null) {
+        continue;
+      }
+      const fieldPath = addPath(
+        path,
+        responseName,
+        parentType.name,
+        isNonNullType(fieldDef.type),
+      );
       const result = executeField(
         exeContext,
         parentType,
         sourceValue,
         fieldNodes,
         fieldPath,
+        fieldDef,
       );
 
       if (result !== undefined) {
@@ -527,12 +555,8 @@ function executeField(
   source: unknown,
   fieldNodes: ReadonlyArray<FieldNode>,
   path: Path,
+  fieldDef: GraphQLField<unknown, unknown>,
 ): PromiseOrValue<unknown> {
-  const fieldDef = getFieldDef(exeContext.schema, parentType, fieldNodes[0]);
-  if (!fieldDef) {
-    return;
-  }
-
   const returnType = fieldDef.type;
   const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
 
@@ -582,13 +606,13 @@ function executeField(
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
       return completed.then(undefined, (rawError) => {
-        const error = locatedError(rawError, fieldNodes, pathToArray(path));
+        const error = locatedError(rawError, fieldNodes, pathToDigest(path));
         return handleFieldError(error, returnType, exeContext);
       });
     }
     return completed;
   } catch (rawError) {
-    const error = locatedError(rawError, fieldNodes, pathToArray(path));
+    const error = locatedError(rawError, fieldNodes, pathToDigest(path));
     return handleFieldError(error, returnType, exeContext);
   }
 }
@@ -782,11 +806,12 @@ function completeListValue(
   // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
   const itemType = returnType.ofType;
+  const itemTypeNonNull = isNonNullType(itemType);
   let containsPromise = false;
   const completedResults = Array.from(result, (item, index) => {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
-    const itemPath = addPath(path, index, undefined);
+    const itemPath = addPath(path, index, undefined, itemTypeNonNull);
     try {
       let completedItem;
       if (isPromise(item)) {
@@ -819,14 +844,14 @@ function completeListValue(
           const error = locatedError(
             rawError,
             fieldNodes,
-            pathToArray(itemPath),
+            pathToDigest(itemPath),
           );
           return handleFieldError(error, itemType, exeContext);
         });
       }
       return completedItem;
     } catch (rawError) {
-      const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
+      const error = locatedError(rawError, fieldNodes, pathToDigest(itemPath));
       return handleFieldError(error, itemType, exeContext);
     }
   });

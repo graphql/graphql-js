@@ -1,5 +1,5 @@
-import { invariant } from '../jsutils/invariant';
 import type { Maybe } from '../jsutils/Maybe';
+import type { PathDigest } from '../jsutils/Path';
 import { toError } from '../jsutils/toError';
 
 import type { ASTNode } from '../language/ast';
@@ -14,20 +14,35 @@ import { GraphQLError } from './GraphQLError';
 export function locatedError(
   rawOriginalError: unknown,
   nodes: ASTNode | ReadonlyArray<ASTNode> | undefined | null,
+  digest?: Maybe<PathDigest>,
+): GraphQLError;
+/** @deprecated Pass a digest rather than a path */
+export function locatedError(
+  rawOriginalError: unknown,
+  nodes: ASTNode | ReadonlyArray<ASTNode> | undefined | null,
+  // Need ESLint configuration 'ignoreOverloadsWithDifferentJSDoc: true' to
+  // notice one of the signatures is deprecated.
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
   path?: Maybe<ReadonlyArray<string | number>>,
-  pathNonNull?: Maybe<ReadonlyArray<boolean>>,
+): GraphQLError;
+export function locatedError(
+  rawOriginalError: unknown,
+  nodes: ASTNode | ReadonlyArray<ASTNode> | undefined | null,
+  digestOrPath?: Maybe<PathDigest | ReadonlyArray<string | number>>,
 ): GraphQLError {
   const originalError = toError(rawOriginalError);
-
   // Note: this uses a brand-check to support GraphQL errors originating from other contexts.
   if (isLocatedGraphQLError(originalError)) {
     return originalError;
   }
 
-  invariant(
-    (path == null) === (pathNonNull == null),
-    'Both path and pathNonNull must be specified, or neither.',
-  );
+  const digest: Partial<PathDigest> =
+    digestOrPath == null
+      ? { path: undefined, pathNonNull: undefined }
+      : 'length' in digestOrPath
+      ? { path: digestOrPath, pathNonNull: undefined }
+      : digestOrPath;
+  const { path, pathNonNull } = digest;
 
   return new GraphQLError(originalError.message, {
     nodes: (originalError as GraphQLError).nodes ?? nodes,

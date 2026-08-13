@@ -11,10 +11,23 @@ describe('locatedError', () => {
       pathNonNull: [false, true, false, true],
     });
 
+    expect(locatedError(e, [], { path: [], pathNonNull: [] })).to.deep.equal(e);
+    // Test legacy:
     expect(locatedError(e, [], [])).to.deep.equal(e);
   });
 
   it('wraps non-errors', () => {
+    const testObject = Object.freeze({});
+    const error = locatedError(testObject, [], { path: [], pathNonNull: [] });
+
+    expect(error).to.be.instanceOf(GraphQLError);
+    expect(error.originalError).to.include({
+      name: 'NonErrorThrown',
+      thrownValue: testObject,
+    });
+  });
+
+  it('wraps non-errors (legacy)', () => {
     const testObject = Object.freeze({});
     const error = locatedError(testObject, [], []);
 
@@ -39,6 +52,8 @@ describe('locatedError', () => {
     e.positions = [];
     e.name = 'GraphQLError';
 
+    expect(locatedError(e, [], { path: [], pathNonNull: [] })).to.deep.equal(e);
+    // Test legacy:
     expect(locatedError(e, [], [])).to.deep.equal(e);
   });
 
@@ -47,6 +62,10 @@ describe('locatedError', () => {
     // @ts-expect-error
     e.path = '/something/feed/_search';
 
+    expect(
+      locatedError(e, [], { path: [], pathNonNull: [] }),
+    ).to.not.deep.equal(e);
+    // Test legacy:
     expect(locatedError(e, [], [])).to.not.deep.equal(e);
   });
 });
