@@ -183,7 +183,7 @@ export class BranchingIncrementalPublisher {
             {
               items,
               path: pathToArray(
-                addPath(stream.path, index, undefined, stream.itemTypeNonNull),
+                addPath(stream.path, index, undefined, false),
               ),
             },
             stream.label,
