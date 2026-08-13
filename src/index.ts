@@ -323,6 +323,7 @@ export {
   defaultFieldResolver,
   defaultTypeResolver,
   responsePathAsArray,
+  getResponsePathDigest,
   getArgumentValues,
   getVariableValues,
   getDirectiveValues,
