@@ -988,6 +988,8 @@ export interface GraphQLResolveInfo {
   readonly rootValue: unknown;
   readonly operation: OperationDefinitionNode;
   readonly variableValues: { [variable: string]: unknown };
+  /** @experimental */
+  readonly onError: GraphQLErrorBehavior;
 }
 
 /**

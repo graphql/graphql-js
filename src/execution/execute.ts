@@ -119,6 +119,7 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
+  /** @experimental */
   onError: GraphQLErrorBehavior;
 }
 
