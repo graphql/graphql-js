@@ -135,7 +135,6 @@ export interface ExecutionResult<
 > {
   errors?: ReadonlyArray<GraphQLError>;
   data?: TData | null;
-  onError?: GraphQLErrorBehavior;
   extensions?: TExtensions;
 }
 
