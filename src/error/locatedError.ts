@@ -8,6 +8,8 @@ import type { ASTNode } from '../language/ast.ts';
 
 import { GraphQLError } from './GraphQLError.ts';
 
+type Optional<T> = { [K in keyof T]: T[K] | undefined };
+
 /**
  * Given an arbitrary value, presumably thrown while attempting to execute a
  * GraphQL operation, produce a new GraphQLError aware of the location in the
@@ -70,12 +72,12 @@ export function locatedError(
     return originalError;
   }
 
-  const digest: Partial<PathDigest> =
+  const digest: Optional<PathDigest> =
     digestOrPath == null
-      ? {}
-      : Array.isArray(digestOrPath)
-        ? { path: digestOrPath as ReadonlyArray<string | number> }
-        : (digestOrPath as PathDigest);
+      ? { path: undefined, pathNonNull: undefined }
+      : 'length' in digestOrPath
+        ? { path: digestOrPath, pathNonNull: undefined }
+        : digestOrPath;
   return new GraphQLError(originalError.message, {
     nodes: (originalError as GraphQLError).nodes ?? nodes,
     source: (originalError as GraphQLError).source,
