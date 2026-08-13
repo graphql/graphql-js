@@ -14,6 +14,8 @@ describe('locatedError', () => {
     expect(locatedError(e, [], { path: [], pathNonNull: [] })).to.deep.equal(e);
     // Test legacy:
     expect(locatedError(e, [], [])).to.deep.equal(e);
+    // Test legacy optional:
+    expect(locatedError(e, [])).to.deep.equal(e);
   });
 
   it('wraps non-errors', () => {
@@ -57,6 +59,8 @@ describe('locatedError', () => {
     expect(locatedError(e, [], { path: [], pathNonNull: [] })).to.deep.equal(e);
     // Test legacy:
     expect(locatedError(e, [], [])).to.deep.equal(e);
+    // Test legacy optional:
+    expect(locatedError(e, [])).to.deep.equal(e);
   });
 
   it('does not pass through elasticsearch-like errors', () => {
@@ -69,5 +73,7 @@ describe('locatedError', () => {
     ).to.not.deep.equal(e);
     // Test legacy:
     expect(locatedError(e, [], [])).to.not.deep.equal(e);
+    // Test legacy optional:
+    expect(locatedError(e, [])).to.not.deep.equal(e);
   });
 });
