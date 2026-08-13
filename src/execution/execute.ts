@@ -896,17 +896,15 @@ function handleFieldError(
   if (exeContext.onError === 'PROPAGATE') {
     // If the field type is non-nullable, then it is resolved without any
     // protection from errors, however it still properly locates the error.
-    // Note: semantic non-null types are treated as nullable for the purposes
-    // of error handling.
     if (isNonNullType(returnType)) {
       throw error;
     }
   } else if (exeContext.onError === 'ABORT') {
-    // In this mode, any error aborts the request
+    // In this mode, any error propagates to the root.
     throw error;
   } else if (exeContext.onError === 'NULL') {
     // In this mode, the client takes responsibility for error handling, so we
-    // treat the field as if it were nullable.
+    // do not propagate errors.
     /* c8 ignore next 6 */
   } else {
     invariant(
