@@ -55,9 +55,6 @@ export function locatedError(
 export function locatedError(
   rawOriginalError: unknown,
   nodes: ASTNode | ReadonlyArray<ASTNode> | undefined | null,
-  // Need ESLint configuration 'ignoreOverloadsWithDifferentJSDoc: true' to
-  // notice one of the signatures is deprecated.
-  // eslint-disable-next-line @typescript-eslint/unified-signatures
   path?: Maybe<ReadonlyArray<string | number>>,
 ): GraphQLError;
 /** @internal */
