@@ -60,6 +60,8 @@ import {
 } from './collectFields';
 import { getArgumentValues, getVariableValues } from './values';
 
+const DEFAULT_ERROR_BEHAVIOR = 'PROPAGATE' satisfies GraphQLErrorBehavior
+
 /**
  * A memoized collection of relevant subfields with regard to the return
  * type. Memoizing ensures the subfields are not repeatedly calculated, which
@@ -157,7 +159,7 @@ export interface ExecutionArgs {
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   /**
-   * Experimental. Set to NO_PROPAGATE to prevent error propagation. Set to ABORT to
+   * Experimental. Set to NULL to prevent error propagation. Set to ABORT to
    * abort a request when any error occurs.
    *
    * Default: PROPAGATE
@@ -311,7 +313,7 @@ export function buildExecutionContext(
   if (onError != null && !isErrorBehavior(onError)) {
     return [
       new GraphQLError(
-        'Unsupported `onError` value; supported values are `NO_PROPAGATE`, `PROPAGATE` and `ABORT`.',
+        'Unsupported `onError` value; supported values are `NULL`, `PROPAGATE` and `ABORT`.',
       ),
     ];
   }
@@ -375,7 +377,7 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     errors: [],
-    errorBehavior: onError ?? schema.defaultErrorBehavior,
+    errorBehavior: onError ?? DEFAULT_ERROR_BEHAVIOR,
   };
 }
 
@@ -634,7 +636,7 @@ function handleFieldError(
   } else if (exeContext.errorBehavior === 'ABORT') {
     // In this mode, any error aborts the request
     throw error;
-  } else if (exeContext.errorBehavior === 'NO_PROPAGATE') {
+  } else if (exeContext.errorBehavior === 'NULL') {
     // In this mode, the client takes responsibility for error handling, so we
     // treat the field as if it were nullable.
     /* c8 ignore next 6 */

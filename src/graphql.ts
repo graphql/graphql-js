@@ -69,7 +69,7 @@ export interface GraphQLArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   /**
-   * Experimental. Set to NO_PROPAGATE to prevent error propagation. Set to ABORT to
+   * Experimental. Set to NULL to prevent error propagation. Set to ABORT to
    * abort a request when any error occurs.
    *
    * Default: PROPAGATE

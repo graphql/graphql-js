@@ -288,7 +288,7 @@ describe('Execute: Handles basic execution tasks', () => {
     });
   });
 
-  it('reflects onError:NO_PROPAGATE via errorBehavior', () => {
+  it('reflects onError:NULL via errorBehavior', () => {
     let resolvedInfo;
     const testType = new GraphQLObjectType({
       name: 'Test',
@@ -312,11 +312,11 @@ describe('Execute: Handles basic execution tasks', () => {
       document,
       rootValue,
       variableValues,
-      onError: 'NO_PROPAGATE',
+      onError: 'NULL',
     });
 
     expect(resolvedInfo).to.include({
-      errorBehavior: 'NO_PROPAGATE',
+      errorBehavior: 'NULL',
     });
   });
 
@@ -806,7 +806,7 @@ describe('Execute: Handles basic execution tasks', () => {
     });
   });
 
-  it('Full response path is included for non-nullable fields with onError:NO_PROPAGATE', () => {
+  it('Full response path is included for non-nullable fields with onError:NULL', () => {
     const A: GraphQLObjectType = new GraphQLObjectType({
       name: 'A',
       fields: () => ({
@@ -852,7 +852,7 @@ describe('Execute: Handles basic execution tasks', () => {
       }
     `);
 
-    const result = executeSync({ schema, document, onError: 'NO_PROPAGATE' });
+    const result = executeSync({ schema, document, onError: 'NULL' });
     expectJSON(result).toDeepEqual({
       data: {
         nullableA: {
@@ -957,7 +957,7 @@ describe('Execute: Handles basic execution tasks', () => {
       errors: [
         {
           message:
-            'Unsupported `onError` value; supported values are `NO_PROPAGATE`, `PROPAGATE` and `ABORT`.',
+            'Unsupported `onError` value; supported values are `NULL`, `PROPAGATE` and `ABORT`.',
         },
       ],
     });
