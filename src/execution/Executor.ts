@@ -893,7 +893,7 @@ export class Executor<
       );
 
       if (isPromise(completed)) {
-        completed = (await completed) as {} | null;
+        completed = await completed;
       }
       return completed;
     } catch (rawError) {
@@ -1252,7 +1252,7 @@ export class Executor<
         positionContext,
       );
       if (isPromise(completed)) {
-        completed = (await completed) as {} | null;
+        completed = await completed;
       }
       return completed;
     } catch (rawError) {
