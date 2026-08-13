@@ -72,13 +72,12 @@ export function locatedError(
     return originalError;
   }
 
-  const digest: Optional<PathDigest> =
+  const { path, pathNonNull }: Optional<PathDigest> =
     digestOrPath == null
       ? { path: undefined, pathNonNull: undefined }
       : 'length' in digestOrPath
         ? { path: digestOrPath, pathNonNull: undefined }
         : digestOrPath;
-  const { path, pathNonNull } = digest;
   return new GraphQLError(originalError.message, {
     nodes: (originalError as GraphQLError).nodes ?? nodes,
     source: (originalError as GraphQLError).source,
