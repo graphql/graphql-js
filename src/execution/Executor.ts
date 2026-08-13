@@ -9,7 +9,7 @@ import { memoize2 } from '../jsutils/memoize2.ts';
 import { memoize3 } from '../jsutils/memoize3.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
 import type { Path } from '../jsutils/Path.ts';
-import { addPath, pathToArray } from '../jsutils/Path.ts';
+import { addPath, pathToArray, pathToDigest } from '../jsutils/Path.ts';
 import { promiseForObject } from '../jsutils/promiseForObject.ts';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
 import { promiseReduce } from '../jsutils/promiseReduce.ts';
@@ -496,7 +496,16 @@ export class Executor<
         if (this.aborted) {
           throw new Error('Aborted!');
         }
-        const fieldPath = addPath(path, responseName, parentType.name);
+        const fieldDef = this.validatedExecutionArgs.schema.getField(
+          parentType,
+          fieldDetailsList[0].node.name.value,
+        );
+        const fieldPath = addPath(
+          path,
+          responseName,
+          parentType.name,
+          fieldDef != null && isNonNullType(fieldDef.type),
+        );
         const result = this.executeField(
           parentType,
           sourceValue,
@@ -545,7 +554,16 @@ export class Executor<
 
     try {
       for (const [responseName, fieldDetailsList] of groupedFieldSet) {
-        const fieldPath = addPath(path, responseName, parentType.name);
+        const fieldDef = this.validatedExecutionArgs.schema.getField(
+          parentType,
+          fieldDetailsList[0].node.name.value,
+        );
+        const fieldPath = addPath(
+          path,
+          responseName,
+          parentType.name,
+          fieldDef != null && isNonNullType(fieldDef.type),
+        );
         const result = this.executeField(
           parentType,
           sourceValue,
@@ -722,15 +740,14 @@ export class Executor<
     const error = locatedError(
       rawError,
       toNodes(fieldDetailsList),
-      pathToArray(path),
+      pathToDigest(path),
     );
 
-    // If the field type is non-nullable, then it is resolved without any
-    // protection from errors, however it still properly locates the error.
-    if (
-      this.validatedExecutionArgs.errorPropagation &&
-      isNonNullType(returnType)
-    ) {
+    const { onError } = this.validatedExecutionArgs;
+    if (onError === 'ABORT') {
+      throw error;
+    }
+    if (onError === 'PROPAGATE' && isNonNullType(returnType)) {
       throw error;
     }
 
@@ -921,7 +938,12 @@ export class Executor<
         ) {
           break;
         }
-        const itemPath = addPath(path, index, undefined);
+        const itemPath = addPath(
+          path,
+          index,
+          undefined,
+          isNonNullType(itemType),
+        );
         try {
           // eslint-disable-next-line no-await-in-loop
           iteration = await asyncIterator.next();
@@ -929,7 +951,7 @@ export class Executor<
           throw locatedError(
             rawError,
             toNodes(fieldDetailsList),
-            pathToArray(path),
+            pathToDigest(path),
           );
         }
         if (this.aborted || iteration.done) {
@@ -1079,7 +1101,12 @@ export class Executor<
 
         // No need to modify the info object containing the path,
         // since from here on it is not ever accessed by resolver functions.
-        const itemPath = addPath(path, index, undefined);
+        const itemPath = addPath(
+          path,
+          index,
+          undefined,
+          isNonNullType(itemType),
+        );
 
         if (
           this.completeMaybePromisedListItemValue(

@@ -51,6 +51,7 @@ describe('GraphQLError', () => {
       source,
       positions: [1, 2, 3],
       path: ['a', 'b', 'c'],
+      pathNonNull: [false, true, false],
       cause: new Error('test'),
       originalError: new Error('test'),
       extensions: { foo: 'bar' },
@@ -60,6 +61,7 @@ describe('GraphQLError', () => {
       'message',
       'locations',
       'path',
+      'pathNonNull',
       'extensions',
     ]);
   });
@@ -427,11 +429,15 @@ describe('toString', () => {
 
 describe('toJSON', () => {
   it('includes path', () => {
-    const error = new GraphQLError('msg', { path: ['path', 3, 'to', 'field'] });
+    const error = new GraphQLError('msg', {
+      path: ['path', 3, 'to', 'field'],
+      pathNonNull: [false, true, false, true],
+    });
 
     expect(error.toJSON()).to.deep.equal({
       message: 'msg',
       path: ['path', 3, 'to', 'field'],
+      pathNonNull: [false, true, false, true],
     });
   });
 

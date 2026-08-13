@@ -64,6 +64,40 @@ function executeSync(args: ExecutionArgs): ExecutionResult {
 }
 
 describe('Execute: Handles basic execution tasks', () => {
+  it('supports onError modes and reports path nullability', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          fail: {
+            type: new GraphQLNonNull(GraphQLString),
+            resolve: () => {
+              throw new Error('failure');
+            },
+          },
+        },
+      }),
+    });
+    const document = parse('{ fail }');
+
+    const nullResult = executeSync({ schema, document, onError: 'NULL' });
+    expect(nullResult.data).to.deep.equal({ fail: null });
+    expect(nullResult.errors?.[0].pathNonNull).to.deep.equal([true]);
+
+    const abortResult = executeSync({ schema, document, onError: 'ABORT' });
+    expect(abortResult.data).to.equal(null);
+
+    const invalidResult = executeSync({
+      schema,
+      document,
+      // @ts-expect-error Invalid values are reported as request errors.
+      onError: 'INVALID',
+    });
+    expect(invalidResult.errors?.[0].message).to.equal(
+      'Unsupported `onError` value; supported values are `NULL`, `PROPAGATE` and `ABORT`.',
+    );
+  });
+
   it('executes arbitrary code', async () => {
     const data = {
       a: () => 'Apple',
@@ -258,6 +292,7 @@ describe('Execute: Handles basic execution tasks', () => {
       'rootValue',
       'operation',
       'variableValues',
+      'onError',
       'getAbortSignal',
       'getAsyncHelpers',
     );
@@ -279,7 +314,12 @@ describe('Execute: Handles basic execution tasks', () => {
     const field = operation.selectionSet.selections[0];
     expect(resolvedInfo).to.deep.include({
       fieldNodes: [field],
-      path: { prev: undefined, key: 'result', typename: 'Test' },
+      path: {
+        prev: undefined,
+        key: 'result',
+        typename: 'Test',
+        nonNull: false,
+      },
       variableValues: {
         sources: {
           var: {
@@ -366,12 +406,15 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(path).to.deep.equal({
       key: 'l2',
       typename: 'SomeObject',
+      nonNull: false,
       prev: {
         key: 0,
         typename: undefined,
+        nonNull: true,
         prev: {
           key: 'l1',
           typename: 'SomeQuery',
+          nonNull: true,
           prev: undefined,
         },
       },

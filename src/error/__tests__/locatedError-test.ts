@@ -7,7 +7,10 @@ import { locatedError } from '../locatedError.ts';
 
 describe('locatedError', () => {
   it('passes GraphQLError through', () => {
-    const e = new GraphQLError('msg', { path: ['path', 3, 'to', 'field'] });
+    const e = new GraphQLError('msg', {
+      path: ['path', 3, 'to', 'field'],
+      pathNonNull: [false, true, false, true],
+    });
 
     expect(locatedError(e, [], [])).to.deep.equal(e);
   });
@@ -29,6 +32,8 @@ describe('locatedError', () => {
     e.locations = [];
     // @ts-expect-error
     e.path = [];
+    // @ts-expect-error
+    e.pathNonNull = [];
     // @ts-expect-error
     e.nodes = [];
     // @ts-expect-error
