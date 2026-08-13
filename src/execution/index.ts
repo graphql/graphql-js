@@ -5,7 +5,11 @@
  * @packageDocumentation
  */
 
-export { pathToArray as responsePathAsArray } from '../jsutils/Path';
+export type { PathDigest } from '../jsutils/Path';
+export {
+  pathToArray as responsePathAsArray,
+  pathToDigest as getResponsePathDigest,
+} from '../jsutils/Path';
 
 export {
   execute,

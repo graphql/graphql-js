@@ -323,6 +323,7 @@ export {
   defaultFieldResolver,
   defaultTypeResolver,
   responsePathAsArray,
+  getResponsePathDigest,
   getArgumentValues,
   getVariableValues,
   getDirectiveValues,
@@ -334,6 +335,7 @@ export type {
   ExecutionArgs,
   ExecutionResult,
   FormattedExecutionResult,
+  PathDigest,
 } from './execution/index';
 
 export type { SubscriptionArgs } from './subscription/index';
@@ -396,6 +398,7 @@ export {
   locatedError,
   printError,
   formatError,
+  isErrorBehavior,
 } from './error/index';
 
 export type {
@@ -403,6 +406,7 @@ export type {
   GraphQLFormattedError,
   GraphQLErrorExtensions,
   GraphQLFormattedErrorExtensions,
+  GraphQLErrorBehavior,
 } from './error/index';
 
 // Utilities for operating on GraphQL type schema and parsed sources.

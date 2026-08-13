@@ -10,6 +10,18 @@ export interface Path {
   readonly key: string | number;
   /** The runtime object type name associated with this path segment, if known. */
   readonly typename: string | undefined;
+  /** Whether this response path segment resolves through a non-null type. */
+  readonly nonNull: boolean;
+}
+
+/**
+ * A flattened response path and the nullability metadata for each segment.
+ */
+export interface PathDigest {
+  /** Response path keys from root to leaf. */
+  readonly path: ReadonlyArray<string | number>;
+  /** Whether each response path segment resolves through a non-null type. */
+  readonly pathNonNull: ReadonlyArray<boolean>;
 }
 
 /**
@@ -21,10 +33,43 @@ export function addPath(
   prev: Readonly<Path> | undefined,
   key: string | number,
   typename: string | undefined,
+  nonNull: boolean,
 ): Path {
-  return { prev, key, typename };
+  return { prev, key, typename, nonNull };
 }
 
+/**
+ * Given a Path, return an object containing:
+ *
+ * - path: an Array of the path keys.
+ * - pathNonNull: an Array of the `nonNull` value for each path entry.
+ * @param pathLinkedList - The linked response path to flatten.
+ * @returns The flattened path and nullability metadata.
+ * @example
+ * ```ts
+ * const path = addPath(undefined, 'viewer', 'Query', false);
+ *
+ * pathToDigest(path);
+ * // { path: ['viewer'], pathNonNull: [false] }
+ * ```
+ */
+export function pathToDigest(
+  pathLinkedList: Maybe<Readonly<Path>>,
+): PathDigest {
+  const path: Array<string | number> = [];
+  const pathNonNull: Array<boolean> = [];
+  let curr = pathLinkedList;
+  while (curr) {
+    path.push(curr.key);
+    pathNonNull.push(curr.nonNull);
+    curr = curr.prev;
+  }
+  path.reverse();
+  pathNonNull.reverse();
+  return { path, pathNonNull };
+}
+
+// To be deprecated in favour of pathToDigest when the `onError` experiment is accepted
 /**
  * Given a Path, return an Array of the path keys.
  * @param path - The linked response path to flatten.
@@ -54,11 +99,5 @@ export function addPath(
 export function pathToArray(
   path: Maybe<Readonly<Path>>,
 ): Array<string | number> {
-  const flattened = [];
-  let curr = path;
-  while (curr) {
-    flattened.push(curr.key);
-    curr = curr.prev;
-  }
-  return flattened.reverse();
+  return [...pathToDigest(path).path];
 }

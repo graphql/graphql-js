@@ -229,6 +229,7 @@ describe('Execute: Handles inputs', () => {
               message:
                 'Argument "input" has invalid value ["foo", "bar", "baz"].',
               path: ['fieldWithObjectInput'],
+              pathNonNull: [false],
               locations: [{ line: 3, column: 41 }],
             },
           ],
@@ -265,6 +266,7 @@ describe('Execute: Handles inputs', () => {
           {
             message: 'Argument "input" has invalid value {c: "foo", e: "bar"}.',
             path: ['fieldWithObjectInput'],
+            pathNonNull: [false],
             locations: [{ line: 3, column: 39 }],
           },
         ],
@@ -746,6 +748,7 @@ describe('Execute: Handles inputs', () => {
               'Argument "input" of required type "String!" was not provided.',
             locations: [{ line: 1, column: 3 }],
             path: ['fieldWithNonNullableStringInput'],
+            pathNonNull: [false],
           },
         ],
       });
@@ -794,6 +797,7 @@ describe('Execute: Handles inputs', () => {
               'Argument "input" of required type "String!" was provided the variable "$foo" which was not provided a runtime value.',
             locations: [{ line: 3, column: 50 }],
             path: ['fieldWithNonNullableStringInput'],
+            pathNonNull: [false],
           },
         ],
       });
@@ -1045,6 +1049,7 @@ describe('Execute: Handles inputs', () => {
             message: 'Argument "input" has invalid value WRONG_TYPE.',
             locations: [{ line: 3, column: 48 }],
             path: ['fieldWithDefaultArgumentValue'],
+            pathNonNull: [false],
           },
         ],
       });

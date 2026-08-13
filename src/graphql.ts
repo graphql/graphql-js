@@ -3,6 +3,8 @@ import { isPromise } from './jsutils/isPromise';
 import type { Maybe } from './jsutils/Maybe';
 import type { PromiseOrValue } from './jsutils/PromiseOrValue';
 
+import type { GraphQLErrorBehavior } from './error/GraphQLErrorBehavior';
+
 import { parse } from './language/parser';
 import type { Source } from './language/source';
 
@@ -66,6 +68,14 @@ export interface GraphQLArgs {
    * `__typename` field or alternatively calls the `isTypeOf` method.
    */
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+  /**
+   * Set to `"NULL"` to disable error propagation. Set to `"ABORT"` to have all
+   * errors propagate as far as possible (typically to the operation root,
+   * resulting in `{ "errors": [...], "data": null }`).
+   * @defaultValue `"PROPAGATE"`
+   * @experimental
+   */
+  onError?: GraphQLErrorBehavior;
 }
 
 /**
@@ -228,6 +238,7 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    onError,
   } = args;
 
   // Validate Schema
@@ -260,5 +271,6 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    onError,
   });
 }

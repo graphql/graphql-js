@@ -6,12 +6,30 @@ import { locatedError } from '../locatedError';
 
 describe('locatedError', () => {
   it('passes GraphQLError through', () => {
-    const e = new GraphQLError('msg', { path: ['path', 3, 'to', 'field'] });
+    const e = new GraphQLError('msg', {
+      path: ['path', 3, 'to', 'field'],
+      pathNonNull: [false, true, false, true],
+    });
 
+    expect(locatedError(e, [], { path: [], pathNonNull: [] })).to.deep.equal(e);
+    // Test legacy:
     expect(locatedError(e, [], [])).to.deep.equal(e);
+    // Test legacy optional:
+    expect(locatedError(e, [])).to.deep.equal(e);
   });
 
   it('wraps non-errors', () => {
+    const testObject = Object.freeze({});
+    const error = locatedError(testObject, [], { path: [], pathNonNull: [] });
+
+    expect(error).to.be.instanceOf(GraphQLError);
+    expect(error.originalError).to.include({
+      name: 'NonErrorThrown',
+      thrownValue: testObject,
+    });
+  });
+
+  it('wraps non-errors (legacy)', () => {
     const testObject = Object.freeze({});
     const error = locatedError(testObject, [], []);
 
@@ -29,6 +47,8 @@ describe('locatedError', () => {
     // @ts-expect-error
     e.path = [];
     // @ts-expect-error
+    e.pathNonNull = [];
+    // @ts-expect-error
     e.nodes = [];
     // @ts-expect-error
     e.source = null;
@@ -36,7 +56,11 @@ describe('locatedError', () => {
     e.positions = [];
     e.name = 'GraphQLError';
 
+    expect(locatedError(e, [], { path: [], pathNonNull: [] })).to.deep.equal(e);
+    // Test legacy:
     expect(locatedError(e, [], [])).to.deep.equal(e);
+    // Test legacy optional:
+    expect(locatedError(e, [])).to.deep.equal(e);
   });
 
   it('does not pass through elasticsearch-like errors', () => {
@@ -44,6 +68,12 @@ describe('locatedError', () => {
     // @ts-expect-error
     e.path = '/something/feed/_search';
 
+    expect(
+      locatedError(e, [], { path: [], pathNonNull: [] }),
+    ).to.not.deep.equal(e);
+    // Test legacy:
     expect(locatedError(e, [], [])).to.not.deep.equal(e);
+    // Test legacy optional:
+    expect(locatedError(e, [])).to.not.deep.equal(e);
   });
 });
