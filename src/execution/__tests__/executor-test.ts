@@ -264,7 +264,7 @@ describe('Execute: Handles basic execution tasks', () => {
       'rootValue',
       'operation',
       'variableValues',
-      'errorBehavior',
+      'onError',
     );
 
     const operation = document.definitions[0];
@@ -277,7 +277,7 @@ describe('Execute: Handles basic execution tasks', () => {
       schema,
       rootValue,
       operation,
-      errorBehavior: 'PROPAGATE',
+      onError: 'PROPAGATE',
     });
 
     const field = operation.selectionSet.selections[0];
@@ -288,7 +288,7 @@ describe('Execute: Handles basic execution tasks', () => {
     });
   });
 
-  it('reflects onError:NULL via errorBehavior', () => {
+  it('reflects onError:NULL via onError', () => {
     let resolvedInfo;
     const testType = new GraphQLObjectType({
       name: 'Test',
@@ -316,11 +316,11 @@ describe('Execute: Handles basic execution tasks', () => {
     });
 
     expect(resolvedInfo).to.include({
-      errorBehavior: 'NULL',
+      onError: 'NULL',
     });
   });
 
-  it('reflects onError:ABORT via errorBehavior', () => {
+  it('reflects onError:ABORT via onError', () => {
     let resolvedInfo;
     const testType = new GraphQLObjectType({
       name: 'Test',
@@ -348,7 +348,7 @@ describe('Execute: Handles basic execution tasks', () => {
     });
 
     expect(resolvedInfo).to.include({
-      errorBehavior: 'ABORT',
+      onError: 'ABORT',
     });
   });
 

@@ -119,7 +119,7 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
-  errorBehavior: GraphQLErrorBehavior;
+  onError: GraphQLErrorBehavior;
 }
 
 /**
@@ -377,7 +377,7 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     errors: [],
-    errorBehavior: onError ?? DEFAULT_ERROR_BEHAVIOR,
+    onError: onError ?? DEFAULT_ERROR_BEHAVIOR,
   };
 }
 
@@ -616,7 +616,7 @@ export function buildResolveInfo(
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
-    errorBehavior: exeContext.errorBehavior,
+    onError: exeContext.onError,
   };
 }
 
@@ -625,7 +625,7 @@ function handleFieldError(
   returnType: GraphQLOutputType,
   exeContext: ExecutionContext,
 ): null {
-  if (exeContext.errorBehavior === 'PROPAGATE') {
+  if (exeContext.onError === 'PROPAGATE') {
     // If the field type is non-nullable, then it is resolved without any
     // protection from errors, however it still properly locates the error.
     // Note: semantic non-null types are treated as nullable for the purposes
@@ -633,17 +633,17 @@ function handleFieldError(
     if (isNonNullType(returnType)) {
       throw error;
     }
-  } else if (exeContext.errorBehavior === 'ABORT') {
+  } else if (exeContext.onError === 'ABORT') {
     // In this mode, any error aborts the request
     throw error;
-  } else if (exeContext.errorBehavior === 'NULL') {
+  } else if (exeContext.onError === 'NULL') {
     // In this mode, the client takes responsibility for error handling, so we
     // treat the field as if it were nullable.
     /* c8 ignore next 6 */
   } else {
     invariant(
       false,
-      'Unexpected errorBehavior setting: ' + inspect(exeContext.errorBehavior),
+      'Unexpected onError setting: ' + inspect(exeContext.onError),
     );
   }
 
