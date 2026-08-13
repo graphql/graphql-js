@@ -36,7 +36,7 @@ import { GraphQLError } from './GraphQLError';
 export function locatedError(
   rawOriginalError: unknown,
   nodes: ASTNode | ReadonlyArray<ASTNode> | undefined | null,
-  digest?: Maybe<PathDigest>,
+  digest: PathDigest,
 ): GraphQLError;
 /**
  * Given an arbitrary value, presumably thrown while attempting to execute a
