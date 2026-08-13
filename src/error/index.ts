@@ -17,3 +17,4 @@ export { syntaxError } from './syntaxError';
 
 export { locatedError } from './locatedError';
 export type { GraphQLErrorBehavior } from './GraphQLErrorBehavior';
+export { isErrorBehavior } from './GraphQLErrorBehavior';

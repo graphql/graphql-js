@@ -396,14 +396,15 @@ export {
   locatedError,
   printError,
   formatError,
+  isErrorBehavior,
 } from './error/index';
 
 export type {
-  GraphQLErrorBehavior,
   GraphQLErrorOptions,
   GraphQLFormattedError,
   GraphQLErrorExtensions,
   GraphQLFormattedErrorExtensions,
+  GraphQLErrorBehavior,
 } from './error/index';
 
 // Utilities for operating on GraphQL type schema and parsed sources.
