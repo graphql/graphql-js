@@ -358,6 +358,7 @@ export interface ItemStream extends Stream<
   ItemStream
 > {
   path: Path;
+  itemTypeNonNull: boolean;
   label: string | undefined;
   initialCount: number;
 }
@@ -818,6 +819,7 @@ export class IncrementalExecutor<
     const itemStream: ItemStream = {
       label: streamUsage.label,
       path,
+      itemTypeNonNull: isNonNullType(itemType),
       queue,
       initialCount: index,
     };

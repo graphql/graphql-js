@@ -33,7 +33,7 @@ export function addPath(
   prev: Readonly<Path> | undefined,
   key: string | number,
   typename: string | undefined,
-  nonNull = false,
+  nonNull: boolean,
 ): Path {
   return { prev, key, typename, nonNull };
 }
