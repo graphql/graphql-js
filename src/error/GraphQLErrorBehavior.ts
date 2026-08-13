@@ -15,7 +15,6 @@ export type GraphQLErrorBehavior = 'NULL' | 'PROPAGATE' | 'ABORT';
 
 /**
  * True if the given value is a GraphQL error behavior.
- * @internal
  * @experimental
  * @param onError - The value to check.
  * @returns True when the value is a supported error behavior.
