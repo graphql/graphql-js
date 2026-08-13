@@ -927,6 +927,7 @@ export class Executor<
     const asyncIterator = items[Symbol.asyncIterator]();
     let index = 0;
     let iteration;
+    const itemTypeIsNonNull = isNonNullType(itemType);
     try {
       while (true) {
         if (
@@ -942,12 +943,7 @@ export class Executor<
         ) {
           break;
         }
-        const itemPath = addPath(
-          path,
-          index,
-          undefined,
-          isNonNullType(itemType),
-        );
+        const itemPath = addPath(path, index, undefined, itemTypeIsNonNull);
         try {
           // eslint-disable-next-line no-await-in-loop
           iteration = await asyncIterator.next();
