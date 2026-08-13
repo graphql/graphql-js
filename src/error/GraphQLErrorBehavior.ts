@@ -8,12 +8,15 @@
  *   the application cannot read a `null` in this position)
  * - `ABORT`: any error will propagate as far as it can (typically the
  *   operation root)
- *
+ * @category Errors
  * @experimental
  */
 export type GraphQLErrorBehavior = 'NULL' | 'PROPAGATE' | 'ABORT';
 
-/** @experimental */
+/**
+ * True if the given value is a GraphQL error behavior.
+ * @experimental
+ */
 export function isErrorBehavior(
   onError: unknown,
 ): onError is GraphQLErrorBehavior {

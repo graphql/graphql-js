@@ -224,8 +224,7 @@ export interface ExecutionArgs {
    * Experimental. Set to NULL to prevent error propagation. Set to ABORT to
    * abort a request when any error occurs.
    *
-   * Default: PROPAGATE
-   *
+   * @defaultValue `"PROPAGATE"`
    * @experimental
    */
   onError?: GraphQLErrorBehavior;

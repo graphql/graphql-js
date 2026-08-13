@@ -117,7 +117,6 @@ export class GraphQLError extends Error {
    * errors during execution.
    *
    * Enumerable, and appears in the result of JSON.stringify().
-   *
    * @experimental
    */
   readonly pathNonNull: ReadonlyArray<boolean> | undefined;
@@ -434,7 +433,6 @@ export interface GraphQLFormattedError {
    * of each component in the path of the response field which experienced the
    * error. This allows clients to identify if a null result caused by a
    * runtime error is subject to error propagation.
-   *
    * @experimental
    */
   readonly pathNonNull?: ReadonlyArray<boolean>;
