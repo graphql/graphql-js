@@ -196,11 +196,13 @@ describe('Execute: Handles mutation execution ordering', () => {
           message: 'Cannot change the number',
           locations: [{ line: 9, column: 9 }],
           path: ['third'],
+          pathNonNull: [false],
         },
         {
           message: 'Cannot change the number',
           locations: [{ line: 18, column: 9 }],
           path: ['sixth'],
+          pathNonNull: [false],
         },
       ],
     });

@@ -42,7 +42,11 @@ describe('locatedError', () => {
     e.positions = [];
     e.name = 'GraphQLError';
 
+    expect(locatedError(e, [], { path: [], pathNonNull: [] })).to.deep.equal(e);
+    // Test legacy:
     expect(locatedError(e, [], [])).to.deep.equal(e);
+    // Test legacy optional:
+    expect(locatedError(e, [])).to.deep.equal(e);
   });
 
   it('does not pass through elasticsearch-like errors', () => {
@@ -50,6 +54,12 @@ describe('locatedError', () => {
     // @ts-expect-error
     e.path = '/something/feed/_search';
 
+    expect(
+      locatedError(e, [], { path: [], pathNonNull: [] }),
+    ).to.not.deep.equal(e);
+    // Test legacy:
     expect(locatedError(e, [], [])).to.not.deep.equal(e);
+    // Test legacy optional:
+    expect(locatedError(e, [])).to.not.deep.equal(e);
   });
 });

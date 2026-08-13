@@ -3,7 +3,9 @@
  *
  * - `PROPAGATE`: errors in non-null positions propagate to the closest nullable position.
  * - `NULL`: errors resolve to null without propagation.
- * - `ABORT`: errors propagate as far as possible, typically to the operation root.
+ * - `ABORT`: errors propagate as far as possible, typically to the operation
+ *   root. With incremental delivery, propagation can stop at an incremental
+ *   delivery boundary.
  * @experimental
  * @category Errors
  */

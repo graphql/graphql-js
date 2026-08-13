@@ -3,17 +3,6 @@ import { expect } from 'chai';
 import { isObjectLike } from '../jsutils/isObjectLike.ts';
 import { mapValue } from '../jsutils/mapValue.ts';
 
-function withoutPathNonNull(value: unknown): unknown {
-  if (Array.isArray(value)) {
-    return value.map(withoutPathNonNull);
-  }
-  if (!isObjectLike(value)) {
-    return value;
-  }
-  const { pathNonNull: _pathNonNull, ...rest } = value;
-  return mapValue(rest, withoutPathNonNull);
-}
-
 /**
  * Deeply transforms an arbitrary value to a JSON-safe value by calling toJSON
  * on any nested value which defines it.
@@ -41,18 +30,18 @@ export function expectJSON(actual: unknown): {
     expected: unknown,
   ) => ReturnType<typeof expect>;
 } {
-  const actualJSON = withoutPathNonNull(toJSONDeep(actual));
+  const actualJSON = toJSONDeep(actual);
 
   return {
     toDeepEqual(expected: unknown): ReturnType<typeof expect> {
-      const expectedJSON = withoutPathNonNull(toJSONDeep(expected));
+      const expectedJSON = toJSONDeep(expected);
       return expect(actualJSON).to.deep.equal(expectedJSON);
     },
     toDeepNestedProperty(
       path: string,
       expected: unknown,
     ): ReturnType<typeof expect> {
-      const expectedJSON = withoutPathNonNull(toJSONDeep(expected));
+      const expectedJSON = toJSONDeep(expected);
       return expect(actualJSON).to.deep.nested.property(path, expectedJSON);
     },
   };

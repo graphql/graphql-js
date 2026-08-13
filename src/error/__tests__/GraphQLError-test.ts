@@ -330,10 +330,12 @@ describe('GraphQLError', () => {
     `);
 
     const path = ['path', 2, 'field'];
+    const pathNonNull = [false, true, false];
     const extensions = { foo: 'bar' };
     const eFull = new GraphQLError('msg', {
       nodes: fieldNode,
       path,
+      pathNonNull,
       extensions,
     });
 
@@ -352,6 +354,11 @@ describe('GraphQLError', () => {
           "path",
           2,
           "field"
+        ],
+        "pathNonNull": [
+          false,
+          true,
+          false
         ],
         "extensions": {
           "foo": "bar"
