@@ -13,10 +13,10 @@ import { promiseForObject } from '../jsutils/promiseForObject';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import { promiseReduce } from '../jsutils/promiseReduce';
 
-import type { GraphQLErrorBehavior } from '../error/ErrorBehavior';
-import { isErrorBehavior } from '../error/ErrorBehavior';
 import type { GraphQLFormattedError } from '../error/GraphQLError';
 import { GraphQLError } from '../error/GraphQLError';
+import type { GraphQLErrorBehavior } from '../error/GraphQLErrorBehavior';
+import { isErrorBehavior } from '../error/GraphQLErrorBehavior';
 import { locatedError } from '../error/locatedError';
 
 import type {

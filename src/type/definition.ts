@@ -15,6 +15,7 @@ import { suggestionList } from '../jsutils/suggestionList';
 import { toObjMap } from '../jsutils/toObjMap';
 
 import { GraphQLError } from '../error/GraphQLError';
+import type { GraphQLErrorBehavior } from '../error/GraphQLErrorBehavior';
 
 import type {
   EnumTypeDefinitionNode,

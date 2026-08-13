@@ -3,7 +3,7 @@ import { isPromise } from './jsutils/isPromise';
 import type { Maybe } from './jsutils/Maybe';
 import type { PromiseOrValue } from './jsutils/PromiseOrValue';
 
-import type { GraphQLErrorBehavior } from './error/ErrorBehavior';
+import type { GraphQLErrorBehavior } from './error/GraphQLErrorBehavior';
 
 import { parse } from './language/parser';
 import type { Source } from './language/source';
