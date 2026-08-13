@@ -10,11 +10,18 @@ export interface Path {
   readonly key: string | number;
   /** The runtime object type name associated with this path segment, if known. */
   readonly typename: string | undefined;
+  /** Whether this response path segment resolves through a non-null type. */
   readonly nonNull: boolean;
 }
 
+/**
+ * A flattened response path and the nullability metadata for each segment.
+ * @internal
+ */
 export interface PathDigest {
+  /** Response path keys from root to leaf. */
   readonly path: ReadonlyArray<string | number>;
+  /** Whether each response path segment resolves through a non-null type. */
   readonly pathNonNull: ReadonlyArray<boolean>;
 }
 
@@ -37,6 +44,16 @@ export function addPath(
  *
  * - path: an Array of the path keys.
  * - pathNonNull: an Array of the `nonNull` value for each path entry.
+ * @internal
+ * @param pathLinkedList - The linked response path to flatten.
+ * @returns The flattened path and nullability metadata.
+ * @example
+ * ```ts
+ * const path = addPath(undefined, 'viewer', 'Query', false);
+ *
+ * pathToDigest(path);
+ * // { path: ['viewer'], pathNonNull: [false] }
+ * ```
  */
 export function pathToDigest(
   pathLinkedList: Maybe<Readonly<Path>>,

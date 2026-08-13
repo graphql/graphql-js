@@ -71,7 +71,6 @@ export interface GraphQLArgs {
   /**
    * Experimental. Set to NULL to prevent error propagation. Set to ABORT to
    * abort a request when any error occurs.
-   *
    * @defaultValue `"PROPAGATE"`
    * @experimental
    */

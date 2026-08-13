@@ -124,9 +124,11 @@ export interface ExecutionContext {
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
-  errors: Array<GraphQLError>;
   collectedErrors: CollectedErrors;
-  /** @experimental */
+  /**
+   * How execution errors should be handled.
+   * @experimental
+   */
   onError: GraphQLErrorBehavior;
 }
 
@@ -223,7 +225,6 @@ export interface ExecutionArgs {
   /**
    * Experimental. Set to NULL to prevent error propagation. Set to ABORT to
    * abort a request when any error occurs.
-   *
    * @defaultValue `"PROPAGATE"`
    * @experimental
    */

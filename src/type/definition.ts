@@ -2537,7 +2537,10 @@ export interface GraphQLResolveInfo {
   readonly operation: OperationDefinitionNode;
   /** Runtime variable values keyed by variable name. */
   readonly variableValues: { [variable: string]: unknown };
-  /** @experimental */
+  /**
+   * How execution errors should be handled.
+   * @experimental
+   */
   readonly onError: GraphQLErrorBehavior;
 }
 

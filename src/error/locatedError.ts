@@ -14,7 +14,7 @@ import { GraphQLError } from './GraphQLError';
  * document responsible for the original Error.
  * @param rawOriginalError - The original error value to wrap.
  * @param nodes - The AST nodes associated with the error.
- * @param path - The response path associated with the error.
+ * @param digest - The response path digest associated with the error.
  * @returns The GraphQL error.
  * @example
  * ```ts
@@ -23,9 +23,10 @@ import { GraphQLError } from './GraphQLError';
  *
  * const document = parse('{ viewer { name } }');
  * const fieldNode = document.definitions[0].selectionSet.selections[0];
- * const error = locatedError(new Error('Resolver failed'), fieldNode, [
- *   'viewer',
- * ]);
+ * const error = locatedError(new Error('Resolver failed'), fieldNode, {
+ *   path: ['viewer'],
+ *   pathNonNull: [false],
+ * });
  *
  * error.message; // => 'Resolver failed'
  * error.locations; // => [{ line: 1, column: 3 }]
@@ -37,7 +38,20 @@ export function locatedError(
   nodes: ASTNode | ReadonlyArray<ASTNode> | undefined | null,
   digest?: Maybe<PathDigest>,
 ): GraphQLError;
-/** @deprecated Pass a digest rather than a path */
+/**
+ * Given an arbitrary value, presumably thrown while attempting to execute a
+ * GraphQL operation, produce a new GraphQLError aware of the location in the
+ * document responsible for the original Error.
+ * @param rawOriginalError - The original error value to wrap.
+ * @param nodes - The AST nodes associated with the error.
+ * @param path - The response path associated with the error.
+ * @returns The GraphQL error.
+ * @example
+ * ```ts
+ * locatedError(new Error('Resolver failed'), undefined, ['viewer']);
+ * ```
+ * @deprecated Pass a digest rather than a path.
+ */
 export function locatedError(
   rawOriginalError: unknown,
   nodes: ASTNode | ReadonlyArray<ASTNode> | undefined | null,
@@ -46,6 +60,7 @@ export function locatedError(
   // eslint-disable-next-line @typescript-eslint/unified-signatures
   path?: Maybe<ReadonlyArray<string | number>>,
 ): GraphQLError;
+/** @internal */
 export function locatedError(
   rawOriginalError: unknown,
   nodes: ASTNode | ReadonlyArray<ASTNode> | undefined | null,
