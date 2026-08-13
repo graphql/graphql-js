@@ -24,6 +24,7 @@ import { OperationTypeNode } from '../language/ast.ts';
 
 import type {
   GraphQLAbstractType,
+  GraphQLField,
   GraphQLLeafType,
   GraphQLList,
   GraphQLObjectType,
@@ -75,6 +76,7 @@ import { returnIteratorCatchingErrors } from './returnIteratorCatchingErrors.ts'
 import { getArgumentValues } from './values.ts';
 
 /* eslint-disable max-params */
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 // This file contains a lot of such errors but we plan to refactor it anyway
 // so just disable it for entire file.
 
@@ -500,23 +502,24 @@ export class Executor<
           parentType,
           fieldDetailsList[0].node.name.value,
         );
+        if (fieldDef == null) {
+          return results;
+        }
         const fieldPath = addPath(
           path,
           responseName,
           parentType.name,
-          fieldDef != null && isNonNullType(fieldDef.type),
+          isNonNullType(fieldDef.type),
         );
         const result = this.executeField(
           parentType,
           sourceValue,
           fieldDetailsList,
           fieldPath,
+          fieldDef,
           positionContext,
           tracingChannel,
         );
-        if (result === undefined) {
-          return results;
-        }
         if (isPromise(result)) {
           return result.then((resolved) => {
             results[responseName] = resolved;
@@ -558,26 +561,28 @@ export class Executor<
           parentType,
           fieldDetailsList[0].node.name.value,
         );
+        if (fieldDef == null) {
+          continue;
+        }
         const fieldPath = addPath(
           path,
           responseName,
           parentType.name,
-          fieldDef != null && isNonNullType(fieldDef.type),
+          isNonNullType(fieldDef.type),
         );
         const result = this.executeField(
           parentType,
           sourceValue,
           fieldDetailsList,
           fieldPath,
+          fieldDef,
           positionContext,
           tracingChannel,
         );
 
-        if (result !== undefined) {
-          results[responseName] = result;
-          if (isPromise(result)) {
-            containsPromise = true;
-          }
+        results[responseName] = result;
+        if (isPromise(result)) {
+          containsPromise = true;
         }
       }
     } catch (error) {
@@ -613,20 +618,15 @@ export class Executor<
     source: unknown,
     fieldDetailsList: FieldDetailsList,
     path: Path,
+    fieldDef: GraphQLField<unknown, unknown>,
     positionContext: TPositionContext | undefined,
     tracingChannel: MinimalTracingChannel<GraphQLResolveContext> | undefined,
-  ): PromiseOrValue<unknown> {
+  ): PromiseOrValue<{} | null> {
     const validatedExecutionArgs = this.validatedExecutionArgs;
-    const { schema, contextValue, variableValues, hideSuggestions } =
+    const { contextValue, variableValues, hideSuggestions } =
       validatedExecutionArgs;
     const firstFieldDetails = fieldDetailsList[0];
     const firstNode = firstFieldDetails.node;
-    const fieldName = firstNode.name.value;
-    const fieldDef = schema.getField(parentType, fieldName);
-    if (!fieldDef) {
-      return;
-    }
-
     const returnType = fieldDef.type;
     let resolveFn = fieldDef.resolve ?? validatedExecutionArgs.fieldResolver;
 
@@ -786,7 +786,7 @@ export class Executor<
     path: Path,
     result: unknown,
     positionContext: TPositionContext | undefined,
-  ): PromiseOrValue<unknown> {
+  ): PromiseOrValue<{} | null> {
     // If result is an Error, throw a located error.
     if (result instanceof Error) {
       throw result;
@@ -873,7 +873,7 @@ export class Executor<
     path: Path,
     result: PromiseLike<unknown>,
     positionContext: TPositionContext | undefined,
-  ): Promise<unknown> {
+  ): Promise<{} | null> {
     try {
       const resolved = await result;
       if (this.aborted) {
@@ -889,7 +889,7 @@ export class Executor<
       );
 
       if (isPromise(completed)) {
-        completed = await completed;
+        completed = (await completed) as {} | null;
       }
       return completed;
     } catch (rawError) {
@@ -1233,7 +1233,7 @@ export class Executor<
     info: GraphQLResolveInfo,
     itemPath: Path,
     positionContext: TPositionContext | undefined,
-  ): Promise<unknown> {
+  ): Promise<{} | null> {
     try {
       const resolved = await item;
       if (this.aborted) {
@@ -1248,7 +1248,7 @@ export class Executor<
         positionContext,
       );
       if (isPromise(completed)) {
-        completed = await completed;
+        completed = (await completed) as {} | null;
       }
       return completed;
     } catch (rawError) {
@@ -1263,7 +1263,7 @@ export class Executor<
    *
    * @internal
    */
-  completeLeafValue(returnType: GraphQLLeafType, result: unknown): unknown {
+  completeLeafValue(returnType: GraphQLLeafType, result: unknown): {} {
     const coerced = returnType.coerceOutputValue(result);
     if (coerced == null) {
       throw new Error(
