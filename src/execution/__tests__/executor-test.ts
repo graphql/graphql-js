@@ -283,7 +283,12 @@ describe('Execute: Handles basic execution tasks', () => {
     const field = operation.selectionSet.selections[0];
     expect(resolvedInfo).to.deep.include({
       fieldNodes: [field],
-      path: { prev: undefined, key: 'result', typename: 'Test' },
+      path: {
+        prev: undefined,
+        key: 'result',
+        typename: 'Test',
+        nonNull: false,
+      },
       variableValues: { var: 'abc' },
     });
   });
@@ -399,12 +404,15 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(path).to.deep.equal({
       key: 'l2',
       typename: 'SomeObject',
+      nonNull: false,
       prev: {
         key: 0,
         typename: undefined,
+        nonNull: true,
         prev: {
           key: 'l1',
           typename: 'SomeQuery',
+          nonNull: true,
           prev: undefined,
         },
       },
@@ -588,61 +596,73 @@ describe('Execute: Handles basic execution tasks', () => {
           message: 'Error getting syncError',
           locations: [{ line: 4, column: 9 }],
           path: ['syncError'],
+          pathNonNull: [false],
         },
         {
           message: 'Unexpected error value: "Error getting syncRawError"',
           locations: [{ line: 5, column: 9 }],
           path: ['syncRawError'],
+          pathNonNull: [false],
         },
         {
           message: 'Error getting syncReturnError',
           locations: [{ line: 6, column: 9 }],
           path: ['syncReturnError'],
+          pathNonNull: [false],
         },
         {
           message: 'Error getting syncReturnErrorList1',
           locations: [{ line: 7, column: 9 }],
           path: ['syncReturnErrorList', 1],
+          pathNonNull: [false, false],
         },
         {
           message: 'Error getting syncReturnErrorList3',
           locations: [{ line: 7, column: 9 }],
           path: ['syncReturnErrorList', 3],
+          pathNonNull: [false, false],
         },
         {
           message: 'Error getting asyncReject',
           locations: [{ line: 9, column: 9 }],
           path: ['asyncReject'],
+          pathNonNull: [false],
         },
         {
           message: 'Unexpected error value: "Error getting asyncRawReject"',
           locations: [{ line: 10, column: 9 }],
           path: ['asyncRawReject'],
+          pathNonNull: [false],
         },
         {
           message: 'Unexpected error value: undefined',
           locations: [{ line: 11, column: 9 }],
           path: ['asyncEmptyReject'],
+          pathNonNull: [false],
         },
         {
           message: 'Error getting asyncError',
           locations: [{ line: 12, column: 9 }],
           path: ['asyncError'],
+          pathNonNull: [false],
         },
         {
           message: 'Unexpected error value: "Error getting asyncRawError"',
           locations: [{ line: 13, column: 9 }],
           path: ['asyncRawError'],
+          pathNonNull: [false],
         },
         {
           message: 'Error getting asyncReturnError',
           locations: [{ line: 14, column: 9 }],
           path: ['asyncReturnError'],
+          pathNonNull: [false],
         },
         {
           message: 'Error getting asyncReturnErrorWithExtensions',
           locations: [{ line: 15, column: 9 }],
           path: ['asyncReturnErrorWithExtensions'],
+          pathNonNull: [false],
           extensions: { foo: 'bar' },
         },
       ],
@@ -688,6 +708,7 @@ describe('Execute: Handles basic execution tasks', () => {
           locations: [{ column: 9, line: 3 }],
           message: 'Oops',
           path: ['foods'],
+          pathNonNull: [false],
         },
       ],
     });
@@ -737,6 +758,7 @@ describe('Execute: Handles basic execution tasks', () => {
             'Cannot return null for non-nullable field Query.syncNullError.',
           locations: [{ line: 4, column: 9 }],
           path: ['syncNullError'],
+          pathNonNull: [true],
         },
       ],
     });
@@ -801,6 +823,7 @@ describe('Execute: Handles basic execution tasks', () => {
           message: 'Catch me if you can',
           locations: [{ line: 7, column: 17 }],
           path: ['nullableA', 'aliasedA', 'nonNullA', 'anotherA', 'throws'],
+          pathNonNull: [false, false, true, true, true],
         },
       ],
     });
@@ -870,6 +893,7 @@ describe('Execute: Handles basic execution tasks', () => {
           message: 'Catch me if you can',
           locations: [{ line: 7, column: 17 }],
           path: ['nullableA', 'aliasedA', 'nonNullA', 'anotherA', 'throws'],
+          pathNonNull: [false, false, true, true, true],
         },
       ],
     });
@@ -929,6 +953,7 @@ describe('Execute: Handles basic execution tasks', () => {
           message: 'Catch me if you can',
           locations: [{ line: 7, column: 17 }],
           path: ['nullableA', 'aliasedA', 'nonNullA', 'anotherA', 'throws'],
+          pathNonNull: [false, false, true, true, true],
         },
       ],
     });
@@ -1408,6 +1433,7 @@ describe('Execute: Handles basic execution tasks', () => {
             'Expected value of type "SpecialType" but got: { value: "bar" }.',
           locations: [{ line: 1, column: 3 }],
           path: ['specials', 1],
+          pathNonNull: [false, false],
         },
       ],
     });
@@ -1450,6 +1476,7 @@ describe('Execute: Handles basic execution tasks', () => {
             'Expected `CustomScalar.serialize("CUSTOM_VALUE")` to return non-nullable value, returned: undefined',
           locations: [{ line: 1, column: 3 }],
           path: ['customScalar'],
+          pathNonNull: [false],
         },
       ],
     });

@@ -45,6 +45,8 @@ describe('locatedError', () => {
     // @ts-expect-error
     e.path = [];
     // @ts-expect-error
+    e.pathNonNull = [];
+    // @ts-expect-error
     e.nodes = [];
     // @ts-expect-error
     e.source = null;

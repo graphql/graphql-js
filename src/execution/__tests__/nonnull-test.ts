@@ -159,6 +159,7 @@ describe('Execute: handles non-nullable types', () => {
           {
             message: syncError.message,
             path: ['sync'],
+            pathNonNull: [false],
             locations: [{ line: 3, column: 9 }],
           },
         ],
@@ -184,6 +185,7 @@ describe('Execute: handles non-nullable types', () => {
             message:
               'Cannot return null for non-nullable field DataType.syncNonNull.',
             path: ['syncNest', 'syncNonNull'],
+            pathNonNull: [false, true],
             locations: [{ line: 4, column: 11 }],
           },
         ],
@@ -198,6 +200,7 @@ describe('Execute: handles non-nullable types', () => {
           {
             message: syncNonNullError.message,
             path: ['syncNest', 'syncNonNull'],
+            pathNonNull: [false, true],
             locations: [{ line: 4, column: 11 }],
           },
         ],
@@ -250,61 +253,73 @@ describe('Execute: handles non-nullable types', () => {
           {
             message: syncError.message,
             path: ['syncNest', 'sync'],
+            pathNonNull: [false, false],
             locations: [{ line: 4, column: 11 }],
           },
           {
             message: syncError.message,
             path: ['syncNest', 'syncNest', 'sync'],
+            pathNonNull: [false, false, false],
             locations: [{ line: 6, column: 22 }],
           },
           {
             message: syncError.message,
             path: ['syncNest', 'promiseNest', 'sync'],
+            pathNonNull: [false, false, false],
             locations: [{ line: 7, column: 25 }],
           },
           {
             message: syncError.message,
             path: ['promiseNest', 'sync'],
+            pathNonNull: [false, false],
             locations: [{ line: 10, column: 11 }],
           },
           {
             message: syncError.message,
             path: ['promiseNest', 'syncNest', 'sync'],
+            pathNonNull: [false, false, false],
             locations: [{ line: 12, column: 22 }],
           },
           {
             message: promiseError.message,
             path: ['syncNest', 'promise'],
+            pathNonNull: [false, false],
             locations: [{ line: 5, column: 11 }],
           },
           {
             message: promiseError.message,
             path: ['syncNest', 'syncNest', 'promise'],
+            pathNonNull: [false, false, false],
             locations: [{ line: 6, column: 27 }],
           },
           {
             message: syncError.message,
             path: ['promiseNest', 'promiseNest', 'sync'],
+            pathNonNull: [false, false, false],
             locations: [{ line: 13, column: 25 }],
           },
           {
             message: promiseError.message,
             path: ['syncNest', 'promiseNest', 'promise'],
+            pathNonNull: [false, false, false],
             locations: [{ line: 7, column: 30 }],
           },
           {
             message: promiseError.message,
             path: ['promiseNest', 'promise'],
+            pathNonNull: [false, false],
             locations: [{ line: 11, column: 11 }],
           },
           {
             message: promiseError.message,
             path: ['promiseNest', 'syncNest', 'promise'],
+            pathNonNull: [false, false, false],
             locations: [{ line: 12, column: 27 }],
           },
           {
             message: promiseError.message,
             path: ['promiseNest', 'promiseNest', 'promise'],
+            pathNonNull: [false, false, false],
             locations: [{ line: 13, column: 30 }],
           },
         ],
@@ -384,6 +399,7 @@ describe('Execute: handles non-nullable types', () => {
               'promiseNonNullNest',
               'syncNonNull',
             ],
+            pathNonNull: [false, true, true, true, true, true],
             locations: [{ line: 8, column: 19 }],
           },
           {
@@ -397,6 +413,7 @@ describe('Execute: handles non-nullable types', () => {
               'promiseNonNullNest',
               'syncNonNull',
             ],
+            pathNonNull: [false, true, true, true, true, true],
             locations: [{ line: 19, column: 19 }],
           },
           {
@@ -410,6 +427,7 @@ describe('Execute: handles non-nullable types', () => {
               'promiseNonNullNest',
               'promiseNonNull',
             ],
+            pathNonNull: [false, true, true, true, true, true],
             locations: [{ line: 30, column: 19 }],
           },
           {
@@ -423,6 +441,7 @@ describe('Execute: handles non-nullable types', () => {
               'promiseNonNullNest',
               'promiseNonNull',
             ],
+            pathNonNull: [false, true, true, true, true, true],
             locations: [{ line: 41, column: 19 }],
           },
         ],
@@ -444,6 +463,7 @@ describe('Execute: handles non-nullable types', () => {
               'promiseNonNullNest',
               'syncNonNull',
             ],
+            pathNonNull: [false, true, true, true, true, true],
             locations: [{ line: 8, column: 19 }],
           },
           {
@@ -456,6 +476,7 @@ describe('Execute: handles non-nullable types', () => {
               'promiseNonNullNest',
               'syncNonNull',
             ],
+            pathNonNull: [false, true, true, true, true, true],
             locations: [{ line: 19, column: 19 }],
           },
           {
@@ -468,6 +489,7 @@ describe('Execute: handles non-nullable types', () => {
               'promiseNonNullNest',
               'promiseNonNull',
             ],
+            pathNonNull: [false, true, true, true, true, true],
             locations: [{ line: 30, column: 19 }],
           },
           {
@@ -480,6 +502,7 @@ describe('Execute: handles non-nullable types', () => {
               'promiseNonNullNest',
               'promiseNonNull',
             ],
+            pathNonNull: [false, true, true, true, true, true],
             locations: [{ line: 41, column: 19 }],
           },
         ],
@@ -503,6 +526,7 @@ describe('Execute: handles non-nullable types', () => {
             message:
               'Cannot return null for non-nullable field DataType.syncNonNull.',
             path: ['syncNonNull'],
+            pathNonNull: [true],
             locations: [{ line: 3, column: 9 }],
           },
         ],
@@ -517,6 +541,7 @@ describe('Execute: handles non-nullable types', () => {
           {
             message: syncNonNullError.message,
             path: ['syncNonNull'],
+            pathNonNull: [true],
             locations: [{ line: 3, column: 9 }],
           },
         ],
@@ -621,6 +646,7 @@ describe('Execute: handles non-nullable types', () => {
               'Argument "cannotBeNull" of required type "String!" was not provided.',
             locations: [{ line: 3, column: 13 }],
             path: ['withNonNullArg'],
+            pathNonNull: [false],
           },
         ],
       });
@@ -648,6 +674,7 @@ describe('Execute: handles non-nullable types', () => {
               'Argument "cannotBeNull" of non-null type "String!" must not be null.',
             locations: [{ line: 3, column: 42 }],
             path: ['withNonNullArg'],
+            pathNonNull: [false],
           },
         ],
       });
@@ -678,6 +705,7 @@ describe('Execute: handles non-nullable types', () => {
               'Argument "cannotBeNull" of required type "String!" was provided the variable "$testVar" which was not provided a runtime value.',
             locations: [{ line: 3, column: 42 }],
             path: ['withNonNullArg'],
+            pathNonNull: [false],
           },
         ],
       });
@@ -706,6 +734,7 @@ describe('Execute: handles non-nullable types', () => {
               'Argument "cannotBeNull" of non-null type "String!" must not be null.',
             locations: [{ line: 3, column: 43 }],
             path: ['withNonNullArg'],
+            pathNonNull: [false],
           },
         ],
       });

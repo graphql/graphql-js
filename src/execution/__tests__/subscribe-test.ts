@@ -537,6 +537,7 @@ describe('Subscription Initialization Phase', () => {
           message: 'test error',
           locations: [{ line: 1, column: 16 }],
           path: ['foo'],
+          pathNonNull: [false],
         },
       ],
     };
@@ -1020,6 +1021,7 @@ describe('Subscription Publish Phase', () => {
             message: 'Never leave.',
             locations: [{ line: 1, column: 16 }],
             path: ['newMessage'],
+            pathNonNull: [false],
           },
         ],
       },

@@ -215,11 +215,13 @@ describe('Execute: Handles execution of abstract types', () => {
           message: 'We are testing this error',
           locations: [{ line: 3, column: 9 }],
           path: ['pets', 0],
+          pathNonNull: [false, false],
         },
         {
           message: 'We are testing this error',
           locations: [{ line: 3, column: 9 }],
           path: ['pets', 1],
+          pathNonNull: [false, false],
         },
       ],
     });
@@ -274,6 +276,7 @@ describe('Execute: Handles execution of abstract types', () => {
             'Abstract type "Pet" must resolve to an Object type at runtime for field "Query.pet". Either the "Pet" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.',
           locations: [{ line: 3, column: 9 }],
           path: ['pet'],
+          pathNonNull: [false],
         },
       ],
     });
@@ -423,11 +426,13 @@ describe('Execute: Handles execution of abstract types', () => {
           message: 'We are testing this error',
           locations: [{ line: 3, column: 9 }],
           path: ['pets', 0],
+          pathNonNull: [false, false],
         },
         {
           message: 'We are testing this error',
           locations: [{ line: 3, column: 9 }],
           path: ['pets', 1],
+          pathNonNull: [false, false],
         },
       ],
     });
@@ -602,6 +607,7 @@ describe('Execute: Handles execution of abstract types', () => {
                 message,
                 locations: [{ line: 3, column: 9 }],
                 path: ['pet'],
+                pathNonNull: [false],
               },
             ],
           });
