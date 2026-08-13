@@ -60,7 +60,7 @@ import {
 } from './collectFields';
 import { getArgumentValues, getVariableValues } from './values';
 
-const DEFAULT_ERROR_BEHAVIOR = 'PROPAGATE' satisfies GraphQLErrorBehavior
+const DEFAULT_ERROR_BEHAVIOR = 'PROPAGATE';
 
 /**
  * A memoized collection of relevant subfields with regard to the return
