@@ -2,6 +2,8 @@
 title: Mutations and Input Types
 ---
 
+# Mutations and Input Types
+
 import { Tabs } from 'nextra/components';
 
 If you have an API endpoint that alters data, like inserting data into a database or altering data already in a database, you should make this endpoint a `Mutation` rather than a `Query`. This is as simple as making the API endpoint part of the top-level `Mutation` type instead of the top-level `Query` type.
@@ -22,11 +24,11 @@ type Query {
   </Tabs.Tab>
   <Tabs.Tab>
 ```js
-const {
+import {
   GraphQLObjectType,
   GraphQLString,
   GraphQLSchema,
-} = require('graphql');
+} from 'graphql';
 
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
@@ -95,14 +97,15 @@ type Mutation {
   </Tabs.Tab>
   <Tabs.Tab>
 ```js
-const {
+import {
   GraphQLObjectType,
   GraphQLString,
   GraphQLSchema,
   GraphQLID,
   GraphQLInputObjectType,
   GraphQLNonNull,
-} = require('graphql');
+} from 'graphql';
+import { randomBytes } from 'node:crypto';
 
 // Maps username to content
 const fakeDatabase = {};
@@ -156,7 +159,7 @@ const schema = new GraphQLSchema({
         },
         resolve: (_, { input }) => {
           // Create a random id for our "database".
-          const id = require('crypto').randomBytes(10).toString('hex');
+          const id = randomBytes(10).toString('hex');
           fakeDatabase[id] = input;
           return {
             id,
@@ -198,14 +201,51 @@ Input types can't have fields that are other objects, only basic scalar types, l
 
 Naming input types with `Input` on the end is a useful convention, because you will often want both an input type and an output type that are slightly different for a single conceptual object.
 
+Input object fields can also define defaults for omitted fields. In SDL, use
+the same `= value` syntax as field arguments:
+
+```graphql
+input MessageInput {
+  content: String
+  author: String = "Anonymous"
+}
+```
+
+When constructing input object types in code, GraphQL.js v16 uses
+`defaultValue`:
+
+```js
+const MessageInput = new GraphQLInputObjectType({
+  name: 'MessageInput',
+  fields: {
+    content: { type: GraphQLString },
+    author: { type: GraphQLString, defaultValue: 'Anonymous' },
+  },
+});
+```
+
+`defaultValue` is the legacy way to provide an already-coerced JavaScript
+value. GraphQL.js v17 also supports the new `default: { value }` shape for the
+raw JavaScript input value before coercion; on the built schema, that same case
+is represented as `inputField.default.value`. Keeping the raw value lets
+GraphQL.js validate the default and report it through introspection without
+reconstructing the GraphQL literal from an already-coerced value, which fixes a
+subtle source of incorrect default values for some schemas. If you already have
+a GraphQL literal instead, use `default: { literal }`. GraphQL.js now uses the
+literal form internally when building a schema from SDL. Invalid defaults are
+reported by schema validation instead of waiting until a query happens to use
+that field.
+
 Here's some runnable code that implements this schema, keeping the data in memory:
 
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
 ```js
-const express = require('express');
-const { createHandler } = require('graphql-http/lib/use/express');
-const { buildSchema } = require('graphql');
+import express from 'express';
+import { createHandler } from 'graphql-http/lib/use/express';
+import { buildSchema } from 'graphql';
+
+const fakeDatabase = {};
 
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
@@ -222,6 +262,7 @@ type Message {
 
 type Query {
   getMessage(id: ID!): Message
+	getMessages: [Message]
 }
 
 type Mutation {
@@ -239,31 +280,51 @@ class Message {
   }
 }
 
+const root = {
+  getMessage: ({ id }) => {
+    return fakeDatabase[id]
+  },
+  getMessages: () => {
+    return Object.values(fakeDatabase)
+  },
+  createMessage: ({ input }) => {
+    const id = String(Object.keys(fakeDatabase).length + 1)
+    const message = new Message(id, input)
+    fakeDatabase[id] = message
+    return message
+  },
+  updateMessage: ({ id, input }) => {
+    const message = fakeDatabase[id]
+    Object.assign(message, input)
+    return message
+  }
+}
+
 const app = express();
 app.all(
   '/graphql',
   createHandler({
     schema: schema,
+		rootValue: root,
   }),
 );
 app.listen(4000, () => {
 console.log('Running a GraphQL API server at localhost:4000/graphql');
 });
-
 ```
   </Tabs.Tab>
   <Tabs.Tab>
 ```js
-const express = require('express');
-const { createHandler } = require('graphql-http/lib/use/express');
-const {
+import express from 'express';
+import { createHandler } from 'graphql-http/lib/use/express';
+import {
   GraphQLObjectType,
   GraphQLString,
   GraphQLSchema,
   GraphQLID,
   GraphQLInputObjectType,
   GraphQLNonNull,
-} = require('graphql');
+} from 'graphql';
 
 // If Message had any complex fields, we'd put them on this object.
 class Message {
@@ -326,7 +387,8 @@ const schema = new GraphQLSchema({
         },
         resolve: (_, { input }) => {
           // Create a random id for our "database".
-          const id = require('crypto').randomBytes(10).toString('hex');
+          import { randomBytes } from 'crypto';
+          const id = randomBytes(10).toString('hex');
           fakeDatabase[id] = input;
           return {
             id,

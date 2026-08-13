@@ -1,3 +1,5 @@
+/** @category Execution */
+
 import { devAssert } from '../jsutils/devAssert';
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
@@ -66,6 +68,8 @@ const DEFAULT_ERROR_BEHAVIOR = 'PROPAGATE';
  * A memoized collection of relevant subfields with regard to the return
  * type. Memoizing ensures the subfields are not repeatedly calculated, which
  * saves overhead when resolving lists of values.
+ *
+ * @internal
  */
 const collectSubfields = memoize3(
   (
@@ -107,6 +111,8 @@ const collectSubfields = memoize3(
  *
  * Namely, schema of the type system that is currently executing,
  * and the fragments defined in the query document
+ *
+ * @internal
  */
 export interface ExecutionContext {
   schema: GraphQLSchema;
@@ -119,44 +125,100 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
+  collectedErrors: CollectedErrors;
   /** @experimental */
   onError: GraphQLErrorBehavior;
 }
 
+class CollectedErrors {
+  private _errorPositions: Set<Path | undefined>;
+  private _errors: Array<GraphQLError>;
+  constructor() {
+    this._errorPositions = new Set<Path | undefined>();
+    this._errors = [];
+  }
+
+  get errors(): ReadonlyArray<GraphQLError> {
+    return this._errors;
+  }
+
+  add(error: GraphQLError, path: Path | undefined) {
+    // Do not modify errors list if the execution position for this error or
+    // any of its ancestors has already been nulled via error propagation.
+    // This check should be unnecessary for implementations able to implement
+    // actual cancellation.
+    if (this._hasNulledPosition(path)) {
+      return;
+    }
+    this._errorPositions.add(path);
+    this._errors.push(error);
+  }
+
+  private _hasNulledPosition(startPath: Path | undefined): boolean {
+    let path = startPath;
+    while (path !== undefined) {
+      if (this._errorPositions.has(path)) {
+        return true;
+      }
+      path = path.prev;
+    }
+    return this._errorPositions.has(undefined);
+  }
+}
+
 /**
- * The result of GraphQL execution.
- *
- *   - `errors` is included when any errors occurred as a non-empty array.
- *   - `data` is the result of a successful execution of the query.
- *   - `extensions` is reserved for adding non-standard properties.
+ * Represents the response produced by executing a GraphQL operation.
+ * @typeParam TData - Shape of the execution data payload.
+ * @typeParam TExtensions - Shape of the extensions payload.
  */
 export interface ExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
 > {
+  /** Errors raised while parsing, validating, or executing the operation. */
   errors?: ReadonlyArray<GraphQLError>;
+  /** Data returned by execution, or null when execution could not produce data. */
   data?: TData | null;
+  /** Extension fields to include in the formatted result. */
   extensions?: TExtensions;
 }
 
+/**
+ * A JSON-serializable GraphQL execution result.
+ * @typeParam TData - Shape of the formatted data payload.
+ * @typeParam TExtensions - Shape of the formatted extensions payload.
+ */
 export interface FormattedExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
 > {
+  /** Errors raised while parsing, validating, or executing the operation. */
   errors?: ReadonlyArray<GraphQLFormattedError>;
+  /** Data returned by execution, or null when execution could not produce data. */
   data?: TData | null;
+  /** Extension fields to include in the formatted result. */
   extensions?: TExtensions;
 }
 
+/** Arguments accepted by execute and executeSync. */
 export interface ExecutionArgs {
+  /** The schema used for validation or execution. */
   schema: GraphQLSchema;
+  /** The parsed GraphQL document to execute. */
   document: DocumentNode;
+  /** Initial root value passed to the operation. */
   rootValue?: unknown;
+  /** Application context value passed to every resolver. */
   contextValue?: unknown;
+  /** Runtime variable values keyed by variable name. */
   variableValues?: Maybe<{ readonly [variable: string]: unknown }>;
+  /** Name of the operation to execute when the document contains multiple operations. */
   operationName?: Maybe<string>;
+  /** Resolver used when a field does not define its own resolver. */
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  /** Resolver used when an abstract type does not define its own resolver. */
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+  /** Resolver used for the root subscription field. */
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   /**
    * Experimental. Set to NULL to prevent error propagation. Set to ABORT to
@@ -183,6 +245,139 @@ export interface ExecutionArgs {
  *
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
+ *
+ * Field errors are collected into the response instead of rejecting the
+ * returned promise. Only the field that produced the error and its descendants
+ * are omitted; sibling fields continue to execute. Errors from fields of
+ * non-null type may propagate to the nearest nullable parent, which can be the
+ * entire response data.
+ * @param args - The arguments used to perform the operation.
+ * @returns A completed execution result, or a promise resolving to one when execution is asynchronous.
+ * @example
+ * ```ts
+ * // Execute an asynchronous operation with variables.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { execute } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting(name: String!): String
+ *   }
+ * `);
+ *
+ * const result = await execute({
+ *   schema,
+ *   document: parse('query ($name: String!) { greeting(name: $name) }'),
+ *   rootValue: {
+ *     greeting: ({ name }) => `Hello, ${name}!`,
+ *   },
+ *   variableValues: { name: 'Ada' },
+ * });
+ *
+ * result; // => { data: { greeting: 'Hello, Ada!' } }
+ * ```
+ * @example
+ * ```ts
+ * // This variant supplies context plus custom field and type resolvers.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { execute } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   interface Named {
+ *     name: String!
+ *   }
+ *
+ *   type User implements Named {
+ *     name: String!
+ *   }
+ *
+ *   type Query {
+ *     viewer: Named
+ *   }
+ * `);
+ *
+ * const result = await execute({
+ *   schema,
+ *   document: parse('query Viewer { viewer { __typename name } }'),
+ *   rootValue: { viewer: { kind: 'user', name: 'Ada' } },
+ *   contextValue: { locale: 'en' },
+ *   operationName: 'Viewer',
+ *   fieldResolver: (source, _args, contextValue, info) => {
+ *     contextValue.locale; // => 'en'
+ *     return source[info.fieldName];
+ *   },
+ *   typeResolver: (value) => {
+ *     return value.kind === 'user' ? 'User' : undefined;
+ *   },
+ * });
+ *
+ * result; // => { data: { viewer: { __typename: 'User', name: 'Ada' } } }
+ * ```
+ * @example
+ * ```ts
+ * // This variant shows how resolver errors become field errors in the result.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { execute } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     broken: String
+ *   }
+ * `);
+ * const document = parse('{ broken }');
+ *
+ * const result = await execute({
+ *   schema,
+ *   document,
+ *   rootValue: {
+ *     broken: () => {
+ *       throw new Error('Resolver failed.');
+ *     },
+ *   },
+ * });
+ *
+ * result.data.broken; // => null
+ * result.errors[0].message; // => 'Resolver failed.'
+ * ```
+ * @example
+ * ```ts
+ * // This variant limits how many variable coercion errors are reported.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { execute } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   input ReviewInput {
+ *     stars: Int!
+ *   }
+ *
+ *   type Query {
+ *     review(input: ReviewInput!): String
+ *   }
+ * `);
+ * const document = parse(`
+ *   query ($first: ReviewInput!, $second: ReviewInput!) {
+ *     first: review(input: $first)
+ *     second: review(input: $second)
+ *   }
+ * `);
+ *
+ * const result = await execute({
+ *   schema,
+ *   document,
+ *   variableValues: {
+ *     first: { stars: 'bad' },
+ *     second: { stars: 'also bad' },
+ *   },
+ *   options: { maxCoercionErrors: 1 },
+ * });
+ *
+ * result.errors.length; // => 2
+ * result.errors[1].message; // matches /error limit reached/
+ * ```
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   // Temporary for v15 to v16 migration. Remove in v17
@@ -205,33 +400,22 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     return { errors: exeContext };
   }
 
-  // Return a Promise that will eventually resolve to the data described by
-  // The "Response" section of the GraphQL specification.
-  //
-  // If errors are encountered while executing a GraphQL field, only that
-  // field and its descendants will be omitted, and sibling fields will still
-  // be executed. An execution which encounters errors will still result in a
-  // resolved Promise.
-  //
-  // Errors from sub-fields of a NonNull type may propagate to the top level,
-  // at which point we still log the error and null the parent field, which
-  // in this case is the entire response.
   try {
     const { operation } = exeContext;
     const result = executeOperation(exeContext, operation, rootValue);
     if (isPromise(result)) {
       return result.then(
-        (data) => buildResponse(data, exeContext.errors),
+        (data) => buildResponse(data, exeContext.collectedErrors.errors),
         (error) => {
-          exeContext.errors.push(error);
-          return buildResponse(null, exeContext.errors);
+          exeContext.collectedErrors.add(error, undefined);
+          return buildResponse(null, exeContext.collectedErrors.errors);
         },
       );
     }
-    return buildResponse(result, exeContext.errors);
+    return buildResponse(result, exeContext.collectedErrors.errors);
   } catch (error) {
-    exeContext.errors.push(error);
-    return buildResponse(null, exeContext.errors);
+    exeContext.collectedErrors.add(error, undefined);
+    return buildResponse(null, exeContext.collectedErrors.errors);
   }
 }
 
@@ -239,6 +423,53 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
  * Also implements the "Executing requests" section of the GraphQL specification.
  * However, it guarantees to complete synchronously (or throw an error) assuming
  * that all field resolvers are also synchronous.
+ * @param args - The arguments used to perform the operation.
+ * @returns Completed execution output for a synchronous operation.
+ * @example
+ * ```ts
+ * // Execute an operation synchronously when all resolvers are synchronous.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { executeSync } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting: String
+ *   }
+ * `);
+ * const document = parse('{ greeting }');
+ *
+ * const result = executeSync({
+ *   schema,
+ *   document,
+ *   rootValue: {
+ *     greeting: 'Hello',
+ *   },
+ * });
+ *
+ * result; // => { data: { greeting: 'Hello' } }
+ * ```
+ * @example
+ * ```ts
+ * // This variant shows executeSync throwing when a resolver returns a promise.
+ * import { parse } from 'graphql/language';
+ * import { buildSchema } from 'graphql/utilities';
+ * import { executeSync } from 'graphql/execution';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     greeting: String
+ *   }
+ * `);
+ *
+ * executeSync({
+ *   schema,
+ *   document: parse('{ greeting }'),
+ *   rootValue: {
+ *     greeting: async () => 'Hello',
+ *   },
+ * }); // throws an error
+ * ```
  */
 export function executeSync(args: ExecutionArgs): ExecutionResult {
   const result = execute(args);
@@ -254,6 +485,8 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
 /**
  * Given a completed execution context and data, build the `{ errors, data }`
  * response defined by the "Response" section of the GraphQL specification.
+ *
+ * @internal
  */
 function buildResponse(
   data: ObjMap<unknown> | null,
@@ -264,8 +497,11 @@ function buildResponse(
 
 /**
  * Essential assertions before executing to provide developer feedback for
- * improper use of the GraphQL library.
+ * improper use of the GraphQL library. This deprecated internal helper will be
+ * removed in v17; call `assertValidSchema()` and rely on TypeScript checks
+ * instead.
  *
+ * @deprecated will be removed in v17 in favor of assertValidSchema() and TS checks
  * @internal
  */
 export function assertValidExecutionArguments(
@@ -376,13 +612,15 @@ export function buildExecutionContext(
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
-    errors: [],
+    collectedErrors: new CollectedErrors(),
     onError: onError ?? DEFAULT_ERROR_BEHAVIOR,
   };
 }
 
 /**
  * Implements the "Executing operations" section of the spec.
+ *
+ * @internal
  */
 function executeOperation(
   exeContext: ExecutionContext,
@@ -427,6 +665,8 @@ function executeOperation(
 /**
  * Implements the "Executing selection sets" section of the spec
  * for fields that must be executed serially.
+ *
+ * @internal
  */
 function executeFieldsSerially(
   exeContext: ExecutionContext,
@@ -479,6 +719,8 @@ function executeFieldsSerially(
 /**
  * Implements the "Executing selection sets" section of the spec
  * for fields that may be executed in parallel.
+ *
+ * @internal
  */
 function executeFields(
   exeContext: ExecutionContext,
@@ -548,6 +790,8 @@ function executeFields(
  * In particular, this function figures out the value that the field returns by
  * calling its resolve function, then calls completeValue to complete promises,
  * serialize scalars, or execute the sub-selection-set for objects.
+ *
+ * @internal
  */
 function executeField(
   exeContext: ExecutionContext,
@@ -607,19 +851,17 @@ function executeField(
       // to take a second callback for the error case.
       return completed.then(undefined, (rawError) => {
         const error = locatedError(rawError, fieldNodes, pathToDigest(path));
-        return handleFieldError(error, returnType, exeContext);
+        return handleFieldError(error, returnType, path, exeContext);
       });
     }
     return completed;
   } catch (rawError) {
     const error = locatedError(rawError, fieldNodes, pathToDigest(path));
-    return handleFieldError(error, returnType, exeContext);
+    return handleFieldError(error, returnType, path, exeContext);
   }
 }
 
-/**
- * @internal
- */
+/** @internal */
 export function buildResolveInfo(
   exeContext: ExecutionContext,
   fieldDef: GraphQLField<unknown, unknown>,
@@ -647,6 +889,7 @@ export function buildResolveInfo(
 function handleFieldError(
   error: GraphQLError,
   returnType: GraphQLOutputType,
+  path: Path,
   exeContext: ExecutionContext,
 ): null {
   if (exeContext.onError === 'PROPAGATE') {
@@ -673,7 +916,7 @@ function handleFieldError(
 
   // Otherwise, error protection is applied, logging the error and resolving
   // a null value for this field if one is encountered.
-  exeContext.errors.push(error);
+  exeContext.collectedErrors.add(error, path);
   return null;
 }
 
@@ -697,6 +940,8 @@ function handleFieldError(
  *
  * Otherwise, the field type expects a sub-selection set, and will complete the
  * value by executing all sub-selections.
+ *
+ * @internal
  */
 function completeValue(
   exeContext: ExecutionContext,
@@ -788,6 +1033,8 @@ function completeValue(
 /**
  * Complete a list value by completing each item in the list with the
  * inner type
+ *
+ * @internal
  */
 function completeListValue(
   exeContext: ExecutionContext,
@@ -846,13 +1093,13 @@ function completeListValue(
             fieldNodes,
             pathToDigest(itemPath),
           );
-          return handleFieldError(error, itemType, exeContext);
+          return handleFieldError(error, itemType, itemPath, exeContext);
         });
       }
       return completedItem;
     } catch (rawError) {
       const error = locatedError(rawError, fieldNodes, pathToDigest(itemPath));
-      return handleFieldError(error, itemType, exeContext);
+      return handleFieldError(error, itemType, itemPath, exeContext);
     }
   });
 
@@ -862,6 +1109,8 @@ function completeListValue(
 /**
  * Complete a Scalar or Enum by serializing to a valid value, returning
  * null if serialization is not possible.
+ *
+ * @internal
  */
 function completeLeafValue(
   returnType: GraphQLLeafType,
@@ -880,6 +1129,8 @@ function completeLeafValue(
 /**
  * Complete a value of an abstract type by determining the runtime object type
  * of that value, then complete the value for that type.
+ *
+ * @internal
  */
 function completeAbstractValue(
   exeContext: ExecutionContext,
@@ -987,6 +1238,8 @@ function ensureValidRuntimeType(
 
 /**
  * Complete an Object value by executing all sub-selections.
+ *
+ * @internal
  */
 function completeObjectValue(
   exeContext: ExecutionContext,
@@ -1069,6 +1322,14 @@ export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> =
         if (isPromise(isTypeOfResult)) {
           promisedIsTypeOfResults[i] = isTypeOfResult;
         } else if (isTypeOfResult) {
+          if (promisedIsTypeOfResults.length) {
+            // Explicitly ignore any promise rejections
+            Promise.allSettled(promisedIsTypeOfResults)
+              /* c8 ignore next 3 */
+              .catch(() => {
+                // Do nothing
+              });
+          }
           return type.name;
         }
       }

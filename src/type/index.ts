@@ -1,3 +1,10 @@
+/**
+ * Create and inspect GraphQL type definitions and schemas.
+ *
+ * These exports are also available from the root `graphql` package.
+ * @packageDocumentation
+ */
+
 export type { Path as ResponsePath } from '../jsutils/Path';
 
 export {

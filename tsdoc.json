@@ -1,0 +1,22 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json",
+  "tagDefinitions": [
+    {
+      "tagName": "@category",
+      "syntaxKind": "block"
+    }
+  ],
+  "supportForTags": {
+    "@deprecated": true,
+    "@defaultValue": true,
+    "@example": true,
+    "@link": true,
+    "@param": true,
+    "@packageDocumentation": true,
+    "@remarks": true,
+    "@returns": true,
+    "@typeParam": true,
+    "@category": true,
+    "@internal": true
+  }
+}

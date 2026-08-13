@@ -2,6 +2,7 @@ name: PullRequestOpened
 on:
   pull_request:
     types: [opened]
+permissions: {}
 jobs:
   save-github-event:
     name: "Save `github.event` as an artifact to use in subsequent 'workflow_run' actions"

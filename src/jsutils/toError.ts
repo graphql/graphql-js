@@ -2,6 +2,8 @@ import { inspect } from './inspect';
 
 /**
  * Sometimes a non-error is thrown, wrap it as an Error instance to ensure a consistent Error interface.
+ *
+ * @internal
  */
 export function toError(thrownValue: unknown): Error {
   return thrownValue instanceof Error

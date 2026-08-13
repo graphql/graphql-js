@@ -1,0 +1,6072 @@
+import { ApiSignature, ApiType } from '../../components/ApiCode';
+
+Parse, print, and visit GraphQL language source files and AST nodes.
+
+These exports are also available from the root `graphql` package.
+
+For documentation purposes, these exports are grouped into the following categories:
+
+- [AST](/api-v17/language#category-ast)
+- [Kinds](/api-v17/language#category-kinds)
+- [Lexing](/api-v17/language#category-lexing)
+- [Source](/api-v17/language#category-source)
+- [Parsing](/api-v17/language#category-parsing)
+- [AST Predicates](/api-v17/language#category-ast-predicates)
+- [Printing](/api-v17/language#category-printing)
+- [Visiting](/api-v17/language#category-visiting)
+
+## Category: AST
+
+<div className="api-category-toc">
+  <p>
+    <strong>Classes:</strong><br />
+    <a href="/api-v17/language#location">Location</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#token">Token</a>
+  </p>
+  <p>
+    <strong>Types:</strong><br />
+    <a href="/api-v17/language#astnode">ASTNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#astkindtonode">ASTKindToNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#namenode">NameNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#documentnode">DocumentNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#definitionnode">DefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#executabledefinitionnode">ExecutableDefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#operationdefinitionnode">OperationDefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#subscriptionoperationdefinitionnode">SubscriptionOperationDefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#variabledefinitionnode">VariableDefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#variablenode">VariableNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#selectionsetnode">SelectionSetNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#selectionnode">SelectionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#fieldnode">FieldNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#argumentnode">ArgumentNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#constargumentnode">ConstArgumentNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#fragmentargumentnode">FragmentArgumentNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#fragmentspreadnode">FragmentSpreadNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#inlinefragmentnode">InlineFragmentNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#fragmentdefinitionnode">FragmentDefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#valuenode">ValueNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#constvaluenode">ConstValueNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#intvaluenode">IntValueNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#floatvaluenode">FloatValueNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#stringvaluenode">StringValueNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#booleanvaluenode">BooleanValueNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#nullvaluenode">NullValueNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#enumvaluenode">EnumValueNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#listvaluenode">ListValueNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#constlistvaluenode">ConstListValueNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#objectvaluenode">ObjectValueNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#constobjectvaluenode">ConstObjectValueNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#objectfieldnode">ObjectFieldNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#constobjectfieldnode">ConstObjectFieldNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#directivenode">DirectiveNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#constdirectivenode">ConstDirectiveNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#typenode">TypeNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#namedtypenode">NamedTypeNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#listtypenode">ListTypeNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#nonnulltypenode">NonNullTypeNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#typesystemdefinitionnode">TypeSystemDefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#schemadefinitionnode">SchemaDefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#operationtypedefinitionnode">OperationTypeDefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#typedefinitionnode">TypeDefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#scalartypedefinitionnode">ScalarTypeDefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#objecttypedefinitionnode">ObjectTypeDefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#fielddefinitionnode">FieldDefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#inputvaluedefinitionnode">InputValueDefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#interfacetypedefinitionnode">InterfaceTypeDefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#uniontypedefinitionnode">UnionTypeDefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#enumtypedefinitionnode">EnumTypeDefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#enumvaluedefinitionnode">EnumValueDefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#inputobjecttypedefinitionnode">InputObjectTypeDefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#directivedefinitionnode">DirectiveDefinitionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#typesystemextensionnode">TypeSystemExtensionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#schemaextensionnode">SchemaExtensionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#typeextensionnode">TypeExtensionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#scalartypeextensionnode">ScalarTypeExtensionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#objecttypeextensionnode">ObjectTypeExtensionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#interfacetypeextensionnode">InterfaceTypeExtensionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#uniontypeextensionnode">UnionTypeExtensionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#enumtypeextensionnode">EnumTypeExtensionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#inputobjecttypeextensionnode">InputObjectTypeExtensionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#directiveextensionnode">DirectiveExtensionNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#schemacoordinatenode">SchemaCoordinateNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#typecoordinatenode">TypeCoordinateNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#membercoordinatenode">MemberCoordinateNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#argumentcoordinatenode">ArgumentCoordinateNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#directivecoordinatenode">DirectiveCoordinateNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#directiveargumentcoordinatenode">DirectiveArgumentCoordinateNode</a>
+  </p>
+</div>
+
+### Classes
+
+#### Location
+
+Contains a range of UTF-8 character offsets and token references that
+identify the region of the source from which the AST derived.
+
+<hr className="api-subsection-divider" />
+
+##### Constructor
+
+Creates a Location instance.
+
+**Signature:**
+
+<ApiSignature parts={[["keyword", "new"], " ", ["name", "Location"], "(\n  ", ["parameter", "startToken"], ": ", ["link", "Token", "/api-v17/language#token"], ",\n  ", ["parameter", "endToken"], ": ", ["link", "Token", "/api-v17/language#token"], ",\n  ", ["parameter", "source"], ": ", ["link", "Source", "/api-v17/language#source"], ",\n);"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>startToken</td>
+      <td><ApiType parts={[["link", "Token", "/api-v17/language#token"]]} /></td>
+      <td>The start token.</td>
+    </tr>
+    <tr>
+      <td>endToken</td>
+      <td><ApiType parts={[["link", "Token", "/api-v17/language#token"]]} /></td>
+      <td>The end token.</td>
+    </tr>
+    <tr>
+      <td>source</td>
+      <td><ApiType parts={[["link", "Source", "/api-v17/language#source"]]} /></td>
+      <td>Source document used to derive error locations.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+##### Members
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>start</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>The character offset at which this Node begins.</td>
+    </tr>
+    <tr>
+      <td>end</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>The character offset at which this Node ends.</td>
+    </tr>
+    <tr>
+      <td>startToken</td>
+      <td><ApiType parts={[["link", "Token", "/api-v17/language#token"]]} /></td>
+      <td>The Token at which this Node begins.</td>
+    </tr>
+    <tr>
+      <td>endToken</td>
+      <td><ApiType parts={[["link", "Token", "/api-v17/language#token"]]} /></td>
+      <td>The Token at which this Node ends.</td>
+    </tr>
+    <tr>
+      <td>source</td>
+      <td><ApiType parts={[["link", "Source", "/api-v17/language#source"]]} /></td>
+      <td>The Source document the AST represents.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+##### toJSON()
+
+Returns a JSON representation of this location.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "toJSON"], "(): \u007b\n  ", ["property", "start"], ": ", ["keyword", "number"], ";\n  ", ["property", "end"], ": ", ["keyword", "number"], ";\n\u007d;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={["\u007b ", ["property", "start"], ": ", ["keyword", "number"], "; ", ["property", "end"], ": ", ["keyword", "number"], " \u007d"]} /></td>
+      <td>The JSON-serializable representation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse } from 'graphql/language';
+
+const document = parse('{ hello }');
+const location = document.loc?.toJSON();
+
+location; // => { start: 0, end: 9 }
+```
+
+<hr className="api-item-divider" />
+
+#### Token
+
+Represents a range of characters represented by a lexical token
+within a Source.
+
+<hr className="api-subsection-divider" />
+
+##### Constructor
+
+Creates a Token instance.
+
+**Signature:**
+
+<ApiSignature parts={[["keyword", "new"], " ", ["name", "Token"], "(\n  ", ["parameter", "kind"], ": ", ["link", "TokenKind", "/api-v17/language#tokenkind"], ",\n  ", ["parameter", "start"], ": ", ["keyword", "number"], ",\n  ", ["parameter", "end"], ": ", ["keyword", "number"], ",\n  ", ["parameter", "line"], ": ", ["keyword", "number"], ",\n  ", ["parameter", "column"], ": ", ["keyword", "number"], ",\n  ", ["parameter", "value"], "?: ", ["keyword", "string"], ",\n);"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["link", "TokenKind", "/api-v17/language#tokenkind"]]} /></td>
+      <td>Token kind produced by lexical analysis.</td>
+    </tr>
+    <tr>
+      <td>start</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>Character offset where this token begins.</td>
+    </tr>
+    <tr>
+      <td>end</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>Character offset where this token ends.</td>
+    </tr>
+    <tr>
+      <td>line</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>One-indexed line number where this token begins.</td>
+    </tr>
+    <tr>
+      <td>column</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>One-indexed column number where this token begins.</td>
+    </tr>
+    <tr>
+      <td>value?</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Interpreted value for non-punctuation tokens.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+##### Members
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["link", "TokenKind", "/api-v17/language#tokenkind"]]} /></td>
+      <td>The kind of Token.</td>
+    </tr>
+    <tr>
+      <td>start</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>The character offset at which this Node begins.</td>
+    </tr>
+    <tr>
+      <td>end</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>The character offset at which this Node ends.</td>
+    </tr>
+    <tr>
+      <td>line</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>The 1-indexed line number on which this Token appears.</td>
+    </tr>
+    <tr>
+      <td>column</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>The 1-indexed column number at which this Token begins.</td>
+    </tr>
+    <tr>
+      <td>value</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>For non-punctuation tokens, represents the interpreted value of the token.<br />
+Note: is undefined for punctuation tokens, but typed as string for<br />
+convenience in the parser.</td>
+    </tr>
+    <tr>
+      <td>prev</td>
+      <td><ApiType parts={[["link", "Token", "/api-v17/language#token"], " \u007c ", ["keyword", "null"]]} /></td>
+      <td>Tokens exist as nodes in a double-linked-list amongst all tokens<br />
+including ignored tokens. &lt;SOF&gt; is always the first node and &lt;EOF&gt;<br />
+the last.</td>
+    </tr>
+    <tr>
+      <td>next</td>
+      <td><ApiType parts={[["link", "Token", "/api-v17/language#token"], " \u007c ", ["keyword", "null"]]} /></td>
+      <td>Next token in the token stream, including ignored tokens.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+##### toJSON()
+
+Returns a JSON representation of this token.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "toJSON"], "(): \u007b\n  ", ["property", "kind"], ": ", ["link", "TokenKind", "/api-v17/language#tokenkind"], ";\n  ", ["property", "value"], "?: ", ["keyword", "string"], ";\n  ", ["property", "line"], ": ", ["keyword", "number"], ";\n  ", ["property", "column"], ": ", ["keyword", "number"], ";\n\u007d;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={["\u007b\n  ", ["property", "kind"], ": ", ["link", "TokenKind", "/api-v17/language#tokenkind"], ";\n  ", ["property", "value"], "?: ", ["keyword", "string"], ";\n  ", ["property", "line"], ": ", ["keyword", "number"], ";\n  ", ["property", "column"], ": ", ["keyword", "number"], ";\n\u007d"]} /></td>
+      <td>The JSON-serializable representation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { Lexer, Source } from 'graphql/language';
+
+const lexer = new Lexer(new Source('{ hello }'));
+const token = lexer.advance().toJSON();
+
+token; // => { kind: '{', value: undefined, line: 1, column: 1 }
+```
+
+### Types
+
+#### ASTNode
+
+**Type alias.** The list of all possible AST node types.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "ASTNode"], " =\n  \u007c ", ["link", "NameNode", "/api-v17/language#namenode"], "\n  \u007c ", ["link", "DocumentNode", "/api-v17/language#documentnode"], "\n  \u007c ", ["link", "OperationDefinitionNode", "/api-v17/language#operationdefinitionnode"], "\n  \u007c ", ["link", "VariableDefinitionNode", "/api-v17/language#variabledefinitionnode"], "\n  \u007c ", ["link", "VariableNode", "/api-v17/language#variablenode"], "\n  \u007c ", ["link", "SelectionSetNode", "/api-v17/language#selectionsetnode"], "\n  \u007c ", ["link", "FieldNode", "/api-v17/language#fieldnode"], "\n  \u007c ", ["link", "ArgumentNode", "/api-v17/language#argumentnode"], "\n  \u007c ", ["link", "FragmentArgumentNode", "/api-v17/language#fragmentargumentnode"], "\n  \u007c ", ["link", "FragmentSpreadNode", "/api-v17/language#fragmentspreadnode"], "\n  \u007c ", ["link", "InlineFragmentNode", "/api-v17/language#inlinefragmentnode"], "\n  \u007c ", ["link", "FragmentDefinitionNode", "/api-v17/language#fragmentdefinitionnode"], "\n  \u007c ", ["link", "IntValueNode", "/api-v17/language#intvaluenode"], "\n  \u007c ", ["link", "FloatValueNode", "/api-v17/language#floatvaluenode"], "\n  \u007c ", ["link", "StringValueNode", "/api-v17/language#stringvaluenode"], "\n  \u007c ", ["link", "BooleanValueNode", "/api-v17/language#booleanvaluenode"], "\n  \u007c ", ["link", "NullValueNode", "/api-v17/language#nullvaluenode"], "\n  \u007c ", ["link", "EnumValueNode", "/api-v17/language#enumvaluenode"], "\n  \u007c ", ["link", "ListValueNode", "/api-v17/language#listvaluenode"], "\n  \u007c ", ["link", "ObjectValueNode", "/api-v17/language#objectvaluenode"], "\n  \u007c ", ["link", "ObjectFieldNode", "/api-v17/language#objectfieldnode"], "\n  \u007c ", ["link", "DirectiveNode", "/api-v17/language#directivenode"], "\n  \u007c ", ["link", "NamedTypeNode", "/api-v17/language#namedtypenode"], "\n  \u007c ", ["link", "ListTypeNode", "/api-v17/language#listtypenode"], "\n  \u007c ", ["link", "NonNullTypeNode", "/api-v17/language#nonnulltypenode"], "\n  \u007c ", ["link", "SchemaDefinitionNode", "/api-v17/language#schemadefinitionnode"], "\n  \u007c ", ["link", "OperationTypeDefinitionNode", "/api-v17/language#operationtypedefinitionnode"], "\n  \u007c ", ["link", "ScalarTypeDefinitionNode", "/api-v17/language#scalartypedefinitionnode"], "\n  \u007c ", ["link", "ObjectTypeDefinitionNode", "/api-v17/language#objecttypedefinitionnode"], "\n  \u007c ", ["link", "FieldDefinitionNode", "/api-v17/language#fielddefinitionnode"], "\n  \u007c ", ["link", "InputValueDefinitionNode", "/api-v17/language#inputvaluedefinitionnode"], "\n  \u007c ", ["link", "InterfaceTypeDefinitionNode", "/api-v17/language#interfacetypedefinitionnode"], "\n  \u007c ", ["link", "UnionTypeDefinitionNode", "/api-v17/language#uniontypedefinitionnode"], "\n  \u007c ", ["link", "EnumTypeDefinitionNode", "/api-v17/language#enumtypedefinitionnode"], "\n  \u007c ", ["link", "EnumValueDefinitionNode", "/api-v17/language#enumvaluedefinitionnode"], "\n  \u007c ", ["link", "InputObjectTypeDefinitionNode", "/api-v17/language#inputobjecttypedefinitionnode"], "\n  \u007c ", ["link", "DirectiveDefinitionNode", "/api-v17/language#directivedefinitionnode"], "\n  \u007c ", ["link", "SchemaExtensionNode", "/api-v17/language#schemaextensionnode"], "\n  \u007c ", ["link", "ScalarTypeExtensionNode", "/api-v17/language#scalartypeextensionnode"], "\n  \u007c ", ["link", "ObjectTypeExtensionNode", "/api-v17/language#objecttypeextensionnode"], "\n  \u007c ", ["link", "InterfaceTypeExtensionNode", "/api-v17/language#interfacetypeextensionnode"], "\n  \u007c ", ["link", "UnionTypeExtensionNode", "/api-v17/language#uniontypeextensionnode"], "\n  \u007c ", ["link", "EnumTypeExtensionNode", "/api-v17/language#enumtypeextensionnode"], "\n  \u007c ", ["link", "InputObjectTypeExtensionNode", "/api-v17/language#inputobjecttypeextensionnode"], "\n  \u007c ", ["link", "DirectiveExtensionNode", "/api-v17/language#directiveextensionnode"], "\n  \u007c ", ["link", "TypeCoordinateNode", "/api-v17/language#typecoordinatenode"], "\n  \u007c ", ["link", "MemberCoordinateNode", "/api-v17/language#membercoordinatenode"], "\n  \u007c ", ["link", "ArgumentCoordinateNode", "/api-v17/language#argumentcoordinatenode"], "\n  \u007c ", ["link", "DirectiveCoordinateNode", "/api-v17/language#directivecoordinatenode"], "\n  \u007c ", ["link", "DirectiveArgumentCoordinateNode", "/api-v17/language#directiveargumentcoordinatenode"], ";"]} />
+
+<hr className="api-item-divider" />
+
+#### ASTKindToNode
+
+**Type alias.** Utility type listing all nodes indexed by their kind.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "ASTKindToNode"], " = ", ["type", "mapped object"], ";"]} />
+
+<hr className="api-item-divider" />
+
+#### NameNode
+
+**Interface.** An identifier in a GraphQL document.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'Name'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>value</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Parsed value represented by this node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### DocumentNode
+
+**Interface.** The root AST node for a parsed GraphQL document.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'Document'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>definitions</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "DefinitionNode", "/api-v17/language#definitionnode"], "[]"]} /></td>
+      <td>Top-level executable and type-system definitions in this document.</td>
+    </tr>
+    <tr>
+      <td>tokenCount?</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>The number of lexical tokens parsed for this document, if token counting was enabled.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### DefinitionNode
+
+**Type alias.** Any top-level definition that may appear in a GraphQL document.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "DefinitionNode"], " =\n  \u007c ", ["link", "ExecutableDefinitionNode", "/api-v17/language#executabledefinitionnode"], "\n  \u007c ", ["link", "TypeSystemDefinitionNode", "/api-v17/language#typesystemdefinitionnode"], "\n  \u007c ", ["link", "TypeSystemExtensionNode", "/api-v17/language#typesystemextensionnode"], ";"]} />
+
+<hr className="api-item-divider" />
+
+#### ExecutableDefinitionNode
+
+**Type alias.** Any executable definition that may appear in an operation document.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "ExecutableDefinitionNode"], " = ", ["link", "OperationDefinitionNode", "/api-v17/language#operationdefinitionnode"], " \u007c ", ["link", "FragmentDefinitionNode", "/api-v17/language#fragmentdefinitionnode"], ";"]} />
+
+<hr className="api-item-divider" />
+
+#### OperationDefinitionNode
+
+**Interface.** A query, mutation, or subscription operation definition.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'OperationDefinition'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>description?</td>
+      <td><ApiType parts={[["link", "StringValueNode", "/api-v17/language#stringvaluenode"]]} /></td>
+      <td>The optional GraphQL description associated with this definition.</td>
+    </tr>
+    <tr>
+      <td>operation</td>
+      <td><ApiType parts={[["link", "OperationTypeNode", "/api-v17/language#operationtypenode"]]} /></td>
+      <td>The operation selected for execution.</td>
+    </tr>
+    <tr>
+      <td>name?</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>variableDefinitions?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "VariableDefinitionNode", "/api-v17/language#variabledefinitionnode"], "[]"]} /></td>
+      <td>Variable definitions declared by this operation or fragment.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "DirectiveNode", "/api-v17/language#directivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+    <tr>
+      <td>selectionSet</td>
+      <td><ApiType parts={[["link", "SelectionSetNode", "/api-v17/language#selectionsetnode"]]} /></td>
+      <td>Selections made by this operation, field, or fragment.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### SubscriptionOperationDefinitionNode
+
+**Interface.** A narrowed OperationDefinitionNode for subscription operations.
+Subscription operations go through a distinct execution pipeline
+(source event stream + per-event execution), so narrowing the operation
+type allows functions in that pipeline to accept only valid input.
+
+<ApiSignature parts={[["keyword", "interface"], " ", ["name", "SubscriptionOperationDefinitionNode"], " ", ["keyword", "extends"], " ", ["link", "OperationDefinitionNode", "/api-v17/language#operationdefinitionnode"]]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>operation</td>
+      <td><ApiType parts={[["literal", "'subscription'"]]} /></td>
+      <td>Subscription operation kind for this definition.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### VariableDefinitionNode
+
+**Interface.** A variable declaration in an operation or experimental fragment definition.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'VariableDefinition'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>description?</td>
+      <td><ApiType parts={[["link", "StringValueNode", "/api-v17/language#stringvaluenode"]]} /></td>
+      <td>The optional GraphQL description associated with this definition.</td>
+    </tr>
+    <tr>
+      <td>variable</td>
+      <td><ApiType parts={[["link", "VariableNode", "/api-v17/language#variablenode"]]} /></td>
+      <td>The variable being defined or referenced.</td>
+    </tr>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["link", "TypeNode", "/api-v17/language#typenode"]]} /></td>
+      <td>The GraphQL type reference or runtime type for this element.</td>
+    </tr>
+    <tr>
+      <td>defaultValue?</td>
+      <td><ApiType parts={[["link", "ConstValueNode", "/api-v17/language#constvaluenode"]]} /></td>
+      <td>Default value used when no explicit value is supplied.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### VariableNode
+
+**Interface.** A variable reference, such as `$id`.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'Variable'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### SelectionSetNode
+
+**Interface.** A set of fields and fragments selected from an object, interface, or union.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'SelectionSet'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>selections</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "SelectionNode", "/api-v17/language#selectionnode"], "[]"]} /></td>
+      <td>Fields and fragments contained in this selection set.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### SelectionNode
+
+**Type alias.** Any selection that may appear inside a selection set.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "SelectionNode"], " =\n  \u007c ", ["link", "FieldNode", "/api-v17/language#fieldnode"], "\n  \u007c ", ["link", "FragmentSpreadNode", "/api-v17/language#fragmentspreadnode"], "\n  \u007c ", ["link", "InlineFragmentNode", "/api-v17/language#inlinefragmentnode"], ";"]} />
+
+<hr className="api-item-divider" />
+
+#### FieldNode
+
+**Interface.** A field selected in an executable GraphQL document.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'Field'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>alias?</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>The response-key alias for this field, if one was supplied.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>arguments?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ArgumentNode", "/api-v17/language#argumentnode"], "[]"]} /></td>
+      <td>Arguments supplied to this field, directive, or coordinate.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "DirectiveNode", "/api-v17/language#directivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+    <tr>
+      <td>selectionSet?</td>
+      <td><ApiType parts={[["link", "SelectionSetNode", "/api-v17/language#selectionsetnode"]]} /></td>
+      <td>Selections made by this operation, field, or fragment.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ArgumentNode
+
+**Interface.** An argument supplied to a field or directive.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'Argument'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>value</td>
+      <td><ApiType parts={[["link", "ValueNode", "/api-v17/language#valuenode"]]} /></td>
+      <td>Parsed value represented by this node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ConstArgumentNode
+
+**Interface.** An argument node whose value is guaranteed to be constant.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'Argument'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>value</td>
+      <td><ApiType parts={[["link", "ConstValueNode", "/api-v17/language#constvaluenode"]]} /></td>
+      <td>Parsed value represented by this node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### FragmentArgumentNode
+
+**Interface.** Variable definition declared by a fragment argument.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'FragmentArgument'"]]} /></td>
+      <td>AST node kind for a fragment argument.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>Source location for this fragment argument.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Variable name declared by this fragment argument.</td>
+    </tr>
+    <tr>
+      <td>value</td>
+      <td><ApiType parts={[["link", "ValueNode", "/api-v17/language#valuenode"]]} /></td>
+      <td>Default value literal for this fragment argument, if provided.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### FragmentSpreadNode
+
+**Interface.** A named fragment spread, such as `...userFields`.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'FragmentSpread'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>arguments?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "FragmentArgumentNode", "/api-v17/language#fragmentargumentnode"], "[]"]} /></td>
+      <td>Argument values supplied to the referenced fragment.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "DirectiveNode", "/api-v17/language#directivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### InlineFragmentNode
+
+**Interface.** An inline fragment spread with an optional type condition.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'InlineFragment'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>typeCondition?</td>
+      <td><ApiType parts={[["link", "NamedTypeNode", "/api-v17/language#namedtypenode"]]} /></td>
+      <td>The type condition that limits where this fragment applies.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "DirectiveNode", "/api-v17/language#directivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+    <tr>
+      <td>selectionSet</td>
+      <td><ApiType parts={[["link", "SelectionSetNode", "/api-v17/language#selectionsetnode"]]} /></td>
+      <td>Selections made by this operation, field, or fragment.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### FragmentDefinitionNode
+
+**Interface.** A reusable fragment definition declared in an executable document.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'FragmentDefinition'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>description?</td>
+      <td><ApiType parts={[["link", "StringValueNode", "/api-v17/language#stringvaluenode"]]} /></td>
+      <td>The optional GraphQL description associated with this definition.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>variableDefinitions?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "VariableDefinitionNode", "/api-v17/language#variabledefinitionnode"], "[]"]} /></td>
+      <td>Experimental variable definitions declared by this fragment definition.</td>
+    </tr>
+    <tr>
+      <td>typeCondition</td>
+      <td><ApiType parts={[["link", "NamedTypeNode", "/api-v17/language#namedtypenode"]]} /></td>
+      <td>The type condition that limits where this fragment applies.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "DirectiveNode", "/api-v17/language#directivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+    <tr>
+      <td>selectionSet</td>
+      <td><ApiType parts={[["link", "SelectionSetNode", "/api-v17/language#selectionsetnode"]]} /></td>
+      <td>Selections made by this operation, field, or fragment.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ValueNode
+
+**Type alias.** Any value literal that may appear in an executable GraphQL document.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "ValueNode"], " =\n  \u007c ", ["link", "VariableNode", "/api-v17/language#variablenode"], "\n  \u007c ", ["link", "IntValueNode", "/api-v17/language#intvaluenode"], "\n  \u007c ", ["link", "FloatValueNode", "/api-v17/language#floatvaluenode"], "\n  \u007c ", ["link", "StringValueNode", "/api-v17/language#stringvaluenode"], "\n  \u007c ", ["link", "BooleanValueNode", "/api-v17/language#booleanvaluenode"], "\n  \u007c ", ["link", "NullValueNode", "/api-v17/language#nullvaluenode"], "\n  \u007c ", ["link", "EnumValueNode", "/api-v17/language#enumvaluenode"], "\n  \u007c ", ["link", "ListValueNode", "/api-v17/language#listvaluenode"], "\n  \u007c ", ["link", "ObjectValueNode", "/api-v17/language#objectvaluenode"], ";"]} />
+
+<hr className="api-item-divider" />
+
+#### ConstValueNode
+
+**Type alias.** Any value literal that is guaranteed not to contain a variable reference.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "ConstValueNode"], " =\n  \u007c ", ["link", "IntValueNode", "/api-v17/language#intvaluenode"], "\n  \u007c ", ["link", "FloatValueNode", "/api-v17/language#floatvaluenode"], "\n  \u007c ", ["link", "StringValueNode", "/api-v17/language#stringvaluenode"], "\n  \u007c ", ["link", "BooleanValueNode", "/api-v17/language#booleanvaluenode"], "\n  \u007c ", ["link", "NullValueNode", "/api-v17/language#nullvaluenode"], "\n  \u007c ", ["link", "EnumValueNode", "/api-v17/language#enumvaluenode"], "\n  \u007c ", ["link", "ConstListValueNode", "/api-v17/language#constlistvaluenode"], "\n  \u007c ", ["link", "ConstObjectValueNode", "/api-v17/language#constobjectvaluenode"], ";"]} />
+
+<hr className="api-item-divider" />
+
+#### IntValueNode
+
+**Interface.** An integer value literal.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'IntValue'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>value</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Parsed value represented by this node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### FloatValueNode
+
+**Interface.** A floating-point value literal.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'FloatValue'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>value</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Parsed value represented by this node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### StringValueNode
+
+**Interface.** A string value literal.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'StringValue'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>value</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Parsed value represented by this node.</td>
+    </tr>
+    <tr>
+      <td>block?</td>
+      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
+      <td>Whether this string was parsed from block string syntax.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### BooleanValueNode
+
+**Interface.** A boolean value literal.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'BooleanValue'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>value</td>
+      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
+      <td>Parsed value represented by this node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### NullValueNode
+
+**Interface.** A null value literal.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'NullValue'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### EnumValueNode
+
+**Interface.** An enum value literal.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'EnumValue'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>value</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Parsed value represented by this node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ListValueNode
+
+**Interface.** A list value literal.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'ListValue'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>values</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ValueNode", "/api-v17/language#valuenode"], "[]"]} /></td>
+      <td>Values contained in this enum, list, or input-object definition.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ConstListValueNode
+
+**Interface.** A list value literal whose elements are all constant values.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'ListValue'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>values</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstValueNode", "/api-v17/language#constvaluenode"], "[]"]} /></td>
+      <td>Values contained in this enum, list, or input-object definition.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ObjectValueNode
+
+**Interface.** An input object value literal.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'ObjectValue'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>fields</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ObjectFieldNode", "/api-v17/language#objectfieldnode"], "[]"]} /></td>
+      <td>Fields declared by this object, interface, input object, or literal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ConstObjectValueNode
+
+**Interface.** An input object value literal whose fields are all constant values.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'ObjectValue'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>fields</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstObjectFieldNode", "/api-v17/language#constobjectfieldnode"], "[]"]} /></td>
+      <td>Fields declared by this object, interface, input object, or literal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ObjectFieldNode
+
+**Interface.** A field inside an input object value literal.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'ObjectField'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>value</td>
+      <td><ApiType parts={[["link", "ValueNode", "/api-v17/language#valuenode"]]} /></td>
+      <td>Parsed value represented by this node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ConstObjectFieldNode
+
+**Interface.** A field inside a constant input object value literal.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'ObjectField'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>value</td>
+      <td><ApiType parts={[["link", "ConstValueNode", "/api-v17/language#constvaluenode"]]} /></td>
+      <td>Parsed value represented by this node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### DirectiveNode
+
+**Interface.** A directive applied to an executable or type-system location.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'Directive'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>arguments?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ArgumentNode", "/api-v17/language#argumentnode"], "[]"]} /></td>
+      <td>Arguments supplied to this field, directive, or coordinate.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ConstDirectiveNode
+
+**Interface.** A directive whose arguments are all constant values.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'Directive'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>arguments?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstArgumentNode", "/api-v17/language#constargumentnode"], "[]"]} /></td>
+      <td>Arguments supplied to this field, directive, or coordinate.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### TypeNode
+
+**Type alias.** Any GraphQL type reference AST node.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "TypeNode"], " =\n  \u007c ", ["link", "NamedTypeNode", "/api-v17/language#namedtypenode"], "\n  \u007c ", ["link", "ListTypeNode", "/api-v17/language#listtypenode"], "\n  \u007c ", ["link", "NonNullTypeNode", "/api-v17/language#nonnulltypenode"], ";"]} />
+
+<hr className="api-item-divider" />
+
+#### NamedTypeNode
+
+**Interface.** A named type reference.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'NamedType'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ListTypeNode
+
+**Interface.** A list type reference.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'ListType'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["link", "TypeNode", "/api-v17/language#typenode"]]} /></td>
+      <td>The GraphQL type reference or runtime type for this element.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### NonNullTypeNode
+
+**Interface.** A non-null type reference.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'NonNullType'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["link", "NamedTypeNode", "/api-v17/language#namedtypenode"], " \u007c ", ["link", "ListTypeNode", "/api-v17/language#listtypenode"]]} /></td>
+      <td>The GraphQL type reference or runtime type for this element.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### TypeSystemDefinitionNode
+
+**Type alias.** Any type-system definition that may appear in a schema document.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "TypeSystemDefinitionNode"], " =\n  \u007c ", ["link", "SchemaDefinitionNode", "/api-v17/language#schemadefinitionnode"], "\n  \u007c ", ["link", "TypeDefinitionNode", "/api-v17/language#typedefinitionnode"], "\n  \u007c ", ["link", "DirectiveDefinitionNode", "/api-v17/language#directivedefinitionnode"], ";"]} />
+
+<hr className="api-item-divider" />
+
+#### SchemaDefinitionNode
+
+**Interface.** A schema definition in a type-system document.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'SchemaDefinition'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>description?</td>
+      <td><ApiType parts={[["link", "StringValueNode", "/api-v17/language#stringvaluenode"]]} /></td>
+      <td>The optional GraphQL description associated with this definition.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+    <tr>
+      <td>operationTypes</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "OperationTypeDefinitionNode", "/api-v17/language#operationtypedefinitionnode"], "[]"]} /></td>
+      <td>Root operation types declared by this schema definition or extension.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### OperationTypeDefinitionNode
+
+**Interface.** A root operation type declaration inside a schema definition or extension.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'OperationTypeDefinition'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>operation</td>
+      <td><ApiType parts={[["link", "OperationTypeNode", "/api-v17/language#operationtypenode"]]} /></td>
+      <td>The operation selected for execution.</td>
+    </tr>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["link", "NamedTypeNode", "/api-v17/language#namedtypenode"]]} /></td>
+      <td>The GraphQL type reference or runtime type for this element.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### TypeDefinitionNode
+
+**Type alias.** Any named type definition that may appear in a schema document.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "TypeDefinitionNode"], " =\n  \u007c ", ["link", "ScalarTypeDefinitionNode", "/api-v17/language#scalartypedefinitionnode"], "\n  \u007c ", ["link", "ObjectTypeDefinitionNode", "/api-v17/language#objecttypedefinitionnode"], "\n  \u007c ", ["link", "InterfaceTypeDefinitionNode", "/api-v17/language#interfacetypedefinitionnode"], "\n  \u007c ", ["link", "UnionTypeDefinitionNode", "/api-v17/language#uniontypedefinitionnode"], "\n  \u007c ", ["link", "EnumTypeDefinitionNode", "/api-v17/language#enumtypedefinitionnode"], "\n  \u007c ", ["link", "InputObjectTypeDefinitionNode", "/api-v17/language#inputobjecttypedefinitionnode"], ";"]} />
+
+<hr className="api-item-divider" />
+
+#### ScalarTypeDefinitionNode
+
+**Interface.** A scalar type definition in a type-system document.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'ScalarTypeDefinition'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>description?</td>
+      <td><ApiType parts={[["link", "StringValueNode", "/api-v17/language#stringvaluenode"]]} /></td>
+      <td>The optional GraphQL description associated with this definition.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ObjectTypeDefinitionNode
+
+**Interface.** An object type definition in a type-system document.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'ObjectTypeDefinition'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>description?</td>
+      <td><ApiType parts={[["link", "StringValueNode", "/api-v17/language#stringvaluenode"]]} /></td>
+      <td>The optional GraphQL description associated with this definition.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>interfaces?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "NamedTypeNode", "/api-v17/language#namedtypenode"], "[]"]} /></td>
+      <td>Interfaces implemented by this object or interface type.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+    <tr>
+      <td>fields?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "FieldDefinitionNode", "/api-v17/language#fielddefinitionnode"], "[]"]} /></td>
+      <td>Fields declared by this object, interface, input object, or literal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### FieldDefinitionNode
+
+**Interface.** A field definition declared by an object or interface type.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'FieldDefinition'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>description?</td>
+      <td><ApiType parts={[["link", "StringValueNode", "/api-v17/language#stringvaluenode"]]} /></td>
+      <td>The optional GraphQL description associated with this definition.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>arguments?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "InputValueDefinitionNode", "/api-v17/language#inputvaluedefinitionnode"], "[]"]} /></td>
+      <td>Arguments supplied to this field, directive, or coordinate.</td>
+    </tr>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["link", "TypeNode", "/api-v17/language#typenode"]]} /></td>
+      <td>The GraphQL type reference or runtime type for this element.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### InputValueDefinitionNode
+
+**Interface.** An argument or input-field definition.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'InputValueDefinition'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>description?</td>
+      <td><ApiType parts={[["link", "StringValueNode", "/api-v17/language#stringvaluenode"]]} /></td>
+      <td>The optional GraphQL description associated with this definition.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>type</td>
+      <td><ApiType parts={[["link", "TypeNode", "/api-v17/language#typenode"]]} /></td>
+      <td>The GraphQL type reference or runtime type for this element.</td>
+    </tr>
+    <tr>
+      <td>defaultValue?</td>
+      <td><ApiType parts={[["link", "ConstValueNode", "/api-v17/language#constvaluenode"]]} /></td>
+      <td>Default value used when no explicit value is supplied.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### InterfaceTypeDefinitionNode
+
+**Interface.** An interface type definition in a type-system document.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'InterfaceTypeDefinition'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>description?</td>
+      <td><ApiType parts={[["link", "StringValueNode", "/api-v17/language#stringvaluenode"]]} /></td>
+      <td>The optional GraphQL description associated with this definition.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>interfaces?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "NamedTypeNode", "/api-v17/language#namedtypenode"], "[]"]} /></td>
+      <td>Interfaces implemented by this object or interface type.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+    <tr>
+      <td>fields?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "FieldDefinitionNode", "/api-v17/language#fielddefinitionnode"], "[]"]} /></td>
+      <td>Fields declared by this object, interface, input object, or literal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### UnionTypeDefinitionNode
+
+**Interface.** A union type definition in a type-system document.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'UnionTypeDefinition'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>description?</td>
+      <td><ApiType parts={[["link", "StringValueNode", "/api-v17/language#stringvaluenode"]]} /></td>
+      <td>The optional GraphQL description associated with this definition.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+    <tr>
+      <td>types?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "NamedTypeNode", "/api-v17/language#namedtypenode"], "[]"]} /></td>
+      <td>Object types that belong to this union type.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### EnumTypeDefinitionNode
+
+**Interface.** An enum type definition in a type-system document.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'EnumTypeDefinition'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>description?</td>
+      <td><ApiType parts={[["link", "StringValueNode", "/api-v17/language#stringvaluenode"]]} /></td>
+      <td>The optional GraphQL description associated with this definition.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+    <tr>
+      <td>values?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "EnumValueDefinitionNode", "/api-v17/language#enumvaluedefinitionnode"], "[]"]} /></td>
+      <td>Values contained in this enum, list, or input-object definition.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### EnumValueDefinitionNode
+
+**Interface.** An enum value definition.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'EnumValueDefinition'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>description?</td>
+      <td><ApiType parts={[["link", "StringValueNode", "/api-v17/language#stringvaluenode"]]} /></td>
+      <td>The optional GraphQL description associated with this definition.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### InputObjectTypeDefinitionNode
+
+**Interface.** An input object type definition in a type-system document.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'InputObjectTypeDefinition'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>description?</td>
+      <td><ApiType parts={[["link", "StringValueNode", "/api-v17/language#stringvaluenode"]]} /></td>
+      <td>The optional GraphQL description associated with this definition.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+    <tr>
+      <td>fields?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "InputValueDefinitionNode", "/api-v17/language#inputvaluedefinitionnode"], "[]"]} /></td>
+      <td>Fields declared by this object, interface, input object, or literal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### DirectiveDefinitionNode
+
+**Interface.** A directive definition in a type-system document.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'DirectiveDefinition'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>description?</td>
+      <td><ApiType parts={[["link", "StringValueNode", "/api-v17/language#stringvaluenode"]]} /></td>
+      <td>The optional GraphQL description associated with this definition.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>arguments?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "InputValueDefinitionNode", "/api-v17/language#inputvaluedefinitionnode"], "[]"]} /></td>
+      <td>Arguments supplied to this field, directive, or coordinate.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+    <tr>
+      <td>repeatable</td>
+      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
+      <td>Whether this directive may appear more than once at the same location.</td>
+    </tr>
+    <tr>
+      <td>locations</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "NameNode", "/api-v17/language#namenode"], "[]"]} /></td>
+      <td>Locations where this directive may be applied.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### TypeSystemExtensionNode
+
+**Type alias.** Any type-system extension that may appear in a schema extension document.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "TypeSystemExtensionNode"], " =\n  \u007c ", ["link", "SchemaExtensionNode", "/api-v17/language#schemaextensionnode"], "\n  \u007c ", ["link", "TypeExtensionNode", "/api-v17/language#typeextensionnode"], "\n  \u007c ", ["link", "DirectiveExtensionNode", "/api-v17/language#directiveextensionnode"], ";"]} />
+
+<hr className="api-item-divider" />
+
+#### SchemaExtensionNode
+
+**Interface.** A schema extension in a type-system document.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'SchemaExtension'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+    <tr>
+      <td>operationTypes?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "OperationTypeDefinitionNode", "/api-v17/language#operationtypedefinitionnode"], "[]"]} /></td>
+      <td>Root operation types declared by this schema definition or extension.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### TypeExtensionNode
+
+**Type alias.** Any named type extension that may appear in a schema extension document.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "TypeExtensionNode"], " =\n  \u007c ", ["link", "ScalarTypeExtensionNode", "/api-v17/language#scalartypeextensionnode"], "\n  \u007c ", ["link", "ObjectTypeExtensionNode", "/api-v17/language#objecttypeextensionnode"], "\n  \u007c ", ["link", "InterfaceTypeExtensionNode", "/api-v17/language#interfacetypeextensionnode"], "\n  \u007c ", ["link", "UnionTypeExtensionNode", "/api-v17/language#uniontypeextensionnode"], "\n  \u007c ", ["link", "EnumTypeExtensionNode", "/api-v17/language#enumtypeextensionnode"], "\n  \u007c ", ["link", "InputObjectTypeExtensionNode", "/api-v17/language#inputobjecttypeextensionnode"], ";"]} />
+
+<hr className="api-item-divider" />
+
+#### ScalarTypeExtensionNode
+
+**Interface.** A scalar type extension.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'ScalarTypeExtension'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ObjectTypeExtensionNode
+
+**Interface.** An object type extension.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'ObjectTypeExtension'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>interfaces?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "NamedTypeNode", "/api-v17/language#namedtypenode"], "[]"]} /></td>
+      <td>Interfaces implemented by this object or interface type.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+    <tr>
+      <td>fields?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "FieldDefinitionNode", "/api-v17/language#fielddefinitionnode"], "[]"]} /></td>
+      <td>Fields declared by this object, interface, input object, or literal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### InterfaceTypeExtensionNode
+
+**Interface.** An interface type extension.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'InterfaceTypeExtension'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>interfaces?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "NamedTypeNode", "/api-v17/language#namedtypenode"], "[]"]} /></td>
+      <td>Interfaces implemented by this object or interface type.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+    <tr>
+      <td>fields?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "FieldDefinitionNode", "/api-v17/language#fielddefinitionnode"], "[]"]} /></td>
+      <td>Fields declared by this object, interface, input object, or literal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### UnionTypeExtensionNode
+
+**Interface.** A union type extension.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'UnionTypeExtension'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+    <tr>
+      <td>types?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "NamedTypeNode", "/api-v17/language#namedtypenode"], "[]"]} /></td>
+      <td>Object types that belong to this union type.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### EnumTypeExtensionNode
+
+**Interface.** An enum type extension.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'EnumTypeExtension'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+    <tr>
+      <td>values?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "EnumValueDefinitionNode", "/api-v17/language#enumvaluedefinitionnode"], "[]"]} /></td>
+      <td>Values contained in this enum, list, or input-object definition.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### InputObjectTypeExtensionNode
+
+**Interface.** An input object type extension.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'InputObjectTypeExtension'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+    <tr>
+      <td>fields?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "InputValueDefinitionNode", "/api-v17/language#inputvaluedefinitionnode"], "[]"]} /></td>
+      <td>Fields declared by this object, interface, input object, or literal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### DirectiveExtensionNode
+
+**Interface.** A directive extension.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'DirectiveExtension'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>directives?</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ConstDirectiveNode", "/api-v17/language#constdirectivenode"], "[]"]} /></td>
+      <td>Directives available in this schema or applied to this AST node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### SchemaCoordinateNode
+
+**Type alias.** Any AST node representing a GraphQL schema coordinate.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "SchemaCoordinateNode"], " =\n  \u007c ", ["link", "TypeCoordinateNode", "/api-v17/language#typecoordinatenode"], "\n  \u007c ", ["link", "MemberCoordinateNode", "/api-v17/language#membercoordinatenode"], "\n  \u007c ", ["link", "ArgumentCoordinateNode", "/api-v17/language#argumentcoordinatenode"], "\n  \u007c ", ["link", "DirectiveCoordinateNode", "/api-v17/language#directivecoordinatenode"], "\n  \u007c ", ["link", "DirectiveArgumentCoordinateNode", "/api-v17/language#directiveargumentcoordinatenode"], ";"]} />
+
+<hr className="api-item-divider" />
+
+#### TypeCoordinateNode
+
+**Interface.** A schema coordinate that refers to a named type.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'TypeCoordinate'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### MemberCoordinateNode
+
+**Interface.** A schema coordinate that refers to a member of a named type.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'MemberCoordinate'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>memberName</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>The member name referenced by this schema coordinate.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### ArgumentCoordinateNode
+
+**Interface.** A schema coordinate that refers to a field or directive argument.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'ArgumentCoordinate'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>fieldName</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>The field name referenced by this schema coordinate.</td>
+    </tr>
+    <tr>
+      <td>argumentName</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>The argument name referenced by this schema coordinate.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### DirectiveCoordinateNode
+
+**Interface.** A schema coordinate that refers to a directive.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'DirectiveCoordinate'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### DirectiveArgumentCoordinateNode
+
+**Interface.** A schema coordinate that refers to a directive argument.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["literal", "'DirectiveArgumentCoordinate'"]]} /></td>
+      <td>The discriminator identifying the concrete AST or introspection kind.</td>
+    </tr>
+    <tr>
+      <td>loc?</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The source location for this AST node, if location tracking was enabled.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>Name node identifying this AST node.</td>
+    </tr>
+    <tr>
+      <td>argumentName</td>
+      <td><ApiType parts={[["link", "NameNode", "/api-v17/language#namenode"]]} /></td>
+      <td>The argument name referenced by this schema coordinate.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Category: Kinds
+
+<div className="api-category-toc">
+  <p>
+    <strong>Enumerations:</strong><br />
+    <a href="/api-v17/language#operationtypenode">OperationTypeNode</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#directivelocation">DirectiveLocation</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#kind">Kind</a>
+  </p>
+</div>
+
+### Enumerations
+
+#### OperationTypeNode
+
+**Enumeration.** The operation types supported by GraphQL executable definitions.
+
+> This is not a TypeScript `enum`. GraphQL.js exports `OperationTypeNode` as both a runtime const object of literal values and a TypeScript type alias for those values.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>{"QUERY"}</code></td>
+      <td><code>{"\"query\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"MUTATION"}</code></td>
+      <td><code>{"\"mutation\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"SUBSCRIPTION"}</code></td>
+      <td><code>{"\"subscription\""}</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### DirectiveLocation
+
+**Enumeration.** The set of allowed directive location values.
+
+> This is not a TypeScript `enum`. GraphQL.js exports `DirectiveLocation` as both a runtime const object of literal values and a TypeScript type alias for those values.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Value</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>{"QUERY"}</code></td>
+      <td><code>{"\"QUERY\""}</code></td>
+      <td>Directive location for query operations.</td>
+    </tr>
+    <tr>
+      <td><code>{"MUTATION"}</code></td>
+      <td><code>{"\"MUTATION\""}</code></td>
+      <td>Directive location for mutation operations.</td>
+    </tr>
+    <tr>
+      <td><code>{"SUBSCRIPTION"}</code></td>
+      <td><code>{"\"SUBSCRIPTION\""}</code></td>
+      <td>Directive location for subscription operations.</td>
+    </tr>
+    <tr>
+      <td><code>{"FIELD"}</code></td>
+      <td><code>{"\"FIELD\""}</code></td>
+      <td>Directive location for field selections.</td>
+    </tr>
+    <tr>
+      <td><code>{"FRAGMENT_DEFINITION"}</code></td>
+      <td><code>{"\"FRAGMENT_DEFINITION\""}</code></td>
+      <td>Directive location for fragment definitions.</td>
+    </tr>
+    <tr>
+      <td><code>{"FRAGMENT_SPREAD"}</code></td>
+      <td><code>{"\"FRAGMENT_SPREAD\""}</code></td>
+      <td>Directive location for fragment spreads.</td>
+    </tr>
+    <tr>
+      <td><code>{"INLINE_FRAGMENT"}</code></td>
+      <td><code>{"\"INLINE_FRAGMENT\""}</code></td>
+      <td>Directive location for inline fragments.</td>
+    </tr>
+    <tr>
+      <td><code>{"VARIABLE_DEFINITION"}</code></td>
+      <td><code>{"\"VARIABLE_DEFINITION\""}</code></td>
+      <td>Directive location for variable definitions.</td>
+    </tr>
+    <tr>
+      <td><code>{"FRAGMENT_VARIABLE_DEFINITION"}</code></td>
+      <td><code>{"\"FRAGMENT_VARIABLE_DEFINITION\""}</code></td>
+      <td>Directive location for fragment variable definitions.</td>
+    </tr>
+    <tr>
+      <td><code>{"SCHEMA"}</code></td>
+      <td><code>{"\"SCHEMA\""}</code></td>
+      <td>Directive location for schema definitions and extensions.</td>
+    </tr>
+    <tr>
+      <td><code>{"SCALAR"}</code></td>
+      <td><code>{"\"SCALAR\""}</code></td>
+      <td>Directive location for scalar type definitions and extensions.</td>
+    </tr>
+    <tr>
+      <td><code>{"OBJECT"}</code></td>
+      <td><code>{"\"OBJECT\""}</code></td>
+      <td>Directive location for object type definitions and extensions.</td>
+    </tr>
+    <tr>
+      <td><code>{"FIELD_DEFINITION"}</code></td>
+      <td><code>{"\"FIELD_DEFINITION\""}</code></td>
+      <td>Directive location for field definitions.</td>
+    </tr>
+    <tr>
+      <td><code>{"ARGUMENT_DEFINITION"}</code></td>
+      <td><code>{"\"ARGUMENT_DEFINITION\""}</code></td>
+      <td>Directive location for argument definitions.</td>
+    </tr>
+    <tr>
+      <td><code>{"INTERFACE"}</code></td>
+      <td><code>{"\"INTERFACE\""}</code></td>
+      <td>Directive location for interface type definitions and extensions.</td>
+    </tr>
+    <tr>
+      <td><code>{"UNION"}</code></td>
+      <td><code>{"\"UNION\""}</code></td>
+      <td>Directive location for union type definitions and extensions.</td>
+    </tr>
+    <tr>
+      <td><code>{"ENUM"}</code></td>
+      <td><code>{"\"ENUM\""}</code></td>
+      <td>Directive location for enum type definitions and extensions.</td>
+    </tr>
+    <tr>
+      <td><code>{"ENUM_VALUE"}</code></td>
+      <td><code>{"\"ENUM_VALUE\""}</code></td>
+      <td>Directive location for enum value definitions.</td>
+    </tr>
+    <tr>
+      <td><code>{"INPUT_OBJECT"}</code></td>
+      <td><code>{"\"INPUT_OBJECT\""}</code></td>
+      <td>Directive location for input object type definitions and extensions.</td>
+    </tr>
+    <tr>
+      <td><code>{"INPUT_FIELD_DEFINITION"}</code></td>
+      <td><code>{"\"INPUT_FIELD_DEFINITION\""}</code></td>
+      <td>Directive location for input object field definitions.</td>
+    </tr>
+    <tr>
+      <td><code>{"DIRECTIVE_DEFINITION"}</code></td>
+      <td><code>{"\"DIRECTIVE_DEFINITION\""}</code></td>
+      <td>Directive location for directive definitions and extensions.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-item-divider" />
+
+#### Kind
+
+**Enumeration.**
+
+> This is not a TypeScript `enum`. GraphQL.js exports `Kind` as both a runtime namespace object of literal values and a TypeScript type alias for those values.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Value</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>{"NAME"}</code></td>
+      <td><code>{"\"Name\""}</code></td>
+      <td>AST kind for name nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"DOCUMENT"}</code></td>
+      <td><code>{"\"Document\""}</code></td>
+      <td>AST kind for document nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"OPERATION_DEFINITION"}</code></td>
+      <td><code>{"\"OperationDefinition\""}</code></td>
+      <td>AST kind for operation definition nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"VARIABLE_DEFINITION"}</code></td>
+      <td><code>{"\"VariableDefinition\""}</code></td>
+      <td>AST kind for variable definition nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"SELECTION_SET"}</code></td>
+      <td><code>{"\"SelectionSet\""}</code></td>
+      <td>AST kind for selection set nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"FIELD"}</code></td>
+      <td><code>{"\"Field\""}</code></td>
+      <td>AST kind for field selection nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"ARGUMENT"}</code></td>
+      <td><code>{"\"Argument\""}</code></td>
+      <td>AST kind for argument nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"FRAGMENT_ARGUMENT"}</code></td>
+      <td><code>{"\"FragmentArgument\""}</code></td>
+      <td>AST kind for fragment argument nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"FRAGMENT_SPREAD"}</code></td>
+      <td><code>{"\"FragmentSpread\""}</code></td>
+      <td>AST kind for fragment spread nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"INLINE_FRAGMENT"}</code></td>
+      <td><code>{"\"InlineFragment\""}</code></td>
+      <td>AST kind for inline fragment nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"FRAGMENT_DEFINITION"}</code></td>
+      <td><code>{"\"FragmentDefinition\""}</code></td>
+      <td>AST kind for fragment definition nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"VARIABLE"}</code></td>
+      <td><code>{"\"Variable\""}</code></td>
+      <td>AST kind for variable reference nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"INT"}</code></td>
+      <td><code>{"\"IntValue\""}</code></td>
+      <td>AST kind for integer value nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"FLOAT"}</code></td>
+      <td><code>{"\"FloatValue\""}</code></td>
+      <td>AST kind for floating-point value nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"STRING"}</code></td>
+      <td><code>{"\"StringValue\""}</code></td>
+      <td>AST kind for string value nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"BOOLEAN"}</code></td>
+      <td><code>{"\"BooleanValue\""}</code></td>
+      <td>AST kind for boolean value nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"NULL"}</code></td>
+      <td><code>{"\"NullValue\""}</code></td>
+      <td>AST kind for null value nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"ENUM"}</code></td>
+      <td><code>{"\"EnumValue\""}</code></td>
+      <td>AST kind for enum value nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"LIST"}</code></td>
+      <td><code>{"\"ListValue\""}</code></td>
+      <td>AST kind for list value nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"OBJECT"}</code></td>
+      <td><code>{"\"ObjectValue\""}</code></td>
+      <td>AST kind for object value nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"OBJECT_FIELD"}</code></td>
+      <td><code>{"\"ObjectField\""}</code></td>
+      <td>AST kind for object field nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"DIRECTIVE"}</code></td>
+      <td><code>{"\"Directive\""}</code></td>
+      <td>AST kind for directive nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"NAMED_TYPE"}</code></td>
+      <td><code>{"\"NamedType\""}</code></td>
+      <td>AST kind for named type reference nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"LIST_TYPE"}</code></td>
+      <td><code>{"\"ListType\""}</code></td>
+      <td>AST kind for list type reference nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"NON_NULL_TYPE"}</code></td>
+      <td><code>{"\"NonNullType\""}</code></td>
+      <td>AST kind for non-null type reference nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"SCHEMA_DEFINITION"}</code></td>
+      <td><code>{"\"SchemaDefinition\""}</code></td>
+      <td>AST kind for schema definition nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"OPERATION_TYPE_DEFINITION"}</code></td>
+      <td><code>{"\"OperationTypeDefinition\""}</code></td>
+      <td>AST kind for operation type definition nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"SCALAR_TYPE_DEFINITION"}</code></td>
+      <td><code>{"\"ScalarTypeDefinition\""}</code></td>
+      <td>AST kind for scalar type definition nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"OBJECT_TYPE_DEFINITION"}</code></td>
+      <td><code>{"\"ObjectTypeDefinition\""}</code></td>
+      <td>AST kind for object type definition nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"FIELD_DEFINITION"}</code></td>
+      <td><code>{"\"FieldDefinition\""}</code></td>
+      <td>AST kind for field definition nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"INPUT_VALUE_DEFINITION"}</code></td>
+      <td><code>{"\"InputValueDefinition\""}</code></td>
+      <td>AST kind for input value definition nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"INTERFACE_TYPE_DEFINITION"}</code></td>
+      <td><code>{"\"InterfaceTypeDefinition\""}</code></td>
+      <td>AST kind for interface type definition nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"UNION_TYPE_DEFINITION"}</code></td>
+      <td><code>{"\"UnionTypeDefinition\""}</code></td>
+      <td>AST kind for union type definition nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"ENUM_TYPE_DEFINITION"}</code></td>
+      <td><code>{"\"EnumTypeDefinition\""}</code></td>
+      <td>AST kind for enum type definition nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"ENUM_VALUE_DEFINITION"}</code></td>
+      <td><code>{"\"EnumValueDefinition\""}</code></td>
+      <td>AST kind for enum value definition nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"INPUT_OBJECT_TYPE_DEFINITION"}</code></td>
+      <td><code>{"\"InputObjectTypeDefinition\""}</code></td>
+      <td>AST kind for input object type definition nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"DIRECTIVE_DEFINITION"}</code></td>
+      <td><code>{"\"DirectiveDefinition\""}</code></td>
+      <td>AST kind for directive definition nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"SCHEMA_EXTENSION"}</code></td>
+      <td><code>{"\"SchemaExtension\""}</code></td>
+      <td>AST kind for schema extension nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"DIRECTIVE_EXTENSION"}</code></td>
+      <td><code>{"\"DirectiveExtension\""}</code></td>
+      <td>AST kind for directive extension nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"SCALAR_TYPE_EXTENSION"}</code></td>
+      <td><code>{"\"ScalarTypeExtension\""}</code></td>
+      <td>AST kind for scalar type extension nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"OBJECT_TYPE_EXTENSION"}</code></td>
+      <td><code>{"\"ObjectTypeExtension\""}</code></td>
+      <td>AST kind for object type extension nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"INTERFACE_TYPE_EXTENSION"}</code></td>
+      <td><code>{"\"InterfaceTypeExtension\""}</code></td>
+      <td>AST kind for interface type extension nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"UNION_TYPE_EXTENSION"}</code></td>
+      <td><code>{"\"UnionTypeExtension\""}</code></td>
+      <td>AST kind for union type extension nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"ENUM_TYPE_EXTENSION"}</code></td>
+      <td><code>{"\"EnumTypeExtension\""}</code></td>
+      <td>AST kind for enum type extension nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"INPUT_OBJECT_TYPE_EXTENSION"}</code></td>
+      <td><code>{"\"InputObjectTypeExtension\""}</code></td>
+      <td>AST kind for input object type extension nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"TYPE_COORDINATE"}</code></td>
+      <td><code>{"\"TypeCoordinate\""}</code></td>
+      <td>AST kind for type coordinate nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"MEMBER_COORDINATE"}</code></td>
+      <td><code>{"\"MemberCoordinate\""}</code></td>
+      <td>AST kind for member coordinate nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"ARGUMENT_COORDINATE"}</code></td>
+      <td><code>{"\"ArgumentCoordinate\""}</code></td>
+      <td>AST kind for argument coordinate nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"DIRECTIVE_COORDINATE"}</code></td>
+      <td><code>{"\"DirectiveCoordinate\""}</code></td>
+      <td>AST kind for directive coordinate nodes.</td>
+    </tr>
+    <tr>
+      <td><code>{"DIRECTIVE_ARGUMENT_COORDINATE"}</code></td>
+      <td><code>{"\"DirectiveArgumentCoordinate\""}</code></td>
+      <td>AST kind for directive argument coordinate nodes.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Category: Lexing
+
+<div className="api-category-toc">
+  <p>
+    <strong>Classes:</strong><br />
+    <a href="/api-v17/language#lexer">Lexer</a>
+  </p>
+  <p>
+    <strong>Enumerations:</strong><br />
+    <a href="/api-v17/language#tokenkind">TokenKind</a>
+  </p>
+</div>
+
+### Classes
+
+#### Lexer
+
+Given a Source object, creates a Lexer for that source.
+A Lexer is a stateful stream generator in that every time
+it is advanced, it returns the next token in the Source. Assuming the
+source lexes, the final Token emitted by the lexer will be of kind
+EOF, after which the lexer will repeatedly return the same EOF token
+whenever called.
+
+<hr className="api-subsection-divider" />
+
+##### Constructor
+
+Creates a Lexer instance.
+
+**Signature:**
+
+<ApiSignature parts={[["keyword", "new"], " ", ["name", "Lexer"], "(", ["parameter", "source"], ": ", ["link", "Source", "/api-v17/language#source"], ");"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>source</td>
+      <td><ApiType parts={[["link", "Source", "/api-v17/language#source"]]} /></td>
+      <td>Source document used to derive error locations.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+##### Members
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>source</td>
+      <td><ApiType parts={[["link", "Source", "/api-v17/language#source"]]} /></td>
+      <td>Source document used to derive error locations.</td>
+    </tr>
+    <tr>
+      <td>lastToken</td>
+      <td><ApiType parts={[["link", "Token", "/api-v17/language#token"]]} /></td>
+      <td>Most recent non-ignored token returned by the lexer.</td>
+    </tr>
+    <tr>
+      <td>token</td>
+      <td><ApiType parts={[["link", "Token", "/api-v17/language#token"]]} /></td>
+      <td>Current non-ignored token at the lexer cursor.</td>
+    </tr>
+    <tr>
+      <td>line</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>The (1-indexed) line containing the current token.</td>
+    </tr>
+    <tr>
+      <td>lineStart</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>Character offset where the current line starts.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+##### advance()
+
+Advances the token stream to the next non-ignored token.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "advance"], "(): ", ["link", "Token", "/api-v17/language#token"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "Token", "/api-v17/language#token"]]} /></td>
+      <td>The next non-ignored token.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { Lexer, Source } from 'graphql/language';
+
+const lexer = new Lexer(new Source('{ hello }'));
+const token = lexer.advance();
+
+token.kind; // => '{'
+lexer.token; // => token
+```
+
+<hr className="api-subsection-divider" />
+
+##### lookahead()
+
+Looks ahead and returns the next non-ignored token, but does not change
+the state of Lexer.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "lookahead"], "(): ", ["link", "Token", "/api-v17/language#token"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "Token", "/api-v17/language#token"]]} /></td>
+      <td>The next non-ignored token without advancing the lexer.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { Lexer, Source } from 'graphql/language';
+
+const lexer = new Lexer(new Source('{ hello }'));
+const token = lexer.lookahead();
+
+token.kind; // => '{'
+lexer.token.kind; // => '<SOF>'
+```
+
+### Enumerations
+
+#### TokenKind
+
+**Enumeration.** An exported enum describing the different kinds of tokens that the
+lexer emits.
+
+> This is not a TypeScript `enum`. GraphQL.js exports `TokenKind` as both a runtime const object of literal values and a TypeScript type alias for those values.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>{"SOF"}</code></td>
+      <td><code>{"\"<SOF>\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"EOF"}</code></td>
+      <td><code>{"\"<EOF>\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"BANG"}</code></td>
+      <td><code>{"\"!\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"DOLLAR"}</code></td>
+      <td><code>{"\"$\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"AMP"}</code></td>
+      <td><code>{"\"&\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"PAREN_L"}</code></td>
+      <td><code>{"\"(\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"PAREN_R"}</code></td>
+      <td><code>{"\")\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"DOT"}</code></td>
+      <td><code>{"\".\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"SPREAD"}</code></td>
+      <td><code>{"\"...\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"COLON"}</code></td>
+      <td><code>{"\":\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"EQUALS"}</code></td>
+      <td><code>{"\"=\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"AT"}</code></td>
+      <td><code>{"\"@\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"BRACKET_L"}</code></td>
+      <td><code>{"\"[\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"BRACKET_R"}</code></td>
+      <td><code>{"\"]\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"BRACE_L"}</code></td>
+      <td><code>{"\"{\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"PIPE"}</code></td>
+      <td><code>{"\"\u007c\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"BRACE_R"}</code></td>
+      <td><code>{"\"}\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"NAME"}</code></td>
+      <td><code>{"\"Name\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"INT"}</code></td>
+      <td><code>{"\"Int\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"FLOAT"}</code></td>
+      <td><code>{"\"Float\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"STRING"}</code></td>
+      <td><code>{"\"String\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"BLOCK_STRING"}</code></td>
+      <td><code>{"\"BlockString\""}</code></td>
+    </tr>
+    <tr>
+      <td><code>{"COMMENT"}</code></td>
+      <td><code>{"\"Comment\""}</code></td>
+    </tr>
+  </tbody>
+</table>
+
+## Category: Source
+
+<div className="api-category-toc">
+  <p>
+    <strong>Classes:</strong><br />
+    <a href="/api-v17/language#source">Source</a>
+  </p>
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v17/language#getlocation">getLocation()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#printlocation">printLocation()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#printsourcelocation">printSourceLocation()</a>
+  </p>
+  <p>
+    <strong>Types:</strong><br />
+    <a href="/api-v17/language#sourcelocation">SourceLocation</a>
+  </p>
+</div>
+
+### Classes
+
+#### Source
+
+A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
+optional, but they are useful for clients who store GraphQL documents in source files.
+For example, if the GraphQL input starts at line 40 in a file named `Foo.graphql`, it might
+be useful for `name` to be `"Foo.graphql"` and location to be `{ line: 40, column: 1 }`.
+The `line` and `column` properties in `locationOffset` are 1-indexed.
+
+<hr className="api-subsection-divider" />
+
+##### Constructor
+
+Creates a Source instance.
+
+**Signature:**
+
+<ApiSignature parts={[["keyword", "new"], " ", ["name", "Source"], "(\n  ", ["parameter", "body"], ": ", ["keyword", "string"], ",\n  ", ["parameter", "name"], ": ", ["keyword", "string"], " = ", ["literal", "'GraphQL request'"], ",\n  ", ["parameter", "locationOffset"], ": \u007b\n    ", ["property", "line"], ": ", ["keyword", "number"], ";\n    ", ["property", "column"], ": ", ["keyword", "number"], ";\n  \u007d = \u007b line: ", ["literal", "1"], ", column: ", ["literal", "1"], " \u007d,\n);"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>body</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td></td>
+      <td>The GraphQL source text.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td><ApiType parts={[["literal", "'GraphQL request'"]]} /></td>
+      <td>Name used in diagnostics for this source.</td>
+    </tr>
+    <tr>
+      <td>locationOffset</td>
+      <td><ApiType parts={["\u007b ", ["property", "line"], ": ", ["keyword", "number"], "; ", ["property", "column"], ": ", ["keyword", "number"], " \u007d"]} /></td>
+      <td><ApiType parts={["\u007b line: ", ["literal", "1"], ", column: ", ["literal", "1"], " \u007d"]} /></td>
+      <td>One-indexed line and column where this source begins.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+##### Members
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>body</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>The GraphQL source text.</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>Name used in diagnostics for this source, such as a file path or request name.</td>
+    </tr>
+    <tr>
+      <td>locationOffset</td>
+      <td><ApiType parts={["\u007b ", ["property", "line"], ": ", ["keyword", "number"], "; ", ["property", "column"], ": ", ["keyword", "number"], " \u007d"]} /></td>
+      <td>One-indexed line and column where this source begins.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Functions
+
+#### getLocation()
+
+Takes a Source and a UTF-8 character offset, and returns the corresponding
+line and column as a SourceLocation.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getLocation"], "(\n  ", ["parameter", "source"], ": ", ["link", "Source", "/api-v17/language#source"], ",\n  ", ["parameter", "position"], ": ", ["keyword", "number"], ",\n): ", ["link", "SourceLocation", "/api-v17/language#sourcelocation"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>source</td>
+      <td><ApiType parts={[["link", "Source", "/api-v17/language#source"]]} /></td>
+      <td>The source document that contains the position.</td>
+    </tr>
+    <tr>
+      <td>position</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>The UTF-8 character offset in the source body.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "SourceLocation", "/api-v17/language#sourcelocation"]]} /></td>
+      <td>The 1-indexed line and column for the given source position.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { Source, getLocation } from 'graphql/language';
+
+const source = new Source('type Query { hello: String }');
+const location = getLocation(source, 13);
+
+location; // => { line: 1, column: 14 }
+```
+
+<hr className="api-item-divider" />
+
+#### printLocation()
+
+Render a helpful description of the location in the GraphQL Source document.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "printLocation"], "(", ["parameter", "location"], ": ", ["link", "Location", "/api-v17/language#location"], "): ", ["keyword", "string"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>location</td>
+      <td><ApiType parts={[["link", "Location", "/api-v17/language#location"]]} /></td>
+      <td>The AST location to print.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>A formatted source excerpt with line and column information.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, printLocation } from 'graphql/language';
+
+const document = parse('type Query { hello: String }');
+const location = document.definitions[0].loc;
+
+if (location) {
+  const printed = printLocation(location);
+
+  printed; // => 'GraphQL request:1:1\n1 | type Query { hello: String }\n  | ^'
+}
+```
+
+<hr className="api-item-divider" />
+
+#### printSourceLocation()
+
+Render a helpful description of the location in the GraphQL Source document.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "printSourceLocation"], "(\n  ", ["parameter", "source"], ": ", ["link", "Source", "/api-v17/language#source"], ",\n  ", ["parameter", "sourceLocation"], ": ", ["link", "SourceLocation", "/api-v17/language#sourcelocation"], ",\n): ", ["keyword", "string"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>source</td>
+      <td><ApiType parts={[["link", "Source", "/api-v17/language#source"]]} /></td>
+      <td>The source document that contains the location.</td>
+    </tr>
+    <tr>
+      <td>sourceLocation</td>
+      <td><ApiType parts={[["link", "SourceLocation", "/api-v17/language#sourcelocation"]]} /></td>
+      <td>The 1-indexed line and column to print.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>A formatted source excerpt with line and column information.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { Source, printSourceLocation } from 'graphql/language';
+
+const source = new Source('type Query { hello: String }');
+const printed = printSourceLocation(source, { line: 1, column: 14 });
+
+printed; // => 'GraphQL request:1:14\n1 | type Query { hello: String }\n  |              ^'
+```
+
+### Types
+
+#### SourceLocation
+
+**Interface.** Represents a location in a Source.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>line</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>One-indexed line number in the source document.</td>
+    </tr>
+    <tr>
+      <td>column</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>One-indexed column number in the source document.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Category: Parsing
+
+<div className="api-category-toc">
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v17/language#parse">parse()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#parsevalue">parseValue()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#parseconstvalue">parseConstValue()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#parsetype">parseType()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#parseschemacoordinate">parseSchemaCoordinate()</a>
+  </p>
+  <p>
+    <strong>Types:</strong><br />
+    <a href="/api-v17/language#parseoptions">ParseOptions</a>
+  </p>
+</div>
+
+### Functions
+
+#### parse()
+
+Given a GraphQL source, parses it into a Document.
+Throws GraphQLError if a syntax error is encountered.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "parse"], "(\n  ", ["parameter", "source"], ": ", ["keyword", "string"], " \u007c ", ["link", "Source", "/api-v17/language#source"], ",\n  ", ["parameter", "options"], "?: ", ["link", "ParseOptions", "/api-v17/language#parseoptions"], ",\n): ", ["link", "DocumentNode", "/api-v17/language#documentnode"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>source</td>
+      <td><ApiType parts={[["keyword", "string"], " \u007c ", ["link", "Source", "/api-v17/language#source"]]} /></td>
+      <td>A GraphQL source string or source object.</td>
+    </tr>
+    <tr>
+      <td>options?</td>
+      <td><ApiType parts={[["link", "ParseOptions", "/api-v17/language#parseoptions"]]} /></td>
+      <td>Optional parser configuration.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v17/language#documentnode"]]} /></td>
+      <td>The parsed GraphQL document AST.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Parse a GraphQL document with the default parser options.
+import { parse } from 'graphql/language';
+
+const document = parse('{ hero { name } }');
+
+document.kind; // => 'Document'
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant enables parser options and provides an explicit lexer.
+import { Lexer, Source, parse } from 'graphql/language';
+
+const document = parse(`
+  {
+    t { ...A(var: true) }
+  }
+  fragment A($var: Boolean = false) on T {
+    name
+  }
+`, {
+  experimentalFragmentArguments: true,
+  maxTokens: 80,
+  noLocation: true,
+});
+const directiveDocument = parse('directive @foo @bar on FIELD', {
+  experimentalDirectivesOnDirectiveDefinitions: true,
+});
+const source = new Source('{ hero }');
+const lexerDocument = parse(source, { lexer: new Lexer(source) });
+
+document.definitions[0].kind; // => 'OperationDefinition'
+document.definitions[1].kind; // => 'FragmentDefinition'
+document.loc; // => undefined
+directiveDocument.definitions[0].kind; // => 'DirectiveDefinition'
+lexerDocument.definitions[0].kind; // => 'OperationDefinition'
+```
+
+<hr className="api-item-divider" />
+
+#### parseValue()
+
+Given a string containing a GraphQL value (ex. `[42]`), parse the AST for
+that value.
+Throws GraphQLError if a syntax error is encountered.
+
+This is useful within tools that operate upon GraphQL Values directly and
+in isolation of complete GraphQL documents.
+
+Consider providing the results to the utility function: valueFromAST().
+
+**Signature:**
+
+<ApiSignature parts={[["name", "parseValue"], "(\n  ", ["parameter", "source"], ": ", ["keyword", "string"], " \u007c ", ["link", "Source", "/api-v17/language#source"], ",\n  ", ["parameter", "options"], "?: ", ["link", "ParseOptions", "/api-v17/language#parseoptions"], ",\n): ", ["link", "ValueNode", "/api-v17/language#valuenode"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>source</td>
+      <td><ApiType parts={[["keyword", "string"], " \u007c ", ["link", "Source", "/api-v17/language#source"]]} /></td>
+      <td>A GraphQL source string or source object containing a value.</td>
+    </tr>
+    <tr>
+      <td>options?</td>
+      <td><ApiType parts={[["link", "ParseOptions", "/api-v17/language#parseoptions"]]} /></td>
+      <td>Optional parser configuration.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ValueNode", "/api-v17/language#valuenode"]]} /></td>
+      <td>The parsed GraphQL value AST.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parseValue } from 'graphql/language';
+
+const value = parseValue('[42]');
+
+value.kind; // => 'ListValue'
+```
+
+<hr className="api-item-divider" />
+
+#### parseConstValue()
+
+Similar to parseValue(), but raises a parse error if it encounters a
+variable. The return type will be a constant value.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "parseConstValue"], "(\n  ", ["parameter", "source"], ": ", ["keyword", "string"], " \u007c ", ["link", "Source", "/api-v17/language#source"], ",\n  ", ["parameter", "options"], "?: ", ["link", "ParseOptions", "/api-v17/language#parseoptions"], ",\n): ", ["link", "ConstValueNode", "/api-v17/language#constvaluenode"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>source</td>
+      <td><ApiType parts={[["keyword", "string"], " \u007c ", ["link", "Source", "/api-v17/language#source"]]} /></td>
+      <td>A GraphQL source string or source object containing a constant value.</td>
+    </tr>
+    <tr>
+      <td>options?</td>
+      <td><ApiType parts={[["link", "ParseOptions", "/api-v17/language#parseoptions"]]} /></td>
+      <td>Optional parser configuration.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ConstValueNode", "/api-v17/language#constvaluenode"]]} /></td>
+      <td>The parsed GraphQL constant value AST.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parseConstValue } from 'graphql/language';
+
+const value = parseConstValue('{ enabled: true }');
+
+value.kind; // => 'ObjectValue'
+parseConstValue('$variable'); // throws an error
+```
+
+<hr className="api-item-divider" />
+
+#### parseType()
+
+Given a string containing a GraphQL Type (ex. `[Int!]`), parse the AST for
+that type.
+Throws GraphQLError if a syntax error is encountered.
+
+This is useful within tools that operate upon GraphQL Types directly and
+in isolation of complete GraphQL documents.
+
+Consider providing the results to the utility function: typeFromAST().
+
+**Signature:**
+
+<ApiSignature parts={[["name", "parseType"], "(\n  ", ["parameter", "source"], ": ", ["keyword", "string"], " \u007c ", ["link", "Source", "/api-v17/language#source"], ",\n  ", ["parameter", "options"], "?: ", ["link", "ParseOptions", "/api-v17/language#parseoptions"], ",\n): ", ["link", "TypeNode", "/api-v17/language#typenode"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>source</td>
+      <td><ApiType parts={[["keyword", "string"], " \u007c ", ["link", "Source", "/api-v17/language#source"]]} /></td>
+      <td>A GraphQL source string or source object containing a type reference.</td>
+    </tr>
+    <tr>
+      <td>options?</td>
+      <td><ApiType parts={[["link", "ParseOptions", "/api-v17/language#parseoptions"]]} /></td>
+      <td>Optional parser configuration.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "TypeNode", "/api-v17/language#typenode"]]} /></td>
+      <td>The parsed GraphQL type AST.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parseType } from 'graphql/language';
+
+const type = parseType('[String!]');
+
+type.kind; // => 'ListType'
+```
+
+<hr className="api-item-divider" />
+
+#### parseSchemaCoordinate()
+
+Given a string containing a GraphQL Schema Coordinate (ex. `Type.field`),
+parse the AST for that schema coordinate.
+Throws GraphQLError if a syntax error is encountered.
+
+Consider providing the results to the utility function:
+resolveASTSchemaCoordinate(). Or calling resolveSchemaCoordinate() directly
+with an unparsed source.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "parseSchemaCoordinate"], "(\n  ", ["parameter", "source"], ": ", ["keyword", "string"], " \u007c ", ["link", "Source", "/api-v17/language#source"], ",\n): ", ["link", "SchemaCoordinateNode", "/api-v17/language#schemacoordinatenode"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>source</td>
+      <td><ApiType parts={[["keyword", "string"], " \u007c ", ["link", "Source", "/api-v17/language#source"]]} /></td>
+      <td>A GraphQL source string or source object containing a schema coordinate.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "SchemaCoordinateNode", "/api-v17/language#schemacoordinatenode"]]} /></td>
+      <td>The parsed GraphQL schema coordinate AST.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parseSchemaCoordinate } from 'graphql/language';
+
+const coordinate = parseSchemaCoordinate('Query.hero');
+
+coordinate.kind; // => 'MemberCoordinate'
+```
+
+### Types
+
+#### ParseOptions
+
+**Interface.** Configuration options to control parser behavior
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>noLocation?</td>
+      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
+      <td>By default, the parser creates AST nodes that know the location<br />
+in the source that they correspond to. This configuration flag<br />
+disables that behavior for performance or testing.</td>
+    </tr>
+    <tr>
+      <td>maxTokens?</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>Parser CPU and memory usage is linear to the number of tokens in a document<br />
+however in extreme cases it becomes quadratic due to memory exhaustion.<br />
+Parsing happens before validation so even invalid queries can burn lots of<br />
+CPU time and memory.<br />
+To prevent this you can set a maximum number of tokens allowed within a document.</td>
+    </tr>
+    <tr>
+      <td>experimentalFragmentArguments?</td>
+      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
+      <td>EXPERIMENTAL:<br />
+If enabled, the parser will understand and parse fragment variable definitions<br />
+and arguments on fragment spreads. Fragment variable definitions will be represented<br />
+in the <code>{"variableDefinitions"}</code> field of the FragmentDefinitionNode.<br />
+Fragment spread arguments will be represented in the <code>{"arguments"}</code> field of FragmentSpreadNode.</td>
+    </tr>
+    <tr>
+      <td>experimentalDirectivesOnDirectiveDefinitions?</td>
+      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
+      <td>EXPERIMENTAL:<br />
+If enabled, the parser will parse directives on directive definitions.<br />
+This syntax is not part of the GraphQL specification and may change.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">experimentalFragmentArguments Example</div>
+
+```graphql
+{
+  t { ...A(var: true) }
+}
+fragment A($var: Boolean = false) on T {
+  ...B(x: $var)
+}
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">experimentalDirectivesOnDirectiveDefinitions Example</div>
+
+```graphql
+directive @foo @bar on FIELD
+```
+
+## Category: AST Predicates
+
+<div className="api-category-toc">
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v17/language#isdefinitionnode">isDefinitionNode()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#isexecutabledefinitionnode">isExecutableDefinitionNode()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#issubscriptionoperationdefinitionnode">isSubscriptionOperationDefinitionNode()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#isselectionnode">isSelectionNode()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#isvaluenode">isValueNode()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#isconstvaluenode">isConstValueNode()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#istypenode">isTypeNode()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#istypesystemdefinitionnode">isTypeSystemDefinitionNode()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#istypedefinitionnode">isTypeDefinitionNode()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#istypesystemextensionnode">isTypeSystemExtensionNode()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#istypeextensionnode">isTypeExtensionNode()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#isschemacoordinatenode">isSchemaCoordinateNode()</a>
+  </p>
+</div>
+
+### Functions
+
+#### isDefinitionNode()
+
+Returns true when the AST node is a definition node.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "isDefinitionNode"], "(\n  ", ["parameter", "node"], ": ", ["link", "ASTNode", "/api-v17/language#astnode"], ",\n): ", ["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "DefinitionNode", "/api-v17/language#definitionnode"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>node</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v17/language#astnode"]]} /></td>
+      <td>The AST node to test.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "DefinitionNode", "/api-v17/language#definitionnode"]]} /></td>
+      <td>True when the AST node is a definition node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, isDefinitionNode } from 'graphql/language';
+
+const document = parse('{ hello }');
+
+isDefinitionNode(document.definitions[0]); // => true
+isDefinitionNode(document); // => false
+```
+
+<hr className="api-item-divider" />
+
+#### isExecutableDefinitionNode()
+
+Returns true when the AST node is an executable definition node.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "isExecutableDefinitionNode"], "(\n  ", ["parameter", "node"], ": ", ["link", "ASTNode", "/api-v17/language#astnode"], ",\n): ", ["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "ExecutableDefinitionNode", "/api-v17/language#executabledefinitionnode"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>node</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v17/language#astnode"]]} /></td>
+      <td>The AST node to test.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "ExecutableDefinitionNode", "/api-v17/language#executabledefinitionnode"]]} /></td>
+      <td>True when the AST node is an executable definition node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, isExecutableDefinitionNode } from 'graphql/language';
+
+const query = parse('{ hello }');
+const schema = parse('type Query { hello: String }');
+
+isExecutableDefinitionNode(query.definitions[0]); // => true
+isExecutableDefinitionNode(schema.definitions[0]); // => false
+```
+
+<hr className="api-item-divider" />
+
+#### isSubscriptionOperationDefinitionNode()
+
+A type predicate for SubscriptionOperationDefinitionNode.
+Useful anywhere that must distinguish subscription operations from
+queries and mutations, such as the subscription execution pipeline
+which routes events through a different code path.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "isSubscriptionOperationDefinitionNode"], "(\n  ", ["parameter", "node"], ": ", ["link", "OperationDefinitionNode", "/api-v17/language#operationdefinitionnode"], ",\n): ", ["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "SubscriptionOperationDefinitionNode", "/api-v17/language#subscriptionoperationdefinitionnode"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>node</td>
+      <td><ApiType parts={[["link", "OperationDefinitionNode", "/api-v17/language#operationdefinitionnode"]]} /></td>
+      <td>Operation definition node to test.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "SubscriptionOperationDefinitionNode", "/api-v17/language#subscriptionoperationdefinitionnode"]]} /></td>
+      <td>True when the operation definition is a subscription.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, isSubscriptionOperationDefinitionNode } from 'graphql/language';
+
+const subscription = parse('subscription { greeting }').definitions[0];
+const query = parse('{ greeting }').definitions[0];
+
+isSubscriptionOperationDefinitionNode(subscription); // => true
+isSubscriptionOperationDefinitionNode(query); // => false
+```
+
+<hr className="api-item-divider" />
+
+#### isSelectionNode()
+
+Returns true when the AST node is a selection node.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "isSelectionNode"], "(\n  ", ["parameter", "node"], ": ", ["link", "ASTNode", "/api-v17/language#astnode"], ",\n): ", ["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "SelectionNode", "/api-v17/language#selectionnode"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>node</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v17/language#astnode"]]} /></td>
+      <td>The AST node to test.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "SelectionNode", "/api-v17/language#selectionnode"]]} /></td>
+      <td>True when the AST node is a selection node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { Kind, isSelectionNode } from 'graphql/language';
+
+const field = { kind: Kind.FIELD, name: { kind: Kind.NAME, value: 'hello' } };
+const document = { kind: Kind.DOCUMENT, definitions: [] };
+
+isSelectionNode(field); // => true
+isSelectionNode(document); // => false
+```
+
+<hr className="api-item-divider" />
+
+#### isValueNode()
+
+Returns true when the AST node is a value node.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "isValueNode"], "(\n  ", ["parameter", "node"], ": ", ["link", "ASTNode", "/api-v17/language#astnode"], ",\n): ", ["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "ValueNode", "/api-v17/language#valuenode"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>node</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v17/language#astnode"]]} /></td>
+      <td>The AST node to test.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "ValueNode", "/api-v17/language#valuenode"]]} /></td>
+      <td>True when the AST node is a value node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parseType, parseValue, isValueNode } from 'graphql/language';
+
+const value = parseValue('[42]');
+const type = parseType('[String!]');
+
+isValueNode(value); // => true
+isValueNode(type); // => false
+```
+
+<hr className="api-item-divider" />
+
+#### isConstValueNode()
+
+Returns true when the AST node is a constant value node.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "isConstValueNode"], "(\n  ", ["parameter", "node"], ": ", ["link", "ASTNode", "/api-v17/language#astnode"], ",\n): ", ["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "ConstValueNode", "/api-v17/language#constvaluenode"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>node</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v17/language#astnode"]]} /></td>
+      <td>The AST node to test.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "ConstValueNode", "/api-v17/language#constvaluenode"]]} /></td>
+      <td>True when the AST node is a constant value node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parseConstValue, parseValue, isConstValueNode } from 'graphql/language';
+
+const value = parseConstValue('[42]');
+const variable = parseValue('$id');
+
+isConstValueNode(value); // => true
+isConstValueNode(variable); // => false
+```
+
+<hr className="api-item-divider" />
+
+#### isTypeNode()
+
+Returns true when the AST node is a type node.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "isTypeNode"], "(\n  ", ["parameter", "node"], ": ", ["link", "ASTNode", "/api-v17/language#astnode"], ",\n): ", ["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "TypeNode", "/api-v17/language#typenode"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>node</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v17/language#astnode"]]} /></td>
+      <td>The AST node to test.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "TypeNode", "/api-v17/language#typenode"]]} /></td>
+      <td>True when the AST node is a type node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parseType, parseValue, isTypeNode } from 'graphql/language';
+
+const type = parseType('[String!]');
+const value = parseValue('[42]');
+
+isTypeNode(type); // => true
+isTypeNode(value); // => false
+```
+
+<hr className="api-item-divider" />
+
+#### isTypeSystemDefinitionNode()
+
+Returns true when the AST node is a type system definition node.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "isTypeSystemDefinitionNode"], "(\n  ", ["parameter", "node"], ": ", ["link", "ASTNode", "/api-v17/language#astnode"], ",\n): ", ["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "TypeSystemDefinitionNode", "/api-v17/language#typesystemdefinitionnode"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>node</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v17/language#astnode"]]} /></td>
+      <td>The AST node to test.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "TypeSystemDefinitionNode", "/api-v17/language#typesystemdefinitionnode"]]} /></td>
+      <td>True when the AST node is a type system definition node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, isTypeSystemDefinitionNode } from 'graphql/language';
+
+const schema = parse('type Query { hello: String }');
+const query = parse('{ hello }');
+
+isTypeSystemDefinitionNode(schema.definitions[0]); // => true
+isTypeSystemDefinitionNode(query.definitions[0]); // => false
+```
+
+<hr className="api-item-divider" />
+
+#### isTypeDefinitionNode()
+
+Returns true when the AST node is a type definition node.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "isTypeDefinitionNode"], "(\n  ", ["parameter", "node"], ": ", ["link", "ASTNode", "/api-v17/language#astnode"], ",\n): ", ["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "TypeDefinitionNode", "/api-v17/language#typedefinitionnode"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>node</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v17/language#astnode"]]} /></td>
+      <td>The AST node to test.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "TypeDefinitionNode", "/api-v17/language#typedefinitionnode"]]} /></td>
+      <td>True when the AST node is a type definition node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, isTypeDefinitionNode } from 'graphql/language';
+
+const typeDefinition = parse('type Query { hello: String }');
+const directiveDefinition = parse('directive @cache on FIELD');
+
+isTypeDefinitionNode(typeDefinition.definitions[0]); // => true
+isTypeDefinitionNode(directiveDefinition.definitions[0]); // => false
+```
+
+<hr className="api-item-divider" />
+
+#### isTypeSystemExtensionNode()
+
+Returns true when the AST node is a type system extension node.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "isTypeSystemExtensionNode"], "(\n  ", ["parameter", "node"], ": ", ["link", "ASTNode", "/api-v17/language#astnode"], ",\n): ", ["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "TypeSystemExtensionNode", "/api-v17/language#typesystemextensionnode"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>node</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v17/language#astnode"]]} /></td>
+      <td>The AST node to test.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "TypeSystemExtensionNode", "/api-v17/language#typesystemextensionnode"]]} /></td>
+      <td>True when the AST node is a type system extension node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, isTypeSystemExtensionNode } from 'graphql/language';
+
+const extension = parse('extend type Query { hello: String }');
+const definition = parse('type Query { hello: String }');
+
+isTypeSystemExtensionNode(extension.definitions[0]); // => true
+isTypeSystemExtensionNode(definition.definitions[0]); // => false
+```
+
+<hr className="api-item-divider" />
+
+#### isTypeExtensionNode()
+
+Returns true when the AST node is a type extension node.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "isTypeExtensionNode"], "(\n  ", ["parameter", "node"], ": ", ["link", "ASTNode", "/api-v17/language#astnode"], ",\n): ", ["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "TypeExtensionNode", "/api-v17/language#typeextensionnode"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>node</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v17/language#astnode"]]} /></td>
+      <td>The AST node to test.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "TypeExtensionNode", "/api-v17/language#typeextensionnode"]]} /></td>
+      <td>True when the AST node is a type extension node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, isTypeExtensionNode } from 'graphql/language';
+
+const extension = parse('extend type Query { hello: String }');
+const schemaExtension = parse('extend schema { query: Query }');
+
+isTypeExtensionNode(extension.definitions[0]); // => true
+isTypeExtensionNode(schemaExtension.definitions[0]); // => false
+```
+
+<hr className="api-item-divider" />
+
+#### isSchemaCoordinateNode()
+
+Returns true when the AST node is a schema coordinate node.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "isSchemaCoordinateNode"], "(\n  ", ["parameter", "node"], ": ", ["link", "ASTNode", "/api-v17/language#astnode"], ",\n): ", ["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "SchemaCoordinateNode", "/api-v17/language#schemacoordinatenode"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>node</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v17/language#astnode"]]} /></td>
+      <td>The AST node to test.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["parameter", "node"], " ", ["keyword", "is"], " ", ["link", "SchemaCoordinateNode", "/api-v17/language#schemacoordinatenode"]]} /></td>
+      <td>True when the AST node is a schema coordinate node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import {
+  parse,
+  parseSchemaCoordinate,
+  isSchemaCoordinateNode,
+} from 'graphql/language';
+
+const coordinate = parseSchemaCoordinate('Query.hero');
+const document = parse('{ hero }');
+
+isSchemaCoordinateNode(coordinate); // => true
+isSchemaCoordinateNode(document); // => false
+```
+
+## Category: Printing
+
+<div className="api-category-toc">
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v17/language#print">print()</a>
+  </p>
+</div>
+
+### Functions
+
+#### print()
+
+Converts an AST into a string, using one set of reasonable
+formatting rules.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "print"], "(", ["parameter", "ast"], ": ", ["link", "ASTNode", "/api-v17/language#astnode"], "): ", ["keyword", "string"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ast</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v17/language#astnode"]]} /></td>
+      <td>The GraphQL AST node to print.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>A stable string representation of the AST.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, print } from 'graphql';
+
+const ast = parse('{ hero { name } }');
+const text = print(ast);
+
+text; // => '{\n  hero {\n    name\n  }\n}'
+```
+
+## Category: Visiting
+
+<div className="api-category-toc">
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v17/language#visit">visit()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#visitinparallel">visitInParallel()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#getenterleaveforkind">getEnterLeaveForKind()</a>
+  </p>
+  <p>
+    <strong>Constants:</strong><br />
+    <a href="/api-v17/language#break">BREAK</a>
+  </p>
+  <p>
+    <strong>Types:</strong><br />
+    <a href="/api-v17/language#astvisitor">ASTVisitor</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#astvisitfn">ASTVisitFn</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/language#astvisitorkeymap">ASTVisitorKeyMap</a>
+  </p>
+</div>
+
+### Functions
+
+#### visit()
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 1</div>
+
+visit() will walk through an AST using a depth-first traversal, calling
+the visitor's enter function at each node in the traversal, and calling the
+leave function after visiting that node and all of its child nodes.
+
+By returning different values from the enter and leave functions, the
+behavior of the visitor can be altered, including skipping over a sub-tree of
+the AST (by returning false), editing the AST by returning a value or null
+to remove the value, or to stop the whole traversal by returning BREAK.
+
+When using visit() to edit an AST, the original AST will not be modified, and
+a new version of the AST with the changes applied will be returned from the
+visit function.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>N</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v17/language#astnode"]]} /></td>
+      <td></td>
+      <td>The root AST node type returned when visiting without reducing.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Signature:**
+
+<ApiSignature parts={[["name", "visit"], "\u003c", ["type", "N"], " ", ["keyword", "extends"], " ", ["link", "ASTNode", "/api-v17/language#astnode"], "\u003e(\n  ", ["parameter", "root"], ": ", ["type", "N"], ",\n  ", ["parameter", "visitor"], ": ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ",\n  ", ["parameter", "visitorKeys"], "?: ", ["link", "ASTVisitorKeyMap", "/api-v17/language#astvisitorkeymap"], " = QueryDocumentKeys,\n): ", ["type", "N"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>root</td>
+      <td><ApiType parts={[["type", "N"]]} /></td>
+      <td></td>
+      <td>The AST node at which to start traversal.</td>
+    </tr>
+    <tr>
+      <td>visitor</td>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td></td>
+      <td>The visitor or reducer functions to call while traversing.</td>
+    </tr>
+    <tr>
+      <td>visitorKeys?</td>
+      <td><ApiType parts={[["link", "ASTVisitorKeyMap", "/api-v17/language#astvisitorkeymap"]]} /></td>
+      <td><ApiType parts={["QueryDocumentKeys"]} /></td>
+      <td>Optional map of child keys to visit for each AST node kind.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "N"]]} /></td>
+      <td>The original AST, an edited AST, or a reduced value depending on the visitor.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Return values control traversal: undefined makes no change, false skips
+// a subtree, BREAK stops traversal, null removes a node, and any other
+// value replaces the current node.
+import { Kind, parse, print, visit } from 'graphql/language';
+
+const document = parse('{ hero { name } }');
+const editedAST = visit(document, {
+  Field: (node) => {
+    if (node.name.value === 'hero') {
+      return {
+        ...node,
+        name: { kind: Kind.NAME, value: 'human' },
+      };
+    }
+  },
+});
+
+print(editedAST); // => '{\n  human {\n    name\n  }\n}'
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// A named visitor function runs when entering nodes of that kind.
+import { parse, visit } from 'graphql/language';
+
+const document = parse('{ hero { name } }');
+const fieldNames = [];
+
+visit(document, {
+  Field: (node) => {
+    fieldNames.push(node.name.value);
+  },
+});
+
+fieldNames; // => ['hero', 'name']
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 3</div>
+
+```ts
+// A named visitor object can provide separate enter and leave handlers for
+// nodes of that kind.
+import { parse, visit } from 'graphql/language';
+
+const document = parse('{ hero { name } }');
+const events = [];
+
+visit(document, {
+  Field: {
+    enter: (node) => {
+      events.push(`enter:${node.name.value}`);
+    },
+    leave: (node) => {
+      events.push(`leave:${node.name.value}`);
+    },
+  },
+});
+
+events; // => ['enter:hero', 'enter:name', 'leave:name', 'leave:hero']
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 4</div>
+
+```ts
+// Generic enter and leave handlers run for every node.
+import { parse, visit } from 'graphql/language';
+
+const document = parse('{ hero { name } }');
+let enterCount = 0;
+let leaveCount = 0;
+
+visit(document, {
+  enter: (node) => {
+    enterCount += 1;
+  },
+  leave: (node) => {
+    leaveCount += 1;
+  },
+});
+
+enterCount; // => leaveCount
+enterCount > 0; // => true
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 2</div>
+
+Traverses an AST with reducer callbacks and returns the reduced value.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>R</td>
+      <td></td>
+      <td></td>
+      <td>The value produced by reducer visitor callbacks.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Signature:**
+
+<ApiSignature parts={[["name", "visit"], "\u003c", ["type", "R"], "\u003e(\n  ", ["parameter", "root"], ": ", ["link", "ASTNode", "/api-v17/language#astnode"], ",\n  ", ["parameter", "visitor"], ": ", ["type", "ASTReducer"], "\u003c", ["type", "R"], "\u003e,\n  ", ["parameter", "visitorKeys"], "?: ", ["link", "ASTVisitorKeyMap", "/api-v17/language#astvisitorkeymap"], " = QueryDocumentKeys,\n): ", ["type", "R"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>root</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v17/language#astnode"]]} /></td>
+      <td></td>
+      <td>The AST node where traversal starts.</td>
+    </tr>
+    <tr>
+      <td>visitor</td>
+      <td><ApiType parts={[["type", "ASTReducer"], "\u003c", ["type", "R"], "\u003e"]} /></td>
+      <td></td>
+      <td>Reducer callbacks to invoke during traversal.</td>
+    </tr>
+    <tr>
+      <td>visitorKeys?</td>
+      <td><ApiType parts={[["link", "ASTVisitorKeyMap", "/api-v17/language#astvisitorkeymap"]]} /></td>
+      <td><ApiType parts={["QueryDocumentKeys"]} /></td>
+      <td>Optional mapping of child keys for each AST node kind.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "R"]]} /></td>
+      <td>The value produced by the reducer visitor.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+// A reducer visitor returns values from leave handlers to build a reduced
+// result instead of returning an edited AST.
+import { parse, visit } from 'graphql/language';
+
+const document = parse('{ hero { name } }');
+const printed = visit(document, {
+  Name: {
+    leave: (node) => {
+      return node.value;
+    },
+  },
+  Field: {
+    leave: (node) => {
+      return node.selectionSet == null
+        ? node.name
+        : `${node.name} { ${node.selectionSet} }`;
+    },
+  },
+  SelectionSet: {
+    leave: (node) => {
+      return node.selections.join(' ');
+    },
+  },
+  OperationDefinition: {
+    leave: (node) => {
+      return node.selectionSet;
+    },
+  },
+  Document: {
+    leave: (node) => {
+      return node.definitions.join('\n');
+    },
+  },
+});
+
+printed; // => 'hero { name }'
+```
+
+<hr className="api-item-divider" />
+
+#### visitInParallel()
+
+Creates a new visitor instance which delegates to many visitors to run in
+parallel. Each visitor will be visited for each node before moving on.
+
+If a prior visitor edits a node, no following visitors will see that node.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "visitInParallel"], "(\n  ", ["parameter", "visitors"], ": ", ["keyword", "readonly"], " ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], "[],\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>visitors</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], "[]"]} /></td>
+      <td>The visitors to merge into one parallel visitor.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that delegates traversal to each provided visitor.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, visit, visitInParallel } from 'graphql/language';
+
+const document = parse('{ hero { name } }');
+const events = [];
+
+visit(
+  document,
+  visitInParallel([
+    { Field: (node) => { events.push(`field:${node.name.value}`); } },
+    { Name: (node) => { events.push(`name:${node.value}`); } },
+  ]),
+);
+
+events; // => ['field:hero', 'name:hero', 'field:name', 'name:name']
+```
+
+<hr className="api-item-divider" />
+
+#### getEnterLeaveForKind()
+
+Given a visitor instance and a node kind, return EnterLeaveVisitor for that kind.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getEnterLeaveForKind"], "(\n  ", ["parameter", "visitor"], ": ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ",\n  ", ["parameter", "kind"], ": ", ["link", "Kind", "/api-v17/language#kind"], ",\n): \u007b\n  ", ["property", "enter"], "?: ", ["link", "ASTVisitFn", "/api-v17/language#astvisitfn"], "\u003c", ["link", "ASTNode", "/api-v17/language#astnode"], "\u003e \u007c ", ["keyword", "undefined"], ";\n  ", ["property", "leave"], "?: ", ["link", "ASTVisitFn", "/api-v17/language#astvisitfn"], "\u003c", ["link", "ASTNode", "/api-v17/language#astnode"], "\u003e \u007c ", ["keyword", "undefined"], ";\n\u007d;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>visitor</td>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>The visitor object to inspect.</td>
+    </tr>
+    <tr>
+      <td>kind</td>
+      <td><ApiType parts={[["link", "Kind", "/api-v17/language#kind"]]} /></td>
+      <td>The AST node kind to resolve handlers for.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={["\u007b\n  ", ["property", "enter"], "?: ", ["link", "ASTVisitFn", "/api-v17/language#astvisitfn"], "\u003c", ["link", "ASTNode", "/api-v17/language#astnode"], "\u003e \u007c ", ["keyword", "undefined"], ";\n  ", ["property", "leave"], "?: ", ["link", "ASTVisitFn", "/api-v17/language#astvisitfn"], "\u003c", ["link", "ASTNode", "/api-v17/language#astnode"], "\u003e \u007c ", ["keyword", "undefined"], ";\n\u007d"]} /></td>
+      <td>The enter and leave handlers that apply for the given node kind.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { Kind, getEnterLeaveForKind } from 'graphql/language';
+
+const handlers = getEnterLeaveForKind({ Field: () => {} }, Kind.FIELD);
+
+typeof handlers.enter; // => 'function'
+handlers.leave; // => undefined
+```
+
+### Constants
+
+#### BREAK
+
+A value that can be returned from a visitor function to stop traversal.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type</div>
+
+<ApiType parts={[["keyword", "unknown"]]} />
+
+### Types
+
+#### ASTVisitor
+
+**Type alias.** A visitor defines the callbacks called during AST traversal.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "ASTVisitor"], " =\n  \u007c \u007b\n      ", ["property", "enter"], "?:\n        \u007c ", ["link", "ASTVisitFn", "/api-v17/language#astvisitfn"], "\u003c", ["link", "ASTNode", "/api-v17/language#astnode"], "\u003e\n        \u007c ", ["keyword", "undefined"], ";\n      ", ["property", "leave"], "?:\n        \u007c ", ["link", "ASTVisitFn", "/api-v17/language#astvisitfn"], "\u003c", ["link", "ASTNode", "/api-v17/language#astnode"], "\u003e\n        \u007c ", ["keyword", "undefined"], ";\n    \u007d\n  \u007c \u007b\n      ", ["keyword", "readonly"], " [NodeT ", ["keyword", "in"], " ASTNode ", ["keyword", "as"], " NodeT[", ["literal", "'kind'"], "]]?:\n        \u007c ASTVisitFn\u003cNodeT\u003e\n        \u007c EnterLeaveVisitor\u003cNodeT\u003e;\n    \u007d;"]} />
+
+<hr className="api-item-divider" />
+
+#### ASTVisitFn
+
+**Type alias.** A visitor is composed of visit functions called for each node during traversal.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type Parameters</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Constraint</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TVisitedNode</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v17/language#astnode"]]} /></td>
+      <td></td>
+      <td>AST node type handled by this visitor function.</td>
+    </tr>
+  </tbody>
+</table>
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "ASTVisitFn"], "\u003c", ["type", "TVisitedNode"], " ", ["keyword", "extends"], " ", ["link", "ASTNode", "/api-v17/language#astnode"], "\u003e = (\n  ", ["parameter", "node"], ": ", ["type", "TVisitedNode"], ",\n  ", ["parameter", "key"], ": ", ["keyword", "string"], " \u007c ", ["keyword", "number"], " \u007c ", ["keyword", "undefined"], ",\n  ", ["parameter", "parent"], ":\n    \u007c ", ["link", "ASTNode", "/api-v17/language#astnode"], "\n    \u007c ", ["type", "ReadonlyArray"], "\u003c", ["link", "ASTNode", "/api-v17/language#astnode"], "\u003e\n    \u007c ", ["keyword", "undefined"], ",\n  ", ["parameter", "path"], ": ", ["type", "ReadonlyArray"], "\u003c", ["keyword", "string"], " \u007c ", ["keyword", "number"], "\u003e,\n  ", ["parameter", "ancestors"], ": ", ["type", "ReadonlyArray"], "\u003c\n    ", ["link", "ASTNode", "/api-v17/language#astnode"], " \u007c ", ["type", "ReadonlyArray"], "\u003c", ["link", "ASTNode", "/api-v17/language#astnode"], "\u003e\n  \u003e,\n) =\u003e ", ["keyword", "any"], ";"]} />
+
+<hr className="api-item-divider" />
+
+#### ASTVisitorKeyMap
+
+**Type alias.** A visitor key map describes the traversable child properties for each node kind.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "ASTVisitorKeyMap"], " = ", ["type", "mapped object"], ";"]} />

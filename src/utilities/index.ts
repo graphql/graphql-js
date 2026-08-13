@@ -1,3 +1,11 @@
+/**
+ * Utilities for building schemas, working with introspection, transforming ASTs,
+ * and comparing GraphQL types.
+ *
+ * These exports are also available from the root `graphql` package.
+ * @packageDocumentation
+ */
+
 // Produce the GraphQL query recommended for a full schema introspection.
 export { getIntrospectionQuery } from './getIntrospectionQuery';
 
@@ -103,3 +111,10 @@ export type { BreakingChange, DangerousChange } from './findBreakingChanges';
 
 // Wrapper type that contains DocumentNode and types that can be deduced from it.
 export type { TypedQueryDocumentNode } from './typedQueryDocumentNode';
+
+// Schema coordinates
+export {
+  resolveSchemaCoordinate,
+  resolveASTSchemaCoordinate,
+} from './resolveSchemaCoordinate';
+export type { ResolvedSchemaElement } from './resolveSchemaCoordinate';

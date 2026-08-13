@@ -20,4 +20,5 @@ Each sub directory within is a sub-module of graphql-js:
 - [`graphql/error`](error/README.md): Creating and formatting GraphQL errors.
 - [`graphql/utilities`](utilities/README.md): Common useful computations upon
   the GraphQL language and type objects.
-- [`graphql/subscription`](subscription/README.md): Subscribe to data updates.
+- [`graphql/subscription`](subscription/README.md): Deprecated compatibility
+  submodule for subscription helpers; use `graphql/execution` instead.

@@ -1,3 +1,5 @@
+/** @category Values */
+
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
 import { keyMap } from '../jsutils/keyMap';
@@ -33,7 +35,44 @@ import {
  * | Int / Float          | Number        |
  * | Enum Value           | Unknown       |
  * | NullValue            | null          |
+ * @param valueNode - GraphQL value AST node to convert.
+ * @param type - The GraphQL type to inspect.
+ * @param variables - Optional runtime variable values keyed by variable name.
+ * @returns The coerced JavaScript value, or undefined if the AST value cannot be coerced to the type.
+ * @example
+ * ```ts
+ * // Coerce literal values without variables.
+ * import { parseValue } from 'graphql/language';
+ * import {
+ *   GraphQLInputObjectType,
+ *   GraphQLInt,
+ *   GraphQLList,
+ *   GraphQLNonNull,
+ *   GraphQLString,
+ * } from 'graphql/type';
+ * import { valueFromAST } from 'graphql/utilities';
  *
+ * const ReviewInput = new GraphQLInputObjectType({
+ *   name: 'ReviewInput',
+ *   fields: {
+ *     stars: { type: new GraphQLNonNull(GraphQLInt) },
+ *     tags: { type: new GraphQLList(GraphQLString) },
+ *   },
+ * });
+ *
+ * valueFromAST(parseValue('{ stars: 5, tags: ["featured"] }'), ReviewInput); // => { stars: 5, tags: ['featured'] }
+ * valueFromAST(parseValue('{ stars: "bad" }'), ReviewInput); // => undefined
+ * ```
+ * @example
+ * ```ts
+ * // This variant resolves variable references from runtime values.
+ * import { parseValue } from 'graphql/language';
+ * import { GraphQLInt } from 'graphql/type';
+ * import { valueFromAST } from 'graphql/utilities';
+ *
+ * valueFromAST(parseValue('$stars'), GraphQLInt, { stars: 5 }); // => 5
+ * valueFromAST(parseValue('$stars'), GraphQLInt, {}); // => undefined
+ * ```
  */
 export function valueFromAST(
   valueNode: Maybe<ValueNode>,
@@ -48,7 +87,11 @@ export function valueFromAST(
 
   if (valueNode.kind === Kind.VARIABLE) {
     const variableName = valueNode.name.value;
-    if (variables == null || variables[variableName] === undefined) {
+    if (
+      variables == null ||
+      variables[variableName] === undefined ||
+      !hasOwnProperty(variables, variableName)
+    ) {
       // No valid return value.
       return;
     }
@@ -168,6 +211,12 @@ function isMissingVariable(
 ): boolean {
   return (
     valueNode.kind === Kind.VARIABLE &&
-    (variables == null || variables[valueNode.name.value] === undefined)
+    (variables == null ||
+      variables[valueNode.name.value] === undefined ||
+      !hasOwnProperty(variables, valueNode.name.value))
   );
+}
+
+function hasOwnProperty(obj: ObjMap<unknown>, prop: string): boolean {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
 }

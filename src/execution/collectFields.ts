@@ -161,6 +161,8 @@ function collectFieldsImpl(
 /**
  * Determines if a field should be included based on the `@include` and `@skip`
  * directives, where `@skip` has higher precedence than `@include`.
+ *
+ * @internal
  */
 function shouldIncludeNode(
   variableValues: { [variable: string]: unknown },
@@ -184,6 +186,8 @@ function shouldIncludeNode(
 
 /**
  * Determines if a fragment is applicable to the given type.
+ *
+ * @internal
  */
 function doesFragmentConditionMatch(
   schema: GraphQLSchema,
@@ -206,6 +210,8 @@ function doesFragmentConditionMatch(
 
 /**
  * Implements the logic to compute the key of a given field's entry
+ *
+ * @internal
  */
 function getFieldEntryKey(node: FieldNode): string {
   return node.alias ? node.alias.value : node.name.value;

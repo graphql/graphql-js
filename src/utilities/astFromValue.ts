@@ -1,3 +1,5 @@
+/** @category Values */
+
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
 import { isIterableObject } from '../jsutils/isIterableObject';
@@ -20,9 +22,7 @@ import { GraphQLID } from '../type/scalars';
 /**
  * Produces a GraphQL Value AST given a JavaScript object.
  * Function will match JavaScript/JSON values to GraphQL AST schema format
- * by using suggested GraphQLInputType. For example:
- *
- *     astFromValue("value", GraphQLString)
+ * by using suggested GraphQLInputType.
  *
  * A GraphQL type must be provided, which will be used to interpret different
  * JavaScript values.
@@ -36,7 +36,38 @@ import { GraphQLID } from '../type/scalars';
  * | Number        | Int / Float          |
  * | Unknown       | Enum Value           |
  * | null          | NullValue            |
+ * @param value - Runtime value to convert.
+ * @param type - The GraphQL type to inspect.
+ * @returns A GraphQL value AST for the provided JavaScript value, or null when no literal can represent it.
+ * @example
+ * ```ts
+ * import { print } from 'graphql/language';
+ * import {
+ *   GraphQLInputObjectType,
+ *   GraphQLInt,
+ *   GraphQLList,
+ *   GraphQLNonNull,
+ *   GraphQLString,
+ * } from 'graphql/type';
+ * import { astFromValue } from 'graphql/utilities';
  *
+ * const ReviewInput = new GraphQLInputObjectType({
+ *   name: 'ReviewInput',
+ *   fields: {
+ *     stars: { type: new GraphQLNonNull(GraphQLInt) },
+ *     tags: { type: new GraphQLList(GraphQLString) },
+ *   },
+ * });
+ *
+ * const valueNode = astFromValue(
+ *   { stars: 5, tags: ['featured', 'verified'] },
+ *   ReviewInput,
+ * );
+ *
+ * print(valueNode); // => '{ stars: 5, tags: ["featured", "verified"] }'
+ * astFromValue(undefined, GraphQLString); // => null
+ * astFromValue(null, new GraphQLNonNull(GraphQLString)); // => null
+ * ```
  */
 export function astFromValue(
   value: unknown,
@@ -146,5 +177,7 @@ export function astFromValue(
  * IntValue:
  *   - NegativeSign? 0
  *   - NegativeSign? NonZeroDigit ( Digit+ )?
+ *
+ * @internal
  */
 const integerStringRegExp = /^-?(?:0|[1-9][0-9]*)$/;

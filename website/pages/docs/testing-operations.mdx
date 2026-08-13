@@ -1,0 +1,166 @@
+---
+title: Testing Operations
+sidebarTitle: Testing Operations
+---
+
+# Testing Operations
+
+Integration tests are the most effective way to test GraphQL operations. 
+These tests run actual queries and mutations against your schema and 
+resolvers to verify the full execution path. They validate how 
+operations interact with the schema, resolver logic, and any 
+connected systems.
+
+Compared to unit tests, which focus on isolated resolver functions, 
+integration tests exercise the full request flow. This makes them 
+ideal for catching regressions in schema design, argument handling, 
+nested resolution, and interaction with data sources.
+
+To run integration tests, you don’t need a running server. 
+Instead, use the `graphql()` function from `graphql-js`, which 
+directly executes operations against a schema.
+
+Integration testing for operations includes the following steps:
+
+1. **Build an executable schema:** Use `GraphQLSchema` or a schema 
+construction utility like `makeExecutableSchema()`.
+2. **Provide resolver implementations:** Use real or mocked resolvers 
+depending on what you're testing.
+3. **Set up a context if needed:** Include things like authorization tokens, 
+data loaders, or database access in the context.
+4. **Call `graphql()` with your operation:** Pass the schema, query or mutation, 
+optional variables, and context.
+5. **Validate the result:** Assert that the `data` is correct and `errors` 
+is either `undefined` or matches expected failure cases.
+
+## What you can test with operations
+
+Use integration tests to verify:
+
+- Query and mutation flows
+- Variable handling and input validation
+- Nested field resolution
+- Error states and nullability
+- Real vs. mocked resolver behavior
+
+These tests help ensure your GraphQL operations behave as expected across a wide 
+range of scenarios.
+
+## Writing tests
+
+### Queries and mutations
+
+Use `graphql()` to run a GraphQL document string. Here's a basic test for a query:
+
+```ts
+const result = await graphql({
+  schema,
+  source: 'query { user(id: "1") { name } }',
+});
+
+expect(result.errors).toBeUndefined();
+expect(result.data?.user.name).toBe('Alice');
+```
+
+For mutations, the structure is the same:
+
+```ts
+const source = `
+  mutation {
+    createUser(input: { name: "Bob" }) {
+      id
+      name
+    }
+  }
+`;
+
+const result = await graphql({ schema, source });
+
+expect(result.errors).toBeUndefined();
+expect(result.data?.createUser.name).toBe('Bob');
+```
+
+### Variables
+
+Use the `variableValues` option to test operations that accept input:
+
+```ts
+const result = await graphql({
+  schema,
+  source: `
+    query GetUser($id: ID!) {
+      user(id: $id) {
+        name
+      }
+    }
+  `,
+  variableValues: { id: '1' },
+});
+```
+
+### Nested queries
+
+Nested queries validate how parent and child resolvers interact. This ensures 
+the response shape aligns with your schema and the data flows correctly through 
+resolvers:
+
+```ts
+const result = await graphql({
+  schema,
+  source: `
+    {
+      user(id: "1") {
+        name
+        posts {
+          title
+        }
+      }
+    }
+  `,
+});
+
+expect(result.errors).toBeUndefined();
+expect(result.data?.user.posts).toHaveLength(2);
+```
+
+## Validating results
+
+When validating results, test both data and errors:
+
+- Use `toEqual` for strict matches.
+- Use `toMatchObject` for partial structure checks.
+- Use `toBeUndefined()` or `toHaveLength(n)` for specific validations.
+- For large results, consider using snapshot tests. 
+
+You can also test failure modes:
+
+```ts
+const result = await graphql({
+  schema,
+  source: `
+    query {
+      user(id: "nonexistent") {
+        name
+      }
+    }
+  `,
+});
+
+expect(result.errors).toBeDefined();
+expect(result.data?.user).toBeNull();
+```
+
+## Using real data sources vs. mocked resolvers
+
+You can run integration tests against real or mocked resolvers. The 
+right approach depends on what you're testing.
+
+| Approach | Pros | Cons | Setup |
+|----------|------|------|-------|
+| Real data sources | Catches real bugs, validates resolver integration and schema usage | Slower, needs data setup and teardown | Use in-memory DB or test DB, reset state between tests |
+| Mocked resolvers | Fast, controlled, ideal for schema validation | Doesn’t catch real resolver bugs | Stub resolvers or inject mocks into context or resolver |
+
+Use mocked resolvers when you're testing schema shape, field availability, or 
+operation structure in isolation. Use real data sources when testing 
+application logic, integration with databases, or when preparing for 
+production-like behavior.

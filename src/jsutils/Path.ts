@@ -1,8 +1,14 @@
+/** @category Paths */
+
 import type { Maybe } from './Maybe';
 
+/** Represents a linked response path from a field back to the root response. */
 export interface Path {
+  /** The previous segment in the linked response path, or undefined at the root. */
   readonly prev: Path | undefined;
+  /** The field name or list index for this response path segment. */
   readonly key: string | number;
+  /** The runtime object type name associated with this path segment, if known. */
   readonly typename: string | undefined;
   readonly nonNull: boolean;
 }
@@ -14,6 +20,8 @@ export interface PathDigest {
 
 /**
  * Given a Path and a key, return a new Path containing the new key.
+ *
+ * @internal
  */
 export function addPath(
   prev: Readonly<Path> | undefined,
@@ -49,6 +57,29 @@ export function pathToDigest(
 // To be deprecated in favour of pathToDigest when the `onError` experiment is accepted
 /**
  * Given a Path, return an Array of the path keys.
+ * @param path - The linked response path to flatten.
+ * @returns An array of response path keys from root to leaf.
+ * @example
+ * ```ts
+ * import { pathToArray } from 'graphql/jsutils/Path';
+ *
+ * const path = {
+ *   prev: {
+ *     prev: {
+ *       prev: undefined,
+ *       key: 'viewer',
+ *       typename: 'Query',
+ *     },
+ *     key: 'friends',
+ *     typename: 'User',
+ *   },
+ *   key: 0,
+ *   typename: undefined,
+ * };
+ *
+ * pathToArray(path); // => ['viewer', 'friends', 0]
+ * pathToArray(undefined); // => []
+ * ```
  */
 export function pathToArray(
   path: Maybe<Readonly<Path>>,

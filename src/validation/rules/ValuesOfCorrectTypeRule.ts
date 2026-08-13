@@ -1,3 +1,5 @@
+/** @category Validation Rules */
+
 import { didYouMean } from '../../jsutils/didYouMean';
 import { inspect } from '../../jsutils/inspect';
 import { keyMap } from '../../jsutils/keyMap';
@@ -10,7 +12,6 @@ import type {
   ObjectFieldNode,
   ObjectValueNode,
   ValueNode,
-  VariableDefinitionNode,
 } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
@@ -36,21 +37,38 @@ import type { ValidationContext } from '../ValidationContext';
  * expected at their position.
  *
  * See https://spec.graphql.org/draft/#sec-Values-of-Correct-Type
+ * @param context - The validation context used while checking the document.
+ * @returns A visitor that reports validation errors for this rule.
+ * @example
+ * ```ts
+ * import { buildSchema, parse, validate } from 'graphql';
+ * import { ValuesOfCorrectTypeRule } from 'graphql/validation';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     count(limit: Int): Int
+ *   }
+ * `);
+ *
+ * const invalidDocument = parse(`
+ *   { count(limit: "many") }
+ * `);
+ * const invalidErrors = validate(schema, invalidDocument, [ValuesOfCorrectTypeRule]);
+ *
+ * invalidErrors.length; // => 1
+ *
+ * const validDocument = parse(`
+ *   { count(limit: 1) }
+ * `);
+ * const validErrors = validate(schema, validDocument, [ValuesOfCorrectTypeRule]);
+ *
+ * validErrors; // => []
+ * ```
  */
 export function ValuesOfCorrectTypeRule(
   context: ValidationContext,
 ): ASTVisitor {
-  let variableDefinitions: { [key: string]: VariableDefinitionNode } = {};
-
   return {
-    OperationDefinition: {
-      enter() {
-        variableDefinitions = {};
-      },
-    },
-    VariableDefinition(definition) {
-      variableDefinitions[definition.variable.name.value] = definition;
-    },
     ListValue(node) {
       // Note: TypeInfo will traverse into a list's item type, so look to the
       // parent input type to check if it is a list.
@@ -82,13 +100,7 @@ export function ValuesOfCorrectTypeRule(
       }
 
       if (type.isOneOf) {
-        validateOneOfInputObject(
-          context,
-          node,
-          type,
-          fieldNodeMap,
-          variableDefinitions,
-        );
+        validateOneOfInputObject(context, node, type, fieldNodeMap);
       }
     },
     ObjectField(node) {
@@ -122,6 +134,11 @@ export function ValuesOfCorrectTypeRule(
     EnumValue: (node) => isValidValueNode(context, node),
     IntValue: (node) => isValidValueNode(context, node),
     FloatValue: (node) => isValidValueNode(context, node),
+    // Descriptions are string values that would not validate according
+    // to the below logic, but since (per the specification) descriptions must
+    // not affect validation, they are ignored entirely when visiting the AST
+    // and do not require special handling.
+    // See https://spec.graphql.org/draft/#sec-Descriptions
     StringValue: (node) => isValidValueNode(context, node),
     BooleanValue: (node) => isValidValueNode(context, node),
   };
@@ -130,6 +147,8 @@ export function ValuesOfCorrectTypeRule(
 /**
  * Any value literal may be a valid representation of a Scalar, depending on
  * that scalar type.
+ *
+ * @internal
  */
 function isValidValueNode(context: ValidationContext, node: ValueNode): void {
   // Report any error at the full type expected by the location.
@@ -185,7 +204,6 @@ function validateOneOfInputObject(
   node: ObjectValueNode,
   type: GraphQLInputObjectType,
   fieldNodeMap: ObjMap<ObjectFieldNode>,
-  variableDefinitions: { [key: string]: VariableDefinitionNode },
 ): void {
   const keys = Object.keys(fieldNodeMap);
   const isNotExactlyOneField = keys.length !== 1;
@@ -202,7 +220,6 @@ function validateOneOfInputObject(
 
   const value = fieldNodeMap[keys[0]]?.value;
   const isNullLiteral = !value || value.kind === Kind.NULL;
-  const isVariable = value?.kind === Kind.VARIABLE;
 
   if (isNullLiteral) {
     context.reportError(
@@ -210,21 +227,5 @@ function validateOneOfInputObject(
         nodes: [node],
       }),
     );
-    return;
-  }
-
-  if (isVariable) {
-    const variableName = value.name.value;
-    const definition = variableDefinitions[variableName];
-    const isNullableVariable = definition.type.kind !== Kind.NON_NULL_TYPE;
-
-    if (isNullableVariable) {
-      context.reportError(
-        new GraphQLError(
-          `Variable "${variableName}" must be non-nullable to be used for OneOf Input Object "${type.name}".`,
-          { nodes: [node] },
-        ),
-      );
-    }
   }
 }

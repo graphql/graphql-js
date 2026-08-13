@@ -1,0 +1,4744 @@
+import { ApiSignature, ApiType } from '../../components/ApiCode';
+
+Validate GraphQL documents and schemas with the specified validation rules.
+
+These exports are also available from the root `graphql` package.
+
+For documentation purposes, these exports are grouped into the following categories:
+
+- [Validation Context](/api-v17/validation#category-validation-context)
+- [Validation Rules](/api-v17/validation#category-validation-rules)
+- [Custom Rules](/api-v17/validation#category-custom-rules)
+- [Validation](/api-v17/validation#category-validation)
+
+## Category: Validation Context
+
+<div className="api-category-toc">
+  <p>
+    <strong>Classes:</strong><br />
+    <a href="/api-v17/validation#validationcontext">ValidationContext</a>
+  </p>
+  <p>
+    <strong>Types:</strong><br />
+    <a href="/api-v17/validation#validationrule">ValidationRule</a>
+  </p>
+</div>
+
+### Classes
+
+#### ValidationContext
+
+Validation context passed to query validation rules.
+
+<hr className="api-subsection-divider" />
+
+##### Constructor
+
+Creates a ValidationContext instance.
+
+**Signature:**
+
+<ApiSignature parts={[["keyword", "new"], " ", ["name", "ValidationContext"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n  ", ["parameter", "ast"], ": ", ["link", "DocumentNode", "/api-v17/language#documentnode"], ",\n  ", ["parameter", "typeInfo"], ": ", ["link", "TypeInfo", "/api-v17/utilities#typeinfo"], ",\n  ", ["parameter", "onError"], ": (", ["parameter", "error"], ": ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], ") =\u003e ", ["keyword", "void"], ",\n  ", ["parameter", "hideSuggestions"], "?: ", ["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e,\n);"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
+      <td>Schema used to validate the document.</td>
+    </tr>
+    <tr>
+      <td>ast</td>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v17/language#documentnode"]]} /></td>
+      <td>Document AST being validated.</td>
+    </tr>
+    <tr>
+      <td>typeInfo</td>
+      <td><ApiType parts={[["link", "TypeInfo", "/api-v17/utilities#typeinfo"]]} /></td>
+      <td>TypeInfo instance used to track traversal state.</td>
+    </tr>
+    <tr>
+      <td>onError</td>
+      <td><ApiType parts={["(", ["parameter", "error"], ": ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], ") =\u003e ", ["keyword", "void"]]} /></td>
+      <td>Callback invoked for each validation error.</td>
+    </tr>
+    <tr>
+      <td>hideSuggestions?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e"]} /></td>
+      <td>Whether suggestion text should be omitted from errors.</td>
+    </tr>
+  </tbody>
+</table>
+
+##### getSchema()
+
+Returns the schema being used by this validation context.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getSchema"], "(): ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
+      <td>The schema being validated against.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema, TypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const context = new ValidationContext(
+  schema,
+  parse('{ greeting }'),
+  new TypeInfo(schema),
+  () => {},
+);
+
+context.getSchema().getQueryType()?.name; // => 'Query'
+```
+
+<hr className="api-subsection-divider" />
+
+##### getVariableUsages()
+
+Returns variable usages found directly within this node.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getVariableUsages"], "(\n  ", ["parameter", "node"], ": ", ["link", "OperationDefinitionNode", "/api-v17/language#operationdefinitionnode"], " \u007c ", ["link", "FragmentDefinitionNode", "/api-v17/language#fragmentdefinitionnode"], ",\n): ", ["keyword", "readonly"], " \u007b\n  ", ["property", "node"], ": ", ["link", "VariableNode", "/api-v17/language#variablenode"], ";\n  ", ["property", "type"], ": ", ["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], "\u003e;\n  ", ["property", "parentType"], ": ", ["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], "\u003e;\n  ", ["property", "defaultValue"], ": ", ["keyword", "unknown"], ";\n  ", ["property", "fragmentVariableDefinition"], ": ", ["type", "Maybe"], "\u003c", ["link", "VariableDefinitionNode", "/api-v17/language#variabledefinitionnode"], "\u003e;\n\u007d[];"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>node</td>
+      <td><ApiType parts={[["link", "OperationDefinitionNode", "/api-v17/language#operationdefinitionnode"], " \u007c ", ["link", "FragmentDefinitionNode", "/api-v17/language#fragmentdefinitionnode"]]} /></td>
+      <td>The AST node to inspect or visit.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["keyword", "readonly"], " \u007b\n  ", ["property", "node"], ": ", ["link", "VariableNode", "/api-v17/language#variablenode"], ";\n  ", ["property", "type"], ": ", ["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], "\u003e;\n  ", ["property", "parentType"], ": ", ["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], "\u003e;\n  ", ["property", "defaultValue"], ": ", ["keyword", "unknown"], ";\n  ", ["property", "fragmentVariableDefinition"], ": ", ["type", "Maybe"], "\u003c", ["link", "VariableDefinitionNode", "/api-v17/language#variabledefinitionnode"], "\u003e;\n\u007d[]"]} /></td>
+      <td>Variable usages found directly within this node.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema, TypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting(name: String): String
+  }
+`);
+const document = parse('query ($name: String) { greeting(name: $name) }');
+const operation = document.definitions[0];
+const context = new ValidationContext(
+  schema,
+  document,
+  new TypeInfo(schema),
+  () => {},
+);
+
+const usages = context.getVariableUsages(operation);
+
+usages[0].node.name.value; // => 'name'
+String(usages[0].type); // => 'String'
+```
+
+<hr className="api-subsection-divider" />
+
+##### getRecursiveVariableUsages()
+
+Returns variable usages for an operation, including variables used by referenced fragments.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getRecursiveVariableUsages"], "(\n  ", ["parameter", "operation"], ": ", ["link", "OperationDefinitionNode", "/api-v17/language#operationdefinitionnode"], ",\n): ", ["keyword", "readonly"], " \u007b\n  ", ["property", "node"], ": ", ["link", "VariableNode", "/api-v17/language#variablenode"], ";\n  ", ["property", "type"], ": ", ["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], "\u003e;\n  ", ["property", "parentType"], ": ", ["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], "\u003e;\n  ", ["property", "defaultValue"], ": ", ["keyword", "unknown"], ";\n  ", ["property", "fragmentVariableDefinition"], ": ", ["type", "Maybe"], "\u003c", ["link", "VariableDefinitionNode", "/api-v17/language#variabledefinitionnode"], "\u003e;\n\u007d[];"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>operation</td>
+      <td><ApiType parts={[["link", "OperationDefinitionNode", "/api-v17/language#operationdefinitionnode"]]} /></td>
+      <td>Operation definition to inspect.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["keyword", "readonly"], " \u007b\n  ", ["property", "node"], ": ", ["link", "VariableNode", "/api-v17/language#variablenode"], ";\n  ", ["property", "type"], ": ", ["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], "\u003e;\n  ", ["property", "parentType"], ": ", ["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], "\u003e;\n  ", ["property", "defaultValue"], ": ", ["keyword", "unknown"], ";\n  ", ["property", "fragmentVariableDefinition"], ": ", ["type", "Maybe"], "\u003c", ["link", "VariableDefinitionNode", "/api-v17/language#variabledefinitionnode"], "\u003e;\n\u007d[]"]} /></td>
+      <td>Variable usages reachable from the operation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema, TypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    viewer: User
+  }
+
+  type User {
+    name(prefix: String): String
+  }
+`);
+const document = parse(`
+  query ($prefix: String) {
+    viewer {
+      ...UserName
+    }
+  }
+
+  fragment UserName on User {
+    name(prefix: $prefix)
+  }
+`);
+const operation = document.definitions[0];
+const context = new ValidationContext(
+  schema,
+  document,
+  new TypeInfo(schema),
+  () => {},
+);
+
+const usages = context.getRecursiveVariableUsages(operation);
+
+usages.map((usage) => usage.node.name.value); // => ['prefix']
+```
+
+<hr className="api-subsection-divider" />
+
+##### getType()
+
+Returns the current output type at this point in traversal.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getType"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLOutputType", "/api-v17/type#graphqloutputtype"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLOutputType", "/api-v17/type#graphqloutputtype"], "\u003e"]} /></td>
+      <td>The current output type, if known.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse('{ greeting }');
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let typeName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    Field: () => {
+      typeName = String(context.getType());
+    },
+  }),
+);
+
+typeName; // => 'String'
+```
+
+<hr className="api-subsection-divider" />
+
+##### getParentType()
+
+Returns the current parent composite type.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getParentType"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLCompositeType", "/api-v17/type#graphqlcompositetype"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLCompositeType", "/api-v17/type#graphqlcompositetype"], "\u003e"]} /></td>
+      <td>The current parent composite type, if known.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse('{ greeting }');
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let parentTypeName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    Field: () => {
+      parentTypeName = context.getParentType()?.name;
+    },
+  }),
+);
+
+parentTypeName; // => 'Query'
+```
+
+<hr className="api-subsection-divider" />
+
+##### getInputType()
+
+Returns the current input type at this point in traversal.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getInputType"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], "\u003e"]} /></td>
+      <td>The current input type, if known.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    reviews(limit: Int): [String]
+  }
+`);
+const document = parse('{ reviews(limit: 5) }');
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let inputTypeName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    Argument: () => {
+      inputTypeName = String(context.getInputType());
+    },
+  }),
+);
+
+inputTypeName; // => 'Int'
+```
+
+<hr className="api-subsection-divider" />
+
+##### getParentInputType()
+
+Returns the parent input type for the current input position.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getParentInputType"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLInputType", "/api-v17/type#graphqlinputtype"], "\u003e"]} /></td>
+      <td>The parent input type, if known.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  input ReviewFilter {
+    stars: Int
+  }
+
+  type Query {
+    reviews(filter: ReviewFilter): [String]
+  }
+`);
+const document = parse('{ reviews(filter: { stars: 5 }) }');
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let parentInputTypeName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    ObjectField: () => {
+      parentInputTypeName = String(context.getParentInputType());
+    },
+  }),
+);
+
+parentInputTypeName; // => 'ReviewFilter'
+```
+
+<hr className="api-subsection-divider" />
+
+##### getFieldDef()
+
+Returns the current field definition.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getFieldDef"], "(): ", ["type", "Maybe"], "\u003c\n  ", ["link", "GraphQLField", "/api-v17/type#graphqlfield"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e\n\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLField", "/api-v17/type#graphqlfield"], "\u003c", ["keyword", "unknown"], ", ", ["keyword", "unknown"], "\u003e\u003e"]} /></td>
+      <td>The current field definition, if known.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse('{ greeting }');
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let fieldName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    Field: () => {
+      fieldName = context.getFieldDef()?.name;
+    },
+  }),
+);
+
+fieldName; // => 'greeting'
+```
+
+<hr className="api-subsection-divider" />
+
+##### getDirective()
+
+Returns the current directive definition.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getDirective"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLDirective", "/api-v17/type#graphqldirective"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLDirective", "/api-v17/type#graphqldirective"], "\u003e"]} /></td>
+      <td>The current directive definition, if known.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse('{ greeting @include(if: true) }');
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let directiveName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    Directive: () => {
+      directiveName = context.getDirective()?.name;
+    },
+  }),
+);
+
+directiveName; // => 'include'
+```
+
+<hr className="api-subsection-divider" />
+
+##### getArgument()
+
+Returns the current argument definition.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getArgument"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLArgument", "/api-v17/type#graphqlargument"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLArgument", "/api-v17/type#graphqlargument"], "\u003e"]} /></td>
+      <td>The current argument definition, if known.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    reviews(limit: Int): [String]
+  }
+`);
+const document = parse('{ reviews(limit: 5) }');
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let argumentName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    Argument: () => {
+      argumentName = context.getArgument()?.name;
+    },
+  }),
+);
+
+argumentName; // => 'limit'
+```
+
+<hr className="api-subsection-divider" />
+
+##### getFragmentSignature()
+
+Returns the fragment signature at the current traversal position.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getFragmentSignature"], "(): ", ["type", "Maybe"], "\u003c", ["type", "FragmentSignature"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["type", "FragmentSignature"], "\u003e"]} /></td>
+      <td>The current fragment signature, if one is active.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse(
+  `
+    {
+      ...GreetingFields
+    }
+
+    fragment GreetingFields on Query {
+      greeting
+    }
+  `,
+  { experimentalFragmentArguments: true },
+);
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let fragmentName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    FragmentSpread: () => {
+      fragmentName = context.getFragmentSignature()?.definition.name.value;
+    },
+  }),
+);
+
+fragmentName; // => 'GreetingFields'
+```
+
+<hr className="api-subsection-divider" />
+
+##### getFragmentSignatureByName()
+
+Returns the function used to look up fragment signatures by name.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getFragmentSignatureByName"], "(): (\n  ", ["parameter", "fragmentName"], ": ", ["keyword", "string"], ",\n) =\u003e ", ["type", "Maybe"], "\u003c", ["type", "FragmentSignature"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={["(\n  ", ["parameter", "fragmentName"], ": ", ["keyword", "string"], ",\n) =\u003e ", ["type", "Maybe"], "\u003c", ["type", "FragmentSignature"], "\u003e"]} /></td>
+      <td>A function that maps fragment names to fragment signatures.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse(
+  `
+    {
+      ...GreetingFields
+    }
+
+    fragment GreetingFields on Query {
+      greeting
+    }
+  `,
+  { experimentalFragmentArguments: true },
+);
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let fragmentName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    Document: () => {
+      const getFragmentSignature = context.getFragmentSignatureByName();
+      fragmentName =
+        getFragmentSignature('GreetingFields')?.definition.name.value;
+    },
+  }),
+);
+
+fragmentName; // => 'GreetingFields'
+```
+
+<hr className="api-subsection-divider" />
+
+##### getEnumValue()
+
+Returns the current enum value definition.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "getEnumValue"], "(): ", ["type", "Maybe"], "\u003c", ["link", "GraphQLEnumValue", "/api-v17/type#graphqlenumvalue"], "\u003e;"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["link", "GraphQLEnumValue", "/api-v17/type#graphqlenumvalue"], "\u003e"]} /></td>
+      <td>The current enum value definition, if known.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, visit } from 'graphql/language';
+import { buildSchema, TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  enum Sort {
+    NEWEST
+    OLDEST
+  }
+
+  type Query {
+    reviews(sort: Sort): [String]
+  }
+`);
+const document = parse('{ reviews(sort: OLDEST) }');
+const typeInfo = new TypeInfo(schema);
+const context = new ValidationContext(schema, document, typeInfo, () => {});
+let enumValueName;
+
+visit(
+  document,
+  visitWithTypeInfo(typeInfo, {
+    EnumValue: () => {
+      enumValueName = context.getEnumValue()?.name;
+    },
+  }),
+);
+
+enumValueName; // => 'OLDEST'
+```
+
+### Types
+
+#### ValidationRule
+
+**Type alias.** A function that creates an AST visitor for validating a GraphQL document.
+
+<ApiSignature parts={[["keyword", "type"], " ", ["name", "ValidationRule"], " = (\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n) =\u003e ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+## Category: Validation Rules
+
+<div className="api-category-toc">
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v17/validation#deferstreamdirectivelabelrule">DeferStreamDirectiveLabelRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#deferstreamdirectiveonrootfieldrule">DeferStreamDirectiveOnRootFieldRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#deferstreamdirectiveonvalidoperationsrule">DeferStreamDirectiveOnValidOperationsRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#executabledefinitionsrule">ExecutableDefinitionsRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#fieldsoncorrecttyperule">FieldsOnCorrectTypeRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#fragmentsoncompositetypesrule">FragmentsOnCompositeTypesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#knownargumentnamesrule">KnownArgumentNamesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#knowndirectivesrule">KnownDirectivesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#knownfragmentnamesrule">KnownFragmentNamesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#knownoperationtypesrule">KnownOperationTypesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#knowntypenamesrule">KnownTypeNamesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#loneanonymousoperationrule">LoneAnonymousOperationRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#loneschemadefinitionrule">LoneSchemaDefinitionRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#maxintrospectiondepthrule">MaxIntrospectionDepthRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#nofragmentcyclesrule">NoFragmentCyclesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#noundefinedvariablesrule">NoUndefinedVariablesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#nounusedfragmentsrule">NoUnusedFragmentsRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#nounusedvariablesrule">NoUnusedVariablesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#overlappingfieldscanbemergedrule">OverlappingFieldsCanBeMergedRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#possiblefragmentspreadsrule">PossibleFragmentSpreadsRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#possibletypeextensionsrule">PossibleTypeExtensionsRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#providedrequiredargumentsrule">ProvidedRequiredArgumentsRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#scalarleafsrule">ScalarLeafsRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#singlefieldsubscriptionsrule">SingleFieldSubscriptionsRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#streamdirectiveonlistfieldrule">StreamDirectiveOnListFieldRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#uniqueargumentdefinitionnamesrule">UniqueArgumentDefinitionNamesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#uniqueargumentnamesrule">UniqueArgumentNamesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#uniquedirectivenamesrule">UniqueDirectiveNamesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#uniquedirectivesperlocationrule">UniqueDirectivesPerLocationRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#uniqueenumvaluenamesrule">UniqueEnumValueNamesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#uniquefielddefinitionnamesrule">UniqueFieldDefinitionNamesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#uniquefragmentnamesrule">UniqueFragmentNamesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#uniqueinputfieldnamesrule">UniqueInputFieldNamesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#uniqueoperationnamesrule">UniqueOperationNamesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#uniqueoperationtypesrule">UniqueOperationTypesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#uniquetypenamesrule">UniqueTypeNamesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#uniquevariablenamesrule">UniqueVariableNamesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#valuesofcorrecttyperule">ValuesOfCorrectTypeRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#variablesareinputtypesrule">VariablesAreInputTypesRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#variablesinallowedpositionrule">VariablesInAllowedPositionRule()</a>
+  </p>
+  <p>
+    <strong>Constants:</strong><br />
+    <a href="/api-v17/validation#recommendedrules">recommendedRules</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#specifiedrules">specifiedRules</a>
+  </p>
+</div>
+
+### Functions
+
+#### DeferStreamDirectiveLabelRule()
+
+Defer and stream directive labels are unique
+
+A GraphQL document is only valid if defer and stream directives' label argument is static and unique.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "DeferStreamDirectiveLabelRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { validate, DeferStreamDirectiveLabelRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    friends: [String]
+  }
+`);
+const invalidDocument = parse(`
+  {
+    friends @stream(label: "friends")
+    other: friends @stream(label: "friends")
+  }
+`);
+const validDocument = parse(`
+  {
+    friends @stream(label: "friends")
+    other: friends @stream(label: "otherFriends")
+  }
+`);
+
+validate(schema, invalidDocument, [DeferStreamDirectiveLabelRule]).length; // => 1
+validate(schema, validDocument, [DeferStreamDirectiveLabelRule]); // => []
+```
+
+<hr className="api-item-divider" />
+
+#### DeferStreamDirectiveOnRootFieldRule()
+
+Defer and stream directives are used on valid root field
+
+A GraphQL document is only valid if defer directives are not used on root mutation or subscription types.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "DeferStreamDirectiveOnRootFieldRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { validate, DeferStreamDirectiveOnRootFieldRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    message: String
+  }
+
+  type Mutation {
+    updateMessage: String
+  }
+`);
+const invalidDocument = parse(`
+  mutation { ... @defer { updateMessage } }
+`);
+const validDocument = parse(`
+  { ... @defer { message } }
+`);
+
+validate(schema, invalidDocument, [DeferStreamDirectiveOnRootFieldRule]).length; // => 1
+validate(schema, validDocument, [DeferStreamDirectiveOnRootFieldRule]); // => []
+```
+
+<hr className="api-item-divider" />
+
+#### DeferStreamDirectiveOnValidOperationsRule()
+
+Defer And Stream Directives Are Used On Valid Operations
+
+A GraphQL document is only valid if defer and stream directives are not used on root mutation or subscription types.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "DeferStreamDirectiveOnValidOperationsRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import {
+  validate,
+  DeferStreamDirectiveOnValidOperationsRule,
+} from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    message: Message
+  }
+
+  type Subscription {
+    message: Message
+  }
+
+  type Message {
+    body: String
+  }
+`);
+const invalidDocument = parse(`
+  subscription {
+    message {
+      ...MessageBody @defer
+    }
+  }
+
+  fragment MessageBody on Message {
+    body
+  }
+`);
+const validDocument = parse(`
+  subscription {
+    message {
+      ...MessageBody @defer(if: false)
+    }
+  }
+
+  fragment MessageBody on Message {
+    body
+  }
+`);
+
+validate(schema, invalidDocument, [DeferStreamDirectiveOnValidOperationsRule])
+  .length; // => 1
+validate(schema, validDocument, [DeferStreamDirectiveOnValidOperationsRule]); // => []
+```
+
+<hr className="api-item-divider" />
+
+#### ExecutableDefinitionsRule()
+
+Executable definitions
+
+A GraphQL document is only valid for execution if all definitions are either
+operation or fragment definitions.
+
+See https://spec.graphql.org/draft/#sec-Executable-Definitions
+
+**Signature:**
+
+<ApiSignature parts={[["name", "ExecutableDefinitionsRule"], "(\n  ", ["parameter", "context"], ": ", ["type", "ASTValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["type", "ASTValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { ExecutableDefinitionsRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  type Extra { field: String }
+`);
+const invalidErrors = validate(schema, invalidDocument, [ExecutableDefinitionsRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { name }
+`);
+const validErrors = validate(schema, validDocument, [ExecutableDefinitionsRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### FieldsOnCorrectTypeRule()
+
+Fields on correct type
+
+A GraphQL document is only valid if all fields selected are defined by the
+parent type, or are an allowed meta field such as __typename.
+
+See https://spec.graphql.org/draft/#sec-Field-Selections
+
+**Signature:**
+
+<ApiSignature parts={[["name", "FieldsOnCorrectTypeRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { FieldsOnCorrectTypeRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  { missing }
+`);
+const invalidErrors = validate(schema, invalidDocument, [FieldsOnCorrectTypeRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { name }
+`);
+const validErrors = validate(schema, validDocument, [FieldsOnCorrectTypeRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### FragmentsOnCompositeTypesRule()
+
+Fragments on composite type
+
+Fragments use a type condition to determine if they apply, since fragments
+can only be spread into a composite type (object, interface, or union), the
+type condition must also be a composite type.
+
+See https://spec.graphql.org/draft/#sec-Fragments-On-Composite-Types
+
+**Signature:**
+
+<ApiSignature parts={[["name", "FragmentsOnCompositeTypesRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { FragmentsOnCompositeTypesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  fragment Bad on String { length }
+`);
+const invalidErrors = validate(schema, invalidDocument, [FragmentsOnCompositeTypesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  fragment Good on Query { name }
+`);
+const validErrors = validate(schema, validDocument, [FragmentsOnCompositeTypesRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### KnownArgumentNamesRule()
+
+Known argument names
+
+A GraphQL field is only valid if all supplied arguments are defined by
+that field.
+
+See https://spec.graphql.org/draft/#sec-Argument-Names
+See https://spec.graphql.org/draft/#sec-Directives-Are-In-Valid-Locations
+
+**Signature:**
+
+<ApiSignature parts={[["name", "KnownArgumentNamesRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { KnownArgumentNamesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    field(arg: String): String
+  }
+`);
+
+const invalidDocument = parse(`
+  { field(unknown: "1") }
+`);
+const invalidErrors = validate(schema, invalidDocument, [KnownArgumentNamesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { field(arg: "1") }
+`);
+const validErrors = validate(schema, validDocument, [KnownArgumentNamesRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### KnownDirectivesRule()
+
+Known directives
+
+A GraphQL document is only valid if all `@directives` are known by the
+schema and legally positioned.
+
+See https://spec.graphql.org/draft/#sec-Directives-Are-Defined
+
+**Signature:**
+
+<ApiSignature parts={[["name", "KnownDirectivesRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], " \u007c ", ["type", "SDLValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"], " \u007c ", ["type", "SDLValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { KnownDirectivesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  { name @unknown }
+`);
+const invalidErrors = validate(schema, invalidDocument, [KnownDirectivesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { name @include(if: true) }
+`);
+const validErrors = validate(schema, validDocument, [KnownDirectivesRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### KnownFragmentNamesRule()
+
+Known fragment names
+
+A GraphQL document is only valid if all `...Fragment` fragment spreads refer
+to fragments defined in the same document.
+
+See https://spec.graphql.org/draft/#sec-Fragment-spread-target-defined
+
+**Signature:**
+
+<ApiSignature parts={[["name", "KnownFragmentNamesRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { KnownFragmentNamesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  { ...Missing }
+`);
+const invalidErrors = validate(schema, invalidDocument, [KnownFragmentNamesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  fragment NameFields on Query { name } query { ...NameFields }
+`);
+const validErrors = validate(schema, validDocument, [KnownFragmentNamesRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### KnownOperationTypesRule()
+
+Known Operation Types
+
+A GraphQL document is only valid if when it contains an operation,
+the root type for the operation exists within the schema.
+
+See https://spec.graphql.org/draft/#sec-Operation-Type-Existence
+
+**Signature:**
+
+<ApiSignature parts={[["name", "KnownOperationTypesRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { validate, KnownOperationTypesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const invalidDocument = parse('mutation { greeting }');
+const validDocument = parse('{ greeting }');
+
+validate(schema, invalidDocument, [KnownOperationTypesRule])[0].message; // => 'The mutation operation is not supported by the schema.'
+validate(schema, validDocument, [KnownOperationTypesRule]); // => []
+```
+
+<hr className="api-item-divider" />
+
+#### KnownTypeNamesRule()
+
+Known type names
+
+A GraphQL document is only valid if referenced types (specifically
+variable definitions and fragment conditions) are defined by the type schema.
+
+See https://spec.graphql.org/draft/#sec-Fragment-Spread-Type-Existence
+
+**Signature:**
+
+<ApiSignature parts={[["name", "KnownTypeNamesRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], " \u007c ", ["type", "SDLValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"], " \u007c ", ["type", "SDLValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { KnownTypeNamesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  fragment Bad on Missing { name }
+`);
+const invalidErrors = validate(schema, invalidDocument, [KnownTypeNamesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  fragment Good on Query { name }
+`);
+const validErrors = validate(schema, validDocument, [KnownTypeNamesRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### LoneAnonymousOperationRule()
+
+Lone anonymous operation
+
+A GraphQL document is only valid if when it contains an anonymous operation
+(the query short-hand) that it contains only that one operation definition.
+
+See https://spec.graphql.org/draft/#sec-Lone-Anonymous-Operation
+
+**Signature:**
+
+<ApiSignature parts={[["name", "LoneAnonymousOperationRule"], "(\n  ", ["parameter", "context"], ": ", ["type", "ASTValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["type", "ASTValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { LoneAnonymousOperationRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  query { name } query Other { name }
+`);
+const invalidErrors = validate(schema, invalidDocument, [LoneAnonymousOperationRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { name }
+`);
+const validErrors = validate(schema, validDocument, [LoneAnonymousOperationRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### LoneSchemaDefinitionRule()
+
+Lone Schema definition
+
+A GraphQL document is only valid if it contains only one schema definition.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "LoneSchemaDefinitionRule"], "(\n  ", ["parameter", "context"], ": ", ["type", "SDLValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["type", "SDLValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema } from 'graphql';
+import { LoneSchemaDefinitionRule } from 'graphql/validation';
+
+const invalidSDL = `
+  schema { query: Query } schema { query: Query } type Query { name: String }
+`;
+
+LoneSchemaDefinitionRule.name; // => 'LoneSchemaDefinitionRule'
+buildSchema(invalidSDL); // throws an error
+
+const validSDL = `
+  schema { query: Query } type Query { name: String }
+`;
+
+buildSchema(validSDL); // does not throw
+```
+
+<hr className="api-item-divider" />
+
+#### MaxIntrospectionDepthRule()
+
+Implements the max introspection depth validation rule.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "MaxIntrospectionDepthRule"], "(\n  ", ["parameter", "context"], ": ", ["type", "ASTValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["type", "ASTValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { MaxIntrospectionDepthRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  { __schema { types { fields { type { fields { type { fields { name } } } } } } } }
+`);
+const invalidErrors = validate(schema, invalidDocument, [MaxIntrospectionDepthRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { __schema { queryType { name } } }
+`);
+const validErrors = validate(schema, validDocument, [MaxIntrospectionDepthRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### NoFragmentCyclesRule()
+
+No fragment cycles
+
+The graph of fragment spreads must not form any cycles including spreading itself.
+Otherwise an operation could infinitely spread or infinitely execute on cycles in the underlying data.
+
+See https://spec.graphql.org/draft/#sec-Fragment-spreads-must-not-form-cycles
+
+**Signature:**
+
+<ApiSignature parts={[["name", "NoFragmentCyclesRule"], "(\n  ", ["parameter", "context"], ": ", ["type", "ASTValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["type", "ASTValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { NoFragmentCyclesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  fragment A on Query { ...B } fragment B on Query { ...A } query { ...A }
+`);
+const invalidErrors = validate(schema, invalidDocument, [NoFragmentCyclesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  fragment A on Query { name } query { ...A }
+`);
+const validErrors = validate(schema, validDocument, [NoFragmentCyclesRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### NoUndefinedVariablesRule()
+
+No undefined variables
+
+A GraphQL operation is only valid if all variables encountered, both directly
+and via fragment spreads, are defined by that operation.
+
+See https://spec.graphql.org/draft/#sec-All-Variable-Uses-Defined
+
+**Signature:**
+
+<ApiSignature parts={[["name", "NoUndefinedVariablesRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { NoUndefinedVariablesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    field(arg: ID): String
+  }
+`);
+
+const invalidDocument = parse(`
+  query ($id: ID) { field(arg: $missing) }
+`);
+const invalidErrors = validate(schema, invalidDocument, [NoUndefinedVariablesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  query ($id: ID) { field(arg: $id) }
+`);
+const validErrors = validate(schema, validDocument, [NoUndefinedVariablesRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### NoUnusedFragmentsRule()
+
+No unused fragments
+
+A GraphQL document is only valid if all fragment definitions are spread
+within operations, or spread within other fragments spread within operations.
+
+See https://spec.graphql.org/draft/#sec-Fragments-Must-Be-Used
+
+**Signature:**
+
+<ApiSignature parts={[["name", "NoUnusedFragmentsRule"], "(\n  ", ["parameter", "context"], ": ", ["type", "ASTValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["type", "ASTValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { NoUnusedFragmentsRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  fragment Unused on Query { name } query { name }
+`);
+const invalidErrors = validate(schema, invalidDocument, [NoUnusedFragmentsRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  fragment Used on Query { name } query { ...Used }
+`);
+const validErrors = validate(schema, validDocument, [NoUnusedFragmentsRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### NoUnusedVariablesRule()
+
+No unused variables
+
+A GraphQL operation is only valid if all variables defined by an operation
+are used, either directly or within a spread fragment.
+
+See https://spec.graphql.org/draft/#sec-All-Variables-Used
+
+**Signature:**
+
+<ApiSignature parts={[["name", "NoUnusedVariablesRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { NoUnusedVariablesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    field(arg: ID): String
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  query ($id: ID) { name }
+`);
+const invalidErrors = validate(schema, invalidDocument, [NoUnusedVariablesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  query ($id: ID) { field(arg: $id) }
+`);
+const validErrors = validate(schema, validDocument, [NoUnusedVariablesRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### OverlappingFieldsCanBeMergedRule()
+
+Overlapping fields can be merged
+
+A selection set is only valid if all fields (including spreading any
+fragments) either correspond to distinct response names or can be merged
+without ambiguity.
+
+See https://spec.graphql.org/draft/#sec-Field-Selection-Merging
+
+**Signature:**
+
+<ApiSignature parts={[["name", "OverlappingFieldsCanBeMergedRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { OverlappingFieldsCanBeMergedRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    dog: Dog
+  }
+
+  type Dog {
+    name: String
+    barkVolume: Int
+  }
+`);
+
+const invalidDocument = parse(`
+  { dog { value: barkVolume value: name } }
+`);
+const invalidErrors = validate(schema, invalidDocument, [OverlappingFieldsCanBeMergedRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { dog { barkVolume name } }
+`);
+const validErrors = validate(schema, validDocument, [OverlappingFieldsCanBeMergedRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### PossibleFragmentSpreadsRule()
+
+Possible fragment spread
+
+A fragment spread is only valid if the type condition could ever possibly
+be true: if there is a non-empty intersection of the possible parent types,
+and possible types which pass the type condition.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "PossibleFragmentSpreadsRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { PossibleFragmentSpreadsRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    dog: Dog
+  }
+
+  type Dog {
+    barkVolume: Int
+  }
+
+  type Cat {
+    meowVolume: Int
+  }
+`);
+
+const invalidDocument = parse(`
+  { dog { ... on Cat { meowVolume } } }
+`);
+const invalidErrors = validate(schema, invalidDocument, [PossibleFragmentSpreadsRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { dog { ... on Dog { barkVolume } } }
+`);
+const validErrors = validate(schema, validDocument, [PossibleFragmentSpreadsRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### PossibleTypeExtensionsRule()
+
+Possible type extension
+
+A type extension is only valid if the type is defined and has the same kind.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "PossibleTypeExtensionsRule"], "(\n  ", ["parameter", "context"], ": ", ["type", "SDLValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["type", "SDLValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema } from 'graphql';
+import { PossibleTypeExtensionsRule } from 'graphql/validation';
+
+const invalidSDL = `
+  extend type Missing { name: String } type Query { name: String }
+`;
+
+PossibleTypeExtensionsRule.name; // => 'PossibleTypeExtensionsRule'
+buildSchema(invalidSDL); // throws an error
+
+const validSDL = `
+  type Query { name: String } extend type Query { other: String }
+`;
+
+buildSchema(validSDL); // does not throw
+```
+
+<hr className="api-item-divider" />
+
+#### ProvidedRequiredArgumentsRule()
+
+Provided required arguments
+
+A field or directive is only valid if all required (non-null without a
+default value) field arguments have been provided.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "ProvidedRequiredArgumentsRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { ProvidedRequiredArgumentsRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    field(required: String!): String
+  }
+`);
+
+const invalidDocument = parse(`
+  { field }
+`);
+const invalidErrors = validate(schema, invalidDocument, [ProvidedRequiredArgumentsRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { field(required: "x") }
+`);
+const validErrors = validate(schema, validDocument, [ProvidedRequiredArgumentsRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### ScalarLeafsRule()
+
+Scalar leafs
+
+A GraphQL document is valid only if all leaf fields (fields without
+sub selections) are of scalar or enum types.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "ScalarLeafsRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { ScalarLeafsRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  { name { length } }
+`);
+const invalidErrors = validate(schema, invalidDocument, [ScalarLeafsRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { name }
+`);
+const validErrors = validate(schema, validDocument, [ScalarLeafsRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### SingleFieldSubscriptionsRule()
+
+Subscriptions must only include a non-introspection field.
+
+A GraphQL subscription is valid only if it contains a single root field and
+that root field is not an introspection field.
+
+See https://spec.graphql.org/draft/#sec-Single-root-field
+
+**Signature:**
+
+<ApiSignature parts={[["name", "SingleFieldSubscriptionsRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { SingleFieldSubscriptionsRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+
+  type Subscription {
+    a: String
+    b: String
+  }
+`);
+
+const invalidDocument = parse(`
+  subscription { a b }
+`);
+const invalidErrors = validate(schema, invalidDocument, [SingleFieldSubscriptionsRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  subscription { a }
+`);
+const validErrors = validate(schema, validDocument, [SingleFieldSubscriptionsRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### StreamDirectiveOnListFieldRule()
+
+Stream directives are used on list fields
+
+A GraphQL document is only valid if stream directives are used on list fields.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "StreamDirectiveOnListFieldRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { validate, StreamDirectiveOnListFieldRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+    friends: [String]
+  }
+`);
+const invalidDocument = parse('{ name @stream(initialCount: 0) }');
+const validDocument = parse('{ friends @stream(initialCount: 0) }');
+
+validate(schema, invalidDocument, [StreamDirectiveOnListFieldRule]).length; // => 1
+validate(schema, validDocument, [StreamDirectiveOnListFieldRule]); // => []
+```
+
+<hr className="api-item-divider" />
+
+#### UniqueArgumentDefinitionNamesRule()
+
+Unique argument definition names
+
+A GraphQL Object or Interface type is only valid if all its fields have uniquely named arguments.
+A GraphQL Directive is only valid if all its arguments are uniquely named.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "UniqueArgumentDefinitionNamesRule"], "(\n  ", ["parameter", "context"], ": ", ["type", "SDLValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["type", "SDLValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema } from 'graphql';
+import { UniqueArgumentDefinitionNamesRule } from 'graphql/validation';
+
+const invalidSDL = `
+  type Query { field(arg: String, arg: Int): String }
+`;
+
+UniqueArgumentDefinitionNamesRule.name; // => 'UniqueArgumentDefinitionNamesRule'
+buildSchema(invalidSDL); // throws an error
+
+const validSDL = `
+  type Query { field(arg: String): String }
+`;
+
+buildSchema(validSDL); // does not throw
+```
+
+<hr className="api-item-divider" />
+
+#### UniqueArgumentNamesRule()
+
+Unique argument names
+
+A GraphQL field or directive is only valid if all supplied arguments are
+uniquely named.
+
+See https://spec.graphql.org/draft/#sec-Argument-Names
+
+**Signature:**
+
+<ApiSignature parts={[["name", "UniqueArgumentNamesRule"], "(\n  ", ["parameter", "context"], ": ", ["type", "ASTValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["type", "ASTValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { UniqueArgumentNamesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    field(arg: String): String
+  }
+`);
+
+const invalidDocument = parse(`
+  { field(arg: "1", arg: "2") }
+`);
+const invalidErrors = validate(schema, invalidDocument, [UniqueArgumentNamesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { field(arg: "1") }
+`);
+const validErrors = validate(schema, validDocument, [UniqueArgumentNamesRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### UniqueDirectiveNamesRule()
+
+Unique directive names
+
+A GraphQL document is only valid if all defined directives have unique names.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "UniqueDirectiveNamesRule"], "(\n  ", ["parameter", "context"], ": ", ["type", "SDLValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["type", "SDLValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema } from 'graphql';
+import { UniqueDirectiveNamesRule } from 'graphql/validation';
+
+const invalidSDL = `
+  directive @tag on FIELD directive @tag on QUERY type Query { name: String }
+`;
+
+UniqueDirectiveNamesRule.name; // => 'UniqueDirectiveNamesRule'
+buildSchema(invalidSDL); // throws an error
+
+const validSDL = `
+  directive @tag on FIELD type Query { name: String }
+`;
+
+buildSchema(validSDL); // does not throw
+```
+
+<hr className="api-item-divider" />
+
+#### UniqueDirectivesPerLocationRule()
+
+Unique directive names per location
+
+A GraphQL document is only valid if all non-repeatable directives at
+a given location are uniquely named.
+
+See https://spec.graphql.org/draft/#sec-Directives-Are-Unique-Per-Location
+
+**Signature:**
+
+<ApiSignature parts={[["name", "UniqueDirectivesPerLocationRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], " \u007c ", ["type", "SDLValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"], " \u007c ", ["type", "SDLValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { UniqueDirectivesPerLocationRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  { name @include(if: true) @include(if: false) }
+`);
+const invalidErrors = validate(schema, invalidDocument, [UniqueDirectivesPerLocationRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { name @include(if: true) }
+`);
+const validErrors = validate(schema, validDocument, [UniqueDirectivesPerLocationRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### UniqueEnumValueNamesRule()
+
+Unique enum value names
+
+A GraphQL enum type is only valid if all its values are uniquely named.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "UniqueEnumValueNamesRule"], "(\n  ", ["parameter", "context"], ": ", ["type", "SDLValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["type", "SDLValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema } from 'graphql';
+import { UniqueEnumValueNamesRule } from 'graphql/validation';
+
+const invalidSDL = `
+  enum Status { ACTIVE ACTIVE } type Query { status: Status }
+`;
+
+UniqueEnumValueNamesRule.name; // => 'UniqueEnumValueNamesRule'
+buildSchema(invalidSDL); // throws an error
+
+const validSDL = `
+  enum Status { ACTIVE INACTIVE } type Query { status: Status }
+`;
+
+buildSchema(validSDL); // does not throw
+```
+
+<hr className="api-item-divider" />
+
+#### UniqueFieldDefinitionNamesRule()
+
+Unique field definition names
+
+A GraphQL complex type is only valid if all its fields are uniquely named.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "UniqueFieldDefinitionNamesRule"], "(\n  ", ["parameter", "context"], ": ", ["type", "SDLValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["type", "SDLValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema } from 'graphql';
+import { UniqueFieldDefinitionNamesRule } from 'graphql/validation';
+
+const invalidSDL = `
+  type Query { name: String name: String }
+`;
+
+UniqueFieldDefinitionNamesRule.name; // => 'UniqueFieldDefinitionNamesRule'
+buildSchema(invalidSDL); // throws an error
+
+const validSDL = `
+  type Query { name: String other: String }
+`;
+
+buildSchema(validSDL); // does not throw
+```
+
+<hr className="api-item-divider" />
+
+#### UniqueFragmentNamesRule()
+
+Unique fragment names
+
+A GraphQL document is only valid if all defined fragments have unique names.
+
+See https://spec.graphql.org/draft/#sec-Fragment-Name-Uniqueness
+
+**Signature:**
+
+<ApiSignature parts={[["name", "UniqueFragmentNamesRule"], "(\n  ", ["parameter", "context"], ": ", ["type", "ASTValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["type", "ASTValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { UniqueFragmentNamesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  fragment A on Query { name } fragment A on Query { name } query { ...A }
+`);
+const invalidErrors = validate(schema, invalidDocument, [UniqueFragmentNamesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  fragment A on Query { name } query { ...A }
+`);
+const validErrors = validate(schema, validDocument, [UniqueFragmentNamesRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### UniqueInputFieldNamesRule()
+
+Unique input field names
+
+A GraphQL input object value is only valid if all supplied fields are
+uniquely named.
+
+See https://spec.graphql.org/draft/#sec-Input-Object-Field-Uniqueness
+
+**Signature:**
+
+<ApiSignature parts={[["name", "UniqueInputFieldNamesRule"], "(\n  ", ["parameter", "context"], ": ", ["type", "ASTValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["type", "ASTValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { UniqueInputFieldNamesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  input Filter {
+    name: String
+  }
+
+  type Query {
+    search(filter: Filter): String
+  }
+`);
+
+const invalidDocument = parse(`
+  { search(filter: { name: "a", name: "b" }) }
+`);
+const invalidErrors = validate(schema, invalidDocument, [UniqueInputFieldNamesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { search(filter: { name: "a" }) }
+`);
+const validErrors = validate(schema, validDocument, [UniqueInputFieldNamesRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### UniqueOperationNamesRule()
+
+Unique operation names
+
+A GraphQL document is only valid if all defined operations have unique names.
+
+See https://spec.graphql.org/draft/#sec-Operation-Name-Uniqueness
+
+**Signature:**
+
+<ApiSignature parts={[["name", "UniqueOperationNamesRule"], "(\n  ", ["parameter", "context"], ": ", ["type", "ASTValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["type", "ASTValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { UniqueOperationNamesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  query Same { name } query Same { name }
+`);
+const invalidErrors = validate(schema, invalidDocument, [UniqueOperationNamesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  query One { name } query Two { name }
+`);
+const validErrors = validate(schema, validDocument, [UniqueOperationNamesRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### UniqueOperationTypesRule()
+
+Unique operation types
+
+A GraphQL document is only valid if it has only one type per operation.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "UniqueOperationTypesRule"], "(\n  ", ["parameter", "context"], ": ", ["type", "SDLValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["type", "SDLValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema } from 'graphql';
+import { UniqueOperationTypesRule } from 'graphql/validation';
+
+const invalidSDL = `
+  schema { query: Query query: Other } type Query { name: String } type Other { name: String }
+`;
+
+UniqueOperationTypesRule.name; // => 'UniqueOperationTypesRule'
+buildSchema(invalidSDL); // throws an error
+
+const validSDL = `
+  schema { query: Query } type Query { name: String }
+`;
+
+buildSchema(validSDL); // does not throw
+```
+
+<hr className="api-item-divider" />
+
+#### UniqueTypeNamesRule()
+
+Unique type names
+
+A GraphQL document is only valid if all defined types have unique names.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "UniqueTypeNamesRule"], "(\n  ", ["parameter", "context"], ": ", ["type", "SDLValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["type", "SDLValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema } from 'graphql';
+import { UniqueTypeNamesRule } from 'graphql/validation';
+
+const invalidSDL = `
+  type Query { name: String } type Query { other: String }
+`;
+
+UniqueTypeNamesRule.name; // => 'UniqueTypeNamesRule'
+buildSchema(invalidSDL); // throws an error
+
+const validSDL = `
+  type Query { name: String } type Other { name: String }
+`;
+
+buildSchema(validSDL); // does not throw
+```
+
+<hr className="api-item-divider" />
+
+#### UniqueVariableNamesRule()
+
+Unique variable names
+
+A GraphQL operation is only valid if all its variables are uniquely named.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "UniqueVariableNamesRule"], "(\n  ", ["parameter", "context"], ": ", ["type", "ASTValidationContext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["type", "ASTValidationContext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { UniqueVariableNamesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    field(arg: ID): String
+  }
+`);
+
+const invalidDocument = parse(`
+  query ($id: ID, $id: ID) { field(arg: $id) }
+`);
+const invalidErrors = validate(schema, invalidDocument, [UniqueVariableNamesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  query ($id: ID) { field(arg: $id) }
+`);
+const validErrors = validate(schema, validDocument, [UniqueVariableNamesRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### ValuesOfCorrectTypeRule()
+
+Value literals of correct type
+
+A GraphQL document is only valid if all value literals are of the type
+expected at their position.
+
+See https://spec.graphql.org/draft/#sec-Values-of-Correct-Type
+
+**Signature:**
+
+<ApiSignature parts={[["name", "ValuesOfCorrectTypeRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { ValuesOfCorrectTypeRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    count(limit: Int): Int
+  }
+`);
+
+const invalidDocument = parse(`
+  { count(limit: "many") }
+`);
+const invalidErrors = validate(schema, invalidDocument, [ValuesOfCorrectTypeRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { count(limit: 1) }
+`);
+const validErrors = validate(schema, validDocument, [ValuesOfCorrectTypeRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### VariablesAreInputTypesRule()
+
+Variables are input types
+
+A GraphQL operation is only valid if all the variables it defines are of
+input types (scalar, enum, or input object).
+
+See https://spec.graphql.org/draft/#sec-Variables-Are-Input-Types
+
+**Signature:**
+
+<ApiSignature parts={[["name", "VariablesAreInputTypesRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { VariablesAreInputTypesRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    field(arg: ID): String
+  }
+
+  type User {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  query ($user: User) { field(arg: "1") }
+`);
+const invalidErrors = validate(schema, invalidDocument, [VariablesAreInputTypesRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  query ($id: ID) { field(arg: $id) }
+`);
+const validErrors = validate(schema, validDocument, [VariablesAreInputTypesRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### VariablesInAllowedPositionRule()
+
+Variables in allowed position
+
+Variable usages must be compatible with the arguments they are passed to.
+
+See https://spec.graphql.org/draft/#sec-All-Variable-Usages-are-Allowed
+
+**Signature:**
+
+<ApiSignature parts={[["name", "VariablesInAllowedPositionRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { VariablesInAllowedPositionRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    field(arg: ID!): String
+  }
+`);
+
+const invalidDocument = parse(`
+  query ($id: String) { field(arg: $id) }
+`);
+const invalidErrors = validate(schema, invalidDocument, [VariablesInAllowedPositionRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  query ($id: ID!) { field(arg: $id) }
+`);
+const validErrors = validate(schema, validDocument, [VariablesInAllowedPositionRule]);
+
+validErrors; // => []
+```
+
+### Constants
+
+#### recommendedRules
+
+Technically these aren't part of the spec but they are strongly encouraged
+validation rules.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type</div>
+
+<ApiType parts={[["type", "ReadonlyArray"], "\u003c", ["link", "ValidationRule", "/api-v17/validation#validationrule"], "\u003e"]} />
+
+<hr className="api-item-divider" />
+
+#### specifiedRules
+
+This set includes all validation rules defined by the GraphQL spec.
+
+The order of the rules in this list has been adjusted to lead to the
+most clear output when encountering multiple validation errors.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Type</div>
+
+<ApiType parts={[["type", "ReadonlyArray"], "\u003c", ["link", "ValidationRule", "/api-v17/validation#validationrule"], "\u003e"]} />
+
+## Category: Custom Rules
+
+<div className="api-category-toc">
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v17/validation#nodeprecatedcustomrule">NoDeprecatedCustomRule()</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="/api-v17/validation#noschemaintrospectioncustomrule">NoSchemaIntrospectionCustomRule()</a>
+  </p>
+</div>
+
+### Functions
+
+#### NoDeprecatedCustomRule()
+
+No deprecated
+
+A GraphQL document is only valid if all selected fields and all used enum values have not been
+deprecated.
+
+Note: This rule is optional and is not part of the Validation section of the GraphQL
+Specification. The main purpose of this rule is detection of deprecated usages and not
+necessarily to forbid their use when querying a service.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "NoDeprecatedCustomRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import {
+  GraphQLObjectType,
+  GraphQLSchema,
+  GraphQLString,
+  parse,
+  validate,
+} from 'graphql';
+import { NoDeprecatedCustomRule } from 'graphql/validation';
+
+const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      name: { type: GraphQLString },
+      oldName: {
+        type: GraphQLString,
+        deprecationReason: 'Use name instead.',
+      },
+    },
+  }),
+});
+
+const invalidDocument = parse(`
+  { oldName }
+`);
+const invalidErrors = validate(schema, invalidDocument, [NoDeprecatedCustomRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { name }
+`);
+const validErrors = validate(schema, validDocument, [NoDeprecatedCustomRule]);
+
+validErrors; // => []
+```
+
+<hr className="api-item-divider" />
+
+#### NoSchemaIntrospectionCustomRule()
+
+Prohibit introspection queries
+
+A GraphQL document is only valid if all fields selected are not fields that
+return an introspection type.
+
+Note: This rule is optional and is not part of the Validation section of the
+GraphQL Specification. This rule effectively disables introspection, which
+does not reflect best practices and should only be done if absolutely necessary.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "NoSchemaIntrospectionCustomRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>context</td>
+      <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
+      <td>The validation context used while checking the document.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["link", "ASTVisitor", "/api-v17/language#astvisitor"]]} /></td>
+      <td>A visitor that reports validation errors for this rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { buildSchema, parse, validate } from 'graphql';
+import { NoSchemaIntrospectionCustomRule } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    name: String
+  }
+`);
+
+const invalidDocument = parse(`
+  { __schema { queryType { name } } }
+`);
+const invalidErrors = validate(schema, invalidDocument, [NoSchemaIntrospectionCustomRule]);
+
+invalidErrors.length; // => 1
+
+const validDocument = parse(`
+  { name }
+`);
+const validErrors = validate(schema, validDocument, [NoSchemaIntrospectionCustomRule]);
+
+validErrors; // => []
+```
+
+## Category: Validation
+
+<div className="api-category-toc">
+  <p>
+    <strong>Functions:</strong><br />
+    <a href="/api-v17/validation#validate">validate()</a>
+  </p>
+  <p>
+    <strong>Types:</strong><br />
+    <a href="/api-v17/validation#validationoptions">ValidationOptions</a>
+  </p>
+</div>
+
+### Functions
+
+#### validate()
+
+Implements the "Validation" section of the spec.
+
+Validation runs synchronously, returning an array of encountered errors, or
+an empty array if no errors were encountered and the document is valid.
+
+A list of specific validation rules may be provided. If not provided, the
+default list of rules defined by the GraphQL specification will be used.
+
+Each validation rule is a function that returns a visitor
+(see the language/visitor API). Visitor methods are expected to return
+GraphQLErrors, or Arrays of GraphQLErrors when invalid.
+
+Validate will stop validation after a `maxErrors` limit has been reached.
+Attackers can send pathologically invalid queries to induce a DoS attack,
+so `maxErrors` defaults to 100 errors.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "validate"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n  ", ["parameter", "documentAST"], ": ", ["link", "DocumentNode", "/api-v17/language#documentnode"], ",\n  ", ["parameter", "rules"], ": ", ["keyword", "readonly"], " ", ["link", "ValidationRule", "/api-v17/validation#validationrule"], "[] = specifiedRules,\n  ", ["parameter", "options"], "?: ", ["link", "ValidationOptions", "/api-v17/validation#validationoptions"], ",\n): ", ["keyword", "readonly"], " ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], "[];"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
+      <td></td>
+      <td>Schema to validate against.</td>
+    </tr>
+    <tr>
+      <td>documentAST</td>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v17/language#documentnode"]]} /></td>
+      <td></td>
+      <td>Document AST to validate.</td>
+    </tr>
+    <tr>
+      <td>rules</td>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "ValidationRule", "/api-v17/validation#validationrule"], "[]"]} /></td>
+      <td><ApiType parts={["specifiedRules"]} /></td>
+      <td>Validation rules to apply.</td>
+    </tr>
+    <tr>
+      <td>options?</td>
+      <td><ApiType parts={[["link", "ValidationOptions", "/api-v17/validation#validationoptions"]]} /></td>
+      <td></td>
+      <td>Validation options, including error limits and suggestions.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], "[]"]} /></td>
+      <td>Validation errors, or an empty array when the document is valid.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Validate with the default specified rules.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { validate } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    fullName: String
+  }
+`);
+
+validate(schema, parse('{ greeting }')); // => []
+
+const errors = validate(schema, parse('{ missing }'));
+errors[0].message; // => 'Cannot query field "missing" on type "Query".'
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant uses a custom rule list and validation options.
+import { parse } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { FieldsOnCorrectTypeRule, validate } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse('{ missingOne missingTwo }');
+
+const errors = validate(
+  schema,
+  document,
+  [FieldsOnCorrectTypeRule],
+  { maxErrors: 1 },
+);
+
+errors.length; // => 2
+errors[1].message; // => 'Too many validation errors, error limit reached. Validation aborted.'
+
+const hiddenSuggestionErrors = validate(
+  schema,
+  parse('{ name }'),
+  [FieldsOnCorrectTypeRule],
+  { hideSuggestions: true },
+);
+
+hiddenSuggestionErrors[0].message; // => 'Cannot query field "name" on type "Query".'
+```
+
+### Types
+
+#### ValidationOptions
+
+**Interface.** Options used when validating a GraphQL document.
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Members</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>maxErrors?</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>Maximum number of validation errors before validation stops.</td>
+    </tr>
+    <tr>
+      <td>hideSuggestions?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e"]} /></td>
+      <td>Whether suggestion text should be omitted from validation errors.</td>
+    </tr>
+  </tbody>
+</table>

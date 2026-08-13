@@ -8,6 +8,7 @@ import {
   isConstValueNode,
   isDefinitionNode,
   isExecutableDefinitionNode,
+  isSchemaCoordinateNode,
   isSelectionNode,
   isTypeDefinitionNode,
   isTypeExtensionNode,
@@ -38,6 +39,7 @@ describe('AST node predicates', () => {
       'InputObjectTypeDefinition',
       'DirectiveDefinition',
       'SchemaExtension',
+      'DirectiveExtension',
       'ScalarTypeExtension',
       'ObjectTypeExtension',
       'InterfaceTypeExtension',
@@ -122,6 +124,7 @@ describe('AST node predicates', () => {
   it('isTypeSystemExtensionNode', () => {
     expect(filterNodes(isTypeSystemExtensionNode)).to.deep.equal([
       'SchemaExtension',
+      'DirectiveExtension',
       'ScalarTypeExtension',
       'ObjectTypeExtension',
       'InterfaceTypeExtension',
@@ -140,5 +143,17 @@ describe('AST node predicates', () => {
       'EnumTypeExtension',
       'InputObjectTypeExtension',
     ]);
+  });
+
+  it('isSchemaCoordinateNode', () => {
+    expect(
+      [
+        Kind.TYPE_COORDINATE,
+        Kind.MEMBER_COORDINATE,
+        Kind.ARGUMENT_COORDINATE,
+        Kind.DIRECTIVE_COORDINATE,
+        Kind.DIRECTIVE_ARGUMENT_COORDINATE,
+      ].every((kind) => isSchemaCoordinateNode({ kind } as ASTNode)),
+    ).to.equal(true);
   });
 });

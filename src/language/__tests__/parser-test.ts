@@ -8,7 +8,13 @@ import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
 import { inspect } from '../../jsutils/inspect';
 
 import { Kind } from '../kinds';
-import { parse, parseConstValue, parseType, parseValue } from '../parser';
+import {
+  parse,
+  parseConstValue,
+  parseSchemaCoordinate,
+  parseType,
+  parseValue,
+} from '../parser';
 import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
 
@@ -258,6 +264,7 @@ describe('Parser', () => {
       definitions: [
         {
           kind: Kind.OPERATION_DEFINITION,
+          description: undefined,
           loc: { start: 0, end: 40 },
           operation: 'query',
           name: undefined,
@@ -349,6 +356,7 @@ describe('Parser', () => {
         {
           kind: Kind.OPERATION_DEFINITION,
           loc: { start: 0, end: 29 },
+          description: undefined,
           operation: 'query',
           name: undefined,
           variableDefinitions: [],
@@ -379,6 +387,75 @@ describe('Parser', () => {
                       name: {
                         kind: Kind.NAME,
                         loc: { start: 21, end: 23 },
+                        value: 'id',
+                      },
+                      arguments: [],
+                      directives: [],
+                      selectionSet: undefined,
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      ],
+    });
+  });
+
+  it('creates ast from nameless query with description', () => {
+    const result = parse(dedent`
+      "Description"
+      query {
+        node {
+          id
+        }
+      }
+    `);
+
+    expectJSON(result).toDeepEqual({
+      kind: Kind.DOCUMENT,
+      loc: { start: 0, end: 43 },
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          loc: { start: 0, end: 43 },
+          description: {
+            kind: Kind.STRING,
+            loc: { start: 0, end: 13 },
+            value: 'Description',
+            block: false,
+          },
+          operation: 'query',
+          name: undefined,
+          variableDefinitions: [],
+          directives: [],
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            loc: { start: 20, end: 43 },
+            selections: [
+              {
+                kind: Kind.FIELD,
+                loc: { start: 24, end: 41 },
+                alias: undefined,
+                name: {
+                  kind: Kind.NAME,
+                  loc: { start: 24, end: 28 },
+                  value: 'node',
+                },
+                arguments: [],
+                directives: [],
+                selectionSet: {
+                  kind: Kind.SELECTION_SET,
+                  loc: { start: 29, end: 41 },
+                  selections: [
+                    {
+                      kind: Kind.FIELD,
+                      loc: { start: 35, end: 37 },
+                      alias: undefined,
+                      name: {
+                        kind: Kind.NAME,
+                        loc: { start: 35, end: 37 },
                         value: 'id',
                       },
                       arguments: [],
@@ -654,6 +731,456 @@ describe('Parser', () => {
             },
           },
         },
+      });
+    });
+  });
+
+  describe('parseSchemaCoordinate', () => {
+    it('parses Name', () => {
+      const result = parseSchemaCoordinate('MyType');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.TYPE_COORDINATE,
+        loc: { start: 0, end: 6 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 6 },
+          value: 'MyType',
+        },
+      });
+    });
+
+    it('parses Name . Name', () => {
+      const result = parseSchemaCoordinate('MyType.field');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.MEMBER_COORDINATE,
+        loc: { start: 0, end: 12 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 6 },
+          value: 'MyType',
+        },
+        memberName: {
+          kind: Kind.NAME,
+          loc: { start: 7, end: 12 },
+          value: 'field',
+        },
+      });
+    });
+
+    it('rejects Name . Name . Name', () => {
+      expect(() => parseSchemaCoordinate('MyType.field.deep'))
+        .to.throw()
+        .to.deep.include({
+          message: 'Syntax Error: Expected <EOF>, found ".".',
+          locations: [{ line: 1, column: 13 }],
+        });
+    });
+
+    it('parses Name . Name ( Name : )', () => {
+      const result = parseSchemaCoordinate('MyType.field(arg:)');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.ARGUMENT_COORDINATE,
+        loc: { start: 0, end: 18 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 6 },
+          value: 'MyType',
+        },
+        fieldName: {
+          kind: Kind.NAME,
+          loc: { start: 7, end: 12 },
+          value: 'field',
+        },
+        argumentName: {
+          kind: Kind.NAME,
+          loc: { start: 13, end: 16 },
+          value: 'arg',
+        },
+      });
+    });
+
+    it('rejects Name . Name ( Name : Name )', () => {
+      expect(() => parseSchemaCoordinate('MyType.field(arg: value)'))
+        .to.throw()
+        .to.deep.include({
+          message: 'Syntax Error: Invalid character: " ".',
+          locations: [{ line: 1, column: 18 }],
+        });
+    });
+
+    it('parses @ Name', () => {
+      const result = parseSchemaCoordinate('@myDirective');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.DIRECTIVE_COORDINATE,
+        loc: { start: 0, end: 12 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 1, end: 12 },
+          value: 'myDirective',
+        },
+      });
+    });
+
+    it('parses @ Name ( Name : )', () => {
+      const result = parseSchemaCoordinate('@myDirective(arg:)');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.DIRECTIVE_ARGUMENT_COORDINATE,
+        loc: { start: 0, end: 18 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 1, end: 12 },
+          value: 'myDirective',
+        },
+        argumentName: {
+          kind: Kind.NAME,
+          loc: { start: 13, end: 16 },
+          value: 'arg',
+        },
+      });
+    });
+
+    it('parses __Type', () => {
+      const result = parseSchemaCoordinate('__Type');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.TYPE_COORDINATE,
+        loc: { start: 0, end: 6 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 6 },
+          value: '__Type',
+        },
+      });
+    });
+
+    it('parses Type.__metafield', () => {
+      const result = parseSchemaCoordinate('Type.__metafield');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.MEMBER_COORDINATE,
+        loc: { start: 0, end: 16 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 4 },
+          value: 'Type',
+        },
+        memberName: {
+          kind: Kind.NAME,
+          loc: { start: 5, end: 16 },
+          value: '__metafield',
+        },
+      });
+    });
+
+    it('parses Type.__metafield(arg:)', () => {
+      const result = parseSchemaCoordinate('Type.__metafield(arg:)');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.ARGUMENT_COORDINATE,
+        loc: { start: 0, end: 22 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 4 },
+          value: 'Type',
+        },
+        fieldName: {
+          kind: Kind.NAME,
+          loc: { start: 5, end: 16 },
+          value: '__metafield',
+        },
+        argumentName: {
+          kind: Kind.NAME,
+          loc: { start: 17, end: 20 },
+          value: 'arg',
+        },
+      });
+    });
+
+    it('rejects @ Name . Name', () => {
+      expect(() => parseSchemaCoordinate('@myDirective.field'))
+        .to.throw()
+        .to.deep.include({
+          message: 'Syntax Error: Expected <EOF>, found ".".',
+          locations: [{ line: 1, column: 13 }],
+        });
+    });
+
+    it('accepts a Source object', () => {
+      expect(parseSchemaCoordinate('MyType')).to.deep.equal(
+        parseSchemaCoordinate(new Source('MyType')),
+      );
+    });
+  });
+
+  describe('operation and variable definition descriptions', () => {
+    it('parses operation with description and variable descriptions', () => {
+      const result = parse(dedent`
+        "Operation description"
+        query myQuery(
+          "Variable a description"
+          $a: Int,
+          """Variable b\nmultiline description"""
+          $b: String
+        ) {
+          field(a: $a, b: $b)
+        }
+      `);
+
+      // Find the operation definition
+      const opDef = result.definitions.find(
+        (d) => d.kind === Kind.OPERATION_DEFINITION,
+      );
+      if (!opDef || opDef.kind !== Kind.OPERATION_DEFINITION) {
+        throw new Error('No operation definition found');
+      }
+
+      expectJSON(opDef).toDeepEqual({
+        kind: Kind.OPERATION_DEFINITION,
+        operation: 'query',
+        description: {
+          kind: Kind.STRING,
+          value: 'Operation description',
+          block: false,
+          loc: { start: 0, end: 23 },
+        },
+        name: {
+          kind: Kind.NAME,
+          value: 'myQuery',
+          loc: { start: 30, end: 37 },
+        },
+        variableDefinitions: [
+          {
+            kind: Kind.VARIABLE_DEFINITION,
+            description: {
+              kind: Kind.STRING,
+              value: 'Variable a description',
+              block: false,
+              loc: { start: 41, end: 65 },
+            },
+            variable: {
+              kind: Kind.VARIABLE,
+              name: {
+                kind: Kind.NAME,
+                value: 'a',
+                loc: { start: 69, end: 70 },
+              },
+              loc: { start: 68, end: 70 },
+            },
+            type: {
+              kind: Kind.NAMED_TYPE,
+              name: {
+                kind: Kind.NAME,
+                value: 'Int',
+                loc: { start: 72, end: 75 },
+              },
+              loc: { start: 72, end: 75 },
+            },
+            defaultValue: undefined,
+            directives: [],
+            loc: { start: 41, end: 75 },
+          },
+          {
+            kind: Kind.VARIABLE_DEFINITION,
+            description: {
+              kind: Kind.STRING,
+              value: 'Variable b\nmultiline description',
+              block: true,
+              loc: { start: 79, end: 117 },
+            },
+            variable: {
+              kind: Kind.VARIABLE,
+              name: {
+                kind: Kind.NAME,
+                value: 'b',
+                loc: { start: 121, end: 122 },
+              },
+              loc: { start: 120, end: 122 },
+            },
+            type: {
+              kind: Kind.NAMED_TYPE,
+              name: {
+                kind: Kind.NAME,
+                value: 'String',
+                loc: { start: 124, end: 130 },
+              },
+              loc: { start: 124, end: 130 },
+            },
+            defaultValue: undefined,
+            directives: [],
+            loc: { start: 79, end: 130 },
+          },
+        ],
+        directives: [],
+        selectionSet: {
+          kind: Kind.SELECTION_SET,
+          selections: [
+            {
+              kind: Kind.FIELD,
+              alias: undefined,
+              name: {
+                kind: Kind.NAME,
+                value: 'field',
+                loc: { start: 137, end: 142 },
+              },
+              arguments: [
+                {
+                  kind: Kind.ARGUMENT,
+                  name: {
+                    kind: Kind.NAME,
+                    value: 'a',
+                    loc: { start: 143, end: 144 },
+                  },
+                  value: {
+                    kind: Kind.VARIABLE,
+                    name: {
+                      kind: Kind.NAME,
+                      value: 'a',
+                      loc: { start: 147, end: 148 },
+                    },
+                    loc: { start: 146, end: 148 },
+                  },
+                  loc: { start: 143, end: 148 },
+                },
+                {
+                  kind: Kind.ARGUMENT,
+                  name: {
+                    kind: Kind.NAME,
+                    value: 'b',
+                    loc: { start: 150, end: 151 },
+                  },
+                  value: {
+                    kind: Kind.VARIABLE,
+                    name: {
+                      kind: Kind.NAME,
+                      value: 'b',
+                      loc: { start: 154, end: 155 },
+                    },
+                    loc: { start: 153, end: 155 },
+                  },
+                  loc: { start: 150, end: 155 },
+                },
+              ],
+              directives: [],
+              selectionSet: undefined,
+              loc: { start: 137, end: 156 },
+            },
+          ],
+          loc: { start: 133, end: 158 },
+        },
+        loc: { start: 0, end: 158 },
+      });
+    });
+
+    it('descriptions on a short-hand query produce a sensible error', () => {
+      const input = `"""Invalid"""
+        { __typename }`;
+      expect(() => parse(input)).to.throw(
+        'Syntax Error: Unexpected description, descriptions are not supported on shorthand queries.',
+      );
+    });
+
+    it('parses variable definition with description, default value, and directives', () => {
+      const result = parse(dedent`
+        query (
+          "desc"
+          $foo: Int = 42 @dir
+        ) {
+          field(foo: $foo)
+        }
+      `);
+      const opDef = result.definitions.find(
+        (d) => d.kind === Kind.OPERATION_DEFINITION,
+      );
+      if (!opDef || opDef.kind !== Kind.OPERATION_DEFINITION) {
+        throw new Error('No operation definition found');
+      }
+      const varDef = opDef.variableDefinitions?.[0];
+      expectJSON(varDef).toDeepEqual({
+        kind: Kind.VARIABLE_DEFINITION,
+        defaultValue: {
+          kind: Kind.INT,
+          value: '42',
+          loc: { start: 31, end: 33 },
+        },
+        directives: [
+          {
+            arguments: [],
+            kind: Kind.DIRECTIVE,
+            name: {
+              kind: Kind.NAME,
+              value: 'dir',
+              loc: { start: 35, end: 38 },
+            },
+            loc: { start: 34, end: 38 },
+          },
+        ],
+        description: {
+          kind: Kind.STRING,
+          value: 'desc',
+          block: false,
+          loc: { start: 10, end: 16 },
+        },
+        variable: {
+          kind: Kind.VARIABLE,
+          name: {
+            kind: Kind.NAME,
+            value: 'foo',
+            loc: { start: 20, end: 23 },
+          },
+          loc: { start: 19, end: 23 },
+        },
+        type: {
+          kind: Kind.NAMED_TYPE,
+          name: {
+            kind: Kind.NAME,
+            value: 'Int',
+            loc: { start: 25, end: 28 },
+          },
+          loc: { start: 25, end: 28 },
+        },
+        loc: { start: 10, end: 38 },
+      });
+    });
+
+    it('parses fragment with variable description (legacy)', () => {
+      const result = parse('fragment Foo("desc" $foo: Int) on Bar { baz }', {
+        allowLegacyFragmentVariables: true,
+      });
+
+      const fragDef = result.definitions.find(
+        (d) => d.kind === Kind.FRAGMENT_DEFINITION,
+      );
+      if (!fragDef || fragDef.kind !== Kind.FRAGMENT_DEFINITION) {
+        throw new Error('No fragment definition found');
+      }
+      const varDef = fragDef.variableDefinitions?.[0];
+
+      expectJSON(varDef).toDeepEqual({
+        kind: Kind.VARIABLE_DEFINITION,
+        description: {
+          kind: Kind.STRING,
+          value: 'desc',
+          block: false,
+          loc: { start: 13, end: 19 },
+        },
+        variable: {
+          kind: Kind.VARIABLE,
+          name: {
+            kind: Kind.NAME,
+            value: 'foo',
+            loc: { start: 21, end: 24 },
+          },
+          loc: { start: 20, end: 24 },
+        },
+        type: {
+          kind: Kind.NAMED_TYPE,
+          name: {
+            kind: Kind.NAME,
+            value: 'Int',
+            loc: { start: 26, end: 29 },
+          },
+          loc: { start: 26, end: 29 },
+        },
+        defaultValue: undefined,
+        directives: [],
+        loc: { start: 13, end: 29 },
       });
     });
   });

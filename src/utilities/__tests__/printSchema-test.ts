@@ -612,6 +612,22 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('Prints deprecated directives', () => {
+    const schema = new GraphQLSchema({
+      directives: [
+        new GraphQLDirective({
+          name: 'deprecatedDirective',
+          locations: [DirectiveLocation.FIELD],
+          deprecationReason: 'Use another directive',
+        }),
+      ],
+    });
+
+    expect(printSchema(schema)).to.equal(dedent`
+      directive @deprecatedDirective @deprecated(reason: "Use another directive") on FIELD
+    `);
+  });
+
   it('Prints an empty description', () => {
     const schema = buildSingleFieldSchema({
       type: GraphQLString,
@@ -681,7 +697,7 @@ describe('Type System Printer', () => {
         Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).
         """
         reason: String = "No longer supported"
-      ) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE
+      ) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE | DIRECTIVE_DEFINITION
 
       """Exposes a URL that specifies the behavior of this scalar."""
       directive @specifiedBy(
@@ -717,7 +733,7 @@ describe('Type System Printer', () => {
         subscriptionType: __Type
 
         """A list of all directives supported by this server."""
-        directives: [__Directive!]!
+        directives(includeDeprecated: Boolean! = false): [__Directive!]!
       }
 
       """
@@ -821,6 +837,8 @@ describe('Type System Printer', () => {
         isRepeatable: Boolean!
         locations: [__DirectiveLocation!]!
         args(includeDeprecated: Boolean = false): [__InputValue!]!
+        isDeprecated: Boolean!
+        deprecationReason: String
       }
 
       """
@@ -883,6 +901,9 @@ describe('Type System Printer', () => {
 
         """Location adjacent to an input object field definition."""
         INPUT_FIELD_DEFINITION
+
+        """Location adjacent to a directive definition."""
+        DIRECTIVE_DEFINITION
       }
     `);
   });

@@ -5,7 +5,7 @@ import { dedent, dedentString } from '../../__testUtils__/dedent';
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
 
 import { Kind } from '../kinds';
-import { parse } from '../parser';
+import { parse, parseSchemaCoordinate } from '../parser';
 import { print } from '../printer';
 
 describe('Printer: Query document', () => {
@@ -122,6 +122,21 @@ describe('Printer: Query document', () => {
     `);
   });
 
+  it('Experimental: prints directives on directives', () => {
+    const queryASTWithVariableDirective = parse(
+      `
+      directive @foo @bar on FIELD_DEFINITION
+      extend directive @foo @baz
+      `,
+      { experimentalDirectivesOnDirectiveDefinitions: true },
+    );
+    expect(print(queryASTWithVariableDirective)).to.equal(dedent`
+      directive @foo @bar on FIELD_DEFINITION
+      
+      extend directive @foo @baz
+    `);
+  });
+
   it('Legacy: correctly prints fragment defined variables', () => {
     const fragmentWithVariable = parse(
       `
@@ -138,6 +153,19 @@ describe('Printer: Query document', () => {
     `);
   });
 
+  it('prints fragment', () => {
+    const printed = print(
+      parse('"Fragment description" fragment Foo on Bar { baz }'),
+    );
+
+    expect(printed).to.equal(dedent`
+      "Fragment description"
+      fragment Foo on Bar {
+        baz
+      }
+    `);
+  });
+
   it('prints kitchen sink without altering ast', () => {
     const ast = parse(kitchenSinkQuery, { noLocation: true });
 
@@ -150,7 +178,12 @@ describe('Printer: Query document', () => {
 
     expect(printed).to.equal(
       dedentString(String.raw`
-      query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
+      "Query description"
+      query queryName(
+      "Very complex variable"
+      $foo: ComplexType
+      $site: Site = MOBILE
+      ) @onQuery {
         whoever123is: node(id: [123, 456]) {
           id
           ... on User @onInlineFragment {
@@ -192,6 +225,7 @@ describe('Printer: Query document', () => {
         }
       }
 
+      """Fragment description"""
       fragment frag on Friend @onFragmentDefinition {
         foo(
           size: $size
@@ -211,6 +245,35 @@ describe('Printer: Query document', () => {
         __typename
       }
     `),
+    );
+  });
+
+  it('prints schema coordinates', () => {
+    expect(print(parseSchemaCoordinate('Name'))).to.equal('Name');
+    expect(print(parseSchemaCoordinate('Name.field'))).to.equal('Name.field');
+    expect(print(parseSchemaCoordinate('Name.field(arg:)'))).to.equal(
+      'Name.field(arg:)',
+    );
+    expect(print(parseSchemaCoordinate('@name'))).to.equal('@name');
+    expect(print(parseSchemaCoordinate('@name(arg:)'))).to.equal('@name(arg:)');
+    expect(print(parseSchemaCoordinate('__Type'))).to.equal('__Type');
+    expect(print(parseSchemaCoordinate('Type.__metafield'))).to.equal(
+      'Type.__metafield',
+    );
+    expect(print(parseSchemaCoordinate('Type.__metafield(arg:)'))).to.equal(
+      'Type.__metafield(arg:)',
+    );
+  });
+
+  it('throws syntax error for ignored tokens in schema coordinates', () => {
+    expect(() => print(parseSchemaCoordinate('# foo\nName'))).to.throw(
+      'Syntax Error: Invalid character: "#"',
+    );
+    expect(() => print(parseSchemaCoordinate('\nName'))).to.throw(
+      'Syntax Error: Invalid character: U+000A.',
+    );
+    expect(() => print(parseSchemaCoordinate('Name .field'))).to.throw(
+      'Syntax Error: Invalid character: " "',
     );
   });
 });

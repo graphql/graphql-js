@@ -1,3 +1,5 @@
+/** @category Printing */
+
 import type { Maybe } from '../jsutils/Maybe';
 
 import type { ASTNode } from './ast';
@@ -9,6 +11,17 @@ import { visit } from './visitor';
 /**
  * Converts an AST into a string, using one set of reasonable
  * formatting rules.
+ * @param ast - The GraphQL AST node to print.
+ * @returns A stable string representation of the AST.
+ * @example
+ * ```ts
+ * import { parse, print } from 'graphql';
+ *
+ * const ast = parse('{ hero { name } }');
+ * const text = print(ast);
+ *
+ * text; // => '{\n  hero {\n    name\n  }\n}'
+ * ```
  */
 export function print(ast: ASTNode): string {
   return visit(ast, printDocASTReducer);
@@ -28,15 +41,19 @@ const printDocASTReducer: ASTReducer<string> = {
 
   OperationDefinition: {
     leave(node) {
-      const varDefs = wrap('(', join(node.variableDefinitions, ', '), ')');
-      const prefix = join(
-        [
-          node.operation,
-          join([node.name, varDefs]),
-          join(node.directives, ' '),
-        ],
-        ' ',
-      );
+      const varDefs = hasMultilineItems(node.variableDefinitions)
+        ? wrap('(\n', join(node.variableDefinitions, '\n'), '\n)')
+        : wrap('(', join(node.variableDefinitions, ', '), ')');
+      const prefix =
+        wrap('', node.description, '\n') +
+        join(
+          [
+            node.operation,
+            join([node.name, varDefs]),
+            join(node.directives, ' '),
+          ],
+          ' ',
+        );
 
       // Anonymous queries with no directives or variable definitions can use
       // the query short form.
@@ -45,7 +62,8 @@ const printDocASTReducer: ASTReducer<string> = {
   },
 
   VariableDefinition: {
-    leave: ({ variable, type, defaultValue, directives }) =>
+    leave: ({ variable, type, defaultValue, directives, description }) =>
+      wrap('', description, '\n') +
       variable +
       ': ' +
       type +
@@ -96,7 +114,9 @@ const printDocASTReducer: ASTReducer<string> = {
       variableDefinitions,
       directives,
       selectionSet,
+      description,
     }) =>
+      wrap('', description, '\n') +
       // Note: fragment variable definitions are experimental and may be changed
       // or removed in the future.
       `fragment ${name}${wrap('(', join(variableDefinitions, ', '), ')')} ` +
@@ -228,13 +248,21 @@ const printDocASTReducer: ASTReducer<string> = {
   },
 
   DirectiveDefinition: {
-    leave: ({ description, name, arguments: args, repeatable, locations }) =>
+    leave: ({
+      description,
+      name,
+      arguments: args,
+      directives,
+      repeatable,
+      locations,
+    }) =>
       wrap('', description, '\n') +
       'directive @' +
       name +
       (hasMultilineItems(args)
         ? wrap('(\n', indent(join(args, '\n')), '\n)')
         : wrap('(', join(args, ', '), ')')) +
+      wrap(' ', join(directives, ' ')) +
       (repeatable ? ' repeatable' : '') +
       ' on ' +
       join(locations, ' | '),
@@ -303,11 +331,38 @@ const printDocASTReducer: ASTReducer<string> = {
     leave: ({ name, directives, fields }) =>
       join(['extend input', name, join(directives, ' '), block(fields)], ' '),
   },
+
+  DirectiveExtension: {
+    leave: ({ name, directives }) =>
+      join(['extend directive @' + name, join(directives, ' ')], ' '),
+  },
+
+  // Schema Coordinates
+
+  TypeCoordinate: { leave: ({ name }) => name },
+
+  MemberCoordinate: {
+    leave: ({ name, memberName }) => join([name, wrap('.', memberName)]),
+  },
+
+  ArgumentCoordinate: {
+    leave: ({ name, fieldName, argumentName }) =>
+      join([name, wrap('.', fieldName), wrap('(', argumentName, ':)')]),
+  },
+
+  DirectiveCoordinate: { leave: ({ name }) => join(['@', name]) },
+
+  DirectiveArgumentCoordinate: {
+    leave: ({ name, argumentName }) =>
+      join(['@', name, wrap('(', argumentName, ':)')]),
+  },
 };
 
 /**
  * Given maybeArray, print an empty string if it is null or empty, otherwise
  * print all items together separated by separator if provided
+ *
+ * @internal
  */
 function join(
   maybeArray: Maybe<ReadonlyArray<string | undefined>>,
@@ -318,6 +373,8 @@ function join(
 
 /**
  * Given array, print each item on its own line, wrapped in an indented `{ }` block.
+ *
+ * @internal
  */
 function block(array: Maybe<ReadonlyArray<string | undefined>>): string {
   return wrap('{\n', indent(join(array, '\n')), '\n}');
@@ -325,6 +382,8 @@ function block(array: Maybe<ReadonlyArray<string | undefined>>): string {
 
 /**
  * If maybeString is not null or empty, then wrap with start and end, otherwise print an empty string.
+ *
+ * @internal
  */
 function wrap(
   start: string,

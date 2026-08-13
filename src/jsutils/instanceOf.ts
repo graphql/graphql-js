@@ -11,6 +11,8 @@ const isProduction =
  * constructors are detected.
  * See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
  * See: https://webpack.js.org/guides/production/
+ *
+ * @internal
  */
 export const instanceOf: (value: unknown, constructor: Constructor) => boolean =
   /* c8 ignore next 6 */

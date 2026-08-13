@@ -1,24 +1,44 @@
 name: PullRequest
 on: pull_request
+permissions: {}
 jobs:
   ci:
+    permissions:
+      contents: read # for actions/checkout
+      security-events: write # for codeql-action
     uses: ./.github/workflows/ci.yml
     secrets:
       codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
+  dependency-review:
+    name: Security check of added dependencies
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Dependency review
+        uses: actions/dependency-review-action@v2
+
   diff-npm-package:
     name: Diff content of NPM package
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
       - name: Deepen cloned repo
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: 'git fetch --depth=1 origin $BASE_SHA:refs/tags/BASE'
+        run: 'git fetch --depth=1 origin "$BASE_SHA:refs/tags/BASE"'
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

@@ -1,0 +1,130 @@
+---
+title: Directives on Directive Definitions
+sidebarTitle: Directives on Directives
+---
+
+import { Callout } from 'nextra/components';
+
+# Directives on Directive Definitions
+
+<Callout type="info">
+  GraphQL.js supports directives applied to directive definitions, directive
+  extensions, and directive deprecation metadata through experimental APIs.
+</Callout>
+
+When the experiment is enabled, GraphQL directives can be applied to directive
+definitions. This is the SDL shape introduced by the directives-on-directives
+proposal:
+
+```graphql
+directive @tag(name: String!) on DIRECTIVE_DEFINITION
+
+directive @cacheControl(maxAge: Int) @tag(name: "runtime") on FIELD_DEFINITION
+```
+
+The directive location is `DIRECTIVE_DEFINITION`.
+
+```js
+import { DirectiveLocation } from 'graphql';
+
+DirectiveLocation.DIRECTIVE_DEFINITION;
+```
+
+## Parser surface
+
+Directive definition directives are represented on the AST:
+
+- `DirectiveDefinitionNode.directives`
+- `DirectiveExtensionNode.directives`
+- `Kind.DIRECTIVE_EXTENSION`
+
+Parsing this syntax is controlled by
+`experimentalDirectivesOnDirectiveDefinitions`.
+
+```js
+import { parse } from 'graphql';
+
+const document = parse(source, {
+  experimentalDirectivesOnDirectiveDefinitions: true,
+});
+```
+
+Directive extensions use the same option:
+
+```graphql
+extend directive @cacheControl @tag(name: "performance")
+```
+
+## Runtime schema surface
+
+GraphQL.js does not add a generic `GraphQLDirective.directives` property. The
+applied directives remain available through the AST nodes:
+
+- `GraphQLDirective.astNode?.directives`
+- `GraphQLDirective.extensionASTNodes`
+
+GraphQL.js does derive directive deprecation metadata from those AST nodes.
+`GraphQLDirective` includes:
+
+- `deprecationReason`
+- `extensionASTNodes`
+
+```js
+const directive = schema.getDirective('cacheControl');
+
+directive.deprecationReason;
+directive.astNode?.directives;
+directive.extensionASTNodes;
+```
+
+## Deprecating custom directives
+
+`@deprecated` can be used on directive definitions. The built-in
+`GraphQLDeprecatedDirective` includes `DIRECTIVE_DEFINITION` in its locations.
+
+```graphql
+directive @oldAuth @deprecated(reason: "Use @auth instead") on FIELD_DEFINITION
+```
+
+The introspection type `__Directive` includes:
+
+- `isDeprecated`
+- `deprecationReason`
+
+`__Schema.directives` accepts `includeDeprecated: Boolean! = false` when
+directive deprecation support is present.
+
+```graphql
+query DeprecatedDirectives {
+  __schema {
+    directives(includeDeprecated: true) {
+      name
+      isDeprecated
+      deprecationReason
+    }
+  }
+}
+```
+
+## Directive extensions
+
+Directive extensions can attach deprecation metadata to a directive defined in
+another document:
+
+```graphql
+directive @oldAuth on FIELD_DEFINITION
+
+extend directive @oldAuth @deprecated(reason: "Use @auth instead")
+```
+
+When a schema is extended, GraphQL.js preserves directive extension AST nodes on
+`GraphQLDirective.extensionASTNodes` and uses them when computing
+`deprecationReason`.
+
+## Validation
+
+`KnownDirectivesRule` understands `DIRECTIVE_DEFINITION`, so a directive applied
+to a directive definition must itself be declared for that location.
+
+`UniqueDirectivesPerLocationRule` also treats a directive definition and its
+extensions as one directive location for non-repeatable directive uniqueness.

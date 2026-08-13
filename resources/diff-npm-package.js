@@ -97,6 +97,7 @@ function prepareNPMPackage(revision) {
 function exec(command, options = {}) {
   const result = cp.execSync(command, {
     encoding: 'utf-8',
+    maxBuffer: 10 * 1024 * 1024,
     stdio: ['inherit', 'pipe', 'inherit'],
     ...options,
   });

@@ -1,3 +1,5 @@
+/** @category Values */
+
 import { keyValMap } from '../jsutils/keyValMap';
 import type { Maybe } from '../jsutils/Maybe';
 import type { ObjMap } from '../jsutils/ObjMap';
@@ -8,8 +10,8 @@ import { Kind } from '../language/kinds';
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
  *
- * Unlike `valueFromAST()`, no type is provided. The resulting JavaScript value
- * will reflect the provided GraphQL value AST.
+ * Because no GraphQL type is provided, the returned JavaScript value reflects
+ * the provided GraphQL value AST.
  *
  * | GraphQL Value        | JavaScript Value |
  * | -------------------- | ---------------- |
@@ -19,7 +21,19 @@ import { Kind } from '../language/kinds';
  * | String / Enum        | String           |
  * | Int / Float          | Number           |
  * | Null                 | null             |
+ * @param valueNode - GraphQL value AST node to convert.
+ * @param variables - Optional runtime variable values keyed by variable name.
+ * @returns JavaScript value represented by the GraphQL value AST.
+ * @example
+ * ```ts
+ * import { parseValue } from 'graphql/language';
+ * import { valueFromASTUntyped } from 'graphql/utilities';
  *
+ * const value = valueFromASTUntyped(parseValue('[1, 2, 3]'));
+ *
+ * value; // => [1, 2, 3]
+ * valueFromASTUntyped(parseValue('$name'), { name: 'Ada' }); // => 'Ada'
+ * ```
  */
 export function valueFromASTUntyped(
   valueNode: ValueNode,

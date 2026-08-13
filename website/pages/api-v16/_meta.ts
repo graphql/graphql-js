@@ -1,12 +1,12 @@
 const meta = {
-  graphql: '',
-  error: '',
-  execution: '',
-  language: '',
-  type: '',
-  utilities: '',
-  validation: '',
-  'graphql-http': '',
+  graphql: 'graphql',
+  error: 'graphql/error',
+  execution: 'graphql/execution',
+  language: 'graphql/language',
+  subscription: 'graphql/subscription',
+  type: 'graphql/type',
+  utilities: 'graphql/utilities',
+  validation: 'graphql/validation',
 };
 
 export default meta;

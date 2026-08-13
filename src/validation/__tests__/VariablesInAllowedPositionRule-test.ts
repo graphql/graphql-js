@@ -370,6 +370,16 @@ describe('Validates OneOf Input Objects', () => {
     `);
   });
 
+  it('Undefined variable in oneOf input object', () => {
+    expectErrors(`
+      {
+        complicatedArgs {
+          oneOfArgField(oneOfArg: { stringField: $undefinedVariable })
+        }
+      }
+    `).toDeepEqual([]);
+  });
+
   it('Forbids one nullable variable', () => {
     expectErrors(`
       query ($string: String) {

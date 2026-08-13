@@ -1,6 +1,7 @@
 import type { Maybe } from './Maybe';
 import type { ReadOnlyObjMap, ReadOnlyObjMapLike } from './ObjMap';
 
+/** @internal */
 export function toObjMap<T>(
   obj: Maybe<ReadOnlyObjMapLike<T>>,
 ): ReadOnlyObjMap<T> {

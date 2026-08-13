@@ -3,16 +3,36 @@ title: Overview
 sidebarTitle: Overview
 ---
 
-GraphQL.JS is the reference implementation to the [GraphQL Specification](https://spec.graphql.org/draft/), it's designed to be simple to use and easy to understand
-while closely following the Specification.
+# GraphQL.js Documentation
 
-You can build GraphQL servers, clients, and tools with this library, it's designed so you can choose which parts you use, for example, you can build your own parser
-and use the execution/validation from the library. There also a lot of useful utilities for schema-diffing, working with arguments and many more.
+GraphQL.js is the official JavaScript implementation of the GraphQL
+specification. It provides the parser, validator, executor, type system, and
+utilities used to build GraphQL servers, clients, tools, and schema workflows in
+JavaScript and TypeScript.
 
-In the following chapters you'll find out more about the three critical pieces of this library
+## Start here
 
-- The GraphQL language
-- Document validation
-- GraphQL Execution
+GraphQL.js v16 is the current stable release line, and a v17 release candidate
+is available for final testing and feedback. If you are upgrading from an older
+major version, follow each upgrade guide in sequence until you reach your target
+version.
 
-You can also code along on [a tutorial](/docs/getting-started).
+- **Upgrade guides:** [v14 to v15](/upgrade-guides/v14-v15),
+  [v15 to v16](/upgrade-guides/v15-v16),
+  [v16 to v17](/upgrade-guides/v16-v17)
+- **API reference:** [v16 stable](/api-v16/graphql),
+  [v17 release candidate](/api-v17/graphql)
+- **Specification experiments:**
+  [Experimental Specification Features](/docs/experimental-specification-features)
+- **GraphQL.js runtime APIs:** [GraphQL Harness](/docs/graphql-harness),
+  [Abort Signals](/docs/abort-signals),
+  [Execution Hooks](/docs/execution-hooks),
+  [Node.js tracing channels](/api-v17/graphql#category-diagnostics)
+
+## More Guides
+
+The documentation sidebar includes longer guides for building schemas,
+executing operations, handling errors, testing GraphQL servers, and preparing a
+GraphQL.js service for production. Start with
+[Getting Started](/docs/getting-started) if you are new to GraphQL.js, or use
+the Core Concepts and Advanced Guides sections for focused topics.

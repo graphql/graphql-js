@@ -11,28 +11,63 @@ ignorePaths:
   - benchmark/github-schema.json
   - website/icons
   - website/css
+  - website/pages/api-v16
+  - website/pages/api-v17
 overrides:
   - filename: 'website/**'
     dictionaries:
       - fullstack
     words:
-      - clsx
-      - infima
-      - noopener
+      - callout
       - Vite
       - craco
+      - rollup
+      - Rsbuild
+      - Rspack
+      - Turbopack
       - esbuild
       - swcrc
       - noreferrer
       - xlink
+      - codegen
+      - composability
+      - deduplication
+      - Vitest
+      - hardcoding
+      - debuggable
+      - subschema
+      - subschemas
+      - NATS
+      - benjie
+      - codegen
+      - URQL
+      - tada
+      - Graphile
+      - precompiled
+      - debuggable
+      - dataloaders
 
 ignoreRegExpList:
   - u\{[0-9a-f]{1,8}\}
+  - href="/api-v1[67]/[^"]+"
+  - \(/api-v1[67]/[^)]+\)
 
 words:
+  - backticks
+  - Coodinate
+  - entrypoints
+  - metafield
   - graphiql
+  - Jsdocs
   - sublinks
+  - thunked
+  - tsdoc
+  - worktree
+  - worktrees
+  - walkthrough
   - instanceof
+  - apos
+  - middot
 
   # Different names used inside tests
   - Skywalker
@@ -51,6 +86,7 @@ words:
   # TODO: contribute upstream
   - deno
   - codecov
+  - preid
 
   # Website tech
   - Nextra
@@ -61,45 +97,8 @@ words:
   - ruru
   - oneof
   - vercel
+  - unbatched
 
-  # used as href anchors
-  - graphqlerror
-  - syntaxerror
-  - formaterror
-  - graphqlschema
-  - graphqlscalartype
-  - graphqlobjecttype
-  - graphqlinterfacetype
-  - graphqluniontype
-  - graphqlenumtype
-  - graphqlinputobjecttype
-  - graphqllist
-  - graphqlnonnull
-  - graphqlint
-  - graphqlfloat
-  - graphqlstring
-  - graphqlboolean
-  - graphqlid
-  - getlocation
-  - isinputtype
-  - isoutputtype
-  - isleaftype
-  - iscompositetype
-  - isabstracttype
-  - getnullabletype
-  - getnamedtype
-  - introspectionquery
-  - buildclientschema
-  - buildschema
-  - printschema
-  - printintrospectionschema
-  - buildastschema
-  - typefromast
-  - astfromvalue
-  - typeinfo
-  - isvalidjsvalue
-  - isvalidliteralvalue
-  - specifiedrules
   - Wordmark
   - codeofconduct
   - graphqlconf
@@ -116,3 +115,6 @@ words:
   - XXXF
   - bfnrt
   - wrds
+  - overcomplicating
+  - cacheable
+  - pino

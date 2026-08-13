@@ -5,11 +5,14 @@ import { dedent } from '../../__testUtils__/dedent';
 
 import { invariant } from '../../jsutils/invariant';
 
+import { DirectiveLocation } from '../../language/directiveLocation';
+
 import {
   assertEnumType,
   GraphQLEnumType,
   GraphQLObjectType,
 } from '../../type/definition';
+import { GraphQLDirective } from '../../type/directives';
 import {
   GraphQLBoolean,
   GraphQLFloat,
@@ -463,6 +466,32 @@ describe('Type System: build schema from introspection', () => {
     `;
 
     expect(cycleIntrospection(sdl)).to.equal(sdl);
+  });
+
+  it('builds a schema with deprecated directives', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          string: { type: GraphQLString },
+        },
+      }),
+      directives: [
+        new GraphQLDirective({
+          name: 'someDirective',
+          locations: [DirectiveLocation.QUERY],
+          deprecationReason: 'Use another directive',
+        }),
+      ],
+    });
+    const introspection = introspectionFromSchema(schema);
+
+    const clientSchema = buildClientSchema(introspection);
+
+    expect(clientSchema.getDirective('someDirective')).to.deep.include({
+      name: 'someDirective',
+      deprecationReason: 'Use another directive',
+    });
   });
 
   it('builds a schema without directives', () => {

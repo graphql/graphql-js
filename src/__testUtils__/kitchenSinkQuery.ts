@@ -1,5 +1,10 @@
 export const kitchenSinkQuery: string = String.raw`
-query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
+"Query description"
+query queryName(
+  "Very complex variable"
+  $foo: ComplexType,
+  $site: Site = MOBILE
+) @onQuery {
   whoever123is: node(id: [123, 456]) {
     id
     ... on User @onInlineFragment {
@@ -44,6 +49,9 @@ subscription StoryLikeSubscription(
   }
 }
 
+"""
+  Fragment description
+"""
 fragment frag on Friend @onFragmentDefinition {
   foo(
     size: $size
