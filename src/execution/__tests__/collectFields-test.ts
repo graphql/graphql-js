@@ -57,20 +57,6 @@ describe('collectFields', () => {
       expect(newDeferUsages).to.have.lengthOf(0);
     });
 
-    it('should not collect a deferred spread after a deferred spread has been collected', () => {
-      const { newDeferUsages } = collectRootFields(`
-        query {
-          ...FragmentName @defer
-          ...FragmentName @defer
-        }
-        fragment FragmentName on Query {
-          field
-        }
-      `);
-
-      expect(newDeferUsages).to.have.lengthOf(1);
-    });
-
     it('should collect a non-deferred spread after a deferred spread has been collected', () => {
       const { groupedFieldSet } = collectRootFields(`
         query {
@@ -107,7 +93,28 @@ describe('collectFields', () => {
       expect(fieldDetailsList).to.have.lengthOf(1);
     });
 
-    it('prevents infinite loop when deferred fragment is used with same label', () => {
+    it('should not collect a spread after a spread has been collected in the same defer context', () => {
+      const { newDeferUsages, groupedFieldSet } = collectRootFields(`
+        query {
+          ... @defer {
+            ...FragmentName
+            ...FragmentName
+          }
+        }
+        fragment FragmentName on Query {
+          field
+        }
+      `);
+
+      expect(newDeferUsages).to.have.lengthOf(1);
+      const fieldDetailsList = groupedFieldSet.get('field');
+
+      invariant(fieldDetailsList != null);
+
+      expect(fieldDetailsList).to.have.lengthOf(1);
+    });
+
+    it('prevents infinite loops from circular deferred fragment spreads', () => {
       const { newDeferUsages } = collectRootFields(`
         query {
           ...FragmentOne @defer(label: "Foo")

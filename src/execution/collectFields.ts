@@ -25,14 +25,11 @@ import { typeFromAST } from '../utilities/typeFromAST.ts';
 
 import type { GraphQLVariableSignature } from './getVariableSignature.ts';
 import type { VariableValues } from './values.ts';
-import {
-  getArgumentValues,
-  getDirectiveValues,
-  getFragmentVariableValues,
-} from './values.ts';
+import { getArgumentValues, getFragmentVariableValues } from './values.ts';
 
 /** @internal */
 export interface DeferUsage {
+  directiveNode: DirectiveNode;
   label: string | undefined;
   parentDeferUsage: DeferUsage | undefined;
 }
@@ -69,12 +66,7 @@ export interface FragmentDetails {
   variableSignatures?: ObjMap<GraphQLVariableSignature> | undefined;
 }
 
-interface VisitedFragmentNames {
-  // Fragments that have been visited without @defer.
-  immediateFragments: Set<string>;
-  // Map of fragment name to a set of labels that have been visited with @defer.
-  deferredFragments: Map<string, Set<string | null>>;
-}
+type VisitedFragmentNames = Map<string, Set<DirectiveNode | null>>;
 
 interface CollectFieldsContext {
   schema: GraphQLSchema;
@@ -117,10 +109,7 @@ export function collectFields(
     fragments,
     variableValues,
     runtimeType,
-    visitedFragmentNames: {
-      immediateFragments: new Set(),
-      deferredFragments: new Map(),
-    },
+    visitedFragmentNames: new Map(),
     hideSuggestions,
     forbiddenDirectiveInstances: [],
     forbidSkipAndInclude,
@@ -161,10 +150,7 @@ export function collectSubfields(
     fragments,
     variableValues,
     runtimeType: returnType,
-    visitedFragmentNames: {
-      immediateFragments: new Set(),
-      deferredFragments: new Map(),
-    },
+    visitedFragmentNames: new Map(),
     hideSuggestions,
     forbiddenDirectiveInstances: [],
     forbidSkipAndInclude: false,
@@ -304,39 +290,26 @@ function collectFieldsImpl(
           deferUsage,
         );
 
-        const visitedAsImmediate =
-          visitedFragmentNames.immediateFragments.has(fragName);
+        const maybeNewDeferUsage = newDeferUsage ?? deferUsage;
+        let visitedDeferSet = visitedFragmentNames.get(fragName);
+        if (!visitedDeferSet) {
+          visitedDeferSet = new Set();
+          visitedFragmentNames.set(fragName, visitedDeferSet);
+        }
 
-        if (visitedAsImmediate) {
-          // Even if the fragment is deferred, we don't need to
-          // collect it again if it has already been visited without @defer.
+        if (
+          visitedDeferSet.has(null) ||
+          (maybeNewDeferUsage &&
+            visitedDeferSet.has(maybeNewDeferUsage.directiveNode))
+        ) {
           continue;
         }
 
-        let maybeNewDeferUsage: DeferUsage | undefined;
-
         if (newDeferUsage) {
-          let visitedAsDeferredByLabelSet =
-            visitedFragmentNames.deferredFragments.get(fragName);
-          if (!visitedAsDeferredByLabelSet) {
-            visitedAsDeferredByLabelSet = new Set();
-            visitedFragmentNames.deferredFragments.set(
-              fragName,
-              visitedAsDeferredByLabelSet,
-            );
-          }
-          if (visitedAsDeferredByLabelSet.has(newDeferUsage.label ?? null)) {
-            // If the fragment has already been visited as deferred by the same
-            // label, skip it.
-            continue;
-          }
           newDeferUsages.push(newDeferUsage);
-          maybeNewDeferUsage = newDeferUsage;
-          visitedAsDeferredByLabelSet.add(newDeferUsage.label ?? null);
-        } else {
-          maybeNewDeferUsage = deferUsage;
-          visitedFragmentNames.immediateFragments.add(fragName);
         }
+
+        visitedDeferSet.add(maybeNewDeferUsage?.directiveNode ?? null);
 
         const fragmentVariableSignatures = fragment.variableSignatures;
         let newFragmentVariableValues: FragmentVariableValues | undefined;
@@ -377,16 +350,20 @@ function getDeferUsage(
   node: FragmentSpreadNode | InlineFragmentNode,
   parentDeferUsage: DeferUsage | undefined,
 ): DeferUsage | undefined {
-  const defer = getDirectiveValues(
+  const directiveNode = node.directives?.find(
+    (directive) => directive.name.value === GraphQLDeferDirective.name,
+  );
+
+  if (!directiveNode) {
+    return;
+  }
+
+  const defer = getArgumentValues(
     GraphQLDeferDirective,
-    node,
+    directiveNode,
     variableValues,
     fragmentVariableValues,
   );
-
-  if (!defer) {
-    return;
-  }
 
   if (defer.if === false) {
     return;
@@ -394,6 +371,7 @@ function getDeferUsage(
 
   return {
     label: typeof defer.label === 'string' ? defer.label : undefined,
+    directiveNode,
     parentDeferUsage,
   };
 }

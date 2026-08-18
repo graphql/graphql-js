@@ -703,34 +703,7 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it('Can skip deferred fragment if same label is used', async () => {
-    const document = parse(`
-      query HeroNameQuery {
-        hero {
-          ...TopFragment @defer(label: "DeferTop")
-          ...TopFragment @defer(label: "DeferTop")
-        }
-      }
-      fragment TopFragment on Hero {
-        name
-      }
-    `);
-    const result = await complete(document);
-    expectJSON(result).toDeepEqual([
-      {
-        data: { hero: {} },
-        pending: [{ id: '0', path: ['hero'], label: 'DeferTop' }],
-        hasNext: true,
-      },
-      {
-        hasNext: false,
-        incremental: [{ id: '0', data: { name: 'Luke' } }],
-        completed: [{ id: '0' }],
-      },
-    ]);
-  });
-
-  it('Can skip deferred fragment if no label is used', async () => {
+  it('Can defer same fragment with unlabeled sibling defers', async () => {
     const document = parse(`
       query HeroNameQuery {
         hero {
@@ -746,13 +719,16 @@ describe('Execute: defer directive', () => {
     expectJSON(result).toDeepEqual([
       {
         data: { hero: {} },
-        pending: [{ id: '0', path: ['hero'] }],
+        pending: [
+          { id: '0', path: ['hero'] },
+          { id: '1', path: ['hero'] },
+        ],
         hasNext: true,
       },
       {
         hasNext: false,
         incremental: [{ id: '0', data: { name: 'Luke' } }],
-        completed: [{ id: '0' }],
+        completed: [{ id: '0' }, { id: '1' }],
       },
     ]);
   });
@@ -1028,6 +1004,28 @@ describe('Execute: defer directive', () => {
         hasNext: false,
       },
     ]);
+  });
+
+  it('Does not skip non-deferred fragments when a fragment is deferred by parent defer', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          ... @defer(label: "DeferID") {
+            ...F
+          }
+          ...F
+        }
+      }
+      fragment F on Hero {
+        name
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual({
+      data: {
+        hero: { name: 'Luke' },
+      },
+    });
   });
 
   it('Separately emits nested defer fragments with varying subfields of same priorities but different level of defers', async () => {
