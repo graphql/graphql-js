@@ -107,6 +107,13 @@ export interface ParseOptions {
   maxTokens?: number | undefined;
 
   /**
+   * The maximum number of comments allowed in a document. Comments are ignored
+   * by the parser but retained as tokens, so limiting them bounds the memory
+   * used by comments in the token linked list.
+   */
+  maxComments?: number | undefined;
+
+  /**
    * EXPERIMENTAL:
    *
    * If enabled, the parser will understand and parse fragment variable definitions
@@ -367,6 +374,9 @@ export class Parser {
 
     this._options = _options;
     this._tokenCounter = 0;
+
+    this._lexer._maxComments = _options.maxComments;
+    this._lexer._commentCount = 0;
   }
 
   get tokenCount(): number {

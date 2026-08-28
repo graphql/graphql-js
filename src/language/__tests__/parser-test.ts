@@ -17,10 +17,12 @@ import type {
   OperationDefinitionNode,
 } from '../ast.ts';
 import { Kind } from '../kinds.ts';
+import { Lexer } from '../lexer.ts';
 import type { ParseOptions } from '../parser.ts';
 import {
   parse,
   parseConstValue,
+  Parser,
   parseSchemaCoordinate,
   parseType,
   parseValue,
@@ -127,9 +129,68 @@ describe('Parser', () => {
     );
   });
 
+  it('limits by a maximum number of comments', () => {
+    const source = '# first\n# second\n{ foo }';
+
+    expect(() => parse(source, { maxComments: 2 })).to.not.throw();
+    expect(() => parse(source, { maxComments: 1 })).to.throw(
+      'Syntax Error: Document contains more than 1 comments. Parsing aborted.',
+    );
+
+    expect(() => parse(' , , { foo }', { maxComments: 0 })).to.not.throw();
+  });
+
+  it('limits comments before reaching the next lexical token', () => {
+    const source = `${'# comment\n'.repeat(10)}{ foo }`;
+
+    expect(() => parse(source, { maxTokens: 3 })).to.not.throw();
+    expect(() => parse(source, { maxComments: 9 })).to.throw(
+      'Syntax Error: Document contains more than 9 comments. Parsing aborted.',
+    );
+  });
+
+  it('counts comments once across lookahead and includes trailing comments', () => {
+    const source = '"description" # before\ntype Query { foo: Int } # after';
+
+    expect(() => parse(source, { maxComments: 2 })).to.not.throw();
+    expect(() => parse(source, { maxComments: 1 })).to.throw(
+      'Syntax Error: Document contains more than 1 comments. Parsing aborted.',
+    );
+  });
+
+  it('keeps comment limits and counts local to each lexer', () => {
+    const limited = new Parser('# first\n# second\n{ foo }', {
+      maxComments: 1,
+    });
+    const other = new Parser('# comment\n{ foo }', { maxComments: 1 });
+
+    expect(() => limited.parseDocument()).to.throw(
+      'Syntax Error: Document contains more than 1 comments. Parsing aborted.',
+    );
+    expect(() => other.parseDocument()).to.not.throw();
+  });
+
+  it('rejects a comment before creating or linking its token', () => {
+    const lexer = new Lexer(new Source('# first\n# second\n{ foo }'));
+
+    expect(() =>
+      parse('', {
+        lexer,
+        maxComments: 1,
+      }),
+    ).to.throw(
+      'Syntax Error: Document contains more than 1 comments. Parsing aborted.',
+    );
+
+    expect(lexer.token.kind).to.equal(TokenKind.SOF);
+    expect(lexer.token.next?.kind).to.equal(TokenKind.COMMENT);
+    expect(lexer.token.next?.next).to.equal(null);
+  });
+
   it('exposes the tokenCount', () => {
     expect(parse('{ foo }').tokenCount).to.equal(3);
     expect(parse('{ foo(bar: "baz") }').tokenCount).to.equal(8);
+    expect(parse('# first\n# second\n{ foo }').tokenCount).to.equal(3);
   });
 
   it('parses variable inline values', () => {
