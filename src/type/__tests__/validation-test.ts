@@ -3215,6 +3215,29 @@ describe('Objects must adhere to Interface they implement', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([]);
   });
 
+  it('accepts an Object with a subset non-null Interface field type (union)', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: AnotherObject
+      }
+
+      type SomeObject {
+        field: String
+      }
+
+      union SomeUnionType = SomeObject
+
+      interface AnotherInterface {
+        field: SomeUnionType
+      }
+
+      type AnotherObject implements AnotherInterface {
+        field: SomeUnionType!
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
   it('rejects an Object with a superset nullable Interface field type', () => {
     const schema = buildSchema(`
       type Query {
@@ -3667,6 +3690,29 @@ describe('Interfaces must adhere to Interface they implement', () => {
 
       interface ChildInterface implements ParentInterface {
         field: String!
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts an Interface with a subset non-null Interface field type (union)', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      type SomeObject {
+        field: String
+      }
+
+      union SomeUnionType = SomeObject
+
+      interface ParentInterface {
+        field: SomeUnionType
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field: SomeUnionType!
       }
     `);
     expectJSON(validateSchema(schema)).toDeepEqual([]);
