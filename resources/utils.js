@@ -1,9 +1,10 @@
 'use strict';
 
 const fs = require('fs');
-const util = require('util');
 const path = require('path');
 const childProcess = require('child_process');
+
+const prettier = require('prettier');
 
 function exec(command, options) {
   const output = childProcess.execSync(command, {
@@ -11,25 +12,40 @@ function exec(command, options) {
     encoding: 'utf-8',
     ...options,
   });
-  return removeTrailingNewLine(output);
+  return output && output.trimEnd();
 }
 
-const childProcessExec = util.promisify(childProcess.exec);
-async function execAsync(command, options) {
-  const output = await childProcessExec(command, {
-    maxBuffer: 10 * 1024 * 1024, // 10MB
-    encoding: 'utf-8',
+function spawn(command, args, options = {}) {
+  const result = childProcess.spawnSync(command, args, {
+    stdio: 'inherit',
     ...options,
   });
-  return removeTrailingNewLine(output.stdout);
+  ensureSpawnSuccess(command, args, result);
 }
 
-function removeTrailingNewLine(str) {
-  if (str == null) {
-    return str;
+function spawnOutput(command, args, options = {}) {
+  const result = childProcess.spawnSync(command, args, {
+    encoding: 'utf-8',
+    maxBuffer: 10 * 1024 * 1024,
+    ...options,
+  });
+  ensureSpawnSuccess(command, args, result);
+  return result.stdout.trimEnd();
+}
+
+function ensureSpawnSuccess(command, args, result) {
+  if (result.status === 0) {
+    return;
   }
 
-  return str.split('\n').slice(0, -1).join('\n');
+  const stderr = result.stderr ? String(result.stderr).trim() : '';
+  throw new Error(
+    stderr !== ''
+      ? stderr
+      : `${command} ${args.join(' ')} exited with code ${String(
+          result.status,
+        )}.`,
+  );
 }
 
 function readdirRecursive(dirPath, opts = {}) {
@@ -99,9 +115,89 @@ function showDirStats(dirPath) {
   );
 }
 
+const prettierConfig = JSON.parse(
+  fs.readFileSync(require.resolve('../.prettierrc'), 'utf-8'),
+);
+
+function writeGeneratedFile(filepath, body) {
+  const formatted = prettier.format(body, { filepath, ...prettierConfig });
+  fs.writeFileSync(filepath, formatted);
+}
+
+function readPackageJSON(filepath = require.resolve('../package.json')) {
+  return JSON.parse(fs.readFileSync(filepath, 'utf-8'));
+}
+
+function readPackageJSONAtRef(ref) {
+  const packageJSONAtRef = spawnOutput('git', [
+    'cat-file',
+    'blob',
+    `${ref}:package.json`,
+  ]);
+  return JSON.parse(packageJSONAtRef);
+}
+
+function getReleaseDistTag(version, latestVersion) {
+  const { major, prerelease } = parseSemVer(version);
+  if (prerelease != null) {
+    return getPrereleaseDistTag(prerelease);
+  }
+
+  return major >= parseSemVer(latestVersion).major
+    ? 'latest'
+    : `latest-${major}`;
+}
+
+function isLatestReleaseVersion(version, latestVersion) {
+  const { major, prerelease } = parseSemVer(version);
+  return prerelease == null && major >= parseSemVer(latestVersion).major;
+}
+
+function isPrereleaseVersion(version) {
+  return parseSemVer(version).prerelease != null;
+}
+
+function parseSemVer(version) {
+  const versionMatch = /^(?<major>\d+)\.\d+\.\d+(?:-(?<prerelease>[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/.exec(
+    version,
+  );
+  if (versionMatch?.groups == null) {
+    throw new Error('Version does not match semver spec: ' + version);
+  }
+
+  const { major, prerelease } = versionMatch.groups;
+  return {
+    major: Number(major),
+    prerelease: prerelease ?? null,
+  };
+}
+
+function getPrereleaseDistTag(prerelease) {
+  const splittedTag = prerelease.split('.');
+  // Note: `experimental-*` take precedence over `alpha`, `beta` or `rc`.
+  return splittedTag[2] ?? splittedTag[0];
+}
+
+function tagExists(tag) {
+  const result = childProcess.spawnSync(
+    'git',
+    ['rev-parse', '--verify', '--quiet', `refs/tags/${tag}`],
+    { stdio: 'ignore' },
+  );
+  return result.status === 0;
+}
+
 module.exports = {
   exec,
-  execAsync,
+  getReleaseDistTag,
+  isLatestReleaseVersion,
+  isPrereleaseVersion,
+  spawn,
+  spawnOutput,
   readdirRecursive,
   showDirStats,
+  readPackageJSON,
+  readPackageJSONAtRef,
+  tagExists,
+  writeGeneratedFile,
 };

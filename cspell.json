@@ -50,6 +50,7 @@
     // TODO: contribute upstream
     "deno",
     "codecov",
+    "preid",
 
     // TODO: remove bellow words
     "Graphi", // GraphiQL
