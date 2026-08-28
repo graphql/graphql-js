@@ -92,16 +92,38 @@ describe('Parser', () => {
     `);
   });
 
-  it('limits by a maximum number of tokens', () => {
+  it('limits by a maximum number of lexical tokens', () => {
+    expect(() => parse('{ foo }', { maxLexicalTokens: 3 })).to.not.throw();
+    expect(() => parse('{ foo }', { maxLexicalTokens: 2 })).to.throw(
+      'Syntax Error: Document contains more than 2 tokens. Parsing aborted.',
+    );
+
+    expect(() =>
+      parse('{ foo(bar: "baz") }', { maxLexicalTokens: 8 }),
+    ).to.not.throw();
+
+    expect(() =>
+      parse('{ foo(bar: "baz") }', { maxLexicalTokens: 7 }),
+    ).to.throw(
+      'Syntax Error: Document contains more than 7 tokens. Parsing aborted.',
+    );
+  });
+
+  it('supports the deprecated maxTokens option', () => {
     expect(() => parse('{ foo }', { maxTokens: 3 })).to.not.throw();
     expect(() => parse('{ foo }', { maxTokens: 2 })).to.throw(
       'Syntax Error: Document contains more than 2 tokens. Parsing aborted.',
     );
+  });
 
-    expect(() => parse('{ foo(bar: "baz") }', { maxTokens: 8 })).to.not.throw();
-
-    expect(() => parse('{ foo(bar: "baz") }', { maxTokens: 7 })).to.throw(
-      'Syntax Error: Document contains more than 7 tokens. Parsing aborted.',
+  it('prefers maxLexicalTokens over maxTokens', () => {
+    expect(() =>
+      parse('{ foo }', { maxLexicalTokens: 3, maxTokens: 2 }),
+    ).to.not.throw();
+    expect(() =>
+      parse('{ foo }', { maxLexicalTokens: 2, maxTokens: 3 }),
+    ).to.throw(
+      'Syntax Error: Document contains more than 2 tokens. Parsing aborted.',
     );
   });
 

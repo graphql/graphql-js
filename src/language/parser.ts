@@ -91,11 +91,18 @@ export interface ParseOptions {
   noLocation?: boolean | undefined;
 
   /**
-   * Parser CPU and memory usage is linear to the number of tokens in a document
+   * Parser CPU and memory usage is linear to the number of lexical tokens in a document
    * however in extreme cases it becomes quadratic due to memory exhaustion.
    * Parsing happens before validation so even invalid queries can burn lots of
    * CPU time and memory.
-   * To prevent this you can set a maximum number of tokens allowed within a document.
+   * To prevent this you can set a maximum number of lexical tokens allowed within a document.
+   * This does not limit the length of the source text or of an individual token.
+   */
+  maxLexicalTokens?: number | undefined;
+
+  /**
+   * Deprecated alias for `maxLexicalTokens`.
+   * @deprecated Use `maxLexicalTokens` instead. Will be removed in v18.
    */
   maxTokens?: number | undefined;
 
@@ -173,7 +180,7 @@ export interface ParseOptions {
  *   `,
  *   {
  *     experimentalFragmentArguments: true,
- *     maxTokens: 80,
+ *     maxLexicalTokens: 80,
  *     noLocation: true,
  *   },
  * );
@@ -2005,16 +2012,19 @@ export class Parser {
   }
 
   advanceLexer(): void {
-    const { maxTokens } = this._options;
+    const { maxLexicalTokens = this._options.maxTokens } = this._options;
     const token = this._lexer.advance();
 
     if (token.kind !== TokenKind.EOF) {
       ++this._tokenCounter;
-      if (maxTokens !== undefined && this._tokenCounter > maxTokens) {
+      if (
+        maxLexicalTokens !== undefined &&
+        this._tokenCounter > maxLexicalTokens
+      ) {
         throw syntaxError(
           this._lexer.source,
           token.start,
-          `Document contains more than ${maxTokens} tokens. Parsing aborted.`,
+          `Document contains more than ${maxLexicalTokens} tokens. Parsing aborted.`,
         );
       }
     }
