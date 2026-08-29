@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 import { assert, expect } from 'chai';
 
 import { expectJSON } from '../../../__testUtils__/expectJSON.ts';
+import { spyOnMethod } from '../../../__testUtils__/spyOn.ts';
 
 import { invariant } from '../../../jsutils/invariant.ts';
 import { addPath, pathToArray } from '../../../jsutils/Path.ts';
@@ -22,6 +23,7 @@ import {
 import { GraphQLString } from '../../../type/scalars.ts';
 import { GraphQLSchema } from '../../../type/schema.ts';
 
+import { AbortedGraphQLExecutionError } from '../../AbortedGraphQLExecutionError.ts';
 import {
   execute as executeWithoutBatchResolvers,
   executeSync as executeSyncWithoutBatchResolvers,
@@ -447,6 +449,99 @@ describe('Execute: experimental field batch resolvers', () => {
     const lateAbortSignal = resolvedInfo?.getAbortSignal();
     expect(lateAbortSignal).to.be.instanceOf(AbortSignal);
     expect(lateAbortSignal?.aborted).to.equal(true);
+  });
+
+  it('keeps external cancellation connected while batch resolvers drain', async () => {
+    let batchStartedResolve!: () => void;
+    const batchStarted = new Promise<void>((resolve) => {
+      batchStartedResolve = resolve;
+    });
+    let resolverWasAborted = false;
+    const schema = schemaWithQueryFields({
+      value: batchedField(GraphQLString, (_sources, _args, _context, info) => {
+        const abortSignal = info.getAbortSignal();
+        assert(abortSignal instanceof AbortSignal);
+        batchStartedResolve();
+        return new Promise<ReadonlyArray<string>>((_resolve, reject) => {
+          abortSignal.addEventListener('abort', () => {
+            resolverWasAborted = true;
+            reject(new Error('batch resolver aborted'));
+          });
+        });
+      }),
+    });
+    const abortController = new AbortController();
+    const result = execute({
+      schema,
+      document: parse('{ value }'),
+      abortSignal: abortController.signal,
+    });
+    assert(result instanceof Promise);
+
+    await batchStarted;
+    const abortReason = new Error('stop batch resolution');
+    abortController.abort(abortReason);
+
+    let caughtError: unknown;
+    try {
+      await result;
+    } catch (error) {
+      caughtError = error;
+    }
+    assert(caughtError instanceof AbortedGraphQLExecutionError);
+    expect(caughtError.cause).to.equal(abortReason);
+    expectJSON(await caughtError.abortedResult).toDeepEqual({
+      data: { value: null },
+      errors: [
+        {
+          message: 'batch resolver aborted',
+          path: ['value'],
+          locations: [{ line: 1, column: 3 }],
+        },
+      ],
+    });
+    expect(resolverWasAborted).to.equal(true);
+  });
+
+  it('detaches external cancellation when a batch resolver ignores abort', async () => {
+    let batchStartedResolve!: () => void;
+    const batchStarted = new Promise<void>((resolve) => {
+      batchStartedResolve = resolve;
+    });
+    const schema = schemaWithQueryFields({
+      value: batchedField(GraphQLString, () => {
+        batchStartedResolve();
+        return new Promise<ReadonlyArray<string>>(() => {
+          // This deliberately ignores cancellation and never settles.
+        });
+      }),
+    });
+    const abortController = new AbortController();
+    const abortSignal = abortController.signal;
+    const removeEventListenerSpy = spyOnMethod(
+      abortSignal,
+      'removeEventListener',
+    );
+    const result = execute({
+      schema,
+      document: parse('{ value }'),
+      abortSignal,
+    });
+    assert(result instanceof Promise);
+
+    await batchStarted;
+    abortController.abort(new Error('stop hanging batch'));
+
+    let caughtError: unknown;
+    try {
+      await result;
+    } catch (error) {
+      caughtError = error;
+    }
+    assert(caughtError instanceof AbortedGraphQLExecutionError);
+    expect(caughtError.message).to.equal('stop hanging batch');
+    expect(removeEventListenerSpy.callCount).to.equal(1);
+    removeEventListenerSpy.restore();
   });
 
   it('runs later batch rounds for subfields produced by a batch', async () => {

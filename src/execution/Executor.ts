@@ -281,15 +281,41 @@ export class Executor<
     if (externalAbortSignal) {
       externalAbortSignal.throwIfAborted();
       const onExternalAbort = () => {
+        removeExternalAbortListener?.();
         this.abort(externalAbortSignal.reason);
       };
-      removeExternalAbortListener = () =>
+      let listenerAttached = true;
+      removeExternalAbortListener = () => {
+        if (!listenerAttached) {
+          return;
+        }
+        listenerAttached = false;
         externalAbortSignal.removeEventListener('abort', onExternalAbort);
+      };
       externalAbortSignal.addEventListener('abort', onExternalAbort);
     }
 
     const maybeRemoveExternalAbortListener = () => {
       removeExternalAbortListener?.();
+    };
+
+    const executeBatchesAndRemoveExternalAbortListener = (
+      data: ObjMap<unknown> | null,
+    ) => {
+      let response:
+        | PromiseOrValue<ExecutionResult | TAlternativeInitialResponse>
+        | undefined;
+      try {
+        response = this.executeBatchesAndBuildResponse(data);
+        if (isPromise(response)) {
+          return response.finally(maybeRemoveExternalAbortListener);
+        }
+        return response;
+      } finally {
+        if (!isPromise(response)) {
+          maybeRemoveExternalAbortListener();
+        }
+      }
     };
 
     let result: PromiseOrValue<ObjMap<unknown>>;
@@ -335,26 +361,20 @@ export class Executor<
 
       if (isPromise(result)) {
         const promise = result.then(
-          (data) => {
-            maybeRemoveExternalAbortListener();
-            return this.executeBatchesAndBuildResponse(data);
-          },
+          (data) => executeBatchesAndRemoveExternalAbortListener(data),
           (error: unknown) => {
-            maybeRemoveExternalAbortListener();
             this.collectedErrors.add(ensureGraphQLError(error), undefined);
-            return this.executeBatchesAndBuildResponse(null);
+            return executeBatchesAndRemoveExternalAbortListener(null);
           },
         );
         return this.returnCancellableResponse(promise);
       }
-      maybeRemoveExternalAbortListener();
     } catch (error) {
-      maybeRemoveExternalAbortListener();
       this.collectedErrors.add(ensureGraphQLError(error), undefined);
-      return this.finish(this.executeBatchesAndBuildResponse(null));
+      return this.finish(executeBatchesAndRemoveExternalAbortListener(null));
     }
 
-    const response = this.executeBatchesAndBuildResponse(result);
+    const response = executeBatchesAndRemoveExternalAbortListener(result);
     return isPromise(response)
       ? this.returnCancellableResponse(response)
       : this.finish(response);
