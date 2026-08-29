@@ -16,6 +16,7 @@ import {
 
 import { getArgumentValues } from '../values.ts';
 
+import { completeAsyncFieldBatchGroup } from './completeAsyncFieldBatchGroup.ts';
 import {
   completeFieldBatchGroup,
   handleFieldBatchGroupError,
@@ -132,7 +133,7 @@ function executeFieldBatchResolver<TPositionContext>(
   if (isPromiseLike(batchResult)) {
     return Promise.resolve(batchResult).then(
       (resolvedBatchResult) =>
-        completeFieldBatchGroup(
+        completeFieldBatchResult(
           executor,
           data,
           rootPath,
@@ -149,6 +150,65 @@ function executeFieldBatchResolver<TPositionContext>(
           batchGroup,
           activeEntries,
         ),
+    );
+  }
+
+  return completeFieldBatchResult(
+    executor,
+    data,
+    rootPath,
+    batchGroup,
+    activeEntries,
+    batchResult,
+  );
+}
+
+// eslint-disable-next-line max-params
+function completeFieldBatchResult<TPositionContext>(
+  executor: BatchExecutor<TPositionContext>,
+  data: unknown,
+  rootPath: Path | undefined,
+  batchGroup: BatchFieldGroup<TPositionContext>,
+  activeEntries: ReadonlyArray<BatchFieldEntry<TPositionContext>>,
+  batchResult: unknown,
+): PromiseOrValue<void> {
+  let asyncIteratorMethod: (() => AsyncIterator<unknown>) | undefined;
+  try {
+    asyncIteratorMethod = (
+      batchResult as AsyncIterable<unknown> | null | undefined
+    )?.[Symbol.asyncIterator];
+  } catch (rawError) {
+    return handleFieldBatchGroupError(
+      executor,
+      data,
+      rootPath,
+      rawError,
+      batchGroup,
+      activeEntries,
+    );
+  }
+
+  if (typeof asyncIteratorMethod === 'function') {
+    let iterator: AsyncIterator<unknown>;
+    try {
+      iterator = asyncIteratorMethod.call(batchResult);
+    } catch (rawError) {
+      return handleFieldBatchGroupError(
+        executor,
+        data,
+        rootPath,
+        rawError,
+        batchGroup,
+        activeEntries,
+      );
+    }
+    return completeAsyncFieldBatchGroup(
+      executor,
+      data,
+      rootPath,
+      batchGroup,
+      activeEntries,
+      iterator,
     );
   }
 

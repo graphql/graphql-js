@@ -2820,6 +2820,8 @@ export type GraphQLFieldResolver<
 
 /**
  * Experimental resolver for a batch of GraphQL field executions.
+ * Async iterables yield contiguous result chunks in source order. The chunks
+ * may be empty, but their combined length must equal `sources.length`.
  * @typeParam TSource - Source object type passed to resolvers.
  * @typeParam TContext - Context object type passed to resolvers.
  * @typeParam TArgs - Argument object type passed to resolvers.
@@ -2835,7 +2837,9 @@ export type GraphQLFieldBatchResolver<
   args: TArgs,
   context: TContext,
   info: GraphQLBatchedResolveInfo,
-) => PromiseOrValue<ReadonlyArray<TResult>>;
+) => PromiseOrValue<
+  ReadonlyArray<TResult> | AsyncIterable<ReadonlyArray<TResult>>
+>;
 
 /** Utilities available from resolver info for tracking asynchronous work. */
 export interface GraphQLResolveInfoHelpers {
