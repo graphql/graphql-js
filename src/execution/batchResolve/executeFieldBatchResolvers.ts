@@ -17,6 +17,8 @@ import {
 import { getArgumentValues } from '../values.ts';
 
 import { completeAsyncFieldBatchGroup } from './completeAsyncFieldBatchGroup.ts';
+import type { BatchWorkUnit } from './completeBatchWork.ts';
+import { completeBatchWork } from './completeBatchWork.ts';
 import {
   completeFieldBatchGroup,
   handleFieldBatchGroupError,
@@ -41,19 +43,44 @@ export function executeFieldBatchResolvers<TPositionContext>(
   rootPath: Path | undefined,
   batchFieldGroups: BatchFieldGroupMap<TPositionContext>,
 ): Array<Promise<void>> {
-  const promises: Array<Promise<void>> = [];
-  for (const batchGroup of batchFieldGroups.values()) {
-    const result = executeFieldBatchResolver(
-      executor,
-      data,
-      rootPath,
-      batchGroup,
-    );
-    if (isPromise(result)) {
-      promises.push(result);
+  const workUnits: Array<BatchWorkUnit> = [];
+  try {
+    for (const batchGroup of batchFieldGroups.values()) {
+      const activeEntries = batchGroup.entries.filter(
+        (entry) => !executor.collectedErrors.hasNulledPosition(entry.path),
+      );
+      if (activeEntries.length === 0) {
+        continue;
+      }
+      const result = executeFieldBatchResolver(
+        executor,
+        data,
+        rootPath,
+        batchGroup,
+        activeEntries,
+      );
+      if (isPromise(result)) {
+        workUnits.push({
+          promise: result,
+          isActive: () =>
+            activeEntries.some(
+              (entry) =>
+                !executor.collectedErrors.hasNulledPosition(entry.path),
+            ),
+        });
+      }
     }
+  } catch (error) {
+    if (workUnits.length !== 0) {
+      executor
+        .getAsyncHelpers()
+        .track(workUnits.map((workUnit) => workUnit.promise));
+    }
+    throw error;
   }
-  return promises;
+
+  const completed = completeBatchWork(executor, workUnits);
+  return completed === undefined ? [] : [completed];
 }
 
 function executeFieldBatchResolver<TPositionContext>(
@@ -61,14 +88,8 @@ function executeFieldBatchResolver<TPositionContext>(
   data: unknown,
   rootPath: Path | undefined,
   batchGroup: BatchFieldGroup<TPositionContext>,
+  activeEntries: ReadonlyArray<BatchFieldEntry<TPositionContext>>,
 ): PromiseOrValue<void> {
-  const activeEntries = batchGroup.entries.filter(
-    (entry) => !executor.collectedErrors.hasNulledPosition(entry.path),
-  );
-  if (activeEntries.length === 0) {
-    return;
-  }
-
   let batchResult;
   try {
     const {

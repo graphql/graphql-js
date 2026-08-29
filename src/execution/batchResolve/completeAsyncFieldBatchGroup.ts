@@ -190,6 +190,19 @@ export async function completeAsyncFieldBatchGroup<TPositionContext>(
       throw error;
     }
     completedCount = nextCompletedCount;
+
+    const entriesToComplete = activeEntries.slice(completedCount);
+    const entriesThatMustRemainActive =
+      entriesToComplete.length === 0 ? activeEntries : entriesToComplete;
+    if (
+      entriesThatMustRemainActive.every((entry) =>
+        executor.collectedErrors.hasNulledPosition(entry.path),
+      )
+    ) {
+      // eslint-disable-next-line no-await-in-loop
+      await returnIteratorCatchingErrors(iterator);
+      return;
+    }
   }
 }
 

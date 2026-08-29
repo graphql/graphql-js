@@ -3,10 +3,12 @@ import { describe, it } from 'node:test';
 import { assert, expect } from 'chai';
 
 import { expectJSON } from '../../../__testUtils__/expectJSON.ts';
+import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.ts';
 import { spyOnMethod } from '../../../__testUtils__/spyOn.ts';
 
 import { invariant } from '../../../jsutils/invariant.ts';
 import { addPath, pathToArray } from '../../../jsutils/Path.ts';
+import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.ts';
 
 import type { GraphQLError } from '../../../error/GraphQLError.ts';
 
@@ -243,6 +245,329 @@ describe('Execute: experimental field batch resolvers', () => {
 
     expect(result.data).to.equal(null);
     expect(result.errors?.map((error) => error.message)).to.deep.equal(['bad']);
+  });
+
+  it('tracks pending entry completions when a later batch entry throws', async () => {
+    const { promise: pendingIsTypeOf, reject: rejectIsTypeOf } =
+      promiseWithResolvers<boolean>();
+    const { promise: asyncWorkFinished, resolve: resolveAsyncWorkFinished } =
+      promiseWithResolvers<undefined>();
+    let asyncWorkFinishedCalled = false;
+
+    const FriendType = new GraphQLObjectType({
+      name: 'BatchTrackedEntryFriend',
+      fields: {
+        name: { type: GraphQLString },
+      },
+      isTypeOf: (value: any) => {
+        if (value.pending === true) {
+          return pendingIsTypeOf;
+        }
+        throw new Error('later entry threw');
+      },
+    });
+    const schema = schemaWithUserFields(
+      {
+        friend: batchedField(new GraphQLNonNull(FriendType), (sources) =>
+          sources.map((source: any) => source.friend),
+        ),
+      },
+      'BatchTrackedEntryUser',
+      (userType) =>
+        new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(userType))),
+    );
+
+    const result = execute({
+      schema,
+      document: parse('{ users { friend { name } } }'),
+      rootValue: {
+        users: [{ friend: { pending: true } }, { friend: { pending: false } }],
+      },
+      hooks: {
+        asyncWorkFinished() {
+          asyncWorkFinishedCalled = true;
+          resolveAsyncWorkFinished(undefined);
+        },
+      },
+    });
+
+    expectJSON(result).toDeepEqual({
+      data: null,
+      errors: [
+        {
+          message: 'later entry threw',
+          path: ['users', 1, 'friend'],
+          locations: [{ line: 1, column: 11 }],
+        },
+      ],
+    });
+    expect(asyncWorkFinishedCalled).to.equal(false);
+
+    rejectIsTypeOf(new Error('earlier entry rejected'));
+    await asyncWorkFinished;
+    expect(asyncWorkFinishedCalled).to.equal(true);
+  });
+
+  it('tracks pending batch groups when a later batch group throws', async () => {
+    const { promise: pendingBatch, reject: rejectBatch } =
+      promiseWithResolvers<ReadonlyArray<string>>();
+    const { promise: asyncWorkFinished, resolve: resolveAsyncWorkFinished } =
+      promiseWithResolvers<undefined>();
+    let asyncWorkFinishedCalled = false;
+    const schema = schemaWithQueryFields({
+      pending: batchedField(GraphQLString, () => pendingBatch),
+      fatal: batchedField(new GraphQLNonNull(GraphQLString), () => [null]),
+    });
+
+    const result = execute({
+      schema,
+      document: parse('{ pending fatal }'),
+      hooks: {
+        asyncWorkFinished() {
+          asyncWorkFinishedCalled = true;
+          resolveAsyncWorkFinished(undefined);
+        },
+      },
+    });
+
+    expectJSON(result).toDeepEqual({
+      data: null,
+      errors: [
+        {
+          message: 'Cannot return null for non-nullable field Query.fatal.',
+          path: ['fatal'],
+          locations: [{ line: 1, column: 11 }],
+        },
+      ],
+    });
+    expect(asyncWorkFinishedCalled).to.equal(false);
+
+    rejectBatch(new Error('earlier batch rejected'));
+    await asyncWorkFinished;
+    expect(asyncWorkFinishedCalled).to.equal(true);
+  });
+
+  for (const failureMode of ['synchronous', 'asynchronous'] as const) {
+    it(`abandons pending entry completion after ${failureMode} sibling failure nulls their ancestor`, async () => {
+      const { promise: pendingIsTypeOf, resolve: resolveIsTypeOf } =
+        promiseWithResolvers<boolean>();
+      const { promise: asyncWorkFinished, resolve: resolveAsyncWorkFinished } =
+        promiseWithResolvers<undefined>();
+      let asyncWorkFinishedCalled = false;
+      const FriendType = new GraphQLObjectType({
+        name: `BatchAbandonedEntryFriend${failureMode}`,
+        fields: {
+          name: { type: GraphQLString },
+        },
+        isTypeOf: (value: any) => {
+          if (value.pending === true) {
+            return pendingIsTypeOf;
+          }
+          const error = new Error(`${failureMode} entry failure`);
+          if (failureMode === 'asynchronous') {
+            return Promise.reject(error);
+          }
+          throw error;
+        },
+      });
+      const schema = schemaWithUserFields(
+        {
+          friend: batchedField(new GraphQLNonNull(FriendType), (sources) =>
+            sources.map((source: any) => source.friend),
+          ),
+        },
+        `BatchAbandonedEntryUser${failureMode}`,
+        (userType) => new GraphQLList(new GraphQLNonNull(userType)),
+      );
+
+      const result = execute({
+        schema,
+        document: parse('{ users { friend { name } } }'),
+        rootValue: {
+          users: [
+            { friend: { pending: true } },
+            { friend: { pending: false } },
+          ],
+        },
+        hooks: {
+          asyncWorkFinished() {
+            asyncWorkFinishedCalled = true;
+            resolveAsyncWorkFinished(undefined);
+          },
+        },
+      });
+      if (failureMode === 'synchronous') {
+        expect(result).not.to.be.instanceOf(Promise);
+      }
+      let resultSettled = false;
+      const resultPromise = Promise.resolve(result).then((resolved) => {
+        resultSettled = true;
+        return resolved;
+      });
+
+      await new Promise((resolve) => {
+        setTimeout(resolve, 0);
+      });
+      const settledBeforePendingCompletion = resultSettled;
+      const hookCalledBeforePendingCompletion = asyncWorkFinishedCalled;
+      resolveIsTypeOf(true);
+
+      expectJSON(await resultPromise).toDeepEqual({
+        data: { users: null },
+        errors: [
+          {
+            message: `${failureMode} entry failure`,
+            path: ['users', 1, 'friend'],
+            locations: [{ line: 1, column: 11 }],
+          },
+        ],
+      });
+      expect(settledBeforePendingCompletion).to.equal(true);
+      expect(hookCalledBeforePendingCompletion).to.equal(false);
+      await asyncWorkFinished;
+      expect(asyncWorkFinishedCalled).to.equal(true);
+    });
+  }
+
+  for (const failureMode of ['synchronous', 'asynchronous'] as const) {
+    it(`abandons a pending batch group after ${failureMode} group nulls its ancestor`, async () => {
+      const { promise: pendingBatch, resolve: resolveBatch } =
+        promiseWithResolvers<ReadonlyArray<string>>();
+      const { promise: asyncWorkFinished, resolve: resolveAsyncWorkFinished } =
+        promiseWithResolvers<undefined>();
+      let asyncWorkFinishedCalled = false;
+      const requiredResult = [null, null];
+      const schema = schemaWithUserFields(
+        {
+          pending: batchedField(GraphQLString, () => pendingBatch),
+          required: batchedField(new GraphQLNonNull(GraphQLString), () =>
+            failureMode === 'synchronous'
+              ? requiredResult
+              : Promise.resolve(requiredResult),
+          ),
+        },
+        `BatchAbandonedGroupUser${failureMode}`,
+        (userType) => new GraphQLList(new GraphQLNonNull(userType)),
+      );
+
+      const result = execute({
+        schema,
+        document: parse('{ users { pending required } }'),
+        rootValue: { users: [{}, {}] },
+        hooks: {
+          asyncWorkFinished() {
+            asyncWorkFinishedCalled = true;
+            resolveAsyncWorkFinished(undefined);
+          },
+        },
+      });
+      if (failureMode === 'synchronous') {
+        expect(result).not.to.be.instanceOf(Promise);
+      }
+      let resultSettled = false;
+      const resultPromise = Promise.resolve(result).then((resolved) => {
+        resultSettled = true;
+        return resolved;
+      });
+
+      await new Promise((resolve) => {
+        setTimeout(resolve, 0);
+      });
+      const settledBeforePendingBatch = resultSettled;
+      const hookCalledBeforePendingBatch = asyncWorkFinishedCalled;
+      resolveBatch(['late', 'late']);
+
+      expectJSON(await resultPromise).toDeepEqual({
+        data: { users: null },
+        errors: [
+          {
+            message: `Cannot return null for non-nullable field BatchAbandonedGroupUser${failureMode}.required.`,
+            path: ['users', 0, 'required'],
+            locations: [{ line: 1, column: 19 }],
+          },
+        ],
+      });
+      expect(settledBeforePendingBatch).to.equal(true);
+      expect(hookCalledBeforePendingBatch).to.equal(false);
+      await asyncWorkFinished;
+      expect(asyncWorkFinishedCalled).to.equal(true);
+    });
+  }
+
+  it('ignores a late rejection from abandoned work while unrelated work remains active', async () => {
+    const { promise: abandonedIsTypeOf, reject: rejectAbandonedIsTypeOf } =
+      promiseWithResolvers<boolean>();
+    const { promise: activeIsTypeOf, resolve: resolveActiveIsTypeOf } =
+      promiseWithResolvers<boolean>();
+    const FriendType = new GraphQLObjectType({
+      name: 'BatchPartiallyAbandonedFriend',
+      fields: {
+        name: { type: GraphQLString },
+      },
+      isTypeOf: (value: any) => {
+        if (value.kind === 'abandoned') {
+          return abandonedIsTypeOf;
+        }
+        if (value.kind === 'failure') {
+          return Promise.reject(new Error('sibling failure'));
+        }
+        return activeIsTypeOf;
+      },
+    });
+    const schema = schemaWithUserFields(
+      {
+        friend: batchedField(new GraphQLNonNull(FriendType), (sources) =>
+          sources.map((source: any) => source.friend),
+        ),
+      },
+      'BatchPartiallyAbandonedUser',
+      (userType) =>
+        new GraphQLList(new GraphQLList(new GraphQLNonNull(userType))),
+    );
+    const result = execute({
+      schema,
+      document: parse('{ users { friend { name } } }'),
+      rootValue: {
+        users: [
+          [
+            { friend: { kind: 'abandoned', name: 'ignored' } },
+            { friend: { kind: 'failure', name: 'ignored' } },
+          ],
+          [{ friend: { kind: 'active', name: 'kept' } }],
+        ],
+      },
+    });
+    assert(result instanceof Promise);
+    let resultSettled = false;
+    result.then(
+      () => {
+        resultSettled = true;
+      },
+      () => {
+        resultSettled = true;
+      },
+    );
+
+    await resolveOnNextTick();
+    expect(resultSettled).to.equal(false);
+
+    rejectAbandonedIsTypeOf(new Error('late abandoned rejection'));
+    await resolveOnNextTick();
+    expect(resultSettled).to.equal(false);
+
+    resolveActiveIsTypeOf(true);
+    expectJSON(await result).toDeepEqual({
+      data: {
+        users: [null, [{ friend: { name: 'kept' } }]],
+      },
+      errors: [
+        {
+          message: 'sibling failure',
+          path: ['users', 0, 1, 'friend'],
+          locations: [{ line: 1, column: 11 }],
+        },
+      ],
+    });
   });
 
   it('throws when a batch-enabled serial executor is already aborted', () => {

@@ -6,7 +6,11 @@ import { expectJSON } from '../../../__testUtils__/expectJSON.ts';
 
 import { parse } from '../../../language/parser.ts';
 
-import { GraphQLNonNull, GraphQLObjectType } from '../../../type/definition.ts';
+import {
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+} from '../../../type/definition.ts';
 import { GraphQLString } from '../../../type/scalars.ts';
 
 import { AbortedGraphQLExecutionError } from '../../AbortedGraphQLExecutionError.ts';
@@ -405,6 +409,50 @@ describe('Execute: async iterable field batch resolver results', () => {
             'Cannot return null for non-nullable field Query.requiredName.',
           path: ['requiredName'],
           locations: [{ line: 1, column: 3 }],
+        },
+      ],
+    });
+    expect(closed).to.equal(true);
+  });
+
+  it('closes the async iterator when all remaining entries are nulled', async () => {
+    let closed = false;
+    async function* resolveRequiredNames() {
+      try {
+        yield await Promise.resolve([null]);
+        await new Promise(() => {
+          // This remains pending if execution requests another chunk.
+        });
+      } finally {
+        closed = true;
+      }
+    }
+
+    const schema = schemaWithUserFields(
+      {
+        requiredName: batchedField(
+          new GraphQLNonNull(GraphQLString),
+          resolveRequiredNames,
+        ),
+      },
+      'AsyncBatchAbandonedUser',
+      (userType) => new GraphQLList(new GraphQLNonNull(userType)),
+    );
+
+    const result = await execute({
+      schema,
+      document: parse('{ users { requiredName } }'),
+      rootValue: { users: [{}, {}] },
+    });
+
+    expectJSON(result).toDeepEqual({
+      data: { users: null },
+      errors: [
+        {
+          message:
+            'Cannot return null for non-nullable field AsyncBatchAbandonedUser.requiredName.',
+          path: ['users', 0, 'requiredName'],
+          locations: [{ line: 1, column: 11 }],
         },
       ],
     });

@@ -14,6 +14,8 @@ import { isObjectType } from '../../type/definition.ts';
 
 import { buildResolveInfo } from '../buildResolveInfo.ts';
 
+import type { BatchWorkUnit } from './completeBatchWork.ts';
+import { completeBatchWork } from './completeBatchWork.ts';
 import { getNullablePath } from './getNullablePath.ts';
 import { setPathValue } from './setPathValue.ts';
 import type {
@@ -65,25 +67,36 @@ export function completeFieldBatchGroup<TPositionContext>(
       ? batchGroup.fieldDef.type
       : undefined;
 
-  const promises: Array<Promise<void>> = [];
-  for (const [i, entry] of batchEntries.entries()) {
-    const result = completeFieldBatchRecord(
-      executor,
-      data,
-      rootPath,
-      batchGroup,
-      batchObjectType,
-      entry,
-      batchValues[i],
-    );
-    if (isPromise(result)) {
-      promises.push(result);
+  const workUnits: Array<BatchWorkUnit> = [];
+  try {
+    for (const [i, entry] of batchEntries.entries()) {
+      const result = completeFieldBatchRecord(
+        executor,
+        data,
+        rootPath,
+        batchGroup,
+        batchObjectType,
+        entry,
+        batchValues[i],
+      );
+      if (isPromise(result)) {
+        workUnits.push({
+          promise: result,
+          isActive: () =>
+            !executor.collectedErrors.hasNulledPosition(entry.path),
+        });
+      }
     }
+  } catch (error) {
+    if (workUnits.length !== 0) {
+      executor
+        .getAsyncHelpers()
+        .track(workUnits.map((workUnit) => workUnit.promise));
+    }
+    throw error;
   }
 
-  if (promises.length !== 0) {
-    return executor.promiseAll(promises).then(() => undefined);
-  }
+  return completeBatchWork(executor, workUnits);
 }
 
 // eslint-disable-next-line max-params
