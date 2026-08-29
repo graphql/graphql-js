@@ -4,6 +4,8 @@ import { assert, expect } from 'chai';
 
 import { expectJSON } from '../../../__testUtils__/expectJSON.ts';
 
+import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.ts';
+
 import { parse } from '../../../language/parser.ts';
 
 import {
@@ -92,6 +94,187 @@ describe('Execute: async iterable field batch resolver results', () => {
       },
     });
     expect(completedValues).to.deep.equal(['Ada', 'Grace', 'Lin']);
+  });
+
+  it('continues with live entries after abandoning a pending chunk completion', async () => {
+    const { promise: pendingIsTypeOf, resolve: resolveIsTypeOf } =
+      promiseWithResolvers<boolean>();
+    const { promise: isTypeOfStarted, resolve: resolveIsTypeOfStarted } =
+      promiseWithResolvers<undefined>();
+    const { promise: fatalResult, resolve: resolveFatalResult } =
+      promiseWithResolvers<ReadonlyArray<string | null>>();
+    const { promise: asyncWorkFinished, resolve: resolveAsyncWorkFinished } =
+      promiseWithResolvers<undefined>();
+    let secondChunkYielded = false;
+    let asyncWorkFinishedCalled = false;
+    const FriendType = new GraphQLObjectType({
+      name: 'AsyncBatchAbandonedChunkFriend',
+      fields: {
+        name: { type: GraphQLString },
+      },
+      isTypeOf: (value: any) => {
+        if (value.pending === true) {
+          resolveIsTypeOfStarted(undefined);
+          return pendingIsTypeOf;
+        }
+        return true;
+      },
+    });
+    async function* resolveFriends(sources: ReadonlyArray<any>) {
+      yield await Promise.resolve([sources[0].friend]);
+      secondChunkYielded = true;
+      yield [sources[1].friend];
+    }
+    const schema = schemaWithUserFields(
+      {
+        friend: batchedField(FriendType, resolveFriends),
+        fatal: batchedField(
+          new GraphQLNonNull(GraphQLString),
+          () => fatalResult,
+        ),
+      },
+      'AsyncBatchAbandonedChunkUser',
+    );
+
+    const result = execute({
+      schema,
+      document: parse('{ users { friend { name } fatal } }'),
+      rootValue: {
+        users: [
+          { friend: { name: 'ignored', pending: true } },
+          { friend: { name: 'Grace', pending: false } },
+        ],
+      },
+      hooks: {
+        asyncWorkFinished() {
+          asyncWorkFinishedCalled = true;
+          resolveAsyncWorkFinished(undefined);
+        },
+      },
+    });
+    assert(result instanceof Promise);
+    let resultSettled = false;
+    const resultPromise = result.then((resolved) => {
+      resultSettled = true;
+      return resolved;
+    });
+
+    await isTypeOfStarted;
+    resolveFatalResult([null, 'ok']);
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+    const settledBeforePendingCompletion = resultSettled;
+    const hookCalledBeforePendingCompletion = asyncWorkFinishedCalled;
+    resolveIsTypeOf(true);
+
+    expectJSON(await resultPromise).toDeepEqual({
+      data: {
+        users: [null, { friend: { name: 'Grace' }, fatal: 'ok' }],
+      },
+      errors: [
+        {
+          message:
+            'Cannot return null for non-nullable field AsyncBatchAbandonedChunkUser.fatal.',
+          path: ['users', 0, 'fatal'],
+          locations: [{ line: 1, column: 27 }],
+        },
+      ],
+    });
+    expect(secondChunkYielded).to.equal(true);
+    expect(settledBeforePendingCompletion).to.equal(true);
+    expect(hookCalledBeforePendingCompletion).to.equal(false);
+    await asyncWorkFinished;
+    expect(asyncWorkFinishedCalled).to.equal(true);
+  });
+
+  it('waits for a live chunk completion when only later entries are nulled', async () => {
+    const { promise: pendingIsTypeOf, resolve: resolveIsTypeOf } =
+      promiseWithResolvers<boolean>();
+    const { promise: isTypeOfStarted, resolve: resolveIsTypeOfStarted } =
+      promiseWithResolvers<undefined>();
+    const { promise: fatalResult, resolve: resolveFatalResult } =
+      promiseWithResolvers<ReadonlyArray<string | null>>();
+    let secondChunkYielded = false;
+    let iteratorClosed = false;
+    const FriendType = new GraphQLObjectType({
+      name: 'AsyncBatchLiveChunkFriend',
+      fields: {
+        name: { type: GraphQLString },
+      },
+      isTypeOf: (value: any) => {
+        if (value.pending === true) {
+          resolveIsTypeOfStarted(undefined);
+          return pendingIsTypeOf;
+        }
+        return true;
+      },
+    });
+    async function* resolveFriends(sources: ReadonlyArray<any>) {
+      try {
+        yield await Promise.resolve([sources[0].friend]);
+        secondChunkYielded = true;
+        yield [sources[1].friend];
+      } finally {
+        iteratorClosed = true;
+      }
+    }
+    const schema = schemaWithUserFields(
+      {
+        friend: batchedField(FriendType, resolveFriends),
+        fatal: batchedField(
+          new GraphQLNonNull(GraphQLString),
+          () => fatalResult,
+        ),
+      },
+      'AsyncBatchLiveChunkUser',
+    );
+
+    const result = execute({
+      schema,
+      document: parse('{ users { friend { name } fatal } }'),
+      rootValue: {
+        users: [
+          { friend: { name: 'Ada', pending: true } },
+          { friend: { name: 'ignored', pending: false } },
+        ],
+      },
+    });
+    assert(result instanceof Promise);
+    let resultSettled = false;
+    result.then(
+      () => {
+        resultSettled = true;
+      },
+      () => {
+        resultSettled = true;
+      },
+    );
+
+    await isTypeOfStarted;
+    resolveFatalResult(['ok', null]);
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+    expect(resultSettled).to.equal(false);
+    expect(secondChunkYielded).to.equal(false);
+
+    resolveIsTypeOf(true);
+    expectJSON(await result).toDeepEqual({
+      data: {
+        users: [{ friend: { name: 'Ada' }, fatal: 'ok' }, null],
+      },
+      errors: [
+        {
+          message:
+            'Cannot return null for non-nullable field AsyncBatchLiveChunkUser.fatal.',
+          path: ['users', 1, 'fatal'],
+          locations: [{ line: 1, column: 27 }],
+        },
+      ],
+    });
+    expect(iteratorClosed).to.equal(true);
+    expect(secondChunkYielded).to.equal(false);
   });
 
   it('accepts a promise for an async iterable of result chunks', async () => {

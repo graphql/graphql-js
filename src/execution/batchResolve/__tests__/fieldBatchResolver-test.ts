@@ -494,6 +494,112 @@ describe('Execute: experimental field batch resolvers', () => {
     });
   }
 
+  for (const [batchResultMode, fatalResultMode] of [
+    ['synchronous iterable', 'synchronous iterable'],
+    ['synchronous iterable', 'promised iterable'],
+    ['promised iterable', 'promised iterable'],
+  ] as const) {
+    it(`abandons a nested ${batchResultMode} completion after a sibling ${fatalResultMode} nulls only one entry`, async () => {
+      const { promise: pendingIsTypeOf, resolve: resolveIsTypeOf } =
+        promiseWithResolvers<boolean>();
+      const { promise: isTypeOfStarted, resolve: resolveIsTypeOfStarted } =
+        promiseWithResolvers<undefined>();
+      const { promise: fatalResult, resolve: resolveFatalResult } =
+        promiseWithResolvers<ReadonlyArray<string | null>>();
+      const { promise: asyncWorkFinished, resolve: resolveAsyncWorkFinished } =
+        promiseWithResolvers<undefined>();
+      let asyncWorkFinishedCalled = false;
+      const typeNameSuffix = `${batchResultMode}${fatalResultMode}`.replaceAll(
+        ' ',
+        '',
+      );
+      const FriendType = new GraphQLObjectType({
+        name: `BatchNestedCompletionFriend${typeNameSuffix}`,
+        fields: {
+          name: { type: GraphQLString },
+        },
+        isTypeOf: (value: any) => {
+          if (value.pending === true) {
+            resolveIsTypeOfStarted(undefined);
+            return pendingIsTypeOf;
+          }
+          return true;
+        },
+      });
+      const schema = schemaWithUserFields(
+        {
+          friend: batchedField(FriendType, (sources) => {
+            const friends = sources.map((source: any) => source.friend);
+            return batchResultMode === 'synchronous iterable'
+              ? friends
+              : Promise.resolve(friends);
+          }),
+          fatal: batchedField(new GraphQLNonNull(GraphQLString), () =>
+            fatalResultMode === 'synchronous iterable'
+              ? ['ok', null]
+              : fatalResult,
+          ),
+        },
+        `BatchNestedCompletionUser${typeNameSuffix}`,
+      );
+
+      const result = execute({
+        schema,
+        document: parse('{ users { friend { name } fatal } }'),
+        rootValue: {
+          users: [
+            { friend: { name: 'Ada', pending: false } },
+            { friend: { name: 'ignored', pending: true } },
+          ],
+        },
+        hooks: {
+          asyncWorkFinished() {
+            asyncWorkFinishedCalled = true;
+            resolveAsyncWorkFinished(undefined);
+          },
+        },
+      });
+      if (fatalResultMode === 'synchronous iterable') {
+        expect(result).not.to.be.instanceOf(Promise);
+      } else {
+        assert(result instanceof Promise);
+      }
+      let resultSettled = !(result instanceof Promise);
+      const resultPromise = Promise.resolve(result).then((resolved) => {
+        resultSettled = true;
+        return resolved;
+      });
+
+      await isTypeOfStarted;
+      if (fatalResultMode === 'promised iterable') {
+        resolveFatalResult(['ok', null]);
+      }
+      await new Promise((resolve) => {
+        setTimeout(resolve, 0);
+      });
+      const settledBeforePendingCompletion = resultSettled;
+      const hookCalledBeforePendingCompletion = asyncWorkFinishedCalled;
+      resolveIsTypeOf(true);
+
+      expectJSON(await resultPromise).toDeepEqual({
+        data: {
+          users: [{ friend: { name: 'Ada' }, fatal: 'ok' }, null],
+        },
+        errors: [
+          {
+            message: `Cannot return null for non-nullable field BatchNestedCompletionUser${typeNameSuffix}.fatal.`,
+            path: ['users', 1, 'fatal'],
+            locations: [{ line: 1, column: 27 }],
+          },
+        ],
+      });
+      expect(settledBeforePendingCompletion).to.equal(true);
+      expect(hookCalledBeforePendingCompletion).to.equal(false);
+      await asyncWorkFinished;
+      expect(asyncWorkFinishedCalled).to.equal(true);
+    });
+  }
+
   it('ignores a late rejection from abandoned work while unrelated work remains active', async () => {
     const { promise: abandonedIsTypeOf, reject: rejectAbandonedIsTypeOf } =
       promiseWithResolvers<boolean>();

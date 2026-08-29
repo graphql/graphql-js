@@ -15,7 +15,7 @@ import { isObjectType } from '../../type/definition.ts';
 import { buildResolveInfo } from '../buildResolveInfo.ts';
 
 import type { BatchWorkUnit } from './completeBatchWork.ts';
-import { completeBatchWork } from './completeBatchWork.ts';
+import { createBatchWork } from './completeBatchWork.ts';
 import { getNullablePath } from './getNullablePath.ts';
 import { setPathValue } from './setPathValue.ts';
 import type {
@@ -33,9 +33,9 @@ export function completeFieldBatchGroup<TPositionContext>(
   batchGroup: BatchFieldGroup<TPositionContext>,
   batchEntries: ReadonlyArray<BatchFieldEntry<TPositionContext>>,
   batchResult: unknown,
-): PromiseOrValue<void> {
+): BatchWorkUnit | undefined {
   if (!isIterableObject(batchResult)) {
-    return handleFieldBatchGroupError(
+    handleFieldBatchGroupError(
       executor,
       data,
       rootPath,
@@ -45,11 +45,12 @@ export function completeFieldBatchGroup<TPositionContext>(
       batchGroup,
       batchEntries,
     );
+    return;
   }
 
   const batchValues = Array.from(batchResult);
   if (batchValues.length !== batchEntries.length) {
-    return handleFieldBatchGroupError(
+    handleFieldBatchGroupError(
       executor,
       data,
       rootPath,
@@ -59,6 +60,7 @@ export function completeFieldBatchGroup<TPositionContext>(
       batchGroup,
       batchEntries,
     );
+    return;
   }
 
   const batchObjectType =
@@ -96,7 +98,7 @@ export function completeFieldBatchGroup<TPositionContext>(
     throw error;
   }
 
-  return completeBatchWork(executor, workUnits);
+  return createBatchWork(executor, workUnits);
 }
 
 // eslint-disable-next-line max-params

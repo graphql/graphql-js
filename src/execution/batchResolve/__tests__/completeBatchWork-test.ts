@@ -7,7 +7,12 @@ import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.ts';
 
 import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.ts';
 
-import { completeBatchWork } from '../completeBatchWork.ts';
+import type { BatchWorkUnit } from '../completeBatchWork.ts';
+import {
+  completeBatchWork,
+  createBatchWork,
+  createBatchWorkContinuation,
+} from '../completeBatchWork.ts';
 import type { BatchExecutor } from '../types.ts';
 
 describe('completeBatchWork', () => {
@@ -95,5 +100,77 @@ describe('completeBatchWork', () => {
 
     remaining.reject(new Error('late rejection'));
     await resolveOnNextTick();
+  });
+
+  it('propagates a nested rejection during a sibling liveness refresh', async () => {
+    const trigger = promiseWithResolvers<undefined>();
+    const fatal = promiseWithResolvers<undefined>();
+    const errors: Array<unknown> = [];
+    const trackedPromises: Array<unknown> = [];
+    const executor = {
+      collectedErrors: { errors },
+      getAsyncHelpers: () => ({
+        track: (promises: ReadonlyArray<unknown>) => {
+          trackedPromises.push(...promises);
+        },
+      }),
+    } as unknown as BatchExecutor<undefined>;
+    const innerWork = createBatchWork(executor, [
+      { promise: fatal.promise, isActive: () => true },
+    ]);
+    assert(innerWork !== undefined);
+    const triggerWork = trigger.promise.then(() => {
+      errors.push(new Error('sibling nulled a path'));
+    });
+    const outerWork = createBatchWork(executor, [
+      { promise: triggerWork, isActive: () => true },
+      innerWork,
+    ]);
+    assert(outerWork !== undefined);
+    const fatalError = new Error('nested fatal rejection');
+
+    trigger.resolve(undefined);
+    fatal.reject(fatalError);
+
+    expect(await expectPromise(outerWork.promise).toReject()).to.equal(
+      fatalError,
+    );
+    expect(trackedPromises).to.deep.equal([]);
+  });
+
+  it('propagates a continuation rejection during a sibling liveness refresh', async () => {
+    const trigger = promiseWithResolvers<undefined>();
+    const continuation = promiseWithResolvers<BatchWorkUnit | undefined>();
+    const errors: Array<unknown> = [];
+    const trackedPromises: Array<unknown> = [];
+    const executor = {
+      collectedErrors: { errors },
+      getAsyncHelpers: () => ({
+        track: (promises: ReadonlyArray<unknown>) => {
+          trackedPromises.push(...promises);
+        },
+      }),
+    } as unknown as BatchExecutor<undefined>;
+    const continuationWork = createBatchWorkContinuation(
+      continuation.promise,
+      () => true,
+    );
+    const triggerWork = trigger.promise.then(() => {
+      errors.push(new Error('sibling nulled a path'));
+    });
+    const outerWork = createBatchWork(executor, [
+      { promise: triggerWork, isActive: () => true },
+      continuationWork,
+    ]);
+    assert(outerWork !== undefined);
+    const fatalError = new Error('continuation fatal rejection');
+
+    trigger.resolve(undefined);
+    continuation.reject(fatalError);
+
+    expect(await expectPromise(outerWork.promise).toReject()).to.equal(
+      fatalError,
+    );
+    expect(trackedPromises).to.deep.equal([]);
   });
 });

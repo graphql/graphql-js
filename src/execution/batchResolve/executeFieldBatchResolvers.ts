@@ -1,8 +1,7 @@
-import { isPromise, isPromiseLike } from '../../jsutils/isPromise.ts';
+import { isPromiseLike } from '../../jsutils/isPromise.ts';
 import type { ObjMap } from '../../jsutils/ObjMap.ts';
 import type { Path } from '../../jsutils/Path.ts';
 import { pathToArray } from '../../jsutils/Path.ts';
-import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 
 import type {
   GraphQLBatchResolveContext,
@@ -18,7 +17,10 @@ import { getArgumentValues } from '../values.ts';
 
 import { completeAsyncFieldBatchGroup } from './completeAsyncFieldBatchGroup.ts';
 import type { BatchWorkUnit } from './completeBatchWork.ts';
-import { completeBatchWork } from './completeBatchWork.ts';
+import {
+  completeBatchWork,
+  createBatchWorkContinuation,
+} from './completeBatchWork.ts';
 import {
   completeFieldBatchGroup,
   handleFieldBatchGroupError,
@@ -59,15 +61,8 @@ export function executeFieldBatchResolvers<TPositionContext>(
         batchGroup,
         activeEntries,
       );
-      if (isPromise(result)) {
-        workUnits.push({
-          promise: result,
-          isActive: () =>
-            activeEntries.some(
-              (entry) =>
-                !executor.collectedErrors.hasNulledPosition(entry.path),
-            ),
-        });
+      if (result !== undefined) {
+        workUnits.push(result);
       }
     }
   } catch (error) {
@@ -89,7 +84,7 @@ function executeFieldBatchResolver<TPositionContext>(
   rootPath: Path | undefined,
   batchGroup: BatchFieldGroup<TPositionContext>,
   activeEntries: ReadonlyArray<BatchFieldEntry<TPositionContext>>,
-): PromiseOrValue<void> {
+): BatchWorkUnit | undefined {
   let batchResult;
   try {
     const {
@@ -141,7 +136,7 @@ function executeFieldBatchResolver<TPositionContext>(
             resolveBatch,
           );
   } catch (rawError) {
-    return handleFieldBatchGroupError(
+    handleFieldBatchGroupError(
       executor,
       data,
       rootPath,
@@ -149,27 +144,36 @@ function executeFieldBatchResolver<TPositionContext>(
       batchGroup,
       activeEntries,
     );
+    return;
   }
 
   if (isPromiseLike(batchResult)) {
-    return Promise.resolve(batchResult).then(
-      (resolvedBatchResult) =>
-        completeFieldBatchResult(
-          executor,
-          data,
-          rootPath,
-          batchGroup,
-          activeEntries,
-          resolvedBatchResult,
-        ),
-      (rawError: unknown) =>
-        handleFieldBatchGroupError(
-          executor,
-          data,
-          rootPath,
-          rawError,
-          batchGroup,
-          activeEntries,
+    return createBatchWorkContinuation(
+      Promise.resolve(batchResult).then(
+        (resolvedBatchResult) =>
+          completeFieldBatchResult(
+            executor,
+            data,
+            rootPath,
+            batchGroup,
+            activeEntries,
+            resolvedBatchResult,
+          ),
+        (rawError: unknown) => {
+          handleFieldBatchGroupError(
+            executor,
+            data,
+            rootPath,
+            rawError,
+            batchGroup,
+            activeEntries,
+          );
+          return undefined;
+        },
+      ),
+      () =>
+        activeEntries.some(
+          (entry) => !executor.collectedErrors.hasNulledPosition(entry.path),
         ),
     );
   }
@@ -184,22 +188,23 @@ function executeFieldBatchResolver<TPositionContext>(
   );
 }
 
+/** @internal */
 // eslint-disable-next-line max-params
-function completeFieldBatchResult<TPositionContext>(
+export function completeFieldBatchResult<TPositionContext>(
   executor: BatchExecutor<TPositionContext>,
   data: unknown,
   rootPath: Path | undefined,
   batchGroup: BatchFieldGroup<TPositionContext>,
   activeEntries: ReadonlyArray<BatchFieldEntry<TPositionContext>>,
   batchResult: unknown,
-): PromiseOrValue<void> {
+): BatchWorkUnit | undefined {
   let asyncIteratorMethod: (() => AsyncIterator<unknown>) | undefined;
   try {
     asyncIteratorMethod = (
       batchResult as AsyncIterable<unknown> | null | undefined
     )?.[Symbol.asyncIterator];
   } catch (rawError) {
-    return handleFieldBatchGroupError(
+    handleFieldBatchGroupError(
       executor,
       data,
       rootPath,
@@ -207,6 +212,7 @@ function completeFieldBatchResult<TPositionContext>(
       batchGroup,
       activeEntries,
     );
+    return;
   }
 
   if (typeof asyncIteratorMethod === 'function') {
@@ -214,7 +220,7 @@ function completeFieldBatchResult<TPositionContext>(
     try {
       iterator = asyncIteratorMethod.call(batchResult);
     } catch (rawError) {
-      return handleFieldBatchGroupError(
+      handleFieldBatchGroupError(
         executor,
         data,
         rootPath,
@@ -222,6 +228,7 @@ function completeFieldBatchResult<TPositionContext>(
         batchGroup,
         activeEntries,
       );
+      return;
     }
     return completeAsyncFieldBatchGroup(
       executor,
