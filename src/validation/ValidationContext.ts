@@ -190,6 +190,7 @@ export class ValidationContext extends ASTValidationContext {
     ReadonlyArray<VariableUsage>
   >;
   private _hideSuggestions: boolean;
+  private _experimentalEmptySelectionSets: boolean;
 
   /**
    * Creates a ValidationContext instance.
@@ -198,6 +199,7 @@ export class ValidationContext extends ASTValidationContext {
    * @param typeInfo - TypeInfo instance used to track traversal state.
    * @param onError - Callback invoked for each validation error.
    * @param hideSuggestions - Whether suggestion text should be omitted from errors.
+   * @param experimentalEmptySelectionSets - Whether selection sets on composite types may be empty.
    * @example
    * ```ts
    * import { parse } from 'graphql/language';
@@ -225,12 +227,14 @@ export class ValidationContext extends ASTValidationContext {
    * errors[0].message; // => 'Example validation error.'
    * ```
    */
+  // eslint-disable-next-line max-params
   constructor(
     schema: GraphQLSchema,
     ast: DocumentNode,
     typeInfo: TypeInfo,
     onError: (error: GraphQLError) => void,
     hideSuggestions?: Maybe<boolean>,
+    experimentalEmptySelectionSets?: Maybe<boolean>,
   ) {
     super(ast, onError);
     this._schema = schema;
@@ -238,6 +242,8 @@ export class ValidationContext extends ASTValidationContext {
     this._variableUsages = new Map();
     this._recursiveVariableUsages = new Map();
     this._hideSuggestions = hideSuggestions ?? false;
+    this._experimentalEmptySelectionSets =
+      experimentalEmptySelectionSets ?? false;
   }
 
   /**
@@ -254,6 +260,17 @@ export class ValidationContext extends ASTValidationContext {
    */
   get hideSuggestions(): boolean {
     return this._hideSuggestions;
+  }
+
+  /**
+   * Returns whether empty selection sets on composite types are allowed.
+   *
+   * Note: empty selection sets are experimental and may be changed or removed
+   * in the future.
+   * @returns True when a selection set on a composite type may be empty.
+   */
+  get experimentalEmptySelectionSets(): boolean {
+    return this._experimentalEmptySelectionSets;
   }
 
   /**

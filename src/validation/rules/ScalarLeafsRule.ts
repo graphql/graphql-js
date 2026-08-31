@@ -70,7 +70,10 @@ export function ScalarLeafsRule(context: ValidationContext): ASTVisitor {
               { nodes: node },
             ),
           );
-        } else if (selectionSet.selections.length === 0) {
+        } else if (
+          selectionSet.selections.length === 0 &&
+          !context.experimentalEmptySelectionSets
+        ) {
           const fieldName = node.name.value;
           const typeStr = inspect(type);
           context.reportError(

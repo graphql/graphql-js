@@ -12,6 +12,10 @@ import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.ts';
 
 import { inspect } from '../../jsutils/inspect.ts';
 
+import type {
+  FragmentDefinitionNode,
+  OperationDefinitionNode,
+} from '../ast.ts';
 import { Kind } from '../kinds.ts';
 import {
   parse,
@@ -500,6 +504,70 @@ describe('Parser', () => {
     const document = 'fragment a on t { ...b(v: $v) }';
 
     expect(() => parse(document)).to.throw();
+  });
+
+  it('allows parsing empty selection sets', () => {
+    const document = parse('{ node { } }', {
+      experimentalEmptySelectionSets: true,
+      noLocation: true,
+    });
+
+    expectJSON(document).toDeepEqual({
+      kind: Kind.DOCUMENT,
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          description: undefined,
+          operation: 'query',
+          name: undefined,
+          variableDefinitions: undefined,
+          directives: undefined,
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            selections: [
+              {
+                kind: Kind.FIELD,
+                alias: undefined,
+                name: { kind: Kind.NAME, value: 'node' },
+                arguments: undefined,
+                directives: undefined,
+                selectionSet: {
+                  kind: Kind.SELECTION_SET,
+                  selections: [],
+                },
+              },
+            ],
+          },
+        },
+      ],
+    });
+  });
+
+  it('allows parsing an empty operation selection set', () => {
+    const document = parse('{ }', {
+      experimentalEmptySelectionSets: true,
+      noLocation: true,
+    });
+    const operation = document.definitions[0] as OperationDefinitionNode;
+
+    expect(operation.selectionSet.selections).to.deep.equal([]);
+  });
+
+  it('allows parsing an empty fragment selection set', () => {
+    const document = parse('fragment a on t { }', {
+      experimentalEmptySelectionSets: true,
+      noLocation: true,
+    });
+    const fragment = document.definitions[0] as FragmentDefinitionNode;
+
+    expect(fragment.selectionSet.selections).to.deep.equal([]);
+  });
+
+  it('disallows parsing empty selection sets without experimental flag', () => {
+    expectSyntaxError('{ node { } }').to.deep.equal({
+      message: 'Syntax Error: Expected Name, found "}".',
+      locations: [{ line: 1, column: 10 }],
+    });
   });
 
   it('contains location that can be Object.toStringified, JSON.stringified, or jsutils.inspected', () => {

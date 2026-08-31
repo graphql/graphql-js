@@ -5,6 +5,7 @@ import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 import type { DocumentNode } from '../../language/ast.ts';
 import { OperationTypeNode } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
+import { parse } from '../../language/parser.ts';
 
 import { ScalarLeafsRule } from '../rules/ScalarLeafsRule.ts';
 import { validate } from '../validate.ts';
@@ -71,6 +72,34 @@ describe('Validate: Scalar leafs', () => {
       {
         message:
           'Field "human" of type "Human" must have at least one field selected.',
+      },
+    ]);
+  });
+
+  it('object type having no selections is allowed with experimentalEmptySelectionSets', () => {
+    const doc = parse('{ human { } }', {
+      experimentalEmptySelectionSets: true,
+    });
+
+    const errors = validate(testSchema, doc, [ScalarLeafsRule], {
+      experimentalEmptySelectionSets: true,
+    });
+    expectJSON(errors).toDeepEqual([]);
+  });
+
+  it('scalar selection is still rejected with experimentalEmptySelectionSets', () => {
+    const doc = parse('{ human { name { } } }', {
+      experimentalEmptySelectionSets: true,
+    });
+
+    const errors = validate(testSchema, doc, [ScalarLeafsRule], {
+      experimentalEmptySelectionSets: true,
+    });
+    expectJSON(errors).toDeepEqual([
+      {
+        message:
+          'Field "name" must not have a selection since type "String" has no subfields.',
+        locations: [{ line: 1, column: 16 }],
       },
     ]);
   });
