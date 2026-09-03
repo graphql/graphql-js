@@ -166,8 +166,7 @@ function validateImpl(
       }
       errors.push(error);
     },
-    hideSuggestions,
-    experimentalEmptySelectionSets,
+    { hideSuggestions, experimentalEmptySelectionSets },
   );
 
   // This uses a specialized visitor which runs multiple visitors in parallel,
