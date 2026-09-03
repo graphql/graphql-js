@@ -233,9 +233,25 @@ export class ValidationContext extends ASTValidationContext {
     ast: DocumentNode,
     typeInfo: TypeInfo,
     onError: (error: GraphQLError) => void,
+    options?: ValidationContextOptions
+  );
+  /** @deprecated Please pass options object; this signature will be removed in V18 */
+  constructor(
+    schema: GraphQLSchema,
+    ast: DocumentNode,
+    typeInfo: TypeInfo,
+    onError: (error: GraphQLError) => void,
     hideSuggestions?: Maybe<boolean>,
-    experimentalEmptySelectionSets?: Maybe<boolean>,
+  );
+  constructor(
+    schema: GraphQLSchema,
+    ast: DocumentNode,
+    typeInfo: TypeInfo,
+    onError: (error: GraphQLError) => void,
+    hideSuggestionsOrOptions?: Maybe<boolean> | ValidationContextOptions
   ) {
+    const options = typeof hideSuggestionsOrOptions === 'boolean' ? { hideSuggestions: hideSuggestionsOrOptions } : hideSuggestionsOrOptions ?? {};
+    const { hideSuggestions = false, experimentalEmptySelectionSets = false } = options;
     super(ast, onError);
     this._schema = schema;
     this._typeInfo = typeInfo;
