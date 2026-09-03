@@ -117,8 +117,20 @@ export function OverlappingFieldsCanBeMergedRule(
   // times, so this improves the performance of this validator.
   const cachedFieldsAndFragmentSpreads: FieldsAndFragmentSpreadsCache =
     new Map();
+  let fragmentVarMap: Map<string, ValueNode> | undefined;
 
   return {
+    FragmentDefinition: {
+      enter(node) {
+        const fragmentName = node.name.value;
+        const fragmentSignature =
+          context.getFragmentSignatureByName()(fragmentName);
+        fragmentVarMap = getVarMap(fragmentSignature, fragmentName);
+      },
+      leave() {
+        fragmentVarMap = undefined;
+      },
+    },
     SelectionSet(selectionSet) {
       const conflicts = findConflictsWithinSelectionSet(
         context,
@@ -127,6 +139,7 @@ export function OverlappingFieldsCanBeMergedRule(
         comparedFragmentPairs,
         context.getParentType(),
         selectionSet,
+        fragmentVarMap,
       );
       for (const [[responseName, reason], fields1, fields2] of conflicts) {
         const reasonMsg = reasonMessage(reason);
@@ -235,9 +248,9 @@ function findConflictsWithinSelectionSet(
   comparedFragmentPairs: PairSet<string>,
   parentType: Maybe<GraphQLNamedType>,
   selectionSet: SelectionSetNode,
+  varMap: Map<string, ValueNode> | undefined,
 ): Array<Conflict> {
   const conflicts: Array<Conflict> = [];
-  const varMap = getVarMap(context.getFragmentSignature());
 
   const [fieldMap, fragmentSpreads] = getFieldsAndFragmentSpreads(
     context,

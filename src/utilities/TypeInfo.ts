@@ -459,8 +459,8 @@ export class TypeInfo {
   }
 
   /**
-   * Returns the current fragment signature.
-   * @returns The fragment signature for the current fragment definition.
+   * Returns the fragment signature referenced by the current fragment spread.
+   * @returns The referenced fragment signature, if available.
    * @example
    * ```ts
    * import { parse, visit } from 'graphql/language';
