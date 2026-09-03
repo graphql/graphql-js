@@ -9,7 +9,6 @@ export { validate } from './validate.ts';
 export type { ValidationOptions } from './validate.ts';
 
 export { ValidationContext } from './ValidationContext.ts';
-export type { ValidationContextOptions } from './ValidationContext.ts';
 export type { ValidationRule } from './ValidationContext.ts';
 
 // All validation rules in the GraphQL Specification.

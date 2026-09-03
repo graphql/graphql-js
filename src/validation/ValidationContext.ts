@@ -177,7 +177,7 @@ export class SDLValidationContext extends ASTValidationContext {
 export type SDLValidationRule = (context: SDLValidationContext) => ASTVisitor;
 
 /** Options used when constructing a {@link ValidationContext}. */
-export interface ValidationContextOptions {
+interface ValidationContextOptions {
   /** Whether suggestion text should be omitted from errors. */
   hideSuggestions?: Maybe<boolean>;
   /** Whether selection sets on composite types may be empty. */
@@ -262,8 +262,7 @@ export class ValidationContext extends ASTValidationContext {
       typeof hideSuggestionsOrOptions === 'boolean'
         ? { hideSuggestions: hideSuggestionsOrOptions }
         : (hideSuggestionsOrOptions ?? {});
-    const { hideSuggestions = false, experimentalEmptySelectionSets = false } =
-      options;
+    const { hideSuggestions, experimentalEmptySelectionSets } = options;
     super(ast, onError);
     this._schema = schema;
     this._typeInfo = typeInfo;
