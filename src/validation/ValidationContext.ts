@@ -176,6 +176,14 @@ export class SDLValidationContext extends ASTValidationContext {
 /** @internal */
 export type SDLValidationRule = (context: SDLValidationContext) => ASTVisitor;
 
+/** Options used when constructing a {@link ValidationContext}. */
+interface ValidationContextOptions {
+  /** Whether suggestion text should be omitted from errors. */
+  hideSuggestions?: Maybe<boolean>;
+  /** Whether selection sets on composite types may be empty. */
+  allowEmptySelectionSets?: Maybe<boolean>;
+}
+
 /** Validation context passed to query validation rules. */
 export class ValidationContext extends ASTValidationContext {
   private _schema: GraphQLSchema;
@@ -190,6 +198,7 @@ export class ValidationContext extends ASTValidationContext {
     ReadonlyArray<VariableUsage>
   >;
   private _hideSuggestions: boolean;
+  private _allowEmptySelectionSets: boolean;
 
   /**
    * Creates a ValidationContext instance.
@@ -197,7 +206,7 @@ export class ValidationContext extends ASTValidationContext {
    * @param ast - Document AST being validated.
    * @param typeInfo - TypeInfo instance used to track traversal state.
    * @param onError - Callback invoked for each validation error.
-   * @param hideSuggestions - Whether suggestion text should be omitted from errors.
+   * @param options - Validation options.
    * @example
    * ```ts
    * import { parse } from 'graphql/language';
@@ -230,14 +239,37 @@ export class ValidationContext extends ASTValidationContext {
     ast: DocumentNode,
     typeInfo: TypeInfo,
     onError: (error: GraphQLError) => void,
+    options?: ValidationContextOptions,
+  );
+  // eslint-disable-next-line
+  /** @deprecated Please pass options object; this signature will be removed in V18 */
+  constructor(
+    schema: GraphQLSchema,
+    ast: DocumentNode,
+    typeInfo: TypeInfo,
+    onError: (error: GraphQLError) => void,
+    // eslint-disable-next-line @typescript-eslint/unified-signatures
     hideSuggestions?: Maybe<boolean>,
+  );
+  constructor(
+    schema: GraphQLSchema,
+    ast: DocumentNode,
+    typeInfo: TypeInfo,
+    onError: (error: GraphQLError) => void,
+    hideSuggestionsOrOptions?: Maybe<boolean> | ValidationContextOptions,
   ) {
+    const options =
+      typeof hideSuggestionsOrOptions === 'boolean'
+        ? { hideSuggestions: hideSuggestionsOrOptions }
+        : (hideSuggestionsOrOptions ?? {});
+    const { hideSuggestions, allowEmptySelectionSets } = options;
     super(ast, onError);
     this._schema = schema;
     this._typeInfo = typeInfo;
     this._variableUsages = new Map();
     this._recursiveVariableUsages = new Map();
     this._hideSuggestions = hideSuggestions ?? false;
+    this._allowEmptySelectionSets = allowEmptySelectionSets ?? true;
   }
 
   /**
@@ -254,6 +286,14 @@ export class ValidationContext extends ASTValidationContext {
    */
   get hideSuggestions(): boolean {
     return this._hideSuggestions;
+  }
+
+  /**
+   * Returns whether empty selection sets on composite types are allowed.
+   * @returns True when a selection set on a composite type may be empty.
+   */
+  get allowEmptySelectionSets(): boolean {
+    return this._allowEmptySelectionSets;
   }
 
   /**

@@ -32,6 +32,15 @@ export interface ValidationOptions {
   maxErrors?: number;
   /** Whether suggestion text should be omitted from validation errors. */
   hideSuggestions?: Maybe<boolean>;
+  /**
+   * If enabled (the default), a selection set on an object, interface or
+   * union type is only required to be present, rather than to be non-empty.
+   *
+   * Pair this with the `allowEmptySelectionSets` parse option.
+   *
+   * See https://github.com/graphql/graphql-spec/pull/1227
+   */
+  allowEmptySelectionSets?: boolean | undefined;
 }
 
 // Per the specification, descriptions must not affect validation.
@@ -137,6 +146,7 @@ function validateImpl(
 ): ReadonlyArray<GraphQLError> {
   const maxErrors = options?.maxErrors ?? 100;
   const hideSuggestions = options?.hideSuggestions ?? false;
+  const allowEmptySelectionSets = options?.allowEmptySelectionSets ?? true;
 
   // If the schema used for validation is invalid, throw an error.
   assertValidSchema(schema);
@@ -153,7 +163,7 @@ function validateImpl(
       }
       errors.push(error);
     },
-    hideSuggestions,
+    { hideSuggestions, allowEmptySelectionSets },
   );
 
   // This uses a specialized visitor which runs multiple visitors in parallel,

@@ -119,6 +119,21 @@ export interface ParseOptions {
   experimentalFragmentArguments?: boolean | undefined;
 
   /**
+   * If enabled (the default), the parser accepts selection sets that contain
+   * no selections, changing the grammar from `SelectionSet : { Selection+ }`
+   * to `SelectionSet : { Selection* }`.
+   *
+   * See https://github.com/graphql/graphql-spec/pull/1227
+   * @example
+   * ```graphql prettier-ignore
+   * {
+   *   viewer { }
+   * }
+   * ```
+   */
+  allowEmptySelectionSets?: boolean | undefined;
+
+  /**
    * Internal parser hook for GraphQL.js entry points that need to parse a
    * restricted grammar with an alternate lexer.
    * @internal
@@ -578,16 +593,21 @@ export class Parser {
    * SelectionSet : { Selection+ }
    * ```
    *
+   * With `allowEmptySelectionSets` enabled (the default):
+   *
+   * ```
+   * SelectionSet : { Selection* }
+   * ```
+   *
    * @internal
    */
   parseSelectionSet(): SelectionSetNode {
     return this.node<SelectionSetNode>(this._lexer.token, {
       kind: Kind.SELECTION_SET,
-      selections: this.many(
-        TokenKind.BRACE_L,
-        this.parseSelection,
-        TokenKind.BRACE_R,
-      ),
+      selections:
+        this._options.allowEmptySelectionSets === false
+          ? this.many(TokenKind.BRACE_L, this.parseSelection, TokenKind.BRACE_R)
+          : this.any(TokenKind.BRACE_L, this.parseSelection, TokenKind.BRACE_R),
     });
   }
 
