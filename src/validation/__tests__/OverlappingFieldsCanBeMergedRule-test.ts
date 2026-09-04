@@ -1503,6 +1503,39 @@ describe('Validate: Overlapping fields can be merged', () => {
       ]);
     });
 
+    it('checks fragment arguments in each variable scope', () => {
+      expectErrors(`
+        fragment Outer($x: Int, $y: Int) on Type {
+          ...WithArgs(x: $x)
+          ...WithArgs(x: $y)
+        }
+        fragment WithArgs($x: Int) on Type {
+          a(x: $x)
+        }
+        query Example($x: Int, $y: Int) {
+          ...WithArgs(x: $x)
+          ...WithArgs(x: $y)
+        }
+      `).toDeepEqual([
+        {
+          message:
+            'Spreads "WithArgs" conflict because WithArgs(x: $x) and WithArgs(x: $y) have different fragment arguments.',
+          locations: [
+            { line: 3, column: 11 },
+            { line: 4, column: 11 },
+          ],
+        },
+        {
+          message:
+            'Spreads "WithArgs" conflict because WithArgs(x: $x) and WithArgs(x: $y) have different fragment arguments.',
+          locations: [
+            { line: 10, column: 11 },
+            { line: 11, column: 11 },
+          ],
+        },
+      ]);
+    });
+
     it('allows operations with overlapping fields with arguments using identical operation variables', () => {
       expectValid(`
         query ($y: Int = 1) {
