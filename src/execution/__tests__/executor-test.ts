@@ -223,6 +223,27 @@ describe('Execute: Handles basic execution tasks', () => {
     });
   });
 
+  it('executes empty selection sets', () => {
+    const Type: GraphQLObjectType = new GraphQLObjectType({
+      name: 'Type',
+      fields: () => ({
+        a: { type: GraphQLString, resolve: () => 'Apple' },
+        deep: { type: Type, resolve: () => ({}) },
+      }),
+    });
+    const schema = new GraphQLSchema({ query: Type });
+
+    const document = parse('{ a deep { } ...Frag } fragment Frag on Type { }');
+
+    const result = executeSync({ schema, document });
+    expect(result).to.deep.equal({ data: { a: 'Apple', deep: {} } });
+
+    const emptyDocument = parse('{ }');
+    expect(executeSync({ schema, document: emptyDocument })).to.deep.equal({
+      data: {},
+    });
+  });
+
   it('provides info about current execution state', async () => {
     // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
     const { promise, resolve } = promiseWithResolvers<void>();

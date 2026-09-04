@@ -18,6 +18,21 @@ describe('Printer: Query document', () => {
     expect(print(ast)).to.equal('foo');
   });
 
+  it('prints empty selection sets', () => {
+    const ast = parse('{ foo { } bar { ... on Baz { } } }');
+    expect(print(ast)).to.equal(dedent`
+      {
+        foo {}
+        bar {
+          ... on Baz {}
+        }
+      }
+    `);
+
+    const emptyOperationAST = parse('{ }');
+    expect(print(emptyOperationAST)).to.equal('{}');
+  });
+
   it('produces helpful error messages', () => {
     const badAST = { random: 'Data' };
 

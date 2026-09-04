@@ -575,7 +575,7 @@ export class Parser {
 
   /**
    * ```
-   * SelectionSet : { Selection+ }
+   * SelectionSet : { Selection* }
    * ```
    *
    * @internal
@@ -583,7 +583,7 @@ export class Parser {
   parseSelectionSet(): SelectionSetNode {
     return this.node<SelectionSetNode>(this._lexer.token, {
       kind: Kind.SELECTION_SET,
-      selections: this.many(
+      selections: this.any(
         TokenKind.BRACE_L,
         this.parseSelection,
         TokenKind.BRACE_R,
