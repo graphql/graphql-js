@@ -181,7 +181,7 @@ interface ValidationContextOptions {
   /** Whether suggestion text should be omitted from errors. */
   hideSuggestions?: Maybe<boolean>;
   /** Whether selection sets on composite types may be empty. */
-  experimentalEmptySelectionSets?: Maybe<boolean>;
+  allowEmptySelectionSets?: Maybe<boolean>;
 }
 
 /** Validation context passed to query validation rules. */
@@ -198,7 +198,7 @@ export class ValidationContext extends ASTValidationContext {
     ReadonlyArray<VariableUsage>
   >;
   private _hideSuggestions: boolean;
-  private _experimentalEmptySelectionSets: boolean;
+  private _allowEmptySelectionSets: boolean;
 
   /**
    * Creates a ValidationContext instance.
@@ -262,15 +262,14 @@ export class ValidationContext extends ASTValidationContext {
       typeof hideSuggestionsOrOptions === 'boolean'
         ? { hideSuggestions: hideSuggestionsOrOptions }
         : (hideSuggestionsOrOptions ?? {});
-    const { hideSuggestions, experimentalEmptySelectionSets } = options;
+    const { hideSuggestions, allowEmptySelectionSets } = options;
     super(ast, onError);
     this._schema = schema;
     this._typeInfo = typeInfo;
     this._variableUsages = new Map();
     this._recursiveVariableUsages = new Map();
     this._hideSuggestions = hideSuggestions ?? false;
-    this._experimentalEmptySelectionSets =
-      experimentalEmptySelectionSets ?? false;
+    this._allowEmptySelectionSets = allowEmptySelectionSets ?? true;
   }
 
   /**
@@ -291,13 +290,10 @@ export class ValidationContext extends ASTValidationContext {
 
   /**
    * Returns whether empty selection sets on composite types are allowed.
-   *
-   * Note: empty selection sets are experimental and may be changed or removed
-   * in the future.
    * @returns True when a selection set on a composite type may be empty.
    */
-  get experimentalEmptySelectionSets(): boolean {
-    return this._experimentalEmptySelectionSets;
+  get allowEmptySelectionSets(): boolean {
+    return this._allowEmptySelectionSets;
   }
 
   /**

@@ -234,14 +234,14 @@ describe('Execute: Handles basic execution tasks', () => {
     const schema = new GraphQLSchema({ query: Type });
 
     const document = parse('{ a deep { } ...Frag } fragment Frag on Type { }', {
-      experimentalEmptySelectionSets: true,
+      allowEmptySelectionSets: true,
     });
 
     const result = executeSync({ schema, document });
     expect(result).to.deep.equal({ data: { a: 'Apple', deep: {} } });
 
     const emptyDocument = parse('{ }', {
-      experimentalEmptySelectionSets: true,
+      allowEmptySelectionSets: true,
     });
     expect(executeSync({ schema, document: emptyDocument })).to.deep.equal({
       data: {},

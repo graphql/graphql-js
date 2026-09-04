@@ -119,11 +119,9 @@ export interface ParseOptions {
   experimentalFragmentArguments?: boolean | undefined;
 
   /**
-   * EXPERIMENTAL:
-   *
-   * If enabled, the parser accepts selection sets that contain no
-   * selections, changing the grammar from `SelectionSet : { Selection+ }` to
-   * `SelectionSet : { Selection* }`.
+   * If enabled (the default), the parser accepts selection sets that contain
+   * no selections, changing the grammar from `SelectionSet : { Selection+ }`
+   * to `SelectionSet : { Selection* }`.
    *
    * See https://github.com/graphql/graphql-spec/pull/1227
    * @example
@@ -133,7 +131,7 @@ export interface ParseOptions {
    * }
    * ```
    */
-  experimentalEmptySelectionSets?: boolean | undefined;
+  allowEmptySelectionSets?: boolean | undefined;
 
   /**
    * Internal parser hook for GraphQL.js entry points that need to parse a
@@ -595,7 +593,7 @@ export class Parser {
    * SelectionSet : { Selection+ }
    * ```
    *
-   * With `experimentalEmptySelectionSets` enabled:
+   * With `allowEmptySelectionSets` enabled (the default):
    *
    * ```
    * SelectionSet : { Selection* }
@@ -607,13 +605,9 @@ export class Parser {
     return this.node<SelectionSetNode>(this._lexer.token, {
       kind: Kind.SELECTION_SET,
       selections:
-        this._options.experimentalEmptySelectionSets === true
-          ? this.any(TokenKind.BRACE_L, this.parseSelection, TokenKind.BRACE_R)
-          : this.many(
-              TokenKind.BRACE_L,
-              this.parseSelection,
-              TokenKind.BRACE_R,
-            ),
+        this._options.allowEmptySelectionSets === false
+          ? this.many(TokenKind.BRACE_L, this.parseSelection, TokenKind.BRACE_R)
+          : this.any(TokenKind.BRACE_L, this.parseSelection, TokenKind.BRACE_R),
     });
   }
 

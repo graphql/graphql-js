@@ -20,7 +20,7 @@ describe('Printer: Query document', () => {
 
   it('prints empty selection sets', () => {
     const ast = parse('{ foo { } bar { ... on Baz { } } }', {
-      experimentalEmptySelectionSets: true,
+      allowEmptySelectionSets: true,
     });
     expect(print(ast)).to.equal(dedent`
       {
@@ -32,7 +32,7 @@ describe('Printer: Query document', () => {
     `);
 
     const emptyOperationAST = parse('{ }', {
-      experimentalEmptySelectionSets: true,
+      allowEmptySelectionSets: true,
     });
     expect(print(emptyOperationAST)).to.equal('{}');
   });
