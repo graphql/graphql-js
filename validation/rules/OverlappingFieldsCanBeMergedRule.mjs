@@ -18,9 +18,20 @@ export function OverlappingFieldsCanBeMergedRule(context) {
     const comparedFieldsAndFragmentPairs = new OrderedPairSet();
     const comparedFragmentPairs = new PairSet();
     const cachedFieldsAndFragmentSpreads = new Map();
+    let fragmentVarMap;
     return {
+        FragmentDefinition: {
+            enter(node) {
+                const fragmentName = node.name.value;
+                const fragmentSignature = context.getFragmentSignatureByName()(fragmentName);
+                fragmentVarMap = getVarMap(fragmentSignature, fragmentName);
+            },
+            leave() {
+                fragmentVarMap = undefined;
+            },
+        },
         SelectionSet(selectionSet) {
-            const conflicts = findConflictsWithinSelectionSet(context, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, context.getParentType(), selectionSet);
+            const conflicts = findConflictsWithinSelectionSet(context, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, context.getParentType(), selectionSet, fragmentVarMap);
             for (const [[responseName, reason], fields1, fields2] of conflicts) {
                 const reasonMsg = reasonMessage(reason);
                 context.reportError(new GraphQLError(`Fields "${responseName}" conflict because ${reasonMsg}. Use different aliases on the fields to fetch both if this was intentional.`, { nodes: fields1.concat(fields2) }));
@@ -28,9 +39,8 @@ export function OverlappingFieldsCanBeMergedRule(context) {
         },
     };
 }
-function findConflictsWithinSelectionSet(context, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, parentType, selectionSet) {
+function findConflictsWithinSelectionSet(context, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, parentType, selectionSet, varMap) {
     const conflicts = [];
-    const varMap = getVarMap(context.getFragmentSignature());
     const [fieldMap, fragmentSpreads] = getFieldsAndFragmentSpreads(context, cachedFieldsAndFragmentSpreads, parentType, selectionSet, varMap);
     collectConflictsWithin(context, conflicts, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, fieldMap, varMap);
     if (fragmentSpreads.length !== 0) {

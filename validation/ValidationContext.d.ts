@@ -430,8 +430,8 @@ export declare class ValidationContext extends ASTValidationContext {
      */
     getArgument(): Maybe<GraphQLArgument>;
     /**
-     * Returns the fragment signature at the current traversal position.
-     * @returns The current fragment signature, if one is active.
+     * Returns the fragment signature referenced by the current fragment spread.
+     * @returns The referenced fragment signature, if available.
      * @example
      * ```ts
      * import { parse, visit } from 'graphql/language';
