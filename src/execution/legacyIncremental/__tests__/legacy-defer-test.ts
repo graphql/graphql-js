@@ -1185,7 +1185,7 @@ describe('Execute: defer directive (legacy)', () => {
     });
   });
 
-  it('Skips duplicate nested defers on the same object', async () => {
+  it('Duplicates nested defers on the same object', async () => {
     const document = parse(`
       query {
         hero {
@@ -1194,12 +1194,6 @@ describe('Execute: defer directive (legacy)', () => {
               ...FriendFrag
               ... @defer {
                 ...FriendFrag
-                ... @defer {
-                  ...FriendFrag
-                  ... @defer {
-                    ...FriendFrag
-                  }
-                }
               }
             }
           }
@@ -1220,6 +1214,9 @@ describe('Execute: defer directive (legacy)', () => {
       },
       {
         incremental: [
+          { data: { id: '2', name: 'Han' }, path: ['hero', 'friends', 0] },
+          { data: { id: '3', name: 'Leia' }, path: ['hero', 'friends', 1] },
+          { data: { id: '4', name: 'C-3PO' }, path: ['hero', 'friends', 2] },
           { data: { id: '2', name: 'Han' }, path: ['hero', 'friends', 0] },
           { data: { id: '3', name: 'Leia' }, path: ['hero', 'friends', 1] },
           { data: { id: '4', name: 'C-3PO' }, path: ['hero', 'friends', 2] },
