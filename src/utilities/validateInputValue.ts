@@ -42,19 +42,19 @@ import { replaceVariables } from './replaceVariables.ts';
  * @example
  * ```ts
  * // Collect validation errors with their input paths.
- * import {
- *   GraphQLInputObjectType,
- *   GraphQLInt,
- *   GraphQLNonNull,
- * } from 'graphql/type';
- * import { validateInputValue } from 'graphql/utilities';
+ * import { assertInputObjectType } from 'graphql/type';
+ * import { buildSchema, validateInputValue } from 'graphql/utilities';
  *
- * const ReviewInput = new GraphQLInputObjectType({
- *   name: 'ReviewInput',
- *   fields: {
- *     stars: { type: new GraphQLNonNull(GraphQLInt) },
- *   },
- * });
+ * const schema = buildSchema(`
+ *   input ReviewInput {
+ *     stars: Int!
+ *   }
+ *
+ *   type Query {
+ *     reviews(filter: ReviewInput): [String]
+ *   }
+ * `);
+ * const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
  * const errors = [];
  *
  * validateInputValue({ stars: 'bad' }, ReviewInput, (error, path) => {
@@ -66,15 +66,19 @@ import { replaceVariables } from './replaceVariables.ts';
  * @example
  * ```ts
  * // This variant hides suggestion text for unknown input fields.
- * import { GraphQLInputObjectType, GraphQLString } from 'graphql/type';
- * import { validateInputValue } from 'graphql/utilities';
+ * import { assertInputObjectType } from 'graphql/type';
+ * import { buildSchema, validateInputValue } from 'graphql/utilities';
  *
- * const ReviewInput = new GraphQLInputObjectType({
- *   name: 'ReviewInput',
- *   fields: {
- *     comment: { type: GraphQLString },
- *   },
- * });
+ * const schema = buildSchema(`
+ *   input ReviewInput {
+ *     comment: String
+ *   }
+ *
+ *   type Query {
+ *     reviews(filter: ReviewInput): [String]
+ *   }
+ * `);
+ * const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
  * const errors = [];
  *
  * validateInputValue(
@@ -298,19 +302,19 @@ function reportInvalidValue(
  * ```ts
  * // Validate literal input values and collect literal paths.
  * import { parseValue } from 'graphql/language';
- * import {
- *   GraphQLInputObjectType,
- *   GraphQLInt,
- *   GraphQLNonNull,
- * } from 'graphql/type';
- * import { validateInputLiteral } from 'graphql/utilities';
+ * import { assertInputObjectType } from 'graphql/type';
+ * import { buildSchema, validateInputLiteral } from 'graphql/utilities';
  *
- * const ReviewInput = new GraphQLInputObjectType({
- *   name: 'ReviewInput',
- *   fields: {
- *     stars: { type: new GraphQLNonNull(GraphQLInt) },
- *   },
- * });
+ * const schema = buildSchema(`
+ *   input ReviewInput {
+ *     stars: Int!
+ *   }
+ *
+ *   type Query {
+ *     reviews(filter: ReviewInput): [String]
+ *   }
+ * `);
+ * const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
  * const errors = [];
  *
  * validateInputLiteral(

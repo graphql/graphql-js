@@ -45,22 +45,20 @@ import {
  * ```ts
  * // Coerce literal values without variables.
  * import { parseValue } from 'graphql/language';
- * import {
- *   GraphQLInputObjectType,
- *   GraphQLInt,
- *   GraphQLList,
- *   GraphQLNonNull,
- *   GraphQLString,
- * } from 'graphql/type';
- * import { valueFromAST } from 'graphql/utilities';
+ * import { assertInputObjectType } from 'graphql/type';
+ * import { buildSchema, valueFromAST } from 'graphql/utilities';
  *
- * const ReviewInput = new GraphQLInputObjectType({
- *   name: 'ReviewInput',
- *   fields: {
- *     stars: { type: new GraphQLNonNull(GraphQLInt) },
- *     tags: { type: new GraphQLList(GraphQLString) },
- *   },
- * });
+ * const schema = buildSchema(`
+ *   input ReviewInput {
+ *     stars: Int!
+ *     tags: [String]
+ *   }
+ *
+ *   type Query {
+ *     reviews(filter: ReviewInput): [String]
+ *   }
+ * `);
+ * const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
  *
  * valueFromAST(parseValue('{ stars: 5, tags: ["featured"] }'), ReviewInput); // => { stars: 5, tags: ['featured'] }
  * valueFromAST(parseValue('{ stars: "bad" }'), ReviewInput); // => undefined

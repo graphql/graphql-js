@@ -21,27 +21,15 @@ import type { ValidationContext } from '../../ValidationContext.ts';
  * @returns A visitor that reports validation errors for this rule.
  * @example
  * ```ts
- * import {
- *   GraphQLObjectType,
- *   GraphQLSchema,
- *   GraphQLString,
- *   parse,
- *   validate,
- * } from 'graphql';
+ * import { buildSchema, parse, validate } from 'graphql';
  * import { NoDeprecatedCustomRule } from 'graphql/validation';
  *
- * const schema = new GraphQLSchema({
- *   query: new GraphQLObjectType({
- *     name: 'Query',
- *     fields: {
- *       name: { type: GraphQLString },
- *       oldName: {
- *         type: GraphQLString,
- *         deprecationReason: 'Use name instead.',
- *       },
- *     },
- *   }),
- * });
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *     oldName: String @deprecated(reason: "Use name instead.")
+ *   }
+ * `);
  *
  * const invalidDocument = parse(`
  *   { oldName }

@@ -3,7 +3,7 @@ title: Handling Abort Signals
 sidebarTitle: Abort Signals
 ---
 
-import { Callout } from 'nextra/components';
+import { Callout, Tabs } from 'nextra/components';
 
 # Handling Abort Signals
 
@@ -72,26 +72,89 @@ resolver signal. This coarseness may change in future versions.
 Resolvers obtain the abort signal via `info.getAbortSignal()`. Pass that
 signal to downstream APIs that support cancellation.
 
+<Tabs items={['Code', 'SDL']}>
+  <Tabs.Tab>
+
 ```js
-const Query = new GraphQLObjectType({
-  name: 'Query',
+import {
+  GraphQLID,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLSchema,
+  GraphQLString,
+} from 'graphql';
+
+const User = new GraphQLObjectType({
+  name: 'User',
   fields: {
-    user: {
-      type: User,
-      args: { id: { type: new GraphQLNonNull(GraphQLID) } },
-      async resolve(_source, args, _context, info) {
-        const abortSignal = info.getAbortSignal();
+    id: { type: new GraphQLNonNull(GraphQLID) },
+    name: { type: GraphQLString },
+  },
+});
 
-        const response = await fetch(`https://users.example/${args.id}`, {
-          signal: abortSignal,
-        });
+const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      user: {
+        type: User,
+        args: { id: { type: new GraphQLNonNull(GraphQLID) } },
+        async resolve(_source, args, _context, info) {
+          const abortSignal = info.getAbortSignal();
 
-        return response.json();
+          const response = await fetch(`https://users.example/${args.id}`, {
+            signal: abortSignal,
+          });
+
+          return response.json();
+        },
+      },
+    },
+  }),
+});
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```js
+import { buildSchema } from 'graphql';
+
+const schema = buildSchema(
+  /* GraphQL */ `
+    type User {
+      id: ID!
+      name: String
+    }
+
+    type Query {
+      user(id: ID!): User
+    }
+  `,
+  {
+    supplementalConfig: {
+      objectTypes: {
+        Query: {
+          fields: {
+            async user(_source, args, _context, info) {
+              const abortSignal = info.getAbortSignal();
+
+              const response = await fetch(`https://users.example/${args.id}`, {
+                signal: abortSignal,
+              });
+
+              return response.json();
+            },
+          },
+        },
       },
     },
   },
-});
+);
 ```
+
+  </Tabs.Tab>
+</Tabs>
 
 As noted, this signal can be triggered by GraphQL.js itself. For example,
 suppose a query selects `user { profile recommendations }`, `profile` is
