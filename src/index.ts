@@ -396,6 +396,7 @@ export type {
   RootSelectionSetExecutor,
   AsyncWorkFinishedInfo,
   ExecutionHooks,
+  GraphQLErrorBehavior,
   VariableValues,
   ValidatedExecutionArgs,
   ValidatedSubscriptionArgs,
