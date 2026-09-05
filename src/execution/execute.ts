@@ -41,15 +41,19 @@ import {
 import { buildResolveInfo } from './buildResolveInfo.ts';
 import { cancellablePromise } from './cancellablePromise.ts';
 import type { FieldDetailsList, FragmentDetails } from './collectFields.ts';
-import { collectFields } from './collectFields.ts';
 import { createSharedExecutionContext } from './createSharedExecutionContext.ts';
 import type {
   ExecutionArgs,
+  RootSelectionSetExecutor,
   ValidatedExecutionArgs,
   ValidatedSubscriptionArgs,
 } from './ExecutionArgs.ts';
 import type { ExecutionResult } from './Executor.ts';
-import { Executor } from './Executor.ts';
+import {
+  collectRootFields,
+  createFieldCollectors,
+  Executor,
+} from './Executor.ts';
 import { ExecutorThrowingOnIncremental } from './ExecutorThrowingOnIncremental.ts';
 import type { GraphQLVariableSignature } from './getVariableSignature.ts';
 import { getVariableSignature } from './getVariableSignature.ts';
@@ -61,10 +65,10 @@ import { getArgumentValues, getVariableValues } from './values.ts';
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
   'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.';
 
-/** Function used to execute a validated root selection set for a subscription event. */
-export type RootSelectionSetExecutor = (
-  validatedExecutionArgs: ValidatedSubscriptionArgs,
-) => PromiseOrValue<ExecutionResult>;
+export type {
+  ExecutionArgs,
+  RootSelectionSetExecutor,
+} from './ExecutionArgs.ts';
 
 /**
  * Implements the "Executing requests" section of the GraphQL specification.
@@ -743,6 +747,7 @@ export function validateExecutionArgs(
     subscribeFieldResolver,
     abortSignal: externalAbortSignal,
     enableEarlyExecution,
+    enableBatchResolvers,
     hooks,
     options,
   } = args;
@@ -850,7 +855,7 @@ export function validateExecutionArgs(
       directive.name.value === GraphQLDisableErrorPropagationDirective.name,
   );
 
-  return {
+  const validatedExecutionArgs = {
     schema,
     document,
     fragmentDefinitions,
@@ -866,9 +871,14 @@ export function validateExecutionArgs(
     errorPropagation,
     externalAbortSignal: externalAbortSignal ?? undefined,
     enableEarlyExecution: enableEarlyExecution === true,
+    enableBatchResolvers: enableBatchResolvers === true,
     hooks: hooks ?? undefined,
     rawVariableValues,
-  };
+  } as ValidatedExecutionArgs;
+  validatedExecutionArgs.fieldCollectors = createFieldCollectors(
+    validatedExecutionArgs,
+  );
+  return validatedExecutionArgs;
 }
 
 /**
@@ -1078,7 +1088,6 @@ function executeSubscription(
 ): PromiseOrValue<AsyncIterable<unknown>> {
   const {
     schema,
-    fragments,
     rootValue,
     contextValue,
     operation,
@@ -1095,20 +1104,16 @@ function executeSubscription(
     );
   }
 
-  const { groupedFieldSet } = collectFields(
-    schema,
-    fragments,
-    variableValues,
+  const { groupedFieldSet } = collectRootFields(
+    validatedExecutionArgs,
     rootType,
-    operation.selectionSet,
-    hideSuggestions,
   );
 
-  const firstRootField = groupedFieldSet.entries().next().value as [
-    string,
-    FieldDetailsList,
-  ];
-  const [responseName, fieldDetailsList] = firstRootField;
+  const firstRootField = groupedFieldSet.entries().next();
+  if (firstRootField.done === true) {
+    throw new GraphQLError('Subscription operation must select a field.');
+  }
+  const [responseName, fieldDetailsList] = firstRootField.value;
   const firstFieldDetails = fieldDetailsList[0];
   const firstNode = firstFieldDetails.node;
   const fieldName = firstNode.name.value;

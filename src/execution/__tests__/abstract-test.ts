@@ -18,7 +18,7 @@ import { GraphQLSchema } from '../../type/schema.ts';
 
 import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { execute, executeSync } from '../execute.ts';
+import { execute, executeSync } from './executeTestUtils.ts';
 
 interface Context {
   async: boolean;

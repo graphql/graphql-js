@@ -29,8 +29,8 @@ describe('promiseAllTrackOnReject', () => {
     const values = [Promise.resolve(1), Promise.resolve(2), Promise.resolve(3)];
 
     await expectEqualPromisesOrValues([
-      tracker.promiseAllTrackOnReject(values),
-      Promise.all(values),
+      () => tracker.promiseAllTrackOnReject(values),
+      () => Promise.all(values),
     ]);
   });
 

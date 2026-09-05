@@ -15,7 +15,7 @@ import {
   execute,
   executeSync,
   experimentalExecuteIncrementally,
-} from '../execute.ts';
+} from './executeTestUtils.ts';
 
 class NumberHolder {
   theNumber: number;
@@ -132,8 +132,11 @@ describe('Execute: Handles mutation execution ordering', () => {
       }
     `);
 
-    const rootValue = new Root(6);
-    const mutationResult = await execute({ schema, document, rootValue });
+    const mutationResult = await execute(() => ({
+      schema,
+      document,
+      rootValue: new Root(6),
+    }));
 
     expect(mutationResult).to.deep.equal({
       data: {
@@ -179,8 +182,11 @@ describe('Execute: Handles mutation execution ordering', () => {
       }
     `);
 
-    const rootValue = new Root(6);
-    const result = await execute({ schema, document, rootValue });
+    const result = await execute(() => ({
+      schema,
+      document,
+      rootValue: new Root(6),
+    }));
 
     expectJSON(result).toDeepEqual({
       data: {
@@ -272,8 +278,11 @@ describe('Execute: Handles mutation execution ordering', () => {
       }
     `);
 
-    const rootValue = new Root(6);
-    const mutationResult = await execute({ schema, document, rootValue });
+    const mutationResult = await execute(() => ({
+      schema,
+      document,
+      rootValue: new Root(6),
+    }));
 
     expect(mutationResult).to.deep.equal({
       data: {

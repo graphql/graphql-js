@@ -5,7 +5,7 @@ export interface BenchmarkProject {
 
 export interface BenchmarkResult {
   name: string;
-  memPerOp: number;
+  memPerOp: number | undefined;
   ops: number;
   deviation: number;
   numSamples: number;

@@ -2,10 +2,16 @@ import { describe, it } from 'node:test';
 
 import { expect } from 'chai';
 
+import { expectMatchingValues } from '../../__testUtils__/expectMatchingValues.ts';
+import { createReplayableIterablePair } from '../../__testUtils__/replayableIterables.ts';
+
 import { identityFunc } from '../../jsutils/identityFunc.ts';
 import { invariant } from '../../jsutils/invariant.ts';
+import { isIterableObject } from '../../jsutils/isIterableObject.ts';
+import type { Maybe } from '../../jsutils/Maybe.ts';
 import type { ReadOnlyObjMap } from '../../jsutils/ObjMap.ts';
 
+import type { ValueNode } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
 import { Parser, parseValue } from '../../language/parser.ts';
 import { print } from '../../language/printer.ts';
@@ -28,14 +34,73 @@ import {
 } from '../../type/scalars.ts';
 import { GraphQLSchema } from '../../type/schema.ts';
 
+import type { FragmentVariableValues } from '../../execution/collectFields.ts';
+import {
+  compileInputLiteral,
+  compileInputValue,
+  getDefaultInputValue,
+} from '../../execution/compile/compileInputValue.ts';
 import type { VariableValues } from '../../execution/values.ts';
 import { getVariableValues } from '../../execution/values.ts';
 
 import {
-  coerceDefaultValue,
-  coerceInputLiteral,
-  coerceInputValue,
+  coerceDefaultValue as originalCoerceDefaultValue,
+  coerceInputLiteral as originalCoerceInputLiteral,
+  coerceInputValue as originalCoerceInputValue,
 } from '../coerceInputValue.ts';
+
+type InputValue = Parameters<typeof originalCoerceDefaultValue>[0];
+
+function coerceInputValue(
+  inputValue: unknown,
+  type: GraphQLInputType,
+): unknown {
+  const [originalInputValue, compiledInputValue] =
+    getComparableInputValues(inputValue);
+  return expectMatchingValues([
+    () => originalCoerceInputValue(originalInputValue, type),
+    () => compileInputValue(type)(compiledInputValue),
+  ]);
+}
+
+function coerceInputLiteral(
+  valueNode: ValueNode,
+  type: GraphQLInputType,
+  variableValues?: Maybe<VariableValues>,
+  fragmentVariableValues?: Maybe<FragmentVariableValues>,
+): unknown {
+  const compiledInputLiteral = compileInputLiteral(valueNode, type);
+  return expectMatchingValues([
+    () =>
+      originalCoerceInputLiteral(
+        valueNode,
+        type,
+        variableValues,
+        fragmentVariableValues,
+      ),
+    () => compiledInputLiteral(variableValues, fragmentVariableValues),
+  ]);
+}
+
+function coerceDefaultValue(inputValue: InputValue): unknown {
+  // Use a distinct input value so the compiled path does not only test the
+  // original path's memoized default coercion result.
+  const compiledInputValue = { ...inputValue };
+  return expectMatchingValues([
+    () => originalCoerceDefaultValue(inputValue),
+    () => getDefaultInputValue(compiledInputValue),
+  ]);
+}
+
+function getComparableInputValues(
+  inputValue: unknown,
+): readonly [unknown, unknown] {
+  if (!isIterableObject(inputValue) || Array.isArray(inputValue)) {
+    return [inputValue, inputValue];
+  }
+
+  return createReplayableIterablePair(inputValue);
+}
 
 describe('coerceInputValue', () => {
   function test(
@@ -143,8 +208,19 @@ describe('coerceInputValue', () => {
       test({ foo: 123 }, TestInputObject, { foo: 123 });
     });
 
+    it('returns no error for a finitely recursive input object', () => {
+      test({ foo: 123, nestedObject: { foo: 456 } }, TestInputObject, {
+        foo: 123,
+        nestedObject: { foo: 456 },
+      });
+    });
+
     it('invalid for a non-object type', () => {
       test(123, TestInputObject, undefined);
+    });
+
+    it('returns null for null input', () => {
+      test(null, TestInputObject, null);
     });
 
     it('invalid for an invalid field', () => {
@@ -358,9 +434,15 @@ describe('coerceInputLiteral', () => {
     type: GraphQLInputType,
     expected: unknown,
     variableValues?: VariableValues,
+    fragmentVariableValues?: FragmentVariableValues,
   ) {
     const ast = parseValue(valueText);
-    const value = coerceInputLiteral(ast, type, variableValues);
+    const value = coerceInputLiteral(
+      ast,
+      type,
+      variableValues,
+      fragmentVariableValues,
+    );
     expect(value).to.deep.equal(expected);
   }
 
@@ -432,6 +514,22 @@ describe('coerceInputLiteral', () => {
       '{ field: $var }',
       printScalar,
       '~~~{ field: "value" }~~~',
+    );
+
+    const parseLiteralScalar = new GraphQLScalarType({
+      name: 'ParseLiteralScalar',
+      parseValue: identityFunc,
+      parseLiteral(_node, variables) {
+        return variables?.var;
+      },
+    });
+
+    testWithVariables(
+      '($var: String)',
+      { var: 'value' },
+      '{ field: $var }',
+      parseLiteralScalar,
+      'value',
     );
 
     const throwScalar = new GraphQLScalarType({
@@ -727,6 +825,32 @@ describe('coerceInputLiteral', () => {
       { int: null, requiredBool: true },
     );
   });
+
+  it('accepts fragment variable values', () => {
+    const fragmentVariableValues: FragmentVariableValues = {
+      sources: {
+        frag: {
+          signature: {
+            name: 'frag',
+            type: GraphQLBoolean,
+            default: undefined,
+          },
+          value: undefined,
+          fragmentVariableValues: undefined,
+        },
+      },
+      coerced: { frag: true },
+    };
+
+    test('$frag', GraphQLBoolean, true, undefined, fragmentVariableValues);
+    test(
+      '[ $frag ]',
+      new GraphQLList(GraphQLBoolean),
+      [true],
+      undefined,
+      fragmentVariableValues,
+    );
+  });
 });
 
 describe('coerceDefaultValue', () => {
@@ -751,9 +875,28 @@ describe('coerceDefaultValue', () => {
     };
 
     expect(coerceDefaultValue(inputValue)).to.equal('hello');
-
-    // Call a second time
     expect(coerceDefaultValue(inputValue)).to.equal('hello');
-    expect(coerceInputValueCalls).to.deep.equal(['hello']);
+    expect(coerceInputValueCalls).to.deep.equal(['hello', 'hello']);
+  });
+
+  it('returns legacy default values', () => {
+    const inputValue = {
+      defaultValue: 'hello',
+      type: GraphQLString,
+    };
+
+    expect(coerceDefaultValue(inputValue)).to.equal('hello');
+    expect(coerceDefaultValue(inputValue)).to.equal('hello');
+  });
+
+  it('throws matching invalid default errors', () => {
+    const inputValue = {
+      default: { value: 123 },
+      type: GraphQLString,
+    };
+
+    expect(() => coerceDefaultValue(inputValue)).to.throw(
+      'Expected value of type "String" to be valid, found: 123.',
+    );
   });
 });

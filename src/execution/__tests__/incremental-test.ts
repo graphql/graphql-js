@@ -16,7 +16,9 @@ import {
 } from '../../type/index.ts';
 import { GraphQLSchema } from '../../type/schema.ts';
 
-import { execute } from '../execute.ts';
+import { execute as originalExecute } from '../execute.ts';
+
+import { execute } from './executeTestUtils.ts';
 
 describe('Original execute errors on experimental @defer and @stream directives', () => {
   it('errors when using original execute with schemas including experimental @defer directive', () => {
@@ -31,7 +33,7 @@ describe('Original execute errors on experimental @defer and @stream directives'
     });
     const document = parse('query Q { a }');
 
-    expect(() => execute({ schema, document })).to.throw(
+    expect(() => originalExecute({ schema, document })).to.throw(
       'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.',
     );
   });
@@ -48,7 +50,7 @@ describe('Original execute errors on experimental @defer and @stream directives'
     });
     const document = parse('query Q { a }');
 
-    expect(() => execute({ schema, document })).to.throw(
+    expect(() => originalExecute({ schema, document })).to.throw(
       'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.',
     );
   });
