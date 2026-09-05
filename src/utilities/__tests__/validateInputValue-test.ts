@@ -497,7 +497,6 @@ describe('validateInputValue', () => {
     });
 
     it('returns no error for a valid iterable input', () => {
-      // TODO: put an error in this list and show it appears
       function* listGenerator() {
         yield 1;
         yield 2;
@@ -505,6 +504,26 @@ describe('validateInputValue', () => {
       }
 
       test(listGenerator(), TestList, []);
+    });
+
+    it('returns an error for an invalid iterable input', () => {
+      function* listGenerator() {
+        yield 1;
+        yield 'b';
+        yield true;
+        yield 4;
+      }
+
+      test(listGenerator(), TestList, [
+        {
+          error: 'Int cannot represent non-integer value: "b"',
+          path: [1],
+        },
+        {
+          error: 'Int cannot represent non-integer value: true',
+          path: [2],
+        },
+      ]);
     });
 
     it('returns an error for an invalid input', () => {
