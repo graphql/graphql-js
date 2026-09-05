@@ -16,6 +16,7 @@ import { suggestionList } from '../jsutils/suggestionList.ts';
 import { toObjMapWithSymbols } from '../jsutils/toObjMap.ts';
 
 import { GraphQLError } from '../error/GraphQLError.ts';
+import type { GraphQLErrorBehavior } from '../error/GraphQLErrorBehavior.ts';
 
 import type {
   ConstValueNode,
@@ -2871,6 +2872,8 @@ export interface GraphQLResolveInfo {
    * code that needs runtime variable values should read `variableValues.coerced`.
    */
   readonly variableValues: VariableValues;
+  /** How execution errors are handled for this operation. @experimental */
+  readonly onError: GraphQLErrorBehavior;
   /** Returns the AbortSignal supplied for this execution, if any. */
   readonly getAbortSignal: () => AbortSignal | undefined;
   /** Returns helper functions for tracking asynchronous resolver work. */

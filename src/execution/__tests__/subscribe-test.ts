@@ -553,6 +553,7 @@ describe('Subscription Initialization Phase', () => {
           message:
             'Subscription field must return Async Iterable. Received: "test".',
           locations: [{ line: 1, column: 16 }],
+          pathNonNull: [false],
           path: ['foo'],
         },
       ],
@@ -574,6 +575,7 @@ describe('Subscription Initialization Phase', () => {
           message: 'test error',
           locations: [{ line: 1, column: 16 }],
           path: ['foo'],
+          pathNonNull: [false],
         },
       ],
     };
@@ -841,6 +843,7 @@ describe('Subscription Publish Phase', () => {
             message:
               '`@defer` directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
             locations: [{ line: 8, column: 7 }],
+            pathNonNull: [false],
             path: ['importantEmail'],
           },
         ],
@@ -904,6 +907,7 @@ describe('Subscription Publish Phase', () => {
             message:
               '`@stream` directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.',
             locations: [{ line: 18, column: 13 }],
+            pathNonNull: [false, false, false],
             path: ['importantEmail', 'inbox', 'emails'],
           },
         ],
@@ -935,6 +939,7 @@ describe('Subscription Publish Phase', () => {
             message:
               '`@stream` directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.',
             locations: [{ line: 18, column: 13 }],
+            pathNonNull: [false, false, false],
             path: ['importantEmail', 'inbox', 'emails'],
           },
         ],
@@ -1241,6 +1246,7 @@ describe('Subscription Publish Phase', () => {
             message: 'Never leave.',
             locations: [{ line: 1, column: 16 }],
             path: ['newMessage'],
+            pathNonNull: [false],
           },
         ],
       },

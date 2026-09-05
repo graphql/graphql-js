@@ -9,7 +9,7 @@ import { memoize2 } from '../jsutils/memoize2.ts';
 import { memoize3 } from '../jsutils/memoize3.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
 import type { Path } from '../jsutils/Path.ts';
-import { addPath, pathToArray } from '../jsutils/Path.ts';
+import { addPath, pathToArray, pathToDigest } from '../jsutils/Path.ts';
 import { promiseForObject } from '../jsutils/promiseForObject.ts';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
 import { promiseReduce } from '../jsutils/promiseReduce.ts';
@@ -24,6 +24,7 @@ import { OperationTypeNode } from '../language/ast.ts';
 
 import type {
   GraphQLAbstractType,
+  GraphQLField,
   GraphQLLeafType,
   GraphQLList,
   GraphQLObjectType,
@@ -75,6 +76,7 @@ import { returnIteratorCatchingErrors } from './returnIteratorCatchingErrors.ts'
 import { getArgumentValues } from './values.ts';
 
 /* eslint-disable max-params */
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 // This file contains a lot of such errors but we plan to refactor it anyway
 // so just disable it for entire file.
 
@@ -496,18 +498,30 @@ export class Executor<
         if (this.aborted) {
           throw new Error('Aborted!');
         }
-        const fieldPath = addPath(path, responseName, parentType.name);
+        const firstFieldDetails = fieldDetailsList[0];
+        const firstNode = firstFieldDetails.node;
+        const fieldDef = this.validatedExecutionArgs.schema.getField(
+          parentType,
+          firstNode.name.value,
+        );
+        if (fieldDef == null) {
+          return results;
+        }
+        const fieldPath = addPath(
+          path,
+          responseName,
+          parentType.name,
+          isNonNullType(fieldDef.type),
+        );
         const result = this.executeField(
           parentType,
           sourceValue,
           fieldDetailsList,
           fieldPath,
+          fieldDef,
           positionContext,
           tracingChannel,
         );
-        if (result === undefined) {
-          return results;
-        }
         if (isPromise(result)) {
           return result.then((resolved) => {
             results[responseName] = resolved;
@@ -545,21 +559,34 @@ export class Executor<
 
     try {
       for (const [responseName, fieldDetailsList] of groupedFieldSet) {
-        const fieldPath = addPath(path, responseName, parentType.name);
+        const firstFieldDetails = fieldDetailsList[0];
+        const firstNode = firstFieldDetails.node;
+        const fieldDef = this.validatedExecutionArgs.schema.getField(
+          parentType,
+          firstNode.name.value,
+        );
+        if (fieldDef == null) {
+          continue;
+        }
+        const fieldPath = addPath(
+          path,
+          responseName,
+          parentType.name,
+          isNonNullType(fieldDef.type),
+        );
         const result = this.executeField(
           parentType,
           sourceValue,
           fieldDetailsList,
           fieldPath,
+          fieldDef,
           positionContext,
           tracingChannel,
         );
 
-        if (result !== undefined) {
-          results[responseName] = result;
-          if (isPromise(result)) {
-            containsPromise = true;
-          }
+        results[responseName] = result;
+        if (isPromise(result)) {
+          containsPromise = true;
         }
       }
     } catch (error) {
@@ -595,20 +622,15 @@ export class Executor<
     source: unknown,
     fieldDetailsList: FieldDetailsList,
     path: Path,
+    fieldDef: GraphQLField<unknown, unknown>,
     positionContext: TPositionContext | undefined,
     tracingChannel: MinimalTracingChannel<GraphQLResolveContext> | undefined,
-  ): PromiseOrValue<unknown> {
+  ): PromiseOrValue<{} | null> {
     const validatedExecutionArgs = this.validatedExecutionArgs;
-    const { schema, contextValue, variableValues, hideSuggestions } =
+    const { contextValue, variableValues, hideSuggestions } =
       validatedExecutionArgs;
     const firstFieldDetails = fieldDetailsList[0];
     const firstNode = firstFieldDetails.node;
-    const fieldName = firstNode.name.value;
-    const fieldDef = schema.getField(parentType, fieldName);
-    if (!fieldDef) {
-      return;
-    }
-
     const returnType = fieldDef.type;
     let resolveFn = fieldDef.resolve ?? validatedExecutionArgs.fieldResolver;
 
@@ -722,15 +744,14 @@ export class Executor<
     const error = locatedError(
       rawError,
       toNodes(fieldDetailsList),
-      pathToArray(path),
+      pathToDigest(path),
     );
 
-    // If the field type is non-nullable, then it is resolved without any
-    // protection from errors, however it still properly locates the error.
-    if (
-      this.validatedExecutionArgs.errorPropagation &&
-      isNonNullType(returnType)
-    ) {
+    const { onError } = this.validatedExecutionArgs;
+    if (onError === 'ABORT') {
+      throw error;
+    }
+    if (onError === 'PROPAGATE' && isNonNullType(returnType)) {
       throw error;
     }
 
@@ -769,7 +790,7 @@ export class Executor<
     path: Path,
     result: unknown,
     positionContext: TPositionContext | undefined,
-  ): PromiseOrValue<unknown> {
+  ): PromiseOrValue<{} | null> {
     // If result is an Error, throw a located error.
     if (result instanceof Error) {
       throw result;
@@ -856,7 +877,7 @@ export class Executor<
     path: Path,
     result: PromiseLike<unknown>,
     positionContext: TPositionContext | undefined,
-  ): Promise<unknown> {
+  ): Promise<{} | null> {
     try {
       const resolved = await result;
       if (this.aborted) {
@@ -906,6 +927,7 @@ export class Executor<
     const asyncIterator = items[Symbol.asyncIterator]();
     let index = 0;
     let iteration;
+    const itemTypeIsNonNull = isNonNullType(itemType);
     try {
       while (true) {
         if (
@@ -921,7 +943,7 @@ export class Executor<
         ) {
           break;
         }
-        const itemPath = addPath(path, index, undefined);
+        const itemPath = addPath(path, index, undefined, itemTypeIsNonNull);
         try {
           // eslint-disable-next-line no-await-in-loop
           iteration = await asyncIterator.next();
@@ -929,7 +951,7 @@ export class Executor<
           throw locatedError(
             rawError,
             toNodes(fieldDetailsList),
-            pathToArray(path),
+            pathToDigest(path),
           );
         }
         if (this.aborted || iteration.done) {
@@ -1055,6 +1077,7 @@ export class Executor<
     const completedResults: Array<unknown> = [];
     let index = 0;
     const iterator = items[Symbol.iterator]();
+    const itemTypeIsNonNull = isNonNullType(itemType);
     try {
       while (true) {
         if (
@@ -1079,7 +1102,7 @@ export class Executor<
 
         // No need to modify the info object containing the path,
         // since from here on it is not ever accessed by resolver functions.
-        const itemPath = addPath(path, index, undefined);
+        const itemPath = addPath(path, index, undefined, itemTypeIsNonNull);
 
         if (
           this.completeMaybePromisedListItemValue(
@@ -1206,7 +1229,7 @@ export class Executor<
     info: GraphQLResolveInfo,
     itemPath: Path,
     positionContext: TPositionContext | undefined,
-  ): Promise<unknown> {
+  ): Promise<{} | null> {
     try {
       const resolved = await item;
       if (this.aborted) {
@@ -1236,7 +1259,7 @@ export class Executor<
    *
    * @internal
    */
-  completeLeafValue(returnType: GraphQLLeafType, result: unknown): unknown {
+  completeLeafValue(returnType: GraphQLLeafType, result: unknown): {} {
     const coerced = returnType.coerceOutputValue(result);
     if (coerced == null) {
       throw new Error(

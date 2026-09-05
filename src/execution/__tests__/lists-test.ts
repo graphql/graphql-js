@@ -83,6 +83,7 @@ describe('Execute: Accepts any iterable as list value', () => {
             'Expected Iterable, but did not find one for field "Query.listField".',
           locations: [{ line: 1, column: 3 }],
           path: ['listField'],
+          pathNonNull: [false],
         },
       ],
     });
@@ -113,6 +114,7 @@ describe('Execute: Accepts any iterable as list value', () => {
         {
           message: 'bad',
           locations: [{ line: 1, column: 3 }],
+          pathNonNull: [false],
           path: ['listField'],
         },
       ],
@@ -160,6 +162,7 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
         {
           message: 'bad',
           locations: [{ line: 1, column: 3 }],
+          pathNonNull: [false],
           path: ['listField'],
         },
       ],
@@ -195,6 +198,7 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
         {
           message: 'Cannot return null for non-nullable field Query.listField.',
           locations: [{ line: 1, column: 3 }],
+          pathNonNull: [false, true],
           path: ['listField', 1],
         },
       ],
@@ -242,6 +246,7 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
         {
           message: 'bad',
           locations: [{ line: 1, column: 3 }],
+          pathNonNull: [false],
           path: ['listField'],
         },
       ],
@@ -295,6 +300,7 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
         {
           message: 'Cannot return null for non-nullable field Query.listField.',
           locations: [{ line: 1, column: 3 }],
+          pathNonNull: [true, true],
           path: ['listField', 1],
         },
       ],
@@ -385,6 +391,7 @@ describe('Execute: Accepts async iterables as list value', () => {
         {
           message: 'bad',
           locations: [{ line: 1, column: 3 }],
+          pathNonNull: [false],
           path: ['listField'],
         },
       ],
@@ -404,6 +411,7 @@ describe('Execute: Accepts async iterables as list value', () => {
         {
           message: 'String cannot represent value: {}',
           locations: [{ line: 1, column: 3 }],
+          pathNonNull: [false, false],
           path: ['listField', 1],
         },
       ],
@@ -422,6 +430,7 @@ describe('Execute: Accepts async iterables as list value', () => {
         {
           message: 'String cannot represent value: {}',
           locations: [{ line: 1, column: 3 }],
+          pathNonNull: [false, false],
           path: ['listField', 1],
         },
       ],
@@ -450,6 +459,7 @@ describe('Execute: Accepts async iterables as list value', () => {
         {
           message: 'bad',
           locations: [{ line: 1, column: 15 }],
+          pathNonNull: [false, false, true],
           path: ['listField', 2, 'index'],
         },
       ],
@@ -477,6 +487,7 @@ describe('Execute: Accepts async iterables as list value', () => {
         {
           message: 'also bad',
           locations: [{ line: 1, column: 15 }],
+          pathNonNull: [false, true, true],
           path: ['listField', 1, 'index'],
         },
       ],
@@ -498,10 +509,11 @@ describe('Execute: Accepts async iterables as list value', () => {
       yield await Promise.resolve(null);
       yield await Promise.resolve(2);
     }
-    const errors = [
+    const errors = (pathNonNull: ReadonlyArray<boolean>) => [
       {
         message: 'Cannot return null for non-nullable field Query.listField.',
         locations: [{ line: 1, column: 3 }],
+        pathNonNull,
         path: ['listField', 1],
       },
     ];
@@ -514,11 +526,11 @@ describe('Execute: Accepts async iterables as list value', () => {
     });
     expectJSON(await complete({ listField }, '[Int!]')).toDeepEqual({
       data: { listField: null },
-      errors,
+      errors: errors([false, true]),
     });
     expectJSON(await complete({ listField }, '[Int!]!')).toDeepEqual({
       data: null,
-      errors,
+      errors: errors([true, true]),
     });
   });
 
@@ -541,6 +553,7 @@ describe('Execute: Accepts async iterables as list value', () => {
       {
         message: 'Cannot return null for non-nullable field Query.listField.',
         locations: [{ line: 1, column: 3 }],
+        pathNonNull: [false, true],
         path: ['listField', 1],
       },
     ];
@@ -565,6 +578,7 @@ describe('Execute: Accepts async iterables as list value', () => {
       {
         message: 'Cannot return null for non-nullable field Query.listField.',
         locations: [{ line: 1, column: 3 }],
+        pathNonNull: [false, true],
         path: ['listField', 1],
       },
     ];
@@ -627,11 +641,12 @@ describe('Execute: Handles list nullability', () => {
 
   it('Contains null', async () => {
     const listField = [1, null, 2];
-    const errors = [
+    const errors = (pathNonNull: ReadonlyArray<boolean>) => [
       {
         message: 'Cannot return null for non-nullable field Query.listField.',
         locations: [{ line: 1, column: 3 }],
         path: ['listField', 1],
+        pathNonNull,
       },
     ];
 
@@ -643,21 +658,22 @@ describe('Execute: Handles list nullability', () => {
     });
     expectJSON(await complete({ listField, as: '[Int!]' })).toDeepEqual({
       data: { listField: null },
-      errors,
+      errors: errors([false, true]),
     });
     expectJSON(await complete({ listField, as: '[Int!]!' })).toDeepEqual({
       data: null,
-      errors,
+      errors: errors([true, true]),
     });
   });
 
   it('Returns null', async () => {
     const listField = null;
-    const errors = [
+    const errors = (pathNonNull: ReadonlyArray<boolean>) => [
       {
         message: 'Cannot return null for non-nullable field Query.listField.',
         locations: [{ line: 1, column: 3 }],
         path: ['listField'],
+        pathNonNull,
       },
     ];
 
@@ -666,70 +682,72 @@ describe('Execute: Handles list nullability', () => {
     });
     expectJSON(await complete({ listField, as: '[Int]!' })).toDeepEqual({
       data: null,
-      errors,
+      errors: errors([true]),
     });
     expect(await complete({ listField, as: '[Int!]' })).to.deep.equal({
       data: { listField: null },
     });
     expectJSON(await complete({ listField, as: '[Int!]!' })).toDeepEqual({
       data: null,
-      errors,
+      errors: errors([true]),
     });
   });
 
   it('Contains error', async () => {
     const listField = [1, new Error('bad'), 2];
-    const errors = [
+    const errors = (pathNonNull: ReadonlyArray<boolean>) => [
       {
         message: 'bad',
         locations: [{ line: 1, column: 3 }],
         path: ['listField', 1],
+        pathNonNull,
       },
     ];
 
     expectJSON(await complete({ listField, as: '[Int]' })).toDeepEqual({
       data: { listField: [1, null, 2] },
-      errors,
+      errors: errors([false, false]),
     });
     expectJSON(await complete({ listField, as: '[Int]!' })).toDeepEqual({
       data: { listField: [1, null, 2] },
-      errors,
+      errors: errors([true, false]),
     });
     expectJSON(await complete({ listField, as: '[Int!]' })).toDeepEqual({
       data: { listField: null },
-      errors,
+      errors: errors([false, true]),
     });
     expectJSON(await complete({ listField, as: '[Int!]!' })).toDeepEqual({
       data: null,
-      errors,
+      errors: errors([true, true]),
     });
   });
 
   it('Results in error', async () => {
     const listField = new Error('bad');
-    const errors = [
+    const errors = (pathNonNull: ReadonlyArray<boolean>) => [
       {
         message: 'bad',
         locations: [{ line: 1, column: 3 }],
         path: ['listField'],
+        pathNonNull,
       },
     ];
 
     expectJSON(await complete({ listField, as: '[Int]' })).toDeepEqual({
       data: { listField: null },
-      errors,
+      errors: errors([false]),
     });
     expectJSON(await complete({ listField, as: '[Int]!' })).toDeepEqual({
       data: null,
-      errors,
+      errors: errors([true]),
     });
     expectJSON(await complete({ listField, as: '[Int!]' })).toDeepEqual({
       data: { listField: null },
-      errors,
+      errors: errors([false]),
     });
     expectJSON(await complete({ listField, as: '[Int!]!' })).toDeepEqual({
       data: null,
-      errors,
+      errors: errors([true]),
     });
   });
 });

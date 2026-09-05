@@ -64,6 +64,40 @@ function executeSync(args: ExecutionArgs): ExecutionResult {
 }
 
 describe('Execute: Handles basic execution tasks', () => {
+  it('supports onError modes and reports path nullability', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          fail: {
+            type: new GraphQLNonNull(GraphQLString),
+            resolve: () => {
+              throw new Error('failure');
+            },
+          },
+        },
+      }),
+    });
+    const document = parse('{ fail }');
+
+    const nullResult = executeSync({ schema, document, onError: 'NULL' });
+    expect(nullResult.data).to.deep.equal({ fail: null });
+    expect(nullResult.errors?.[0].pathNonNull).to.deep.equal([true]);
+
+    const abortResult = executeSync({ schema, document, onError: 'ABORT' });
+    expect(abortResult.data).to.equal(null);
+
+    const invalidResult = executeSync({
+      schema,
+      document,
+      // @ts-expect-error Invalid values are reported as request errors.
+      onError: 'INVALID',
+    });
+    expect(invalidResult.errors?.[0].message).to.equal(
+      'Unsupported `onError` value; supported values are `NULL`, `PROPAGATE` and `ABORT`.',
+    );
+  });
+
   it('executes arbitrary code', async () => {
     const data = {
       a: () => 'Apple',
@@ -258,6 +292,7 @@ describe('Execute: Handles basic execution tasks', () => {
       'rootValue',
       'operation',
       'variableValues',
+      'onError',
       'getAbortSignal',
       'getAsyncHelpers',
     );
@@ -279,7 +314,12 @@ describe('Execute: Handles basic execution tasks', () => {
     const field = operation.selectionSet.selections[0];
     expect(resolvedInfo).to.deep.include({
       fieldNodes: [field],
-      path: { prev: undefined, key: 'result', typename: 'Test' },
+      path: {
+        prev: undefined,
+        key: 'result',
+        typename: 'Test',
+        nonNull: false,
+      },
       variableValues: {
         sources: {
           var: {
@@ -366,12 +406,15 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(path).to.deep.equal({
       key: 'l2',
       typename: 'SomeObject',
+      nonNull: false,
       prev: {
         key: 0,
         typename: undefined,
+        nonNull: true,
         prev: {
           key: 'l1',
           typename: 'SomeQuery',
+          nonNull: true,
           prev: undefined,
         },
       },
@@ -555,61 +598,73 @@ describe('Execute: Handles basic execution tasks', () => {
           message: 'Error getting syncError',
           locations: [{ line: 4, column: 9 }],
           path: ['syncError'],
+          pathNonNull: [false],
         },
         {
           message: 'Unexpected error value: "Error getting syncRawError"',
           locations: [{ line: 5, column: 9 }],
           path: ['syncRawError'],
+          pathNonNull: [false],
         },
         {
           message: 'Error getting syncReturnError',
           locations: [{ line: 6, column: 9 }],
           path: ['syncReturnError'],
+          pathNonNull: [false],
         },
         {
           message: 'Error getting syncReturnErrorList1',
           locations: [{ line: 7, column: 9 }],
           path: ['syncReturnErrorList', 1],
+          pathNonNull: [false, false],
         },
         {
           message: 'Error getting syncReturnErrorList3',
           locations: [{ line: 7, column: 9 }],
           path: ['syncReturnErrorList', 3],
+          pathNonNull: [false, false],
         },
         {
           message: 'Error getting asyncReject',
           locations: [{ line: 9, column: 9 }],
           path: ['asyncReject'],
+          pathNonNull: [false],
         },
         {
           message: 'Unexpected error value: "Error getting asyncRawReject"',
           locations: [{ line: 10, column: 9 }],
           path: ['asyncRawReject'],
+          pathNonNull: [false],
         },
         {
           message: 'Unexpected error value: undefined',
           locations: [{ line: 11, column: 9 }],
           path: ['asyncEmptyReject'],
+          pathNonNull: [false],
         },
         {
           message: 'Error getting asyncError',
           locations: [{ line: 12, column: 9 }],
           path: ['asyncError'],
+          pathNonNull: [false],
         },
         {
           message: 'Unexpected error value: "Error getting asyncRawError"',
           locations: [{ line: 13, column: 9 }],
           path: ['asyncRawError'],
+          pathNonNull: [false],
         },
         {
           message: 'Error getting asyncReturnError',
           locations: [{ line: 14, column: 9 }],
           path: ['asyncReturnError'],
+          pathNonNull: [false],
         },
         {
           message: 'Error getting asyncReturnErrorWithExtensions',
           locations: [{ line: 15, column: 9 }],
           path: ['asyncReturnErrorWithExtensions'],
+          pathNonNull: [false],
           extensions: { foo: 'bar' },
         },
       ],
@@ -655,6 +710,7 @@ describe('Execute: Handles basic execution tasks', () => {
           locations: [{ column: 9, line: 3 }],
           message: 'Oops',
           path: ['foods'],
+          pathNonNull: [false],
         },
       ],
     });
@@ -703,6 +759,7 @@ describe('Execute: Handles basic execution tasks', () => {
             'Cannot return null for non-nullable field Query.syncNullError.',
           locations: [{ line: 4, column: 9 }],
           path: ['syncNullError'],
+          pathNonNull: [true],
         },
       ],
     });
@@ -753,12 +810,14 @@ describe('Execute: Handles basic execution tasks', () => {
         {
           message: 'Oops',
           locations: [{ line: 3, column: 9 }],
+          pathNonNull: [false],
           path: ['asyncError'],
         },
         {
           message:
             'Cannot return null for non-nullable field Query.asyncNonNullError.',
           locations: [{ line: 4, column: 9 }],
+          pathNonNull: [true],
           path: ['asyncNonNullError'],
         },
       ],
@@ -823,6 +882,166 @@ describe('Execute: Handles basic execution tasks', () => {
           message: 'Catch me if you can',
           locations: [{ line: 7, column: 17 }],
           path: ['nullableA', 'aliasedA', 'nonNullA', 'anotherA', 'throws'],
+          pathNonNull: [false, false, true, true, true],
+        },
+      ],
+    });
+  });
+
+  it('Full response path is included for non-nullable fields with onError:NULL', () => {
+    const A: GraphQLObjectType = new GraphQLObjectType({
+      name: 'A',
+      fields: () => ({
+        nullableA: {
+          type: A,
+          resolve: () => ({}),
+        },
+        nonNullA: {
+          type: new GraphQLNonNull(A),
+          resolve: () => ({}),
+        },
+        throws: {
+          type: new GraphQLNonNull(GraphQLString),
+          resolve: () => {
+            throw new Error('Catch me if you can');
+          },
+        },
+      }),
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'query',
+        fields: () => ({
+          nullableA: {
+            type: A,
+            resolve: () => ({}),
+          },
+        }),
+      }),
+    });
+
+    const document = parse(`
+      query {
+        nullableA {
+          aliasedA: nullableA {
+            nonNullA {
+              anotherA: nonNullA {
+                throws
+              }
+            }
+          }
+        }
+      }
+    `);
+
+    const result = executeSync({ schema, document, onError: 'NULL' });
+    expectJSON(result).toDeepEqual({
+      data: {
+        nullableA: {
+          aliasedA: {
+            nonNullA: {
+              anotherA: {
+                throws: null,
+              },
+            },
+          },
+        },
+      },
+      errors: [
+        {
+          message: 'Catch me if you can',
+          locations: [{ line: 7, column: 17 }],
+          path: ['nullableA', 'aliasedA', 'nonNullA', 'anotherA', 'throws'],
+          pathNonNull: [false, false, true, true, true],
+        },
+      ],
+    });
+  });
+
+  it('Full response path is included for non-nullable fields with onError:ABORT', () => {
+    const A: GraphQLObjectType = new GraphQLObjectType({
+      name: 'A',
+      fields: () => ({
+        nullableA: {
+          type: A,
+          resolve: () => ({}),
+        },
+        nonNullA: {
+          type: new GraphQLNonNull(A),
+          resolve: () => ({}),
+        },
+        throws: {
+          type: new GraphQLNonNull(GraphQLString),
+          resolve: () => {
+            throw new Error('Catch me if you can');
+          },
+        },
+      }),
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'query',
+        fields: () => ({
+          nullableA: {
+            type: A,
+            resolve: () => ({}),
+          },
+        }),
+      }),
+    });
+
+    const document = parse(`
+      query {
+        nullableA {
+          aliasedA: nullableA {
+            nonNullA {
+              anotherA: nonNullA {
+                throws
+              }
+            }
+          }
+        }
+      }
+    `);
+
+    const result = executeSync({ schema, document, onError: 'ABORT' });
+    expectJSON(result).toDeepEqual({
+      data: null,
+      errors: [
+        {
+          message: 'Catch me if you can',
+          locations: [{ line: 7, column: 17 }],
+          path: ['nullableA', 'aliasedA', 'nonNullA', 'anotherA', 'throws'],
+          pathNonNull: [false, false, true, true, true],
+        },
+      ],
+    });
+  });
+
+  it('raises request error with invalid onError', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'query',
+        fields: () => ({
+          a: {
+            type: GraphQLInt,
+          },
+        }),
+      }),
+    });
+
+    const document = parse('{ a }');
+    const result = executeSync({
+      schema,
+      document,
+      // @ts-expect-error
+      onError: 'DANCE',
+    });
+    expectJSON(result).toDeepEqual({
+      errors: [
+        {
+          message:
+            'Unsupported `onError` value; supported values are `NULL`, `PROPAGATE` and `ABORT`.',
         },
       ],
     });
@@ -1278,6 +1497,7 @@ describe('Execute: Handles basic execution tasks', () => {
             'Expected value of type "SpecialType" but got: { value: "bar" }.',
           locations: [{ line: 1, column: 3 }],
           path: ['specials', 1],
+          pathNonNull: [false, false],
         },
       ],
     });
@@ -1318,6 +1538,7 @@ describe('Execute: Handles basic execution tasks', () => {
           message:
             'Expected `CustomScalar.coerceOutputValue("CUSTOM_VALUE")` to return non-nullable value, returned: undefined',
           locations: [{ line: 1, column: 3 }],
+          pathNonNull: [false],
           path: ['customScalar'],
         },
       ],
