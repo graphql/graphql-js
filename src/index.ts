@@ -30,6 +30,7 @@ export { enableDevMode, isDevModeEnabled } from './devMode.ts';
 // `graphql:*` channel context payloads. Channels are auto-registered on
 // `node:diagnostics_channel` at module load.
 export type {
+  GraphQLBatchResolveContext,
   GraphQLChannelContextByName,
   GraphQLChannels,
   GraphQLExecuteContext,
@@ -199,6 +200,7 @@ export type {
   GraphQLDirectiveExtensions,
   GraphQLArgumentConfig,
   GraphQLArgumentExtensions,
+  GraphQLBatchedResolveInfo,
   GraphQLEnumTypeConfig,
   GraphQLEnumTypeExtensions,
   GraphQLEnumValueConfig,
@@ -209,6 +211,7 @@ export type {
   GraphQLFieldConfigMap,
   GraphQLFieldExtensions,
   GraphQLFieldMap,
+  GraphQLFieldBatchResolver,
   GraphQLFieldResolver,
   GraphQLInputFieldConfig,
   GraphQLInputFieldConfigMap,
