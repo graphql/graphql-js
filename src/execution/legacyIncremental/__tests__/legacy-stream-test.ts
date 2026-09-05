@@ -22,13 +22,11 @@ import {
 import { GraphQLID, GraphQLString } from '../../../type/scalars.ts';
 import { GraphQLSchema } from '../../../type/schema.ts';
 
-import { buildSchema } from '../../../utilities/buildASTSchema.ts';
-
-import type {
-  LegacyInitialIncrementalExecutionResult,
-  LegacySubsequentIncrementalExecutionResult,
-} from '../BranchingIncrementalExecutor.ts';
-import { legacyExecuteIncrementally } from '../legacyExecuteIncrementally.ts';
+import type { IncrementalExecutionPayload } from './execute.ts';
+import {
+  complete as completeExecution,
+  execute as executeIncrementally,
+} from './execute.ts';
 
 const friendType = new GraphQLObjectType({
   fields: {
@@ -45,9 +43,45 @@ const friends = [
   { name: 'Leia', id: 3 },
 ];
 
+const cancellationUserType = new GraphQLObjectType({
+  fields: {
+    id: { type: GraphQLID },
+    name: { type: GraphQLString },
+  },
+  name: 'User',
+});
+
+const cancellationTodoType = new GraphQLObjectType({
+  fields: {
+    id: { type: GraphQLID },
+    items: { type: new GraphQLList(GraphQLString) },
+    author: { type: cancellationUserType },
+  },
+  name: 'Todo',
+});
+
+const cancelStreamUserType = new GraphQLObjectType({
+  fields: {
+    id: { type: GraphQLString },
+  },
+  name: 'CancelStreamUser',
+});
+
+const cancelStreamTodoType = new GraphQLObjectType({
+  fields: {
+    id: { type: GraphQLString },
+    items: { type: new GraphQLList(GraphQLString) },
+    author: { type: cancelStreamUserType },
+  },
+  name: 'CancelStreamTodo',
+});
+
 const query = new GraphQLObjectType({
   fields: {
     scalarList: {
+      type: new GraphQLList(GraphQLString),
+    },
+    slowScalarList: {
       type: new GraphQLList(GraphQLString),
     },
     scalarListList: {
@@ -58,6 +92,18 @@ const query = new GraphQLObjectType({
     },
     nonNullFriendList: {
       type: new GraphQLList(new GraphQLNonNull(friendType)),
+    },
+    todo: {
+      type: cancellationTodoType,
+    },
+    nonNullableTodo: {
+      type: new GraphQLNonNull(cancellationTodoType),
+    },
+    todos: {
+      type: new GraphQLList(cancelStreamTodoType),
+    },
+    blocker: {
+      type: GraphQLString,
     },
     nestedObject: {
       type: new GraphQLObjectType({
@@ -90,75 +136,17 @@ const query = new GraphQLObjectType({
 
 const schema = new GraphQLSchema({ query });
 
-const cancellationSchema = buildSchema(`
-  type Todo {
-    id: ID
-    items: [String]
-    author: User
-  }
-
-  type User {
-    id: ID
-    name: String
-  }
-
-  type Query {
-    todo: Todo
-    nonNullableTodo: Todo!
-    blocker: String
-    scalarList: [String]
-    slowScalarList: [String]
-  }
-
-  type Mutation {
-    foo: String
-    bar: String
-  }
-
-  type Subscription {
-    foo: String
-  }
-`);
-
-const cancelStreamSchema = buildSchema(`
-  type CancelStreamUser {
-    id: String
-  }
-
-  type CancelStreamTodo {
-    id: String
-    items: [String]
-    author: CancelStreamUser
-  }
-
-  type Query {
-    todos: [CancelStreamTodo]
-  }
-`);
-
-async function complete(
+function complete(
   document: DocumentNode,
   rootValue: unknown = {},
-  enableEarlyExecution = false,
+  options: { enableEarlyExecution?: boolean } = {},
 ) {
-  const result = await legacyExecuteIncrementally({
+  return completeExecution({
     schema,
     document,
     rootValue,
-    enableEarlyExecution,
+    enableEarlyExecution: options.enableEarlyExecution ?? false,
   });
-
-  if ('initialResult' in result) {
-    const results: Array<
-      | LegacyInitialIncrementalExecutionResult
-      | LegacySubsequentIncrementalExecutionResult
-    > = [result.initialResult];
-    for await (const patch of result.subsequentResults) {
-      results.push(patch);
-    }
-    return results;
-  }
-  return result;
 }
 
 async function completeAsync(
@@ -166,7 +154,7 @@ async function completeAsync(
   numCalls: number,
   rootValue: unknown = {},
 ) {
-  const result = await legacyExecuteIncrementally({
+  const result = await executeIncrementally({
     schema,
     document,
     rootValue,
@@ -177,12 +165,7 @@ async function completeAsync(
   const iterator = result.subsequentResults[Symbol.asyncIterator]();
 
   const promises: Array<
-    PromiseOrValue<
-      IteratorResult<
-        | LegacyInitialIncrementalExecutionResult
-        | LegacySubsequentIncrementalExecutionResult
-      >
-    >
+    PromiseOrValue<IteratorResult<IncrementalExecutionPayload>>
   > = [{ done: false, value: result.initialResult }];
   for (let i = 0; i < numCalls; i++) {
     promises.push(iterator.next());
@@ -548,7 +531,7 @@ describe('Execute: stream directive (legacy)', () => {
             },
           })),
       },
-      true,
+      { enableEarlyExecution: true },
     );
     expectJSON(result).toDeepEqual([
       {
@@ -916,7 +899,7 @@ describe('Execute: stream directive (legacy)', () => {
           yield await Promise.resolve(slowFriend(2));
         },
       },
-      true,
+      { enableEarlyExecution: true },
     );
     expectJSON(result).toDeepEqual([
       {
@@ -1305,7 +1288,7 @@ describe('Execute: stream directive (legacy)', () => {
     `);
     const { promise: metadataPromise, resolve: resolveMetadata } =
       promiseWithResolvers<{ value: () => string }>();
-    const execution = await legacyExecuteIncrementally({
+    const execution = await executeIncrementally({
       schema: lateSchema,
       document,
       rootValue: {
@@ -1326,10 +1309,9 @@ describe('Execute: stream directive (legacy)', () => {
       },
     });
     assert('initialResult' in execution);
-    const results: Array<
-      | LegacyInitialIncrementalExecutionResult
-      | LegacySubsequentIncrementalExecutionResult
-    > = [execution.initialResult];
+    const results: Array<IncrementalExecutionPayload> = [
+      execution.initialResult,
+    ];
     for await (const patch of execution.subsequentResults) {
       results.push(patch);
     }
@@ -1827,7 +1809,7 @@ describe('Execute: stream directive (legacy)', () => {
     const { promise: namePromise, resolve: resolveName } =
       promiseWithResolvers<string>();
 
-    const resultPromise = legacyExecuteIncrementally({
+    const resultPromise = executeIncrementally({
       schema,
       document,
       rootValue: {
@@ -2013,7 +1995,7 @@ describe('Execute: stream directive (legacy)', () => {
       }
     `);
 
-    const executeResult = await legacyExecuteIncrementally({
+    const executeResult = await executeIncrementally({
       schema,
       document,
       rootValue: {
@@ -2242,7 +2224,7 @@ describe('Execute: stream directive (legacy)', () => {
         }
       }
     `);
-    const executeResult = await legacyExecuteIncrementally({
+    const executeResult = await executeIncrementally({
       schema,
       document,
       rootValue: {
@@ -2348,7 +2330,7 @@ describe('Execute: stream directive (legacy)', () => {
         }
       }
     `);
-    const executeResult = await legacyExecuteIncrementally({
+    const executeResult = await executeIncrementally({
       schema,
       document,
       rootValue: {
@@ -2442,7 +2424,7 @@ describe('Execute: stream directive (legacy)', () => {
     }
   `);
 
-    const executeResult = await legacyExecuteIncrementally({
+    const executeResult = await executeIncrementally({
       schema,
       document,
       rootValue: {
@@ -2545,7 +2527,7 @@ describe('Execute: stream directive (legacy)', () => {
     }
   `);
 
-    const executeResult = await legacyExecuteIncrementally({
+    const executeResult = await executeIncrementally({
       schema,
       document,
       rootValue: {
@@ -2657,7 +2639,7 @@ describe('Execute: stream directive (legacy)', () => {
       }
     `);
 
-    const executeResult = await legacyExecuteIncrementally({
+    const executeResult = await executeIncrementally({
       schema,
       document,
       rootValue: {
@@ -2716,7 +2698,7 @@ describe('Execute: stream directive (legacy)', () => {
       }
     `);
 
-    const executeResult = await legacyExecuteIncrementally({
+    const executeResult = await executeIncrementally({
       schema,
       document,
       rootValue: {
@@ -2782,7 +2764,7 @@ describe('Execute: stream directive (legacy)', () => {
       }
     `);
 
-    const executeResult = await legacyExecuteIncrementally({
+    const executeResult = await executeIncrementally({
       schema,
       document,
       rootValue: {
@@ -2842,7 +2824,7 @@ describe('Execute: stream directive (legacy)', () => {
       }
     `);
 
-    const executeResult = await legacyExecuteIncrementally({
+    const executeResult = await executeIncrementally({
       schema,
       document,
       rootValue: {
@@ -2898,7 +2880,7 @@ describe('Execute: stream directive (legacy)', () => {
       }
     `);
 
-    const executeResult = await legacyExecuteIncrementally({
+    const executeResult = await executeIncrementally({
       schema,
       document,
       rootValue: {
@@ -2953,7 +2935,7 @@ describe('Execute: stream directive (legacy)', () => {
       }
     `);
 
-    const executeResult = await legacyExecuteIncrementally({
+    const executeResult = await executeIncrementally({
       schema,
       document,
       rootValue: {
@@ -2999,7 +2981,7 @@ describe('Execute: stream directive (legacy)', () => {
       }
     `);
 
-    const executeResult = await legacyExecuteIncrementally({
+    const executeResult = await executeIncrementally({
       schema,
       document,
       rootValue: {
@@ -3082,8 +3064,8 @@ describe('Execute: stream directive (legacy cancellation)', () => {
     `);
 
     const resultPromise = (async () => {
-      const result = await legacyExecuteIncrementally({
-        schema: cancellationSchema,
+      const result = await executeIncrementally({
+        schema,
         document,
         rootValue: {
           todo: {
@@ -3133,7 +3115,7 @@ describe('Execute: stream directive (legacy cancellation)', () => {
       },
     };
 
-    const result = await legacyExecuteIncrementally({
+    const result = await executeIncrementally({
       schema,
       document,
       rootValue: {
@@ -3184,7 +3166,7 @@ describe('Execute: stream directive (legacy cancellation)', () => {
     };
     const returnSpy = spyOnMethod(asyncIterator, 'return');
 
-    const result = await legacyExecuteIncrementally({
+    const result = await executeIncrementally({
       schema,
       document,
       rootValue: {
@@ -3298,8 +3280,8 @@ describe('Execute: stream directive (legacy cancellation)', () => {
       },
     };
 
-    const result = await legacyExecuteIncrementally({
-      schema: cancelStreamSchema,
+    const result = await executeIncrementally({
+      schema,
       document,
       rootValue: {
         todos: () => todosAsyncIterator,
@@ -3361,7 +3343,7 @@ describe('Execute: stream directive (legacy cancellation)', () => {
       },
     };
 
-    const result = await legacyExecuteIncrementally({
+    const result = await executeIncrementally({
       schema,
       document,
       rootValue: {
@@ -3429,8 +3411,8 @@ describe('Execute: stream directive (legacy cancellation)', () => {
 
     const sourceReturnSpy = spyOnMethod(todos, 'return');
 
-    const result = await legacyExecuteIncrementally({
-      schema: cancelStreamSchema,
+    const result = await executeIncrementally({
+      schema,
       document,
       rootValue: { todos },
       enableEarlyExecution: true,
@@ -3489,7 +3471,7 @@ describe('Execute: stream directive (legacy cancellation)', () => {
 
     const returnSpy = spyOnMethod(iterator, 'return');
 
-    const result = await legacyExecuteIncrementally({
+    const result = await executeIncrementally({
       schema,
       document,
       rootValue: {
@@ -3532,8 +3514,8 @@ describe('Execute: stream directive (legacy cancellation)', () => {
       // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
       promiseWithResolvers<void>();
 
-    const resultPromise = legacyExecuteIncrementally({
-      schema: cancellationSchema,
+    const resultPromise = executeIncrementally({
+      schema,
       document,
       abortSignal: abortController.signal,
       rootValue: {
@@ -3606,8 +3588,8 @@ describe('Execute: stream directive (legacy cancellation)', () => {
     };
     const sourceReturnSpy = spyOnMethod(asyncIterator, 'return');
 
-    const resultPromise = legacyExecuteIncrementally({
-      schema: cancellationSchema,
+    const resultPromise = executeIncrementally({
+      schema,
       document,
       abortSignal: abortController.signal,
       rootValue: {
@@ -3697,8 +3679,8 @@ describe('Execute: stream directive (legacy cancellation)', () => {
       },
     };
 
-    const result = await legacyExecuteIncrementally({
-      schema: cancellationSchema,
+    const result = await executeIncrementally({
+      schema,
       document,
       rootValue,
       enableEarlyExecution: true,
@@ -3753,8 +3735,8 @@ describe('Execute: stream directive (legacy cancellation)', () => {
       // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
       promiseWithResolvers<void>();
 
-    const result = await legacyExecuteIncrementally({
-      schema: cancelStreamSchema,
+    const result = await executeIncrementally({
+      schema,
       document,
       enableEarlyExecution: true,
       rootValue: {
@@ -3803,7 +3785,7 @@ describe('Execute: stream directive (legacy cancellation)', () => {
       },
     };
 
-    const result = await legacyExecuteIncrementally({
+    const result = await executeIncrementally({
       schema,
       document,
       rootValue: {

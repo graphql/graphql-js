@@ -22,9 +22,13 @@ import {
 import { GraphQLID, GraphQLString } from '../../../type/scalars.ts';
 import { GraphQLSchema } from '../../../type/schema.ts';
 
-import { buildSchema } from '../../../utilities/buildASTSchema.ts';
-
-import { experimentalExecuteIncrementally } from '../../execute.ts';
+import {
+  COMPARISON_COUNT,
+  completeDirectly,
+  completeExecution,
+  executeIncrementally,
+  experimentalExecuteIncrementally,
+} from '../../__tests__/executeTestUtils.ts';
 
 import type {
   InitialIncrementalExecutionResult,
@@ -54,9 +58,45 @@ function delayedReject(message: string): Promise<never> {
   })();
 }
 
+const cancellationUserType = new GraphQLObjectType({
+  fields: {
+    id: { type: GraphQLID },
+    name: { type: GraphQLString },
+  },
+  name: 'User',
+});
+
+const cancellationTodoType = new GraphQLObjectType({
+  fields: {
+    id: { type: GraphQLID },
+    items: { type: new GraphQLList(GraphQLString) },
+    author: { type: cancellationUserType },
+  },
+  name: 'Todo',
+});
+
+const cancelStreamUserType = new GraphQLObjectType({
+  fields: {
+    id: { type: GraphQLString },
+  },
+  name: 'CancelStreamUser',
+});
+
+const cancelStreamTodoType = new GraphQLObjectType({
+  fields: {
+    id: { type: GraphQLString },
+    items: { type: new GraphQLList(GraphQLString) },
+    author: { type: cancelStreamUserType },
+  },
+  name: 'CancelStreamTodo',
+});
+
 const query = new GraphQLObjectType({
   fields: {
     scalarList: {
+      type: new GraphQLList(GraphQLString),
+    },
+    slowScalarList: {
       type: new GraphQLList(GraphQLString),
     },
     scalarListList: {
@@ -67,6 +107,18 @@ const query = new GraphQLObjectType({
     },
     nonNullFriendList: {
       type: new GraphQLList(new GraphQLNonNull(friendType)),
+    },
+    todo: {
+      type: cancellationTodoType,
+    },
+    nonNullableTodo: {
+      type: new GraphQLNonNull(cancellationTodoType),
+    },
+    todos: {
+      type: new GraphQLList(cancelStreamTodoType),
+    },
+    blocker: {
+      type: GraphQLString,
     },
     nestedObject: {
       type: new GraphQLObjectType({
@@ -99,74 +151,23 @@ const query = new GraphQLObjectType({
 
 const schema = new GraphQLSchema({ query });
 
-const cancellationSchema = buildSchema(`
-  type Todo {
-    id: ID
-    items: [String]
-    author: User
-  }
-
-  type User {
-    id: ID
-    name: String
-  }
-
-  type Query {
-    todo: Todo
-    nonNullableTodo: Todo!
-    blocker: String
-    scalarList: [String]
-    slowScalarList: [String]
-  }
-
-  type Mutation {
-    foo: String
-    bar: String
-  }
-
-  type Subscription {
-    foo: String
-  }
-`);
-
-const cancelStreamSchema = buildSchema(`
-  type CancelStreamUser {
-    id: String
-  }
-
-  type CancelStreamTodo {
-    id: String
-    items: [String]
-    author: CancelStreamUser
-  }
-
-  type Query {
-    todos: [CancelStreamTodo]
-  }
-`);
-
-async function complete(
+function complete(
   document: DocumentNode,
   rootValue: unknown = {},
-  enableEarlyExecution = false,
+  options: {
+    enableEarlyExecution?: boolean;
+    compareCompiledExecution?: boolean;
+  } = {},
 ) {
-  const result = await experimentalExecuteIncrementally({
+  const args = {
     schema,
     document,
     rootValue,
-    enableEarlyExecution,
-  });
-
-  if ('initialResult' in result) {
-    const results: Array<
-      InitialIncrementalExecutionResult | SubsequentIncrementalExecutionResult
-    > = [result.initialResult];
-    for await (const patch of result.subsequentResults) {
-      results.push(patch);
-    }
-    return results;
-  }
-  return result;
+    enableEarlyExecution: options.enableEarlyExecution ?? false,
+  };
+  return (options.compareCompiledExecution ?? true)
+    ? completeExecution(args)
+    : completeDirectly(args);
 }
 
 async function completeAsync(
@@ -174,7 +175,7 @@ async function completeAsync(
   numCalls: number,
   rootValue: unknown = {},
 ) {
-  const result = await experimentalExecuteIncrementally({
+  const result = await executeIncrementally({
     schema,
     document,
     rootValue,
@@ -239,7 +240,13 @@ describe('Execute: stream directive', () => {
       },
     };
     const returnSpy = spyOnMethod(scalarList, 'return');
-    const result = await complete(document, { scalarList });
+    const result = await complete(
+      document,
+      { scalarList },
+      {
+        compareCompiledExecution: false,
+      },
+    );
     expectJSON(result).toDeepEqual([
       {
         data: {
@@ -522,20 +529,24 @@ describe('Execute: stream directive', () => {
       }
     `);
     const order: Array<number> = [];
-    const result = await complete(document, {
-      friendList: () =>
-        friends.map((f, i) => ({
-          id: async () => {
-            const slowness = 3 - i;
-            for (let j = 0; j < slowness; j++) {
-              // eslint-disable-next-line no-await-in-loop
-              await resolveOnNextTick();
-            }
-            order.push(i);
-            return f.id;
-          },
-        })),
-    });
+    const result = await complete(
+      document,
+      {
+        friendList: () =>
+          friends.map((f, i) => ({
+            id: async () => {
+              const slowness = 3 - i;
+              for (let j = 0; j < slowness; j++) {
+                // eslint-disable-next-line no-await-in-loop
+                await resolveOnNextTick();
+              }
+              order.push(i);
+              return f.id;
+            },
+          })),
+      },
+      { compareCompiledExecution: false },
+    );
     expectJSON(result).toDeepEqual([
       {
         data: {
@@ -600,7 +611,7 @@ describe('Execute: stream directive', () => {
             },
           })),
       },
-      true,
+      { enableEarlyExecution: true, compareCompiledExecution: false },
     );
     expectJSON(result).toDeepEqual([
       {
@@ -951,13 +962,17 @@ describe('Execute: stream directive', () => {
         return friends[n].id;
       },
     });
-    const result = await complete(document, {
-      async *friendList() {
-        yield await Promise.resolve(slowFriend(0));
-        yield await Promise.resolve(slowFriend(1));
-        yield await Promise.resolve(slowFriend(2));
+    const result = await complete(
+      document,
+      {
+        async *friendList() {
+          yield await Promise.resolve(slowFriend(0));
+          yield await Promise.resolve(slowFriend(1));
+          yield await Promise.resolve(slowFriend(2));
+        },
       },
-    });
+      { compareCompiledExecution: false },
+    );
     expectJSON(result).toDeepEqual([
       {
         data: {
@@ -1026,7 +1041,7 @@ describe('Execute: stream directive', () => {
           yield await Promise.resolve(slowFriend(2));
         },
       },
-      true,
+      { enableEarlyExecution: true, compareCompiledExecution: false },
     );
     expectJSON(result).toDeepEqual([
       {
@@ -1281,7 +1296,11 @@ describe('Execute: stream directive', () => {
       },
     };
     const returnSpy = spyOnMethod(nonNullFriendList, 'return');
-    const result = await complete(document, { nonNullFriendList });
+    const result = await complete(
+      document,
+      { nonNullFriendList },
+      { compareCompiledExecution: false },
+    );
 
     await new Promise((resolve) => {
       setTimeout(resolve, 20);
@@ -1496,7 +1515,9 @@ describe('Execute: stream directive', () => {
     `);
     const { promise: metadataPromise, resolve: resolveMetadata } =
       promiseWithResolvers<{ value: () => string }>();
-    const execution = await experimentalExecuteIncrementally({
+    // Compiled execution finishes already-started item work after null bubbling
+    // instead of returning early.
+    const results = await completeDirectly({
       schema: lateSchema,
       document,
       rootValue: {
@@ -1516,13 +1537,6 @@ describe('Execute: stream directive', () => {
         ],
       },
     });
-    assert('initialResult' in execution);
-    const results: Array<
-      InitialIncrementalExecutionResult | SubsequentIncrementalExecutionResult
-    > = [execution.initialResult];
-    for await (const patch of execution.subsequentResults) {
-      results.push(patch);
-    }
 
     expectJSON(results).toDeepEqual([
       {
@@ -1755,35 +1769,39 @@ describe('Execute: stream directive', () => {
       }
     `);
     let count = 0;
-    const result = await complete(document, {
-      nonNullFriendList: {
-        [Symbol.asyncIterator]: () => ({
-          next: async () => {
-            switch (count++) {
-              case 0:
-                return Promise.resolve({
-                  done: false,
-                  value: { nonNullName: friends[0].name },
-                });
-              case 1:
-                return Promise.resolve({
-                  done: false,
-                  value: {
-                    nonNullName: () => Promise.reject(new Error('Oops')),
-                  },
-                });
-              // Not reached
-              /* node:coverage ignore next 5 */
-              case 2:
-                return Promise.resolve({
-                  done: false,
-                  value: { nonNullName: friends[1].name },
-                });
-            }
-          },
-        }),
+    const result = await complete(
+      document,
+      {
+        nonNullFriendList: {
+          [Symbol.asyncIterator]: () => ({
+            next: async () => {
+              switch (count++) {
+                case 0:
+                  return Promise.resolve({
+                    done: false,
+                    value: { nonNullName: friends[0].name },
+                  });
+                case 1:
+                  return Promise.resolve({
+                    done: false,
+                    value: {
+                      nonNullName: () => Promise.reject(new Error('Oops')),
+                    },
+                  });
+                // Not reached
+                /* node:coverage ignore next 5 */
+                case 2:
+                  return Promise.resolve({
+                    done: false,
+                    value: { nonNullName: friends[1].name },
+                  });
+              }
+            },
+          }),
+        },
       },
-    });
+      { compareCompiledExecution: false },
+    );
     expectJSON(result).toDeepEqual([
       {
         data: {
@@ -1819,44 +1837,48 @@ describe('Execute: stream directive', () => {
     `);
     let count = 0;
     let returned = false;
-    const result = await complete(document, {
-      nonNullFriendList: {
-        [Symbol.asyncIterator]: () => ({
-          next: async () => {
-            /* node:coverage ignore next 3 */
-            if (returned) {
-              return Promise.resolve({ done: true });
-            }
-            switch (count++) {
-              case 0:
-                return Promise.resolve({
-                  done: false,
-                  value: { nonNullName: friends[0].name },
-                });
-              case 1:
-                return Promise.resolve({
-                  done: false,
-                  value: {
-                    nonNullName: () => Promise.reject(new Error('Oops')),
-                  },
-                });
-              // Not reached
-              /* node:coverage ignore next 5 */
-              case 2:
-                return Promise.resolve({
-                  done: false,
-                  value: { nonNullName: friends[1].name },
-                });
-            }
-          },
-          return: async () => {
-            await resolveOnNextTick();
-            returned = true;
-            return { done: true };
-          },
-        }),
+    const result = await complete(
+      document,
+      {
+        nonNullFriendList: {
+          [Symbol.asyncIterator]: () => ({
+            next: async () => {
+              /* node:coverage ignore next 3 */
+              if (returned) {
+                return Promise.resolve({ done: true });
+              }
+              switch (count++) {
+                case 0:
+                  return Promise.resolve({
+                    done: false,
+                    value: { nonNullName: friends[0].name },
+                  });
+                case 1:
+                  return Promise.resolve({
+                    done: false,
+                    value: {
+                      nonNullName: () => Promise.reject(new Error('Oops')),
+                    },
+                  });
+                // Not reached
+                /* node:coverage ignore next 5 */
+                case 2:
+                  return Promise.resolve({
+                    done: false,
+                    value: { nonNullName: friends[1].name },
+                  });
+              }
+            },
+            return: async () => {
+              await resolveOnNextTick();
+              returned = true;
+              return { done: true };
+            },
+          }),
+        },
       },
-    });
+      { compareCompiledExecution: false },
+    );
     expectJSON(result).toDeepEqual([
       {
         data: {
@@ -2173,33 +2195,36 @@ describe('Execute: stream directive', () => {
   });
 
   it('Returns iterator and ignores errors when stream payloads are filtered', async () => {
-    let requested = false;
-    const iterable = {
-      [Symbol.asyncIterator]() {
-        return this;
-      },
-      next() {
-        /* node:coverage disable */
-        if (requested) {
-          // stream is filtered, next is not called, and so this is not reached.
+    let returnCallCount = 0;
+    const createIterable = () => {
+      let requested = false;
+      return {
+        [Symbol.asyncIterator]() {
+          return this;
+        },
+        next() {
+          /* node:coverage disable */
+          if (requested) {
+            // stream is filtered, next is not called, and so this is not reached.
+            return Promise.reject(new Error('Oops'));
+          } /* node:coverage enable */
+          requested = true;
+          const friend = friends[0];
+          return Promise.resolve({
+            done: false,
+            value: {
+              name: friend.name,
+              nonNullName: null,
+            },
+          });
+        },
+        return() {
+          returnCallCount++;
+          // Ignores errors from return.
           return Promise.reject(new Error('Oops'));
-        } /* node:coverage enable */
-        requested = true;
-        const friend = friends[0];
-        return Promise.resolve({
-          done: false,
-          value: {
-            name: friend.name,
-            nonNullName: null,
-          },
-        });
-      },
-      return() {
-        // Ignores errors from return.
-        return Promise.reject(new Error('Oops'));
-      },
+        },
+      };
     };
-    const returnSpy = spyOnMethod(iterable, 'return');
 
     const document = parse(`
       query {
@@ -2216,19 +2241,19 @@ describe('Execute: stream directive', () => {
       }
     `);
 
-    const executeResult = await experimentalExecuteIncrementally({
+    const executeResult = await experimentalExecuteIncrementally(() => ({
       schema,
       document,
       rootValue: {
         nestedObject: {
           deeperNestedObject: {
             nonNullScalarField: () => Promise.resolve(null),
-            deeperNestedFriendList: iterable,
+            deeperNestedFriendList: createIterable(),
           },
         },
       },
       enableEarlyExecution: true,
-    });
+    }));
     assert('initialResult' in executeResult);
     const iterator = executeResult.subsequentResults[Symbol.asyncIterator]();
 
@@ -2273,7 +2298,7 @@ describe('Execute: stream directive', () => {
     const result3 = await iterator.next();
     expectJSON(result3).toDeepEqual({ done: true, value: undefined });
 
-    assert(returnSpy.callCount === 1);
+    expect(returnCallCount).to.equal(COMPARISON_COUNT);
   });
   it('Handles promises returned by completeValue after initialCount is reached', async () => {
     const document = parse(`
@@ -2882,7 +2907,7 @@ describe('Execute: stream directive', () => {
       value: undefined,
     });
     await returnPromise;
-    assert(returnSpy.callCount === 1);
+    assert(returnSpy.callCount === COMPARISON_COUNT);
   });
   it('Awaits stream source async iterable return before iterator return settles', async () => {
     const { promise: returnCleanup, resolve: resolveReturnCleanup } =
@@ -2946,7 +2971,7 @@ describe('Execute: stream directive', () => {
     );
 
     await resolveOnNextTick();
-    expect(returnSpy.callCount).to.equal(1);
+    expect(returnSpy.callCount).to.equal(COMPARISON_COUNT);
     expect(returnSettled).to.equal(false);
 
     resolveReturnCleanup();
@@ -2959,17 +2984,19 @@ describe('Execute: stream directive', () => {
     await returnPromise;
   });
   it('Can return async iterable when underlying iterable does not have a return method', async () => {
-    let index = 0;
     const iterable = {
-      [Symbol.asyncIterator]: () => ({
-        next: () => {
-          const friend = friends[index++];
-          if (friend == null) {
-            return Promise.resolve({ done: true, value: undefined });
-          }
-          return Promise.resolve({ done: false, value: friend });
-        },
-      }),
+      [Symbol.asyncIterator]: () => {
+        let index = 0;
+        return {
+          next: () => {
+            const friend = friends[index++];
+            if (friend == null) {
+              return Promise.resolve({ done: true, value: undefined });
+            }
+            return Promise.resolve({ done: false, value: friend });
+          },
+        };
+      },
     };
 
     const document = parse(`
@@ -3014,17 +3041,19 @@ describe('Execute: stream directive', () => {
     });
   });
   it('Returns underlying async iterables when returned generator is thrown', async () => {
-    let index = 0;
     const iterable = {
       [Symbol.asyncIterator]() {
-        return this;
-      },
-      next() {
-        const friend = friends[index++];
-        if (friend == null) {
-          return Promise.resolve({ done: true, value: undefined });
-        }
-        return Promise.resolve({ done: false, value: friend });
+        let index = 0;
+        return {
+          next() {
+            const friend = friends[index++];
+            if (friend == null) {
+              return Promise.resolve({ done: true, value: undefined });
+            }
+            return Promise.resolve({ done: false, value: friend });
+          },
+          return: () => iterable.return(),
+        };
       },
       return() {
         /* noop */
@@ -3076,7 +3105,7 @@ describe('Execute: stream directive', () => {
       value: undefined,
     });
 
-    assert(returnSpy.callCount === 1);
+    assert(returnSpy.callCount === COMPARISON_COUNT);
   });
   it('Returns underlying async iterables when resource is disposed before source completion', async () => {
     const iterable = {
@@ -3127,22 +3156,24 @@ describe('Execute: stream directive', () => {
       },
     );
 
-    assert(returnSpy.callCount === 1);
+    assert(returnSpy.callCount === COMPARISON_COUNT);
   });
 
   it('Does not return underlying async iterables when resource is disposed after source completion', async () => {
-    let index = 0;
     const values = [friends[0]];
     const iterable = {
       [Symbol.asyncIterator]() {
-        return this;
-      },
-      next() {
-        const friend = values[index++];
-        if (friend == null) {
-          return Promise.resolve({ done: true, value: undefined });
-        }
-        return Promise.resolve({ done: false, value: friend });
+        let index = 0;
+        return {
+          next() {
+            const friend = values[index++];
+            if (friend == null) {
+              return Promise.resolve({ done: true, value: undefined });
+            }
+            return Promise.resolve({ done: false, value: friend });
+          },
+          return: () => iterable.return(),
+        };
       },
       return() {
         /* noop */
@@ -3292,7 +3323,7 @@ describe('Execute: stream directive (cancellation)', () => {
 
     const resultPromise = (async () => {
       const result = await experimentalExecuteIncrementally({
-        schema: cancellationSchema,
+        schema,
         document,
         rootValue: {
           todo: {
@@ -3508,7 +3539,7 @@ describe('Execute: stream directive (cancellation)', () => {
     };
 
     const result = await experimentalExecuteIncrementally({
-      schema: cancelStreamSchema,
+      schema,
       document,
       rootValue: {
         todos: () => todosAsyncIterator,
@@ -3638,7 +3669,7 @@ describe('Execute: stream directive (cancellation)', () => {
     const sourceReturnSpy = spyOnMethod(todos, 'return');
 
     const result = await experimentalExecuteIncrementally({
-      schema: cancelStreamSchema,
+      schema,
       document,
       rootValue: { todos },
       enableEarlyExecution: true,
@@ -3651,7 +3682,7 @@ describe('Execute: stream directive (cancellation)', () => {
     await secondNextStarted;
     await expectPromise(iterator.return()).toResolve();
     await expectPromise(nextPromise).toResolve();
-    expect(sourceReturnSpy.callCount).to.equal(1);
+    expect(sourceReturnSpy.callCount).to.equal(COMPARISON_COUNT);
 
     const todo = {
       id: 'todo',
@@ -3741,7 +3772,7 @@ describe('Execute: stream directive (cancellation)', () => {
       promiseWithResolvers<void>();
 
     const resultPromise = experimentalExecuteIncrementally({
-      schema: cancellationSchema,
+      schema,
       document,
       abortSignal: abortController.signal,
       rootValue: {
@@ -3815,7 +3846,7 @@ describe('Execute: stream directive (cancellation)', () => {
     const sourceReturnSpy = spyOnMethod(asyncIterator, 'return');
 
     const resultPromise = experimentalExecuteIncrementally({
-      schema: cancellationSchema,
+      schema,
       document,
       abortSignal: abortController.signal,
       rootValue: {
@@ -3839,7 +3870,7 @@ describe('Execute: stream directive (cancellation)', () => {
     abortController.abort();
     await resolveOnNextTick();
 
-    expect(sourceReturnSpy.callCount).to.equal(1);
+    expect(sourceReturnSpy.callCount).to.equal(COMPARISON_COUNT);
     await expectPromise(resultPromise).toRejectWith(
       'This operation was aborted',
     );
@@ -3906,7 +3937,7 @@ describe('Execute: stream directive (cancellation)', () => {
     };
 
     const result = await experimentalExecuteIncrementally({
-      schema: cancellationSchema,
+      schema,
       document,
       rootValue,
       enableEarlyExecution: true,
@@ -3962,7 +3993,7 @@ describe('Execute: stream directive (cancellation)', () => {
       promiseWithResolvers<void>();
 
     const result = await experimentalExecuteIncrementally({
-      schema: cancelStreamSchema,
+      schema,
       document,
       enableEarlyExecution: true,
       rootValue: {

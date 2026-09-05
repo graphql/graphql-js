@@ -40,11 +40,18 @@ ignoreRegExpList:
 
 words:
   - graphiql
+  - incubator
+  - jit
   - Jsdocs
+  - backpressure
   - metafield
+  - microtask
+  - notdefined
+  - replayable
   - thunked
   - uncoerce
   - uncoerced
+  - zalando
 
   # Different names used inside tests
   - Skywalker
