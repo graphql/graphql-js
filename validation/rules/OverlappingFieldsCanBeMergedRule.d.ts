@@ -9,7 +9,7 @@ import type { ValidationContext } from "../ValidationContext.js";
  * without ambiguity.
  *
  * See https://spec.graphql.org/draft/#sec-Field-Selection-Merging
- * @param context - The validation context used while checking the document.
+ * @param validationContext - The validation context used while checking the document.
  * @returns A visitor that reports validation errors for this rule.
  * @example
  * ```ts
@@ -46,4 +46,4 @@ import type { ValidationContext } from "../ValidationContext.js";
  * validErrors; // => []
  * ```
  */
-export declare function OverlappingFieldsCanBeMergedRule(context: ValidationContext): ASTVisitor;
+export declare function OverlappingFieldsCanBeMergedRule(validationContext: ValidationContext): ASTVisitor;

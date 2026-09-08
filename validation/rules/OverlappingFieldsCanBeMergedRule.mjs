@@ -14,16 +14,18 @@ function reasonMessage(reason) {
     }
     return reason;
 }
-export function OverlappingFieldsCanBeMergedRule(context) {
-    const comparedFieldsAndFragmentPairs = new OrderedPairSet();
-    const comparedFragmentPairs = new PairSet();
-    const cachedFieldsAndFragmentSpreads = new Map();
+export function OverlappingFieldsCanBeMergedRule(validationContext) {
+    const ruleContext = {
+        comparedFieldsAndFragmentPairs: new OrderedPairSet(),
+        comparedFragmentPairs: new PairSet(),
+        cachedFieldsAndFragmentSpreads: new Map(),
+    };
     let fragmentVarMap;
     return {
         FragmentDefinition: {
             enter(node) {
                 const fragmentName = node.name.value;
-                const fragmentSignature = context.getFragmentSignatureByName()(fragmentName);
+                const fragmentSignature = validationContext.getFragmentSignatureByName()(fragmentName);
                 fragmentVarMap = getVarMap(fragmentSignature, fragmentName);
             },
             leave() {
@@ -31,47 +33,49 @@ export function OverlappingFieldsCanBeMergedRule(context) {
             },
         },
         SelectionSet(selectionSet) {
-            const conflicts = findConflictsWithinSelectionSet(context, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, context.getParentType(), selectionSet, fragmentVarMap);
+            const conflicts = findConflictsWithinSelectionSet(validationContext, ruleContext, validationContext.getParentType(), selectionSet, fragmentVarMap);
             for (const [[responseName, reason], fields1, fields2] of conflicts) {
                 const reasonMsg = reasonMessage(reason);
-                context.reportError(new GraphQLError(`Fields "${responseName}" conflict because ${reasonMsg}. Use different aliases on the fields to fetch both if this was intentional.`, { nodes: fields1.concat(fields2) }));
+                validationContext.reportError(new GraphQLError(`Fields "${responseName}" conflict because ${reasonMsg}. Use different aliases on the fields to fetch both if this was intentional.`, { nodes: fields1.concat(fields2) }));
             }
         },
     };
 }
-function findConflictsWithinSelectionSet(context, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, parentType, selectionSet, varMap) {
+function findConflictsWithinSelectionSet(validationContext, ruleContext, parentType, selectionSet, varMap) {
     const conflicts = [];
-    const [fieldMap, fragmentSpreads] = getFieldsAndFragmentSpreads(context, cachedFieldsAndFragmentSpreads, parentType, selectionSet, varMap);
-    collectConflictsWithin(context, conflicts, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, fieldMap, varMap);
+    const [fieldMap, fragmentSpreads] = getFieldsAndFragmentSpreads(validationContext, ruleContext, parentType, selectionSet, varMap);
+    collectConflictsWithin(validationContext, ruleContext, conflicts, fieldMap, varMap);
     if (fragmentSpreads.length !== 0) {
         for (let i = 0; i < fragmentSpreads.length; i++) {
-            collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, false, fieldMap, varMap, fragmentSpreads[i]);
+            collectConflictsBetweenFieldsAndFragment(validationContext, ruleContext, conflicts, false, fieldMap, varMap, fragmentSpreads[i]);
             for (let j = i + 1; j < fragmentSpreads.length; j++) {
-                collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, false, fragmentSpreads[i], fragmentSpreads[j]);
+                collectConflictsBetweenFragments(validationContext, ruleContext, conflicts, false, fragmentSpreads[i], fragmentSpreads[j]);
             }
         }
     }
     return conflicts;
 }
-function collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, areMutuallyExclusive, fieldMap, varMap, fragmentSpread) {
+function collectConflictsBetweenFieldsAndFragment(validationContext, ruleContext, conflicts, areMutuallyExclusive, fieldMap, varMap, fragmentSpread) {
+    const { comparedFieldsAndFragmentPairs } = ruleContext;
     if (comparedFieldsAndFragmentPairs.has(fieldMap, fragmentSpread.key, areMutuallyExclusive)) {
         return;
     }
     comparedFieldsAndFragmentPairs.add(fieldMap, fragmentSpread.key, areMutuallyExclusive);
-    const fragment = context.getFragment(fragmentSpread.node.name.value);
+    const fragment = validationContext.getFragment(fragmentSpread.node.name.value);
     if (!fragment) {
         return;
     }
-    const [fieldMap2, referencedFragmentSpreads] = getReferencedFieldsAndFragmentSpreads(context, cachedFieldsAndFragmentSpreads, fragment, fragmentSpread.varMap);
+    const [fieldMap2, referencedFragmentSpreads] = getReferencedFieldsAndFragmentSpreads(validationContext, ruleContext, fragment, fragmentSpread.varMap);
     if (fieldMap === fieldMap2) {
         return;
     }
-    collectConflictsBetween(context, conflicts, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, areMutuallyExclusive, fieldMap, varMap, fieldMap2, fragmentSpread.varMap);
+    collectConflictsBetween(validationContext, ruleContext, conflicts, areMutuallyExclusive, fieldMap, varMap, fieldMap2, fragmentSpread.varMap);
     for (const referencedFragmentSpread of referencedFragmentSpreads) {
-        collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, areMutuallyExclusive, fieldMap, varMap, referencedFragmentSpread);
+        collectConflictsBetweenFieldsAndFragment(validationContext, ruleContext, conflicts, areMutuallyExclusive, fieldMap, varMap, referencedFragmentSpread);
     }
 }
-function collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, areMutuallyExclusive, fragmentSpread1, fragmentSpread2) {
+function collectConflictsBetweenFragments(validationContext, ruleContext, conflicts, areMutuallyExclusive, fragmentSpread1, fragmentSpread2) {
+    const { comparedFragmentPairs } = ruleContext;
     if (fragmentSpread1.key === fragmentSpread2.key) {
         return;
     }
@@ -80,52 +84,52 @@ function collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFra
             return;
         }
         comparedFragmentPairs.add(fragmentSpread1.key, fragmentSpread2.key, false);
-        context.reportError(new GraphQLError(`Spreads "${fragmentSpread1.node.name.value}" conflict because ${getFragmentSpreadDescription(fragmentSpread1.node)} and ${getFragmentSpreadDescription(fragmentSpread2.node)} have different fragment arguments.`, { nodes: [fragmentSpread1.node, fragmentSpread2.node] }));
+        validationContext.reportError(new GraphQLError(`Spreads "${fragmentSpread1.node.name.value}" conflict because ${getFragmentSpreadDescription(fragmentSpread1.node)} and ${getFragmentSpreadDescription(fragmentSpread2.node)} have different fragment arguments.`, { nodes: [fragmentSpread1.node, fragmentSpread2.node] }));
         return;
     }
     if (comparedFragmentPairs.has(fragmentSpread1.key, fragmentSpread2.key, areMutuallyExclusive)) {
         return;
     }
     comparedFragmentPairs.add(fragmentSpread1.key, fragmentSpread2.key, areMutuallyExclusive);
-    const fragment1 = context.getFragment(fragmentSpread1.node.name.value);
-    const fragment2 = context.getFragment(fragmentSpread2.node.name.value);
+    const fragment1 = validationContext.getFragment(fragmentSpread1.node.name.value);
+    const fragment2 = validationContext.getFragment(fragmentSpread2.node.name.value);
     if (!fragment1 || !fragment2) {
         return;
     }
-    const [fieldMap1, referencedFragmentSpreads1] = getReferencedFieldsAndFragmentSpreads(context, cachedFieldsAndFragmentSpreads, fragment1, fragmentSpread1.varMap);
-    const [fieldMap2, referencedFragmentSpreads2] = getReferencedFieldsAndFragmentSpreads(context, cachedFieldsAndFragmentSpreads, fragment2, fragmentSpread2.varMap);
-    collectConflictsBetween(context, conflicts, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, areMutuallyExclusive, fieldMap1, fragmentSpread1.varMap, fieldMap2, fragmentSpread2.varMap);
+    const [fieldMap1, referencedFragmentSpreads1] = getReferencedFieldsAndFragmentSpreads(validationContext, ruleContext, fragment1, fragmentSpread1.varMap);
+    const [fieldMap2, referencedFragmentSpreads2] = getReferencedFieldsAndFragmentSpreads(validationContext, ruleContext, fragment2, fragmentSpread2.varMap);
+    collectConflictsBetween(validationContext, ruleContext, conflicts, areMutuallyExclusive, fieldMap1, fragmentSpread1.varMap, fieldMap2, fragmentSpread2.varMap);
     for (const referencedFragmentSpread2 of referencedFragmentSpreads2) {
-        collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, areMutuallyExclusive, fragmentSpread1, referencedFragmentSpread2);
+        collectConflictsBetweenFragments(validationContext, ruleContext, conflicts, areMutuallyExclusive, fragmentSpread1, referencedFragmentSpread2);
     }
     for (const referencedFragmentSpread1 of referencedFragmentSpreads1) {
-        collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, areMutuallyExclusive, referencedFragmentSpread1, fragmentSpread2);
+        collectConflictsBetweenFragments(validationContext, ruleContext, conflicts, areMutuallyExclusive, referencedFragmentSpread1, fragmentSpread2);
     }
 }
-function findConflictsBetweenSubSelectionSets(context, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, areMutuallyExclusive, parentType1, selectionSet1, varMap1, parentType2, selectionSet2, varMap2) {
+function findConflictsBetweenSubSelectionSets(validationContext, ruleContext, areMutuallyExclusive, parentType1, selectionSet1, varMap1, parentType2, selectionSet2, varMap2) {
     const conflicts = [];
-    const [fieldMap1, fragmentSpreads1] = getFieldsAndFragmentSpreads(context, cachedFieldsAndFragmentSpreads, parentType1, selectionSet1, varMap1);
-    const [fieldMap2, fragmentSpreads2] = getFieldsAndFragmentSpreads(context, cachedFieldsAndFragmentSpreads, parentType2, selectionSet2, varMap2);
-    collectConflictsBetween(context, conflicts, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, areMutuallyExclusive, fieldMap1, varMap1, fieldMap2, varMap2);
+    const [fieldMap1, fragmentSpreads1] = getFieldsAndFragmentSpreads(validationContext, ruleContext, parentType1, selectionSet1, varMap1);
+    const [fieldMap2, fragmentSpreads2] = getFieldsAndFragmentSpreads(validationContext, ruleContext, parentType2, selectionSet2, varMap2);
+    collectConflictsBetween(validationContext, ruleContext, conflicts, areMutuallyExclusive, fieldMap1, varMap1, fieldMap2, varMap2);
     for (const fragmentSpread2 of fragmentSpreads2) {
-        collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, areMutuallyExclusive, fieldMap1, varMap1, fragmentSpread2);
+        collectConflictsBetweenFieldsAndFragment(validationContext, ruleContext, conflicts, areMutuallyExclusive, fieldMap1, varMap1, fragmentSpread2);
     }
     for (const fragmentSpread1 of fragmentSpreads1) {
-        collectConflictsBetweenFieldsAndFragment(context, conflicts, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, areMutuallyExclusive, fieldMap2, varMap2, fragmentSpread1);
+        collectConflictsBetweenFieldsAndFragment(validationContext, ruleContext, conflicts, areMutuallyExclusive, fieldMap2, varMap2, fragmentSpread1);
     }
     for (const fragmentSpread1 of fragmentSpreads1) {
         for (const fragmentSpread2 of fragmentSpreads2) {
-            collectConflictsBetweenFragments(context, conflicts, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, areMutuallyExclusive, fragmentSpread1, fragmentSpread2);
+            collectConflictsBetweenFragments(validationContext, ruleContext, conflicts, areMutuallyExclusive, fragmentSpread1, fragmentSpread2);
         }
     }
     return conflicts;
 }
-function collectConflictsWithin(context, conflicts, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, fieldMap, varMap) {
+function collectConflictsWithin(validationContext, ruleContext, conflicts, fieldMap, varMap) {
     for (const [responseName, fields] of fieldMap.entries()) {
         if (fields.length > 1) {
             for (let i = 0; i < fields.length; i++) {
                 for (let j = i + 1; j < fields.length; j++) {
-                    const conflict = findConflict(context, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, false, responseName, fields[i], varMap, fields[j], varMap);
+                    const conflict = findConflict(validationContext, ruleContext, false, responseName, fields[i], varMap, fields[j], varMap);
                     if (conflict) {
                         conflicts.push(conflict);
                     }
@@ -134,13 +138,13 @@ function collectConflictsWithin(context, conflicts, cachedFieldsAndFragmentSprea
         }
     }
 }
-function collectConflictsBetween(context, conflicts, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, parentFieldsAreMutuallyExclusive, fieldMap1, varMap1, fieldMap2, varMap2) {
+function collectConflictsBetween(validationContext, ruleContext, conflicts, parentFieldsAreMutuallyExclusive, fieldMap1, varMap1, fieldMap2, varMap2) {
     for (const [responseName, fields1] of fieldMap1.entries()) {
         const fields2 = fieldMap2.get(responseName);
         if (fields2 != null) {
             for (const field1 of fields1) {
                 for (const field2 of fields2) {
-                    const conflict = findConflict(context, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, parentFieldsAreMutuallyExclusive, responseName, field1, varMap1, field2, varMap2);
+                    const conflict = findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExclusive, responseName, field1, varMap1, field2, varMap2);
                     if (conflict) {
                         conflicts.push(conflict);
                     }
@@ -149,7 +153,7 @@ function collectConflictsBetween(context, conflicts, cachedFieldsAndFragmentSpre
         }
     }
 }
-function findConflict(context, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, parentFieldsAreMutuallyExclusive, responseName, field1, varMap1, field2, varMap2) {
+function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExclusive, responseName, field1, varMap1, field2, varMap2) {
     const [parentType1, node1, def1] = field1;
     const [parentType2, node2, def2] = field2;
     const areMutuallyExclusive = parentFieldsAreMutuallyExclusive ||
@@ -195,7 +199,7 @@ function findConflict(context, cachedFieldsAndFragmentSpreads, comparedFieldsAnd
     const selectionSet1 = node1.selectionSet;
     const selectionSet2 = node2.selectionSet;
     if (selectionSet1 && selectionSet2) {
-        const conflicts = findConflictsBetweenSubSelectionSets(context, cachedFieldsAndFragmentSpreads, comparedFieldsAndFragmentPairs, comparedFragmentPairs, areMutuallyExclusive, getNamedType(type1), selectionSet1, varMap1, getNamedType(type2), selectionSet2, varMap2);
+        const conflicts = findConflictsBetweenSubSelectionSets(validationContext, ruleContext, areMutuallyExclusive, getNamedType(type1), selectionSet1, varMap1, getNamedType(type2), selectionSet2, varMap2);
         return subfieldConflicts(conflicts, responseName, node1, node2);
     }
 }
@@ -289,7 +293,8 @@ function doTypesConflict(type1, type2) {
     }
     return false;
 }
-function getFieldsAndFragmentSpreads(context, cachedFieldsAndFragmentSpreads, parentType, selectionSet, varMap) {
+function getFieldsAndFragmentSpreads(validationContext, ruleContext, parentType, selectionSet, varMap) {
+    const { cachedFieldsAndFragmentSpreads } = ruleContext;
     let cache = cachedFieldsAndFragmentSpreads.get(selectionSet);
     if (!cache) {
         cache = new Map();
@@ -301,7 +306,7 @@ function getFieldsAndFragmentSpreads(context, cachedFieldsAndFragmentSpreads, pa
     }
     const nodeAndDefs = new Map();
     const fragmentSpreads = new Map();
-    _collectFieldsAndFragmentSpreads(context, parentType, selectionSet, nodeAndDefs, fragmentSpreads, varMap);
+    _collectFieldsAndFragmentSpreads(validationContext, parentType, selectionSet, nodeAndDefs, fragmentSpreads, varMap);
     const result = [
         nodeAndDefs,
         Array.from(fragmentSpreads.values()),
@@ -309,17 +314,18 @@ function getFieldsAndFragmentSpreads(context, cachedFieldsAndFragmentSpreads, pa
     cache.set(varMap, result);
     return result;
 }
-function getReferencedFieldsAndFragmentSpreads(context, cachedFieldsAndFragmentSpreads, fragment, varMap) {
+function getReferencedFieldsAndFragmentSpreads(validationContext, ruleContext, fragment, varMap) {
+    const { cachedFieldsAndFragmentSpreads } = ruleContext;
     const cached = cachedFieldsAndFragmentSpreads
         .get(fragment.selectionSet)
         ?.get(varMap);
     if (cached) {
         return cached;
     }
-    const fragmentType = typeFromAST(context.getSchema(), fragment.typeCondition);
-    return getFieldsAndFragmentSpreads(context, cachedFieldsAndFragmentSpreads, fragmentType, fragment.selectionSet, varMap);
+    const fragmentType = typeFromAST(validationContext.getSchema(), fragment.typeCondition);
+    return getFieldsAndFragmentSpreads(validationContext, ruleContext, fragmentType, fragment.selectionSet, varMap);
 }
-function _collectFieldsAndFragmentSpreads(context, parentType, selectionSet, nodeAndDefs, fragmentSpreads, varMap) {
+function _collectFieldsAndFragmentSpreads(validationContext, parentType, selectionSet, nodeAndDefs, fragmentSpreads, varMap) {
     for (const selection of selectionSet.selections) {
         switch (selection.kind) {
             case Kind.FIELD: {
@@ -340,24 +346,24 @@ function _collectFieldsAndFragmentSpreads(context, parentType, selectionSet, nod
                 break;
             }
             case Kind.FRAGMENT_SPREAD: {
-                const fragmentSpread = getFragmentSpread(context, selection, varMap);
+                const fragmentSpread = getFragmentSpread(validationContext, selection, varMap);
                 fragmentSpreads.set(fragmentSpread.key, fragmentSpread);
                 break;
             }
             case Kind.INLINE_FRAGMENT: {
                 const typeCondition = selection.typeCondition;
                 const inlineFragmentType = typeCondition
-                    ? typeFromAST(context.getSchema(), typeCondition)
+                    ? typeFromAST(validationContext.getSchema(), typeCondition)
                     : parentType;
-                _collectFieldsAndFragmentSpreads(context, inlineFragmentType, selection.selectionSet, nodeAndDefs, fragmentSpreads, varMap);
+                _collectFieldsAndFragmentSpreads(validationContext, inlineFragmentType, selection.selectionSet, nodeAndDefs, fragmentSpreads, varMap);
                 break;
             }
         }
     }
 }
-function getFragmentSpread(context, fragmentSpreadNode, varMap) {
+function getFragmentSpread(validationContext, fragmentSpreadNode, varMap) {
     let key = '';
-    const fragmentSignature = context.getFragmentSignatureByName()(fragmentSpreadNode.name.value);
+    const fragmentSignature = validationContext.getFragmentSignatureByName()(fragmentSpreadNode.name.value);
     const argMap = new Map();
     if (fragmentSpreadNode.arguments) {
         for (const arg of fragmentSpreadNode.arguments) {
