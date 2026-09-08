@@ -39,6 +39,7 @@ export interface ValidationOptions {
    * Pair this with the `allowEmptySelectionSets` parse option.
    *
    * See https://github.com/graphql/graphql-spec/pull/1227
+   * @deprecated empty selection sets are now always allowed;
    */
   allowEmptySelectionSets?: boolean | undefined;
 }

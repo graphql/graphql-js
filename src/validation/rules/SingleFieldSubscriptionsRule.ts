@@ -104,10 +104,12 @@ export function SingleFieldSubscriptionsRule(
             );
             return;
           }
-          if (node.selectionSet.selections.length === 0) {
+          if (groupedFieldSet.size === 0) {
             context.reportError(
               new GraphQLError(
-                'Subscription must select exactly one top level field.',
+                operationName != null
+                  ? `Subscription "${operationName}" must select one top level field.`
+                  : 'Anonymous Subscription must select one top level field.',
                 { nodes: node.selectionSet },
               ),
             );

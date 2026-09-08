@@ -58,8 +58,35 @@ describe('Validate: Subscriptions with single field', () => {
       }
     `).toDeepEqual([
       {
-        message: 'Subscription must select exactly one top level field.',
+        message: 'Subscription "NoRootField" must select one top level field.',
         locations: [{ line: 2, column: 32 }],
+      },
+    ]);
+  });
+
+  it('fails with no root field in anonymous subscription', () => {
+    expectErrors(`
+      subscription {
+      }
+    `).toDeepEqual([
+      {
+        message: 'Anonymous Subscription must select one top level field.',
+        locations: [{ line: 2, column: 20 }],
+      },
+    ]);
+  });
+
+  it('fails with no root field through empty fragment', () => {
+    expectErrors(`
+      subscription {
+        ...Empty
+      }
+      fragment Empty on SubscriptionRoot {
+      }
+    `).toDeepEqual([
+      {
+        message: 'Anonymous Subscription must select one top level field.',
+        locations: [{ line: 2, column: 20 }],
       },
     ]);
   });
@@ -215,7 +242,13 @@ describe('Validate: Subscriptions with single field', () => {
       fragment A on SubscriptionRoot {
         ...A
       }
-    `).toDeepEqual([]);
+    `).toDeepEqual([
+      {
+        message:
+          'Subscription "NoInfiniteLoop" must select one top level field.',
+        locations: [{ line: 2, column: 35 }],
+      },
+    ]);
   });
 
   it('fails with many more than one root field via fragments (anonymous)', () => {

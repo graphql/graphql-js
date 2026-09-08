@@ -180,7 +180,10 @@ export type SDLValidationRule = (context: SDLValidationContext) => ASTVisitor;
 interface ValidationContextOptions {
   /** Whether suggestion text should be omitted from errors. */
   hideSuggestions?: Maybe<boolean>;
-  /** Whether selection sets on composite types may be empty. */
+  /**
+   * Whether selection sets on composite types may be empty.
+   * @deprecated empty selection sets are now always allowed;
+   */
   allowEmptySelectionSets?: Maybe<boolean>;
 }
 
@@ -291,6 +294,7 @@ export class ValidationContext extends ASTValidationContext {
   /**
    * Returns whether empty selection sets on composite types are allowed.
    * @returns True when a selection set on a composite type may be empty.
+   * @deprecated empty selection sets are now always allowed;
    */
   get allowEmptySelectionSets(): boolean {
     return this._allowEmptySelectionSets;

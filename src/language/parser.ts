@@ -130,6 +130,7 @@ export interface ParseOptions {
    *   viewer { }
    * }
    * ```
+   * @deprecated empty selection sets are now always allowed;
    */
   allowEmptySelectionSets?: boolean | undefined;
 
@@ -598,6 +599,9 @@ export class Parser {
    * ```
    * SelectionSet : { Selection* }
    * ```
+   *
+   * `allowEmptySelectionSets` is deprecated and will be removed in v18, at
+   * which point this will be the only grammar.
    *
    * @internal
    */
