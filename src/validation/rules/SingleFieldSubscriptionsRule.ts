@@ -104,7 +104,14 @@ export function SingleFieldSubscriptionsRule(
             );
             return;
           }
-          if (groupedFieldSet.size > 1) {
+          if (node.selectionSet.selections.length === 0) {
+            context.reportError(
+              new GraphQLError(
+                'Subscription must select exactly one top level field.',
+                { nodes: node.selectionSet },
+              ),
+            );
+          } else if (groupedFieldSet.size > 1) {
             const fieldDetailsLists = [...groupedFieldSet.values()];
             const extraFieldDetailsLists = fieldDetailsLists.slice(1);
             const extraFieldSelections = extraFieldDetailsLists.flatMap(

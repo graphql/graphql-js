@@ -52,6 +52,18 @@ describe('Validate: Subscriptions with single field', () => {
     `);
   });
 
+  it('fails with no root field', () => {
+    expectErrors(`
+      subscription NoRootField {
+      }
+    `).toDeepEqual([
+      {
+        message: 'Subscription must select exactly one top level field.',
+        locations: [{ line: 2, column: 32 }],
+      },
+    ]);
+  });
+
   it('valid subscription with fragment', () => {
     // From https://spec.graphql.org/draft/#example-13061
     expectValid(`
