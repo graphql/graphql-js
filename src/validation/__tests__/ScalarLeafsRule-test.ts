@@ -5,6 +5,7 @@ import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 import type { DocumentNode } from '../../language/ast.ts';
 import { OperationTypeNode } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
+import { parse } from '../../language/parser.ts';
 
 import { ScalarLeafsRule } from '../rules/ScalarLeafsRule.ts';
 import { validate } from '../validate.ts';
@@ -66,11 +67,33 @@ describe('Validate: Scalar leafs', () => {
     // We can't leverage expectErrors since it doesn't support passing in the
     // documentNode directly. We have to do this because this is technically
     // an invalid document.
-    const errors = validate(testSchema, doc, [ScalarLeafsRule]);
+    const errors = validate(testSchema, doc, [ScalarLeafsRule], {
+      allowEmptySelectionSets: false,
+    });
     expectJSON(errors).toDeepEqual([
       {
         message:
           'Field "human" of type "Human" must have at least one field selected.',
+      },
+    ]);
+  });
+
+  it('object type having no selections is allowed by default', () => {
+    const doc = parse('{ human { } }');
+
+    const errors = validate(testSchema, doc, [ScalarLeafsRule]);
+    expectJSON(errors).toDeepEqual([]);
+  });
+
+  it('scalar selection is still rejected with allowEmptySelectionSets', () => {
+    const doc = parse('{ human { name { } } }');
+
+    const errors = validate(testSchema, doc, [ScalarLeafsRule]);
+    expectJSON(errors).toDeepEqual([
+      {
+        message:
+          'Field "name" must not have a selection since type "String" has no subfields.',
+        locations: [{ line: 1, column: 16 }],
       },
     ]);
   });
@@ -163,39 +186,6 @@ describe('Validate: Scalar leafs', () => {
         message:
           'Field "doesKnowCommand" must not have a selection since type "Boolean" has no subfields.',
         locations: [{ line: 3, column: 61 }],
-      },
-    ]);
-  });
-
-  it('object type having only one selection', () => {
-    const doc: DocumentNode = {
-      kind: Kind.DOCUMENT,
-      definitions: [
-        {
-          kind: Kind.OPERATION_DEFINITION,
-          operation: OperationTypeNode.QUERY,
-          selectionSet: {
-            kind: Kind.SELECTION_SET,
-            selections: [
-              {
-                kind: Kind.FIELD,
-                name: { kind: Kind.NAME, value: 'human' },
-                selectionSet: { kind: Kind.SELECTION_SET, selections: [] },
-              },
-            ],
-          },
-        },
-      ],
-    };
-
-    // We can't leverage expectErrors since it doesn't support passing in the
-    // documentNode directly. We have to do this because this is technically
-    // an invalid document.
-    const errors = validate(testSchema, doc, [ScalarLeafsRule]);
-    expectJSON(errors).toDeepEqual([
-      {
-        message:
-          'Field "human" of type "Human" must have at least one field selected.',
       },
     ]);
   });
