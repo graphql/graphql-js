@@ -114,7 +114,7 @@ export function OverlappingFieldsCanBeMergedRule(
     // selection set.
     cachedFieldsAndFragmentSpreads: new Map(),
   };
-  let fragmentVarMap: Map<string, ValueNode> | undefined;
+  let fragmentVarMap: VariableMap | undefined;
 
   return {
     FragmentDefinition: {
@@ -162,10 +162,12 @@ type NodeAndDef = [
 ];
 // Map of array of those.
 type NodeAndDefCollection = Map<string, Array<NodeAndDef>>;
+// Variable-map identity distinguishes fragment scopes in the caches.
+type VariableMap = Map<string, ValueNode>;
 interface FragmentSpread {
   key: string;
   node: FragmentSpreadNode;
-  varMap: Map<string, ValueNode> | undefined;
+  varMap: VariableMap | undefined;
 }
 type FragmentSpreads = ReadonlyArray<FragmentSpread>;
 type FieldsAndFragmentSpreads = readonly [
@@ -174,7 +176,7 @@ type FieldsAndFragmentSpreads = readonly [
 ];
 type FieldsAndFragmentSpreadsCache = Map<
   SelectionSetNode,
-  Map<Map<string, ValueNode> | undefined, FieldsAndFragmentSpreads>
+  Map<VariableMap | undefined, FieldsAndFragmentSpreads>
 >;
 interface RuleContext {
   comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>;
@@ -246,7 +248,7 @@ function findConflictsWithinSelectionSet(
   ruleContext: RuleContext,
   parentType: Maybe<GraphQLNamedType>,
   selectionSet: SelectionSetNode,
-  varMap: Map<string, ValueNode> | undefined,
+  varMap: VariableMap | undefined,
 ): Array<Conflict> {
   const conflicts: Array<Conflict> = [];
 
@@ -308,7 +310,7 @@ function collectConflictsBetweenFieldsAndFragment(
   conflicts: Array<Conflict>,
   areMutuallyExclusive: boolean,
   fieldMap: NodeAndDefCollection,
-  varMap: Map<string, ValueNode> | undefined,
+  varMap: VariableMap | undefined,
   fragmentSpread: FragmentSpread,
 ): void {
   const { comparedFieldsAndFragmentPairs } = ruleContext;
@@ -499,10 +501,10 @@ function findConflictsBetweenSubSelectionSets(
   areMutuallyExclusive: boolean,
   parentType1: Maybe<GraphQLNamedType>,
   selectionSet1: SelectionSetNode,
-  varMap1: Map<string, ValueNode> | undefined,
+  varMap1: VariableMap | undefined,
   parentType2: Maybe<GraphQLNamedType>,
   selectionSet2: SelectionSetNode,
-  varMap2: Map<string, ValueNode> | undefined,
+  varMap2: VariableMap | undefined,
 ): Array<Conflict> {
   const conflicts: Array<Conflict> = [];
 
@@ -585,7 +587,7 @@ function collectConflictsWithin(
   ruleContext: RuleContext,
   conflicts: Array<Conflict>,
   fieldMap: NodeAndDefCollection,
-  varMap: Map<string, ValueNode> | undefined,
+  varMap: VariableMap | undefined,
 ): void {
   // A field map is a keyed collection, where each key represents a response
   // name and the value at that key is a list of all fields which provide that
@@ -628,9 +630,9 @@ function collectConflictsBetween(
   conflicts: Array<Conflict>,
   parentFieldsAreMutuallyExclusive: boolean,
   fieldMap1: NodeAndDefCollection,
-  varMap1: Map<string, ValueNode> | undefined,
+  varMap1: VariableMap | undefined,
   fieldMap2: NodeAndDefCollection,
-  varMap2: Map<string, ValueNode> | undefined,
+  varMap2: VariableMap | undefined,
 ): void {
   // A field map is a keyed collection, where each key represents a response
   // name and the value at that key is a list of all fields which provide that
@@ -669,9 +671,9 @@ function findConflict(
   parentFieldsAreMutuallyExclusive: boolean,
   responseName: string,
   field1: NodeAndDef,
-  varMap1: Map<string, ValueNode> | undefined,
+  varMap1: VariableMap | undefined,
   field2: NodeAndDef,
-  varMap2: Map<string, ValueNode> | undefined,
+  varMap2: VariableMap | undefined,
 ): Maybe<Conflict> {
   const [parentType1, node1, def1] = field1;
   const [parentType2, node2, def2] = field2;
@@ -764,9 +766,9 @@ function findConflict(
 
 function sameArguments<T extends ArgumentNode | FragmentArgumentNode>(
   args1: ReadonlyArray<T> | undefined,
-  varMap1: Map<string, ValueNode> | undefined,
+  varMap1: VariableMap | undefined,
   args2: ReadonlyArray<T> | undefined,
-  varMap2: Map<string, ValueNode> | undefined,
+  varMap2: VariableMap | undefined,
 ): boolean {
   if (args1 === undefined || args1.length === 0) {
     return args2 === undefined || args2.length === 0;
@@ -801,7 +803,7 @@ function sameArguments<T extends ArgumentNode | FragmentArgumentNode>(
 
 function replaceFragmentVariables(
   valueNode: ValueNode,
-  varMap: ReadonlyMap<string, ValueNode>,
+  varMap: VariableMap,
 ): ValueNode {
   switch (valueNode.kind) {
     case Kind.VARIABLE:
@@ -839,9 +841,9 @@ function getStreamDirective(
 
 function hasNoOverlappingStreams(
   directives1: ReadonlyArray<DirectiveNode> | undefined,
-  varMap1: Map<string, ValueNode> | undefined,
+  varMap1: VariableMap | undefined,
   directives2: ReadonlyArray<DirectiveNode> | undefined,
-  varMap2: Map<string, ValueNode> | undefined,
+  varMap2: VariableMap | undefined,
 ): string | undefined {
   const stream1 = getStreamDirective(directives1);
   const stream2 = getStreamDirective(directives2);
@@ -897,7 +899,7 @@ function getFieldsAndFragmentSpreads(
   ruleContext: RuleContext,
   parentType: Maybe<GraphQLNamedType>,
   selectionSet: SelectionSetNode,
-  varMap: Map<string, ValueNode> | undefined,
+  varMap: VariableMap | undefined,
 ): FieldsAndFragmentSpreads {
   const { cachedFieldsAndFragmentSpreads } = ruleContext;
   let cache = cachedFieldsAndFragmentSpreads.get(selectionSet);
@@ -933,7 +935,7 @@ function getReferencedFieldsAndFragmentSpreads(
   validationContext: ValidationContext,
   ruleContext: RuleContext,
   fragment: FragmentDefinitionNode,
-  varMap: Map<string, ValueNode> | undefined,
+  varMap: VariableMap | undefined,
 ) {
   const { cachedFieldsAndFragmentSpreads } = ruleContext;
   // Short-circuit building a type from the node if possible.
@@ -963,7 +965,7 @@ function _collectFieldsAndFragmentSpreads(
   selectionSet: SelectionSetNode,
   nodeAndDefs: NodeAndDefCollection,
   fragmentSpreads: Map<string, FragmentSpread>,
-  varMap: Map<string, ValueNode> | undefined,
+  varMap: VariableMap | undefined,
 ): void {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
@@ -1016,7 +1018,7 @@ function _collectFieldsAndFragmentSpreads(
 function getFragmentSpread(
   validationContext: ValidationContext,
   fragmentSpreadNode: FragmentSpreadNode,
-  varMap: Map<string, ValueNode> | undefined,
+  varMap: VariableMap | undefined,
 ): FragmentSpread {
   let key = '';
   const fragmentSignature = validationContext.getFragmentSignatureByName()(
@@ -1051,7 +1053,7 @@ function getFragmentSpread(
 function getVarMap(
   fragmentSignature: ReturnType<ValidationContext['getFragmentSignature']>,
   key = '',
-): Map<string, ValueNode> | undefined {
+): VariableMap | undefined {
   if (!fragmentSignature || fragmentSignature.variableDefinitions.size === 0) {
     return;
   }
