@@ -56,6 +56,9 @@ function findConflictsWithinSelectionSet(validationContext, ruleContext, parentT
     return conflicts;
 }
 function collectConflictsBetweenFieldsAndFragment(validationContext, ruleContext, conflicts, areMutuallyExclusive, fieldMap, varMap, fragmentSpread) {
+    if (fieldMap.size === 0) {
+        return;
+    }
     const { comparedFieldsAndFragmentPairs } = ruleContext;
     if (comparedFieldsAndFragmentPairs.has(fieldMap, fragmentSpread.key, areMutuallyExclusive)) {
         return;
@@ -139,6 +142,9 @@ function collectConflictsWithin(validationContext, ruleContext, conflicts, field
     }
 }
 function collectConflictsBetween(validationContext, ruleContext, conflicts, parentFieldsAreMutuallyExclusive, fieldMap1, varMap1, fieldMap2, varMap2) {
+    if (fieldMap1.size === 0 || fieldMap2.size === 0) {
+        return;
+    }
     for (const [responseName, fields1] of fieldMap1.entries()) {
         const fields2 = fieldMap2.get(responseName);
         if (fields2 != null) {
