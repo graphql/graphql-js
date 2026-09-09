@@ -431,9 +431,12 @@ export type {
 export {
   validate,
   ValidationContext,
+  validateWithRules,
   // All validation rules in the GraphQL Specification.
   specifiedRules,
   recommendedRules,
+  specifiedASTValidationRules,
+  specifiedTypeSystemValidationRules,
   // Individual validation rules.
   DeferStreamDirectiveLabelRule,
   DeferStreamDirectiveOnRootFieldRule,
@@ -481,7 +484,11 @@ export {
   NoSchemaIntrospectionCustomRule,
 } from './validation/index.ts';
 
-export type { ValidationOptions, ValidationRule } from './validation/index.ts';
+export type {
+  ValidateWithRulesOptions,
+  ValidationOptions,
+  ValidationRule,
+} from './validation/index.ts';
 
 // Create, format, and print GraphQL errors.
 export { GraphQLError, syntaxError, locatedError } from './error/index.ts';

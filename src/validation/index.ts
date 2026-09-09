@@ -7,12 +7,19 @@
 
 export { validate } from './validate.ts';
 export type { ValidationOptions } from './validate.ts';
+export { validateWithRules } from './validateWithRules.ts';
+export type { ValidateWithRulesOptions } from './validateWithRules.ts';
 
 export { ValidationContext } from './ValidationContext.ts';
 export type { ValidationRule } from './ValidationContext.ts';
 
 // All validation rules in the GraphQL Specification.
+export {
+  specifiedASTValidationRules,
+  specifiedTypeSystemValidationRules,
+} from './specifiedValidationRules.ts';
 export { specifiedRules, recommendedRules } from './specifiedRules.ts';
+export type { ASTVisitorFn } from './unifiedValidationRules/ASTValidationContext.ts';
 
 // Spec Section: "Defer And Stream Directive Labels Are Unique"
 export { DeferStreamDirectiveLabelRule } from './rules/DeferStreamDirectiveLabelRule.ts';

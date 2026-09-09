@@ -4,7 +4,6 @@ import { didYouMean } from '../jsutils/didYouMean.ts';
 import { inspect } from '../jsutils/inspect.ts';
 import { isIterableObject } from '../jsutils/isIterableObject.ts';
 import { isObjectLike } from '../jsutils/isObjectLike.ts';
-import { keyMap } from '../jsutils/keyMap.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
 import type { Path } from '../jsutils/Path.ts';
 import { addPath, pathToArray } from '../jsutils/Path.ts';
@@ -13,11 +12,17 @@ import { suggestionList } from '../jsutils/suggestionList.ts';
 import { ensureGraphQLError } from '../error/ensureGraphQLError.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
 
-import type { ASTNode, ValueNode, VariableNode } from '../language/ast.ts';
-import { Kind } from '../language/kinds.ts';
-import { print } from '../language/printer.ts';
+import type { ValueNode } from '../language/ast.ts';
 
-import type { GraphQLInputType } from '../type/definition.ts';
+import type {
+  GraphQLInputField,
+  GraphQLInputObjectType,
+  GraphQLInputType,
+  GraphQLLeafType,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLNullableInputType,
+} from '../type/definition.ts';
 import {
   assertLeafType,
   isInputObjectType,
@@ -30,6 +35,8 @@ import type { FragmentVariableValues } from '../execution/collectFields.ts';
 import type { VariableValues } from '../execution/values.ts';
 
 import { replaceVariables } from './replaceVariables.ts';
+import type { ConstInputSchema } from './validateInputLiteralWithConstInputSchema.ts';
+import { validateInputLiteralWithConstInputSchema } from './validateInputLiteralWithConstInputSchema.ts';
 
 /**
  * Validate that the provided input value is allowed for this type, collecting
@@ -367,290 +374,67 @@ export function validateInputLiteral(
   fragmentVariableValues?: Maybe<FragmentVariableValues>,
   hideSuggestions?: Maybe<boolean>,
 ): void {
-  const context: ValidationContext = {
-    static: !variables && !fragmentVariableValues,
+  return validateInputLiteralWithConstInputSchema(
+    valueNode,
+    type,
+    graphQLConstInputSchema,
     onError,
     variables,
     fragmentVariableValues,
-  };
-  return validateInputLiteralImpl(
-    context,
-    valueNode,
-    type,
     hideSuggestions,
-    undefined,
   );
 }
 
-interface ValidationContext {
-  static: boolean;
-  onError: (error: GraphQLError, path: ReadonlyArray<string | number>) => void;
-  variables?: Maybe<VariableValues>;
-  fragmentVariableValues?: Maybe<FragmentVariableValues>;
-}
-
-function validateInputLiteralImpl(
-  context: ValidationContext,
-  valueNode: ValueNode,
-  type: GraphQLInputType,
-  hideSuggestions: Maybe<boolean>,
-  path: Path | undefined,
-): void {
-  if (valueNode.kind === Kind.VARIABLE) {
-    if (context.static) {
-      // If no variable values are provided, this is being validated statically,
-      // and cannot yet produce any validation errors for variables.
-      return;
-    }
-    const scopedVariableValues = getScopedVariableValues(context, valueNode);
-    const value = scopedVariableValues?.coerced[valueNode.name.value];
+const graphQLConstInputSchema: ConstInputSchema<
+  GraphQLInputType,
+  GraphQLInputField,
+  GraphQLNonNull<GraphQLNullableInputType>,
+  GraphQLList<GraphQLInputType>,
+  GraphQLInputObjectType,
+  GraphQLLeafType
+> = {
+  getType(type) {
+    const typeStr = String(type);
     if (isNonNullType(type)) {
-      if (value === undefined) {
-        reportInvalidLiteral(
-          context.onError,
-          `Expected variable "$${valueNode.name.value}" provided to type "${type}" to provide a runtime value.`,
-          valueNode,
-          path,
-        );
-      } else if (value === null) {
-        reportInvalidLiteral(
-          context.onError,
-          `Expected variable "$${valueNode.name.value}" provided to non-null type "${type}" not to be null.`,
-          valueNode,
-          path,
-        );
-      }
+      return { kind: 'nonNull', type, typeStr, nullableType: type.ofType };
     }
-    // Note: This does no further checking that this variable is correct.
-    // This assumes this variable usage has already been validated.
-    return;
-  }
-
-  if (isNonNullType(type)) {
-    if (valueNode.kind === Kind.NULL) {
-      reportInvalidLiteral(
-        context.onError,
-        `Expected value of non-null type "${type}" not to be null.`,
-        valueNode,
-        path,
-      );
-      return;
+    if (isListType(type)) {
+      return { kind: 'list', type, typeStr, itemType: type.ofType };
     }
-    return validateInputLiteralImpl(
-      context,
-      valueNode,
-      type.ofType,
-      hideSuggestions,
-      path,
-    );
-  }
-
-  if (valueNode.kind === Kind.NULL) {
-    return;
-  }
-
-  if (isListType(type)) {
-    if (valueNode.kind !== Kind.LIST) {
-      // Lists accept a non-list value as a list of one.
-      validateInputLiteralImpl(
-        context,
-        valueNode,
-        type.ofType,
-        hideSuggestions,
-        path,
-      );
-    } else {
-      let index = 0;
-      for (const itemNode of valueNode.values) {
-        validateInputLiteralImpl(
-          context,
-          itemNode,
-          type.ofType,
+    if (isInputObjectType(type)) {
+      return {
+        kind: 'inputObject',
+        type,
+        typeStr,
+        fields: Object.values(type.getFields()),
+        isOneOf: type.isOneOf,
+      };
+    }
+    return { kind: 'leaf', type, typeStr };
+  },
+  getField(field) {
+    return {
+      name: field.name,
+      type: field.type,
+      isRequired: isRequiredInputField(field),
+    };
+  },
+  coerceLeafLiteral(
+    type,
+    valueNode,
+    variables,
+    fragmentVariableValues,
+    hideSuggestions,
+  ) {
+    const leafType = assertLeafType(type);
+    return leafType.coerceInputLiteral
+      ? leafType.coerceInputLiteral(
+          replaceVariables(valueNode, variables, fragmentVariableValues),
           hideSuggestions,
-          addPath(path, index++, undefined),
-        );
-      }
-    }
-  } else if (isInputObjectType(type)) {
-    if (valueNode.kind !== Kind.OBJECT) {
-      reportInvalidLiteral(
-        context.onError,
-        `Expected value of type "${type}" to be an object, found: ${print(
-          valueNode,
-        )}.`,
-        valueNode,
-        path,
-      );
-      return;
-    }
-
-    const fieldDefs = type.getFields();
-    const fieldNodes = keyMap(valueNode.fields, (field) => field.name.value);
-
-    for (const field of Object.values(fieldDefs)) {
-      const fieldNode = fieldNodes[field.name];
-      if (fieldNode === undefined) {
-        if (isRequiredInputField(field)) {
-          reportInvalidLiteral(
-            context.onError,
-            `Expected value of type "${type}" to include required field "${
-              field.name
-            }", found: ${print(valueNode)}.`,
-            valueNode,
-            path,
-          );
-        }
-      } else {
-        const fieldValueNode = fieldNode.value;
-        if (fieldValueNode.kind === Kind.VARIABLE && !context.static) {
-          const scopedVariableValues = getScopedVariableValues(
-            context,
-            fieldValueNode,
-          );
-          const variableName = fieldValueNode.name.value;
-          const value = scopedVariableValues?.coerced[variableName];
-          if (type.isOneOf) {
-            if (value === undefined) {
-              reportInvalidLiteral(
-                context.onError,
-                `Expected variable "$${variableName}" provided to field "${field.name}" for OneOf Input Object type "${type}" to provide a runtime value.`,
-                valueNode,
-                path,
-              );
-            } else if (value === null) {
-              reportInvalidLiteral(
-                context.onError,
-                `Expected variable "$${variableName}" provided to field "${field.name}" for OneOf Input Object type "${type}" not to be null.`,
-                valueNode,
-                path,
-              );
-            }
-          } else if (value === undefined && !isRequiredInputField(field)) {
-            continue;
-          }
-        }
-
-        validateInputLiteralImpl(
-          context,
-          fieldValueNode,
-          field.type,
-          hideSuggestions,
-          addPath(path, field.name, type.name),
-        );
-      }
-    }
-
-    const fields = valueNode.fields;
-    const knownFields: Array<(typeof fields)[number]> = [];
-    // Ensure every provided field is defined.
-    for (const fieldNode of fields) {
-      const fieldName = fieldNode.name.value;
-      if (!Object.hasOwn(fieldDefs, fieldName)) {
-        const suggestion = hideSuggestions
-          ? ''
-          : didYouMean(suggestionList(fieldName, Object.keys(fieldDefs)));
-        reportInvalidLiteral(
-          context.onError,
-          `Expected value of type "${type}" not to include unknown field "${fieldName}"${
-            suggestion ? `.${suggestion} Found` : ', found'
-          }: ${print(valueNode)}.`,
-          fieldNode,
-          path,
-        );
-      } else {
-        knownFields.push(fieldNode);
-      }
-    }
-
-    if (type.isOneOf) {
-      const isNotExactlyOneField = knownFields.length !== 1;
-      if (isNotExactlyOneField) {
-        reportInvalidLiteral(
-          context.onError,
-          getOneOfInputObjectErrorMessage(type),
-          valueNode,
-          path,
-        );
-        return;
-      }
-
-      const fieldValueNode = knownFields[0].value;
-      if (fieldValueNode.kind === Kind.NULL) {
-        const fieldName = knownFields[0].name.value;
-        reportInvalidLiteral(
-          context.onError,
-          getOneOfInputObjectErrorMessage(type),
-          valueNode,
-          addPath(path, fieldName, undefined),
-        );
-      }
-    }
-  } else {
-    assertLeafType(type);
-
-    let result;
-    let caughtError: unknown;
-    try {
-      result = type.coerceInputLiteral
-        ? type.coerceInputLiteral(
-            replaceVariables(
-              valueNode,
-              context.variables,
-              context.fragmentVariableValues,
-            ),
-            hideSuggestions,
-          )
-        : type.parseLiteral(valueNode, undefined, hideSuggestions);
-    } catch (error) {
-      if (error instanceof GraphQLError) {
-        context.onError(error, pathToArray(path));
-        return;
-      }
-      caughtError = error;
-    }
-
-    if (result === undefined) {
-      reportInvalidLiteral(
-        context.onError,
-        `Expected value of type "${type}"${
-          caughtError != null
-            ? `, but encountered error "${getCaughtErrorMessage(caughtError)}"; found`
-            : ', found'
-        }: ${print(valueNode)}.`,
-        valueNode,
-        path,
-        ensureGraphQLError(caughtError),
-      );
-    }
-  }
-}
-
-function getScopedVariableValues(
-  context: ValidationContext,
-  valueNode: VariableNode,
-): Maybe<VariableValues> {
-  const variableName = valueNode.name.value;
-  const { fragmentVariableValues, variables } = context;
-  return fragmentVariableValues?.sources[variableName]
-    ? fragmentVariableValues
-    : variables;
-}
-
-function reportInvalidLiteral(
-  onError: (error: GraphQLError, path: ReadonlyArray<string | number>) => void,
-  message: string,
-  valueNode: ASTNode,
-  path: Path | undefined,
-  originalError?: GraphQLError,
-): void {
-  onError(
-    new GraphQLError(message, {
-      nodes: valueNode,
-      originalError,
-    }),
-    pathToArray(path),
-  );
-}
+        )
+      : leafType.parseLiteral(valueNode, undefined, hideSuggestions);
+  },
+};
 
 function getCaughtErrorMessage(caughtError: unknown): string {
   if (isObjectLike(caughtError)) {
