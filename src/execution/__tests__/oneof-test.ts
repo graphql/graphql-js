@@ -225,6 +225,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
             message:
               'Argument "Query.test(input:)" has invalid value: Expected variable "$a" provided to field "a" for OneOf Input Object type "TestInputObject" not to be null.',
             locations: [{ line: 3, column: 23 }],
+            pathNonNull: [false],
             path: ['test'],
           },
         ],
@@ -253,6 +254,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
             message:
               'Argument "Query.test(input:)" has invalid value: Expected variable "$a" provided to field "a" for OneOf Input Object type "TestInputObject" to provide a runtime value.',
             locations: [{ line: 3, column: 23 }],
+            pathNonNull: [false],
             path: ['test'],
           },
         ],
@@ -279,6 +281,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
             message:
               'Argument "Query.test(input:)" has invalid value: Expected variable "$b" provided to field "b" for OneOf Input Object type "TestInputObject" to provide a runtime value.',
             locations: [{ line: 3, column: 23 }],
+            pathNonNull: [false],
             path: ['test'],
           },
         ],
@@ -310,6 +313,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
             message:
               'Argument "Query.test(input:)" has invalid value: Expected variable "$a" provided to field "a" for OneOf Input Object type "TestInputObject" not to be null.',
             locations: [{ line: 6, column: 23 }],
+            pathNonNull: [false],
             path: ['test'],
           },
         ],
@@ -341,6 +345,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
             message:
               'Argument "Query.test(input:)" has invalid value: Expected variable "$a" provided to field "a" for OneOf Input Object type "TestInputObject" to provide a runtime value.',
             locations: [{ line: 6, column: 23 }],
+            pathNonNull: [false],
             path: ['test'],
           },
         ],

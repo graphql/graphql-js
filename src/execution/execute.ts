@@ -5,11 +5,12 @@ import { isAsyncIterable } from '../jsutils/isAsyncIterable.ts';
 import { isObjectLike } from '../jsutils/isObjectLike.ts';
 import { isPromise, isPromiseLike } from '../jsutils/isPromise.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
-import { addPath, pathToArray } from '../jsutils/Path.ts';
+import { addPath, pathToDigest } from '../jsutils/Path.ts';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
 
 import { ensureGraphQLError } from '../error/ensureGraphQLError.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
+import { isErrorBehavior } from '../error/GraphQLErrorBehavior.ts';
 import { locatedError } from '../error/locatedError.ts';
 
 import type {
@@ -25,7 +26,7 @@ import type {
   GraphQLFieldResolver,
   GraphQLTypeResolver,
 } from '../type/index.ts';
-import { assertValidSchema } from '../type/index.ts';
+import { assertValidSchema, isNonNullType } from '../type/index.ts';
 
 import { getOperationAST } from '../utilities/getOperationAST.ts';
 
@@ -744,11 +745,20 @@ export function validateExecutionArgs(
     abortSignal: externalAbortSignal,
     enableEarlyExecution,
     hooks,
+    onError,
     options,
   } = args;
 
   // If the schema used for execution is invalid, throw an error.
   assertValidSchema(schema);
+
+  if (onError != null && !isErrorBehavior(onError)) {
+    return [
+      new GraphQLError(
+        'Unsupported `onError` value; supported values are `NULL`, `PROPAGATE` and `ABORT`.',
+      ),
+    ];
+  }
 
   let operation: OperationDefinitionNode | undefined;
   const fragmentDefinitions: ObjMap<FragmentDefinitionNode> =
@@ -863,7 +873,7 @@ export function validateExecutionArgs(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     hideSuggestions,
-    errorPropagation,
+    onError: onError ?? (errorPropagation ? 'PROPAGATE' : 'NULL'),
     externalAbortSignal: externalAbortSignal ?? undefined,
     enableEarlyExecution: enableEarlyExecution === true,
     hooks: hooks ?? undefined,
@@ -1124,7 +1134,12 @@ function executeSubscription(
 
   const sharedExecutionContext =
     createSharedExecutionContext(externalAbortSignal);
-  const path = addPath(undefined, responseName, rootType.name);
+  const path = addPath(
+    undefined,
+    responseName,
+    rootType.name,
+    isNonNullType(fieldDef.type),
+  );
   const info = buildResolveInfo(
     validatedExecutionArgs,
     fieldDef,
@@ -1170,13 +1185,13 @@ function executeSubscription(
           throw locatedError(
             error,
             toNodes(fieldDetailsList),
-            pathToArray(path),
+            pathToDigest(path),
           );
         });
     }
     return assertEventStream(result);
   } catch (error) {
-    throw locatedError(error, fieldNodes, pathToArray(path));
+    throw locatedError(error, fieldNodes, pathToDigest(path));
   }
 }
 

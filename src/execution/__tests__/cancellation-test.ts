@@ -227,6 +227,7 @@ describe('Execute: Cancellation', () => {
       errors: [
         {
           message: 'Aborted!',
+          pathNonNull: [false],
           path: ['blocker'],
           locations: [{ line: 3, column: 9 }],
         },
@@ -736,6 +737,7 @@ describe('Execute: Cancellation', () => {
         {
           message: 'boom',
           locations: [{ line: 1, column: 12 }],
+          pathNonNull: [false, true],
           path: ['parent', 'boom'],
         },
       ],
@@ -813,6 +815,7 @@ describe('Execute: Cancellation', () => {
         {
           message: 'boom',
           locations: [{ line: 1, column: 12 }],
+          pathNonNull: [false, true],
           path: ['parent', 'boom'],
         },
       ],
@@ -930,6 +933,7 @@ describe('Execute: Cancellation', () => {
       errors: [
         {
           message: 'This operation was aborted',
+          pathNonNull: [false],
           path: ['foo'],
           locations: [{ line: 3, column: 9 }],
         },

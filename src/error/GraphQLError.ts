@@ -46,6 +46,8 @@ export interface GraphQLErrorOptions {
   positions?: Maybe<ReadonlyArray<number>>;
   /** Response path where this error occurred during execution. */
   path?: Maybe<ReadonlyArray<string | number>>;
+  /** Nullability for each position in the response path. */
+  pathNonNull?: Maybe<ReadonlyArray<boolean>>;
   /**
    * Original error that caused this GraphQLError, if one exists.
    * Deprecated in favor of `cause` to better align with JavaScript standards.
@@ -84,6 +86,9 @@ export class GraphQLError extends Error {
    * Enumerable, and appears in the result of JSON.stringify().
    */
   readonly path: ReadonlyArray<string | number> | undefined;
+
+  /** Nullability for each position in the response path. @experimental */
+  readonly pathNonNull: ReadonlyArray<boolean> | undefined;
 
   /** An array of GraphQL AST Nodes corresponding to this error. */
   readonly nodes: ReadonlyArray<ASTNode> | undefined;
@@ -156,8 +161,16 @@ export class GraphQLError extends Error {
    * ```
    */
   constructor(message: string, options: GraphQLErrorOptions = {}) {
-    const { nodes, source, positions, path, originalError, cause, extensions } =
-      options;
+    const {
+      nodes,
+      source,
+      positions,
+      path,
+      pathNonNull,
+      originalError,
+      cause,
+      extensions,
+    } = options;
 
     const hasCause = 'cause' in options;
     const errorCause = hasCause ? cause : originalError;
@@ -167,6 +180,7 @@ export class GraphQLError extends Error {
 
     this.name = 'GraphQLError';
     this.path = path ?? undefined;
+    this.pathNonNull = pathNonNull ?? undefined;
     const underlyingError: typeof originalError =
       originalError ?? (cause instanceof Error ? cause : undefined);
     this.originalError = underlyingError;
@@ -309,6 +323,10 @@ export class GraphQLError extends Error {
       formattedError.path = this.path;
     }
 
+    if (this.pathNonNull != null) {
+      formattedError.pathNonNull = this.pathNonNull;
+    }
+
     if (this.extensions != null && Object.keys(this.extensions).length > 0) {
       formattedError.extensions = this.extensions;
     }
@@ -343,6 +361,8 @@ export interface GraphQLFormattedError {
    * identify whether a null result is intentional or caused by a runtime error.
    */
   readonly path?: ReadonlyArray<string | number>;
+  /** Nullability for each position in `path`. @experimental */
+  readonly pathNonNull?: ReadonlyArray<boolean>;
   /**
    * Reserved for implementors to extend the protocol however they see fit,
    * and hence there are no additional restrictions on its contents.

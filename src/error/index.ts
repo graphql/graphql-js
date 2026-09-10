@@ -16,3 +16,5 @@ export type {
 export { syntaxError } from './syntaxError.ts';
 
 export { locatedError } from './locatedError.ts';
+export type { GraphQLErrorBehavior } from './GraphQLErrorBehavior.ts';
+export { isErrorBehavior } from './GraphQLErrorBehavior.ts';

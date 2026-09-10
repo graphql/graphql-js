@@ -3,6 +3,8 @@
 import type { Maybe } from '../jsutils/Maybe.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
 
+import type { GraphQLErrorBehavior } from '../error/GraphQLErrorBehavior.ts';
+
 import type {
   DocumentNode,
   FragmentDefinitionNode,
@@ -39,6 +41,15 @@ export interface ExecutionArgs {
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   /** Resolver used for the root subscription field. */
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  /**
+   * Set to `"NULL"` to disable error propagation. Set to `"ABORT"` to have
+   * errors propagate as far as possible, typically to the operation root.
+   * With incremental delivery, propagation can stop at an incremental delivery
+   * boundary.
+   * @defaultValue `"PROPAGATE"`
+   * @experimental
+   */
+  onError?: GraphQLErrorBehavior;
   /** Whether suggestion text should be omitted from request errors. */
   hideSuggestions?: Maybe<boolean>;
   /** AbortSignal used to cancel execution. */
@@ -94,8 +105,8 @@ export interface ValidatedExecutionArgs {
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   /** Whether suggestion text should be omitted from execution errors. */
   hideSuggestions: boolean;
-  /** Whether execution should use error propagation. */
-  errorPropagation: boolean;
+  /** How execution errors should be handled. */
+  onError: GraphQLErrorBehavior;
   /** External signal that may abort execution. */
   externalAbortSignal: AbortSignal | undefined;
   /** Whether incremental execution may begin eligible work early. */

@@ -1,6 +1,8 @@
 import type { ObjMap } from '../jsutils/ObjMap.ts';
 import type { Path } from '../jsutils/Path.ts';
 
+import type { GraphQLErrorBehavior } from '../error/GraphQLErrorBehavior.ts';
+
 import type {
   FieldNode,
   FragmentDefinitionNode,
@@ -24,6 +26,7 @@ export interface BuildResolveInfoExecutionArgs {
   rootValue: unknown;
   operation: OperationDefinitionNode;
   variableValues: VariableValues;
+  onError: GraphQLErrorBehavior;
 }
 
 /** @internal */
@@ -37,8 +40,14 @@ export function buildResolveInfo(
   getAbortSignal: () => AbortSignal | undefined,
   getAsyncHelpers: () => GraphQLResolveInfoHelpers,
 ): GraphQLResolveInfo {
-  const { schema, fragmentDefinitions, rootValue, operation, variableValues } =
-    validatedExecutionArgs;
+  const {
+    schema,
+    fragmentDefinitions,
+    rootValue,
+    operation,
+    variableValues,
+    onError,
+  } = validatedExecutionArgs;
   // The resolve function's optional fourth argument is a collection of
   // information about the current execution state.
   return {
@@ -52,6 +61,7 @@ export function buildResolveInfo(
     rootValue,
     operation,
     variableValues,
+    onError,
     getAbortSignal,
     getAsyncHelpers,
   };
