@@ -41,7 +41,12 @@ import {
 import { assertDirective, GraphQLDirective } from '../directives.ts';
 import { GraphQLInt, GraphQLString } from '../scalars.ts';
 import { GraphQLSchema } from '../schema.ts';
-import { assertValidSchema, validateSchema } from '../validate.ts';
+import {
+  assertValidSchema,
+  experimentalAssertValidFullSchema,
+  experimentalValidateFullSchema,
+  validateSchema,
+} from '../validate.ts';
 
 const SomeSchema = buildSchema(`
   scalar SomeScalar
@@ -3824,6 +3829,233 @@ describe('assertValidSchema', () => {
   it('combines multiple errors', () => {
     const schema = buildSchema('type SomeType');
     expect(() => assertValidSchema(schema)).to.throw(dedent`
+      Query root type must be provided.
+
+      Type SomeType must define one or more fields.`);
+  });
+});
+
+describe('Type System: A full schema may contain reserved names', () => {
+  it('accepts reserved names from a newer version of GraphQL', () => {
+    // Valid SDL returned from a hypothetical newer version of GraphQL.
+    const schema = buildSchema(`
+      type Query {
+        hello: String
+      }
+
+      enum __ErrorBehavior {
+        NULL
+        PROPAGATE
+        HALT
+      }
+
+      directive @behavior(onError: __ErrorBehavior) on SCHEMA
+    `);
+
+    // validateSchema rejects the reserved name.
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Name "__ErrorBehavior" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 6, column: 7 }],
+      },
+    ]);
+
+    // experimentalValidateFullSchema permits it.
+    expectJSON(experimentalValidateFullSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts reserved names that are not reachable from the root operation types', () => {
+    const schema = buildSchema(`
+      type Query {
+        hello: String
+      }
+
+      type __Unused {
+        field: String
+      }
+    `);
+
+    // The reserved type is unreachable, so a full schema accepts it while a
+    // source schema still rejects it.
+    expect(validateSchema(schema)).to.not.deep.equal([]);
+    expectJSON(experimentalValidateFullSchema(schema)).toDeepEqual([]);
+  });
+
+  it('rejects a reserved type reachable from a root field', () => {
+    // A user type must not expose an introspection type.
+    const schema = buildSchema(`
+      type Query {
+        int: __Type
+      }
+    `);
+
+    expectJSON(experimentalValidateFullSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Name "__Type" must not begin with "__", which is reserved by GraphQL introspection.',
+      },
+    ]);
+  });
+
+  it('rejects a reserved root operation type', () => {
+    const schema = buildSchema(`
+      scalar __S
+
+      type __Q {
+        __i: __S
+      }
+
+      schema {
+        query: __Q
+      }
+    `);
+
+    expectJSON(experimentalValidateFullSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Name "__Q" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 4, column: 7 }],
+      },
+    ]);
+  });
+
+  it('rejects reserved names on directives usable in executable documents', () => {
+    const schema = buildSchema(`
+      type Query {
+        hello: String
+      }
+
+      scalar __Bar
+
+      directive @flibble(__foo: __Bar) on FIELD
+    `);
+
+    expectJSON(experimentalValidateFullSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Name "__foo" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 8, column: 26 }],
+      },
+      {
+        message:
+          'Name "__Bar" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 6, column: 7 }],
+      },
+    ]);
+  });
+
+  it('rejects a reserved type reachable via a directive with mixed locations', () => {
+    const schema = buildSchema(`
+      type Query {
+        hello: String
+      }
+
+      enum __ErrorBehavior {
+        NULL
+        PROPAGATE
+        HALT
+      }
+
+      directive @behavior(onError: __ErrorBehavior) on SCHEMA | FIELD
+    `);
+
+    expectJSON(experimentalValidateFullSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Name "__ErrorBehavior" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 6, column: 7 }],
+      },
+    ]);
+  });
+
+  it('rejects reserved field and argument names reachable from the root types', () => {
+    const schema = buildSchema(`
+      type Query {
+        __secret: String
+        ok(__x: Int): String
+      }
+    `);
+
+    expectJSON(experimentalValidateFullSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Name "__secret" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 3, column: 9 }],
+      },
+      {
+        message:
+          'Name "__x" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 4, column: 12 }],
+      },
+    ]);
+  });
+
+  it('still reports non-name errors when validating a full schema', () => {
+    const schema = buildSchema(`
+      type SomeType
+
+      enum __ErrorBehavior {
+        NULL
+        PROPAGATE
+        HALT
+      }
+    `);
+
+    expectJSON(experimentalValidateFullSchema(schema)).toDeepEqual([
+      {
+        message: 'Query root type must be provided.',
+      },
+      {
+        message: 'Type SomeType must define one or more fields.',
+        locations: [{ line: 2, column: 7 }],
+      },
+    ]);
+  });
+
+  it('caches full schema validation results independently', () => {
+    const schema = buildSchema(`
+      type Query {
+        hello: String
+      }
+
+      enum __ErrorBehavior {
+        NULL
+      }
+    `);
+
+    // Populate the regular cache first, then the full schema cache.
+    const regularErrors = validateSchema(schema);
+    const fullErrors = experimentalValidateFullSchema(schema);
+
+    expect(regularErrors).to.have.lengthOf(1);
+    expect(fullErrors).to.deep.equal([]);
+
+    // Repeated calls return the cached results for each mode.
+    expect(validateSchema(schema)).to.equal(regularErrors);
+    expect(experimentalValidateFullSchema(schema)).to.equal(fullErrors);
+  });
+});
+
+describe('experimentalAssertValidFullSchema', () => {
+  it('does not throw on a full schema containing reserved names', () => {
+    const schema = buildSchema(`
+      type Query {
+        hello: String
+      }
+
+      enum __ErrorBehavior {
+        NULL
+        PROPAGATE
+        HALT
+      }
+    `);
+    expect(() => experimentalAssertValidFullSchema(schema)).to.not.throw();
+  });
+
+  it('combines multiple errors', () => {
+    const schema = buildSchema('type SomeType');
+    expect(() => experimentalAssertValidFullSchema(schema)).to.throw(dedent`
       Query root type must be provided.
 
       Type SomeType must define one or more fields.`);
