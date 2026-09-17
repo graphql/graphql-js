@@ -3464,3 +3464,256 @@ describe('Execute: defer directive', () => {
     await expectPromise(authorPromise).toRejectWith('late error');
   });
 });
+
+describe('Execute: defer directive (maxDeferredFragments)', () => {
+  async function completeWithLimit(
+    document: DocumentNode,
+    maxDeferredFragments: number,
+  ) {
+    const result = await experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: { hero },
+      options: { maxDeferredFragments },
+    });
+
+    if ('initialResult' in result) {
+      const results: Array<
+        InitialIncrementalExecutionResult | SubsequentIncrementalExecutionResult
+      > = [result.initialResult];
+      for await (const patch of result.subsequentResults) {
+        results.push(patch);
+      }
+      return results;
+    }
+    return result;
+  }
+
+  it('Counts a deferred fragment once per list item', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          friends {
+            id
+            ... @defer {
+              name
+            }
+          }
+        }
+      }
+    `);
+    const result = await completeWithLimit(document, 2);
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {
+            friends: [{ id: '2' }, { id: '3' }, { id: '4', name: 'C-3PO' }],
+          },
+        },
+        pending: [
+          { id: '0', path: ['hero', 'friends', 0] },
+          { id: '1', path: ['hero', 'friends', 1] },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          { data: { name: 'Han' }, id: '0' },
+          { data: { name: 'Leia' }, id: '1' },
+        ],
+        completed: [{ id: '0' }, { id: '1' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Executes every deferred fragment inline when the limit is zero', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          id
+          ... @defer {
+            name
+            friends {
+              ... @defer {
+                name
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await completeWithLimit(document, 0);
+
+    expectJSON(result).toDeepEqual({
+      data: {
+        hero: {
+          id: '1',
+          name: 'Luke',
+          friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
+        },
+      },
+    });
+  });
+
+  it('Delivers a nested deferred fragment with its parent once the limit is reached', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          friends {
+            ... @defer(label: "outer") {
+              name
+              ... @defer(label: "inner") {
+                id
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await completeWithLimit(document, 3);
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {
+            friends: [{}, {}, { name: 'C-3PO', id: '4' }],
+          },
+        },
+        pending: [
+          { id: '0', path: ['hero', 'friends', 0], label: 'outer' },
+          { id: '1', path: ['hero', 'friends', 1], label: 'outer' },
+        ],
+        hasNext: true,
+      },
+      {
+        pending: [{ id: '2', path: ['hero', 'friends', 0], label: 'inner' }],
+        incremental: [
+          { data: { name: 'Han' }, id: '0' },
+          { data: { name: 'Leia', id: '3' }, id: '1' },
+          { data: { id: '2' }, id: '2' },
+        ],
+        completed: [{ id: '0' }, { id: '1' }, { id: '2' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Executes a root deferred fragment inline when the limit is reached', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        ... @defer {
+          hero {
+            id
+          }
+        }
+      }
+    `);
+    const result = await completeWithLimit(document, 0);
+
+    expectJSON(result).toDeepEqual({ data: { hero: { id: '1' } } });
+  });
+
+  it('Executes only some root deferred fragments inline', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        ... @defer(label: "first") {
+          hero {
+            id
+          }
+        }
+        ... @defer(label: "second") {
+          g {
+            h
+          }
+        }
+      }
+    `);
+    const result = await completeWithLimit(document, 1);
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: { g: null },
+        pending: [{ id: '0', path: [], label: 'first' }],
+        hasNext: true,
+      },
+      {
+        incremental: [{ data: { hero: { id: '1' } }, id: '0' }],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Executes a nested deferred fragment inline within a deferred parent', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          ... @defer(label: "outer") {
+            friends {
+              id
+              ... @defer(label: "inner") {
+                name
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await completeWithLimit(document, 1);
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: { hero: {} },
+        pending: [{ id: '0', path: ['hero'], label: 'outer' }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              friends: [
+                { id: '2', name: 'Han' },
+                { id: '3', name: 'Leia' },
+                { id: '4', name: 'C-3PO' },
+              ],
+            },
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Shares the limit across the whole operation', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          ... @defer(label: "name") {
+            name
+          }
+          ... @defer(label: "id") {
+            id
+          }
+        }
+      }
+    `);
+    const result = await completeWithLimit(document, 1);
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: { hero: { id: '1' } },
+        pending: [{ id: '0', path: ['hero'], label: 'name' }],
+        hasNext: true,
+      },
+      {
+        incremental: [{ data: { name: 'Luke' }, id: '0' }],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+});

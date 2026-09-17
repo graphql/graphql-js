@@ -55,6 +55,16 @@ export interface ExecutionArgs {
      * @internal
      */
     maxCoercionErrors?: number;
+    /**
+     * Set the maximum number of deferred fragments that may be delivered
+     * incrementally (defaults to `Infinity`).
+     *
+     * Deferred fragments are counted per response position, so a single
+     * `@defer` directive within a list of ten items counts as ten deferred
+     * fragments. Once the limit is reached, any further `@defer` directives
+     * are executed as if they were not deferred.
+     */
+    maxDeferredFragments?: number;
   };
 }
 
@@ -100,6 +110,8 @@ export interface ValidatedExecutionArgs {
   externalAbortSignal: AbortSignal | undefined;
   /** Whether incremental execution may begin eligible work early. */
   enableEarlyExecution: boolean;
+  /** Maximum number of deferred fragments that may be delivered incrementally. */
+  maxDeferredFragments: number;
   /** Execution hooks supplied by the caller. */
   hooks: ExecutionHooks | undefined;
 }

@@ -3372,3 +3372,170 @@ describe('Execute: defer directive (legacy)', () => {
     await expectPromise(authorPromise).toRejectWith('late error');
   });
 });
+
+describe('Execute: defer directive (legacy maxDeferredFragments)', () => {
+  async function completeWithLimit(
+    document: DocumentNode,
+    maxDeferredFragments: number,
+  ) {
+    const result = await legacyExecuteIncrementally({
+      schema,
+      document,
+      rootValue: { hero },
+      options: { maxDeferredFragments },
+    });
+
+    if ('initialResult' in result) {
+      const results: Array<
+        | LegacyInitialIncrementalExecutionResult
+        | LegacySubsequentIncrementalExecutionResult
+      > = [result.initialResult];
+      for await (const patch of result.subsequentResults) {
+        results.push(patch);
+      }
+      return results;
+    }
+    return result;
+  }
+
+  it('Counts a deferred fragment once per list item', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          friends {
+            id
+            ... @defer {
+              name
+            }
+          }
+        }
+      }
+    `);
+    const result = await completeWithLimit(document, 2);
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {
+            friends: [{ id: '2' }, { id: '3' }, { id: '4', name: 'C-3PO' }],
+          },
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          { data: { name: 'Han' }, path: ['hero', 'friends', 0] },
+          { data: { name: 'Leia' }, path: ['hero', 'friends', 1] },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Executes every deferred fragment inline when the limit is zero', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          id
+          ... @defer {
+            name
+            friends {
+              ... @defer {
+                name
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await completeWithLimit(document, 0);
+
+    expectJSON(result).toDeepEqual({
+      data: {
+        hero: {
+          id: '1',
+          name: 'Luke',
+          friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
+        },
+      },
+    });
+  });
+
+  it('Executes only some root deferred fragments inline', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        ... @defer(label: "first") {
+          hero {
+            id
+          }
+        }
+        ... @defer(label: "second") {
+          g {
+            h
+          }
+        }
+      }
+    `);
+    const result = await completeWithLimit(document, 1);
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: { g: null },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          { data: { hero: { id: '1' } }, path: [], label: 'first' },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Delivers a nested deferred fragment with its parent once the limit is reached', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          friends {
+            ... @defer(label: "outer") {
+              name
+              ... @defer(label: "inner") {
+                id
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await completeWithLimit(document, 3);
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: { friends: [{}, {}, { name: 'C-3PO', id: '4' }] },
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { name: 'Han' },
+            path: ['hero', 'friends', 0],
+            label: 'outer',
+          },
+          {
+            data: { name: 'Leia', id: '3' },
+            path: ['hero', 'friends', 1],
+            label: 'outer',
+          },
+          {
+            data: { id: '2' },
+            path: ['hero', 'friends', 0],
+            label: 'inner',
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+});

@@ -349,6 +349,21 @@ export interface DeliveryGroup extends Group<DeliveryGroup> {
   parent: DeliveryGroup | undefined;
 }
 
+/**
+ * Tracks the delivery groups enclosing a given response position.
+ *
+ * @internal
+ */
+export interface DeliveryGroupContext {
+  deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup>;
+  /**
+   * Whether any enclosing `@defer` exceeded the configured limit of deferred
+   * fragments. Such defer usages are absent from `deliveryGroupMap` and their
+   * fields are executed as if they were not deferred.
+   */
+  hasInlinedDeferUsages: boolean;
+}
+
 /** @internal */
 export interface ItemStream extends Stream<
   ExecutionGroupValue,
@@ -398,7 +413,7 @@ export interface StreamItemResult {
 /** @internal */
 export class IncrementalExecutor<
   TExperimental = ExperimentalIncrementalExecutionResults,
-> extends Executor<ReadonlyMap<DeferUsage, DeliveryGroup>, TExperimental> {
+> extends Executor<DeliveryGroupContext, TExperimental> {
   deferUsageSet?: DeferUsageSet | undefined;
   groups: Array<DeliveryGroup>;
   tasks: Array<ExecutionGroup>;
@@ -492,18 +507,31 @@ export class IncrementalExecutor<
       '`@defer` directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
     );
 
-    const { newDeliveryGroups, newDeliveryGroupMap } =
-      this.getNewDeliveryGroupMap(newDeferUsages, undefined, undefined);
+    const { newDeliveryGroups, newContext } = this.getNewDeliveryGroupContext(
+      newDeferUsages,
+      undefined,
+      undefined,
+    );
+
+    if (newContext === undefined) {
+      return this.executeRootGroupedFieldSet(
+        rootType,
+        rootValue,
+        originalGroupedFieldSet,
+        serially,
+        undefined,
+      );
+    }
 
     const { groupedFieldSet, newGroupedFieldSets } =
-      this.buildRootExecutionPlan(originalGroupedFieldSet);
+      this.buildRootExecutionPlan(originalGroupedFieldSet, newContext);
 
     const data = this.executeRootGroupedFieldSet(
       rootType,
       rootValue,
       groupedFieldSet,
       serially,
-      newDeliveryGroupMap,
+      newContext,
     );
 
     this.groups.push(...newDeliveryGroups);
@@ -514,7 +542,7 @@ export class IncrementalExecutor<
         rootValue,
         undefined,
         newGroupedFieldSets,
-        newDeliveryGroupMap,
+        newContext,
       );
     }
 
@@ -523,8 +551,15 @@ export class IncrementalExecutor<
 
   buildRootExecutionPlan(
     originalGroupedFieldSet: GroupedFieldSet,
+    context: DeliveryGroupContext,
   ): ExecutionPlan {
-    return buildExecutionPlanFromInitial(originalGroupedFieldSet);
+    return context.hasInlinedDeferUsages
+      ? buildExecutionPlan(
+          originalGroupedFieldSet,
+          undefined,
+          context.deliveryGroupMap,
+        )
+      : buildExecutionPlanFromInitial(originalGroupedFieldSet);
   }
 
   override executeCollectedSubfields(
@@ -533,7 +568,7 @@ export class IncrementalExecutor<
     path: Path | undefined,
     originalGroupedFieldSet: GroupedFieldSet,
     newDeferUsages: ReadonlyArray<DeferUsage>,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
+    context: DeliveryGroupContext | undefined,
   ): PromiseOrValue<ObjMap<unknown>> {
     if (newDeferUsages.length > 0) {
       invariant(
@@ -543,21 +578,35 @@ export class IncrementalExecutor<
       );
     }
 
-    if (deliveryGroupMap === undefined && newDeferUsages.length === 0) {
+    if (context === undefined && newDeferUsages.length === 0) {
       return this.executeFields(
         parentType,
         sourceValue,
         path,
         originalGroupedFieldSet,
-        deliveryGroupMap,
+        undefined,
       );
     }
 
-    const { newDeliveryGroups, newDeliveryGroupMap } =
-      this.getNewDeliveryGroupMap(newDeferUsages, deliveryGroupMap, path);
+    const { newDeliveryGroups, newContext } = this.getNewDeliveryGroupContext(
+      newDeferUsages,
+      context,
+      path,
+    );
+
+    if (newContext === undefined) {
+      return this.executeFields(
+        parentType,
+        sourceValue,
+        path,
+        originalGroupedFieldSet,
+        undefined,
+      );
+    }
 
     const { groupedFieldSet, newGroupedFieldSets } = this.buildSubExecutionPlan(
       originalGroupedFieldSet,
+      newContext,
     );
 
     const data = this.executeFields(
@@ -565,7 +614,7 @@ export class IncrementalExecutor<
       sourceValue,
       path,
       groupedFieldSet,
-      newDeliveryGroupMap,
+      newContext,
     );
 
     this.groups.push(...newDeliveryGroups);
@@ -576,7 +625,7 @@ export class IncrementalExecutor<
         sourceValue,
         path,
         newGroupedFieldSets,
-        newDeliveryGroupMap,
+        newContext,
       );
     }
 
@@ -585,7 +634,15 @@ export class IncrementalExecutor<
 
   buildSubExecutionPlan(
     originalGroupedFieldSet: GroupedFieldSet,
+    context: DeliveryGroupContext,
   ): ExecutionPlan {
+    if (context.hasInlinedDeferUsages) {
+      return buildExecutionPlan(
+        originalGroupedFieldSet,
+        this.deferUsageSet,
+        context.deliveryGroupMap,
+      );
+    }
     return this.deferUsageSet === undefined
       ? buildExecutionPlanFromInitial(originalGroupedFieldSet)
       : buildExecutionPlanFromDeferred(
@@ -599,11 +656,14 @@ export class IncrementalExecutor<
     sourceValue: unknown,
     path: Path | undefined,
     newGroupedFieldSets: SetMap<DeferUsage, GroupedFieldSet>,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup>,
+    context: DeliveryGroupContext,
   ): void {
     const createSubExecutor = this.getCreateSubExecutor();
     for (const [deferUsageSet, groupedFieldSet] of newGroupedFieldSets) {
-      const deliveryGroups = getDeliveryGroups(deferUsageSet, deliveryGroupMap);
+      const deliveryGroups = getDeliveryGroups(
+        deferUsageSet,
+        context.deliveryGroupMap,
+      );
 
       const executor = createSubExecutor(deferUsageSet);
 
@@ -618,7 +678,7 @@ export class IncrementalExecutor<
               sourceValue,
               path,
               groupedFieldSet,
-              deliveryGroupMap,
+              context,
             ),
           (reason) => executor.abort(reason),
         ),
@@ -645,7 +705,7 @@ export class IncrementalExecutor<
     sourceValue: unknown,
     path: Path | undefined,
     groupedFieldSet: GroupedFieldSet,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup>,
+    context: DeliveryGroupContext,
   ): PromiseOrValue<ExecutionGroupResult> {
     let result;
     try {
@@ -654,7 +714,7 @@ export class IncrementalExecutor<
         sourceValue,
         path,
         groupedFieldSet,
-        deliveryGroupMap,
+        context,
       );
     } catch (error) {
       this.abort();
@@ -730,26 +790,41 @@ export class IncrementalExecutor<
 
   /**
    * Instantiates new DeliveryGroups for the given path, returning an
-   * updated map of DeferUsage objects to DeliveryGroups.
+   * updated context for the enclosed response positions.
    *
    * Note: As defer directives may be used with operations returning lists,
    * a DeferUsage object may correspond to many DeliveryGroups.
    *
+   * A DeferUsage that would exceed the configured limit of deferred fragments
+   * is inlined instead: no DeliveryGroup is created for it and it is left out
+   * of the map so that its fields are delivered with the enclosing position. A
+   * `newContext` of `undefined` means nothing at this position is deferred.
+   *
    * @internal
    */
-  getNewDeliveryGroupMap(
+  getNewDeliveryGroupContext(
     newDeferUsages: ReadonlyArray<DeferUsage>,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
+    context: DeliveryGroupContext | undefined,
     path: Path | undefined,
   ): {
     newDeliveryGroups: ReadonlyArray<DeliveryGroup>;
-    newDeliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup>;
+    newContext: DeliveryGroupContext | undefined;
   } {
+    const sharedExecutionContext = this.sharedExecutionContext;
     const newDeliveryGroups: Array<DeliveryGroup> = [];
-    const newDeliveryGroupMap = new Map(deliveryGroupMap);
+    let newDeliveryGroupMap: Map<DeferUsage, DeliveryGroup> | undefined;
+    let inlined = false;
 
     // For each new deferUsage object:
     for (const newDeferUsage of newDeferUsages) {
+      if (sharedExecutionContext.remainingDeferredFragments < 1) {
+        inlined = true;
+        continue;
+      }
+      sharedExecutionContext.remainingDeferredFragments--;
+
+      newDeliveryGroupMap ??= new Map(context?.deliveryGroupMap);
+
       const parentDeferUsage = newDeferUsage.parentDeferUsage;
 
       const parent =
@@ -771,10 +846,28 @@ export class IncrementalExecutor<
       newDeliveryGroupMap.set(newDeferUsage, deliveryGroup);
     }
 
-    return {
-      newDeliveryGroups,
-      newDeliveryGroupMap,
-    };
+    if (newDeliveryGroupMap !== undefined) {
+      return {
+        newDeliveryGroups,
+        newContext: {
+          deliveryGroupMap: newDeliveryGroupMap,
+          hasInlinedDeferUsages:
+            inlined || context?.hasInlinedDeferUsages === true,
+        },
+      };
+    }
+
+    // Without a new delivery group the enclosing context still applies, unless
+    // it has yet to record that a `@defer` was inlined.
+    const newContext =
+      inlined && context !== undefined && !context.hasInlinedDeferUsages
+        ? {
+            deliveryGroupMap: context.deliveryGroupMap,
+            hasInlinedDeferUsages: true,
+          }
+        : context;
+
+    return { newDeliveryGroups, newContext };
   }
 
   shouldDefer(

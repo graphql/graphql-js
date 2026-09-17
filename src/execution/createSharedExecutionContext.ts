@@ -5,6 +5,12 @@ import { AsyncWorkTracker } from './AsyncWorkTracker.ts';
 /** @internal */
 export interface SharedExecutionContext {
   asyncWorkTracker: AsyncWorkTracker;
+  /**
+   * Number of deferred fragments that may still be delivered incrementally.
+   * Decremented as delivery groups are created; once exhausted, further
+   * `@defer` usages are executed as if they were not deferred.
+   */
+  remainingDeferredFragments: number;
   getAbortSignal: () => AbortSignal | undefined;
   getAsyncHelpers: () => GraphQLResolveInfoHelpers;
   promiseAll: <T>(
@@ -15,6 +21,7 @@ export interface SharedExecutionContext {
 /** @internal */
 export function createSharedExecutionContext(
   abortSignal: AbortSignal | undefined,
+  maxDeferredFragments: number = Infinity,
 ): SharedExecutionContext {
   const asyncWorkTracker = new AsyncWorkTracker();
   let resolveInfoHelpers: GraphQLResolveInfoHelpers | undefined;
@@ -31,6 +38,7 @@ export function createSharedExecutionContext(
 
   return {
     asyncWorkTracker,
+    remainingDeferredFragments: maxDeferredFragments,
     getAbortSignal: () => abortSignal,
     getAsyncHelpers,
     promiseAll,
