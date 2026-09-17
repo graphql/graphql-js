@@ -866,6 +866,7 @@ export function validateExecutionArgs(
     errorPropagation,
     externalAbortSignal: externalAbortSignal ?? undefined,
     enableEarlyExecution: enableEarlyExecution === true,
+    maxDeferredFragments: options?.maxDeferredFragments ?? Infinity,
     hooks: hooks ?? undefined,
     rawVariableValues,
   };
