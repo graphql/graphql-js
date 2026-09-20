@@ -584,7 +584,12 @@ export function createWorkQueue<
     for (const group of task.groups) {
       const groupNode = groupNodes.get(group);
       if (groupNode) {
-        groupFailureEvents.push(finishGroupFailure(group, groupNode, error));
+        // A shared task can fail in a child group before it is released.
+        const isReleased = rootGroups.has(group);
+        const failureEvent = finishGroupFailure(group, groupNode, error);
+        if (isReleased) {
+          groupFailureEvents.push(failureEvent);
+        }
       }
     }
     return groupFailureEvents;

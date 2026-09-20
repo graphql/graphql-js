@@ -1891,7 +1891,7 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it('Completes an unannounced nested group when a shared task fails', async () => {
+  it('Does not complete an unannounced nested group when a shared task fails', async () => {
     const document = parse(`
       {
         ... @defer(label: "R") { bad }
@@ -1917,19 +1917,6 @@ describe('Execute: defer directive', () => {
         completed: [
           {
             id: '0',
-            errors: [
-              {
-                message: 'Cannot return null for non-nullable field Query.bad.',
-                locations: [
-                  { line: 3, column: 34 },
-                  { line: 6, column: 36 },
-                ],
-                path: ['bad'],
-              },
-            ],
-          },
-          {
-            id: '2',
             errors: [
               {
                 message: 'Cannot return null for non-nullable field Query.bad.',
