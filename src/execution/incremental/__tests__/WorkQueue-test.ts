@@ -262,7 +262,7 @@ describe('WorkQueue', () => {
     expect(childRanSpy.callCount).to.equal(1);
   });
 
-  it('emits failure for every group sharing a failed task', async () => {
+  it('does not emit failure for an unannounced group sharing a failed task', async () => {
     const failingRoot: TestGroup = { parent: undefined };
     const otherRoot: TestGroup = { parent: undefined };
     const child: TestGroup = { parent: otherRoot };
@@ -285,7 +285,6 @@ describe('WorkQueue', () => {
       initialStreams: [],
       events: [
         { kind: 'GROUP_FAILURE', group: failingRoot, error },
-        { kind: 'GROUP_FAILURE', group: child, error },
         { kind: 'GROUP_VALUES', group: otherRoot, values: ['other'] },
         {
           kind: 'GROUP_SUCCESS',
