@@ -262,6 +262,42 @@ describe('WorkQueue', () => {
     expect(childRanSpy.callCount).to.equal(1);
   });
 
+  it('emits failure for every group sharing a failed task', async () => {
+    const failingRoot: TestGroup = { parent: undefined };
+    const otherRoot: TestGroup = { parent: undefined };
+    const child: TestGroup = { parent: otherRoot };
+    const error = new Error('shared failure');
+    const sharedTask = makeTask([failingRoot, child], () => {
+      throw error;
+    });
+    const otherTask = makeTask([otherRoot], async () => {
+      await resolveOnNextTick();
+      return { value: 'other' };
+    });
+
+    const workQueue = await collectWorkRun({
+      groups: [failingRoot, otherRoot, child],
+      tasks: [sharedTask, otherTask],
+    });
+
+    expect(workQueue).to.deep.equal({
+      initialGroups: [failingRoot, otherRoot],
+      initialStreams: [],
+      events: [
+        { kind: 'GROUP_FAILURE', group: failingRoot, error },
+        { kind: 'GROUP_FAILURE', group: child, error },
+        { kind: 'GROUP_VALUES', group: otherRoot, values: ['other'] },
+        {
+          kind: 'GROUP_SUCCESS',
+          group: otherRoot,
+          newGroups: [],
+          newStreams: [],
+        },
+        { kind: 'WORK_QUEUE_TERMINATION' },
+      ],
+    });
+  });
+
   it('integrates work object returned by task', async () => {
     const root: TestGroup = { parent: undefined };
     const child: TestGroup = { parent: root };
