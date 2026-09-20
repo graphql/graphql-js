@@ -137,6 +137,8 @@ const query = new GraphQLObjectType({
     },
     a: { type: a },
     g: { type: g },
+    slow: { type: GraphQLString },
+    bad: { type: new GraphQLNonNull(GraphQLString) },
   },
   name: 'Query',
 });
@@ -1884,6 +1886,63 @@ describe('Execute: defer directive', () => {
           },
         ],
         completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Completes an unannounced nested group when a shared task fails', async () => {
+    const document = parse(`
+      {
+        ... @defer(label: "R") { bad }
+        ... @defer(label: "P") {
+          slow
+          ... @defer(label: "C") { bad }
+        }
+      }
+    `);
+    const result = await complete(document, { slow: 'ok', bad: null });
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: {},
+        pending: [
+          { id: '0', path: [], label: 'R' },
+          { id: '1', path: [], label: 'P' },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [{ id: '1', data: { slow: 'ok' } }],
+        completed: [
+          {
+            id: '0',
+            errors: [
+              {
+                message: 'Cannot return null for non-nullable field Query.bad.',
+                locations: [
+                  { line: 3, column: 34 },
+                  { line: 6, column: 36 },
+                ],
+                path: ['bad'],
+              },
+            ],
+          },
+          {
+            id: '2',
+            errors: [
+              {
+                message: 'Cannot return null for non-nullable field Query.bad.',
+                locations: [
+                  { line: 3, column: 34 },
+                  { line: 6, column: 36 },
+                ],
+                path: ['bad'],
+              },
+            ],
+          },
+          { id: '1' },
+        ],
         hasNext: false,
       },
     ]);
