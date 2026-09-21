@@ -17,6 +17,7 @@ import type {
 import type { GraphQLSchema } from '../type/schema.ts';
 
 import type { FragmentDetails } from './collectFields.ts';
+import type { GraphQLErrorBehavior } from './ErrorBehavior.ts';
 import type { VariableValues } from './values.ts';
 
 /** Arguments accepted by execute and executeSync. */
@@ -41,6 +42,12 @@ export interface ExecutionArgs {
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   /** Whether suggestion text should be omitted from request errors. */
   hideSuggestions?: Maybe<boolean>;
+  /**
+   * The error behavior to apply to this request; see {@link GraphQLErrorBehavior}.
+   * Defaults to `"PROPAGATE"`.
+   * @experimental
+   */
+  onError?: Maybe<GraphQLErrorBehavior>;
   /** AbortSignal used to cancel execution. */
   abortSignal?: Maybe<AbortSignal>;
   /** Whether incremental execution may begin eligible work early. */
@@ -94,8 +101,8 @@ export interface ValidatedExecutionArgs {
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   /** Whether suggestion text should be omitted from execution errors. */
   hideSuggestions: boolean;
-  /** Whether execution should use error propagation. */
-  errorPropagation: boolean;
+  /** The error behavior applied to this request; see {@link GraphQLErrorBehavior}. */
+  errorBehavior: GraphQLErrorBehavior;
   /** External signal that may abort execution. */
   externalAbortSignal: AbortSignal | undefined;
   /** Whether incremental execution may begin eligible work early. */

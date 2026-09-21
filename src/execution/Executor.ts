@@ -725,13 +725,22 @@ export class Executor<
       pathToArray(path),
     );
 
-    // If the field type is non-nullable, then it is resolved without any
-    // protection from errors, however it still properly locates the error.
-    if (
-      this.validatedExecutionArgs.errorPropagation &&
-      isNonNullType(returnType)
-    ) {
+    const errorBehavior = this.validatedExecutionArgs.errorBehavior;
+    if (errorBehavior === 'PROPAGATE') {
+      // If the field type is non-nullable, then it is resolved without any
+      // protection from errors, however it still properly locates the error.
+      // Note: semantic non-null types are treated as nullable for the purposes
+      // of error handling.
+      if (isNonNullType(returnType)) {
+        throw error;
+      }
+    } else if (errorBehavior === 'HALT') {
+      // In this mode, any error aborts the request
       throw error;
+    } else if (errorBehavior === 'NULL') {
+      // In this mode, the client takes responsibility for error handling, so we
+      // treat the field as if it were nullable.
+      /* c8 ignore next 6 */
     }
 
     // Otherwise, error protection is applied, logging the error and resolving
