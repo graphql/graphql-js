@@ -282,8 +282,6 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
       description: {
         type: GraphQLString,
         resolve: (type) =>
-          // FIXME: add test case
-          /* node:coverage ignore next */
           'description' in type ? type.description : undefined,
       },
       specifiedByURL: {
