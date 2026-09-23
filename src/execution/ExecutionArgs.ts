@@ -45,6 +45,8 @@ export interface ExecutionArgs {
   abortSignal?: Maybe<AbortSignal>;
   /** Whether incremental execution may begin eligible work early. */
   enableEarlyExecution?: Maybe<boolean>;
+  /** Whether experimental field batch resolvers should be used. */
+  enableBatchResolvers?: Maybe<boolean>;
   /** Execution hooks invoked during this operation. */
   hooks?: Maybe<ExecutionHooks>;
   /** Additional execution options. */
@@ -100,6 +102,8 @@ export interface ValidatedExecutionArgs {
   externalAbortSignal: AbortSignal | undefined;
   /** Whether incremental execution may begin eligible work early. */
   enableEarlyExecution: boolean;
+  /** Whether experimental field batch resolvers should be used. */
+  enableBatchResolvers: boolean;
   /** Execution hooks supplied by the caller. */
   hooks: ExecutionHooks | undefined;
 }

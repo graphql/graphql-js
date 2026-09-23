@@ -1,0 +1,10 @@
+type Query {
+  widget: Widget
+  widgets(first: Int): [Widget]
+}
+
+type Widget {
+  id: ID
+  widget: Widget
+  widgets: [Widget]
+}

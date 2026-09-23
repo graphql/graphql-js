@@ -65,6 +65,8 @@ words:
   - hashbang
   - vitest
   - mitata
+  - Grafast
+  - Graphile
   - Rollup
   - Rspack
   - Rsbuild
@@ -131,6 +133,7 @@ words:
 
   # TODO: remove bellow words
   - QLID # GraphQLID
+  - QLJIT # GraphQLJIT
   - QLJS # GraphQLJS
   - iface
   - Reqs

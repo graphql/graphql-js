@@ -26,12 +26,13 @@ import type {
   GraphQLResolveInfo,
 } from '../../type/definition.ts';
 
+import { executePendingBatches } from '../batchResolve/executePendingBatches.ts';
+import { filterPendingBatchGroups } from '../batchResolve/filterPendingBatchGroups.ts';
 import type {
   DeferUsage,
   FieldDetailsList,
   GroupedFieldSet,
 } from '../collectFields.ts';
-import { collectSubfields as _collectSubfields } from '../collectFields.ts';
 import { collectIteratorPromises } from '../collectIteratorPromises.ts';
 import type { SharedExecutionContext } from '../createSharedExecutionContext.ts';
 import type { ValidatedExecutionArgs } from '../ExecutionArgs.ts';
@@ -408,8 +409,9 @@ export class IncrementalExecutor<
     validatedExecutionArgs: ValidatedExecutionArgs,
     sharedExecutionContext?: SharedExecutionContext,
     deferUsageSet?: DeferUsageSet,
+    rootGroupedFieldSet?: GroupedFieldSet,
   ) {
-    super(validatedExecutionArgs, sharedExecutionContext);
+    super(validatedExecutionArgs, sharedExecutionContext, rootGroupedFieldSet);
     this.deferUsageSet = deferUsageSet;
     this.groups = [];
     this.tasks = [];
@@ -421,12 +423,14 @@ export class IncrementalExecutor<
   ) => IncrementalExecutor<TExperimental> {
     const validatedExecutionArgs = this.validatedExecutionArgs;
     const sharedExecutionContext = this.sharedExecutionContext;
+    const rootGroupedFieldSet = this.rootGroupedFieldSet;
 
     return (deferUsageSet?: DeferUsageSet) =>
       new IncrementalExecutor<TExperimental>(
         validatedExecutionArgs,
         sharedExecutionContext,
         deferUsageSet,
+        rootGroupedFieldSet,
       );
   }
 
@@ -664,7 +668,11 @@ export class IncrementalExecutor<
     if (isPromise(result)) {
       return result.then(
         (resolved) =>
-          this.buildExecutionGroupResult(deliveryGroups, path, resolved),
+          this.executeBatchesAndBuildExecutionGroupResult(
+            deliveryGroups,
+            path,
+            resolved,
+          ),
         (error: unknown) => {
           this.abort();
           throw error;
@@ -672,7 +680,50 @@ export class IncrementalExecutor<
       );
     }
 
-    return this.buildExecutionGroupResult(deliveryGroups, path, result);
+    return this.executeBatchesAndBuildExecutionGroupResult(
+      deliveryGroups,
+      path,
+      result,
+    );
+  }
+
+  executeBatchesAndBuildExecutionGroupResult(
+    deliveryGroups: ReadonlyArray<DeliveryGroup>,
+    path: Path | undefined,
+    result: ObjMap<unknown>,
+  ): PromiseOrValue<ExecutionGroupResult> {
+    if (
+      !this.validatedExecutionArgs.enableBatchResolvers ||
+      this.batchFieldGroups.size === 0
+    ) {
+      return this.buildExecutionGroupResult(deliveryGroups, path, result);
+    }
+
+    let maybePromisedResult: PromiseOrValue<ObjMap<unknown>>;
+    try {
+      maybePromisedResult = executePendingBatches(this, result, path);
+    } catch (error) {
+      this.abort();
+      throw error;
+    }
+    return isPromise(maybePromisedResult)
+      ? maybePromisedResult.then(
+          (resolvedResult) =>
+            this.buildExecutionGroupResult(
+              deliveryGroups,
+              path,
+              resolvedResult,
+            ),
+          (error: unknown) => {
+            this.abort();
+            throw error;
+          },
+        )
+      : this.buildExecutionGroupResult(
+          deliveryGroups,
+          path,
+          maybePromisedResult,
+        );
   }
 
   buildExecutionGroupResult(
@@ -680,12 +731,11 @@ export class IncrementalExecutor<
     path: Path | undefined,
     result: ObjMap<unknown>,
   ): ExecutionGroupResult {
-    const data = result;
     const errors = this.collectedErrors.errors;
     return this.finish({
       value: errors.length
-        ? { deliveryGroups, path: pathToArray(path), errors, data }
-        : { deliveryGroups, path: pathToArray(path), data },
+        ? { deliveryGroups, path: pathToArray(path), errors, data: result }
+        : { deliveryGroups, path: pathToArray(path), data: result },
       work: this.getIncrementalWork(),
     });
   }
@@ -700,6 +750,13 @@ export class IncrementalExecutor<
     const cancellationReason = new Error(
       'Cancelled secondary to null within original result',
     );
+
+    if (this.validatedExecutionArgs.enableBatchResolvers) {
+      this.batchFieldGroups = filterPendingBatchGroups(
+        this,
+        this.batchFieldGroups,
+      );
+    }
 
     const filteredTasks: Array<ExecutionGroup> = [];
     for (const task of tasks) {
@@ -959,7 +1016,13 @@ export class IncrementalExecutor<
         undefined,
       )
         .then(
-          (resolvedItem) => this.buildStreamItemResult(resolvedItem),
+          (resolvedItem) =>
+            this.executeBatchesAndBuildStreamItemResult(
+              itemPath,
+              resolvedItem,
+              fieldDetailsList,
+              itemType,
+            ),
           (rawError: unknown) => {
             this.handleFieldError(
               rawError,
@@ -999,7 +1062,13 @@ export class IncrementalExecutor<
     if (isPromise(result)) {
       return result
         .then(
-          (resolved) => this.buildStreamItemResult(resolved),
+          (resolved) =>
+            this.executeBatchesAndBuildStreamItemResult(
+              itemPath,
+              resolved,
+              fieldDetailsList,
+              itemType,
+            ),
           (rawError: unknown) => {
             this.handleFieldError(
               rawError,
@@ -1016,7 +1085,58 @@ export class IncrementalExecutor<
         });
     }
 
-    return this.buildStreamItemResult(result);
+    return this.executeBatchesAndBuildStreamItemResult(
+      itemPath,
+      result,
+      fieldDetailsList,
+      itemType,
+    );
+  }
+
+  executeBatchesAndBuildStreamItemResult(
+    itemPath: Path,
+    item: unknown,
+    fieldDetailsList: FieldDetailsList,
+    itemType: GraphQLOutputType,
+  ): PromiseOrValue<StreamItemResult> {
+    if (
+      !this.validatedExecutionArgs.enableBatchResolvers ||
+      this.batchFieldGroups.size === 0
+    ) {
+      return this.buildStreamItemResult(item);
+    }
+
+    let maybePromisedItem: PromiseOrValue<unknown>;
+    try {
+      maybePromisedItem = executePendingBatches(this, item, itemPath);
+    } catch (rawError) {
+      try {
+        this.handleFieldError(rawError, itemType, fieldDetailsList, itemPath);
+        return this.buildStreamItemResult(null);
+      } catch (error) {
+        this.abort();
+        throw error;
+      }
+    }
+    return isPromise(maybePromisedItem)
+      ? maybePromisedItem
+          .then(
+            (resolvedItem) => this.buildStreamItemResult(resolvedItem),
+            (rawError: unknown) => {
+              this.handleFieldError(
+                rawError,
+                itemType,
+                fieldDetailsList,
+                itemPath,
+              );
+              return this.buildStreamItemResult(null);
+            },
+          )
+          .then(undefined, (error: unknown) => {
+            this.abort();
+            throw error;
+          })
+      : this.buildStreamItemResult(maybePromisedItem);
   }
 
   buildStreamItemResult(result: unknown): StreamItemResult {

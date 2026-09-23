@@ -6,7 +6,6 @@ import { isAsyncIterable } from '../jsutils/isAsyncIterable.ts';
 import { isIterableObject } from '../jsutils/isIterableObject.ts';
 import { isPromise, isPromiseLike } from '../jsutils/isPromise.ts';
 import { memoize2 } from '../jsutils/memoize2.ts';
-import { memoize3 } from '../jsutils/memoize3.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
 import type { Path } from '../jsutils/Path.ts';
 import { addPath, pathToArray } from '../jsutils/Path.ts';
@@ -53,6 +52,9 @@ import {
 } from '../diagnostics.ts';
 
 import { AbortedGraphQLExecutionError } from './AbortedGraphQLExecutionError.ts';
+import { enqueueBatchField } from './batchResolve/enqueueBatchField.ts';
+import { executePendingBatches } from './batchResolve/executePendingBatches.ts';
+import type { BatchFieldGroupMap } from './batchResolve/types.ts';
 import { buildResolveInfo } from './buildResolveInfo.ts';
 import { withCancellation } from './cancellablePromise.ts';
 import type {
@@ -60,11 +62,9 @@ import type {
   FieldDetailsList,
   GroupedFieldSet,
 } from './collectFields.ts';
-import {
-  collectFields,
-  collectSubfields as _collectSubfields,
-} from './collectFields.ts';
+import { collectFields } from './collectFields.ts';
 import { collectIteratorPromises } from './collectIteratorPromises.ts';
+import { collectSubfields } from './collectSubfields.ts';
 import type { SharedExecutionContext } from './createSharedExecutionContext.ts';
 import { createSharedExecutionContext } from './createSharedExecutionContext.ts';
 import type { ValidatedExecutionArgs } from './ExecutionArgs.ts';
@@ -100,35 +100,7 @@ import { getArgumentValues } from './values.ts';
  * @internal
  */
 
-/**
- * A memoized collection of relevant subfields with regard to the return
- * type. Memoizing ensures the subfields are not repeatedly calculated, which
- * saves overhead when resolving lists of values.
- *
- * @internal
- */
-export const collectSubfields: (
-  validatedExecutionArgs: ValidatedExecutionArgs,
-  returnType: GraphQLObjectType,
-  fieldDetailsList: FieldDetailsList,
-) => ReturnType<typeof _collectSubfields> = memoize3(
-  (
-    validatedExecutionArgs: ValidatedExecutionArgs,
-    returnType: GraphQLObjectType,
-    fieldDetailsList: FieldDetailsList,
-  ) => {
-    const { schema, fragments, variableValues, hideSuggestions } =
-      validatedExecutionArgs;
-    return _collectSubfields(
-      schema,
-      fragments,
-      variableValues,
-      returnType,
-      fieldDetailsList,
-      hideSuggestions,
-    );
-  },
-);
+export { collectSubfields };
 
 /** @internal */
 export const getStreamUsage: typeof _getStreamUsage = memoize2(
@@ -137,6 +109,12 @@ export const getStreamUsage: typeof _getStreamUsage = memoize2(
     fieldDetailsList: FieldDetailsList,
   ) => _getStreamUsage(validatedExecutionArgs, fieldDetailsList),
 );
+
+function getResolveTracingChannel():
+  | MinimalTracingChannel<GraphQLResolveContext>
+  | undefined {
+  return shouldTrace(resolveChannel) ? resolveChannel : undefined;
+}
 
 class CollectedErrors {
   private _errorPositions: Set<Path | undefined>;
@@ -171,6 +149,10 @@ class CollectedErrors {
       path = path.prev;
     }
     return this._errorPositions.has(undefined);
+  }
+
+  hasNulledAncestor(startPath: Path | undefined): boolean {
+    return this.hasNulledPosition(startPath?.prev);
   }
 }
 
@@ -220,6 +202,8 @@ export class Executor<
   abortReason: unknown;
   sharedExecutionContext: SharedExecutionContext;
   collectedErrors: CollectedErrors;
+  batchFieldGroups!: BatchFieldGroupMap<TPositionContext>;
+  rootGroupedFieldSet!: GroupedFieldSet | undefined;
   abortResultPromise: (() => void) | undefined;
   resolverAbortController: AbortController | undefined;
   getAbortSignal: () => AbortSignal | undefined;
@@ -231,11 +215,16 @@ export class Executor<
   constructor(
     validatedExecutionArgs: ValidatedExecutionArgs,
     sharedExecutionContext?: SharedExecutionContext,
+    rootGroupedFieldSet?: GroupedFieldSet,
   ) {
     this.validatedExecutionArgs = validatedExecutionArgs;
     this.aborted = false;
     this.abortReason = defaultAbortReason;
     this.collectedErrors = new CollectedErrors();
+    if (validatedExecutionArgs.enableBatchResolvers) {
+      this.batchFieldGroups = new Map();
+      this.rootGroupedFieldSet = rootGroupedFieldSet;
+    }
 
     if (sharedExecutionContext === undefined) {
       this.resolverAbortController = new AbortController();
@@ -332,6 +321,9 @@ export class Executor<
         selectionSet,
         hideSuggestions,
       );
+      if (this.validatedExecutionArgs.enableBatchResolvers) {
+        this.rootGroupedFieldSet = groupedFieldSet;
+      }
 
       result = this.executeCollectedRootFields(
         rootType,
@@ -345,32 +337,68 @@ export class Executor<
         const promise = result.then(
           (data) => {
             maybeRemoveExternalAbortListener();
-            return this.buildResponse(data);
+            return this.executeBatchesAndBuildResponse(data);
           },
           (error: unknown) => {
             maybeRemoveExternalAbortListener();
             this.collectedErrors.add(ensureGraphQLError(error), undefined);
-            return this.buildResponse(null);
+            return this.executeBatchesAndBuildResponse(null);
           },
         );
-        this.sharedExecutionContext.asyncWorkTracker.add(promise);
-        const { promise: cancellablePromise, abort: abortResultPromise } =
-          withCancellation(promise.then((resolved) => this.finish(resolved)));
-        this.abortResultPromise = () => {
-          abortResultPromise(this.createAbortedExecutionError(promise));
-        };
-        if (this.aborted) {
-          this.abortResultPromise();
-        }
-        return cancellablePromise;
+        return this.returnCancellableResponse(promise);
       }
       maybeRemoveExternalAbortListener();
     } catch (error) {
       maybeRemoveExternalAbortListener();
       this.collectedErrors.add(ensureGraphQLError(error), undefined);
-      return this.finish(this.buildResponse(null));
+      return this.finish(this.executeBatchesAndBuildResponse(null));
     }
-    return this.finish(this.buildResponse(result));
+
+    const response = this.executeBatchesAndBuildResponse(result);
+    return isPromise(response)
+      ? this.returnCancellableResponse(response)
+      : this.finish(response);
+  }
+
+  executeBatchesAndBuildResponse(
+    data: ObjMap<unknown> | null,
+  ): PromiseOrValue<ExecutionResult | TAlternativeInitialResponse> {
+    if (data === null || !this.validatedExecutionArgs.enableBatchResolvers) {
+      return this.buildResponse(data);
+    }
+
+    let maybePromisedData: PromiseOrValue<ObjMap<unknown>>;
+    try {
+      maybePromisedData = executePendingBatches(this, data);
+    } catch (error) {
+      this.collectedErrors.add(ensureGraphQLError(error), undefined);
+      return this.buildResponse(null);
+    }
+    if (isPromise(maybePromisedData)) {
+      return maybePromisedData.then(
+        (batchResolvedData) => this.buildResponse(batchResolvedData),
+        (error: unknown) => {
+          this.collectedErrors.add(ensureGraphQLError(error), undefined);
+          return this.buildResponse(null);
+        },
+      );
+    }
+    return this.buildResponse(maybePromisedData);
+  }
+
+  returnCancellableResponse(
+    promise: Promise<ExecutionResult | TAlternativeInitialResponse>,
+  ): Promise<ExecutionResult | TAlternativeInitialResponse> {
+    this.sharedExecutionContext.asyncWorkTracker.add(promise);
+    const { promise: cancellablePromise, abort: abortResultPromise } =
+      withCancellation(promise.then((resolved) => this.finish(resolved)));
+    this.abortResultPromise = () => {
+      abortResultPromise(this.createAbortedExecutionError(promise));
+    };
+    if (this.aborted) {
+      this.abortResultPromise();
+    }
+    return cancellablePromise;
   }
 
   abort(reason?: unknown): void {
@@ -486,9 +514,17 @@ export class Executor<
     groupedFieldSet: GroupedFieldSet,
     positionContext: TPositionContext | undefined,
   ): PromiseOrValue<ObjMap<unknown>> {
-    let tracingChannel = shouldTrace(resolveChannel)
-      ? resolveChannel
-      : undefined;
+    if (this.validatedExecutionArgs.enableBatchResolvers) {
+      return this.executeFieldsSeriallyWithBatchResolvers(
+        parentType,
+        sourceValue,
+        path,
+        groupedFieldSet,
+        positionContext,
+      );
+    }
+
+    let tracingChannel = getResolveTracingChannel();
 
     return promiseReduce(
       groupedFieldSet,
@@ -511,14 +547,69 @@ export class Executor<
         if (isPromise(result)) {
           return result.then((resolved) => {
             results[responseName] = resolved;
-            tracingChannel = shouldTrace(resolveChannel)
-              ? resolveChannel
-              : undefined;
+            tracingChannel = getResolveTracingChannel();
             return results;
           });
         }
         results[responseName] = result;
         return results;
+      },
+      Object.create(null),
+    );
+  }
+
+  executeFieldsSeriallyWithBatchResolvers(
+    parentType: GraphQLObjectType,
+    sourceValue: unknown,
+    path: Path | undefined,
+    groupedFieldSet: GroupedFieldSet,
+    positionContext: TPositionContext | undefined,
+  ): PromiseOrValue<ObjMap<unknown>> {
+    let tracingChannel = getResolveTracingChannel();
+
+    return promiseReduce(
+      groupedFieldSet,
+      (results, [responseName, fieldDetailsList]) => {
+        if (this.aborted) {
+          throw new Error('Aborted!');
+        }
+        const fieldPath = addPath(path, responseName, parentType.name);
+        const result = this.executeBatchField(
+          parentType,
+          sourceValue,
+          fieldDetailsList,
+          fieldPath,
+          positionContext,
+          results,
+          responseName,
+          tracingChannel,
+        );
+        if (
+          result === undefined &&
+          !this.batchFieldGroups.has(fieldDetailsList)
+        ) {
+          return results;
+        }
+        const drainBatches = () => executePendingBatches(this, results);
+        if (isPromise(result)) {
+          return result.then((resolved) => {
+            results[responseName] = resolved;
+            return Promise.resolve(drainBatches()).then((drained) => {
+              tracingChannel = getResolveTracingChannel();
+              return drained;
+            });
+          });
+        }
+        results[responseName] = result;
+        const drained = drainBatches();
+        if (isPromise(drained)) {
+          return drained.then((resolved) => {
+            tracingChannel = getResolveTracingChannel();
+            return resolved;
+          });
+        }
+        tracingChannel = getResolveTracingChannel();
+        return drained;
       },
       Object.create(null),
     );
@@ -537,11 +628,19 @@ export class Executor<
     groupedFieldSet: GroupedFieldSet,
     positionContext: TPositionContext | undefined,
   ): PromiseOrValue<ObjMap<unknown>> {
+    if (this.validatedExecutionArgs.enableBatchResolvers) {
+      return this.executeFieldsWithBatchResolvers(
+        parentType,
+        sourceValue,
+        path,
+        groupedFieldSet,
+        positionContext,
+      );
+    }
+
     const results = Object.create(null);
     let containsPromise = false;
-    const tracingChannel = shouldTrace(resolveChannel)
-      ? resolveChannel
-      : undefined;
+    const tracingChannel = getResolveTracingChannel();
 
     try {
       for (const [responseName, fieldDetailsList] of groupedFieldSet) {
@@ -580,6 +679,112 @@ export class Executor<
     // field, which is possibly a promise. Return a promise that will return this
     // same map, but with any promises replaced with the values they resolved to.
     return promiseForObject(results, this.promiseAll);
+  }
+
+  executeFieldsWithBatchResolvers(
+    parentType: GraphQLObjectType,
+    sourceValue: unknown,
+    path: Path | undefined,
+    groupedFieldSet: GroupedFieldSet,
+    positionContext: TPositionContext | undefined,
+  ): PromiseOrValue<ObjMap<unknown>> {
+    const results = Object.create(null);
+    let containsPromise = false;
+    const tracingChannel = getResolveTracingChannel();
+
+    try {
+      for (const [responseName, fieldDetailsList] of groupedFieldSet) {
+        const fieldPath = addPath(path, responseName, parentType.name);
+        const result = this.executeBatchField(
+          parentType,
+          sourceValue,
+          fieldDetailsList,
+          fieldPath,
+          positionContext,
+          results,
+          responseName,
+          tracingChannel,
+        );
+
+        if (
+          result !== undefined ||
+          this.batchFieldGroups.has(fieldDetailsList)
+        ) {
+          results[responseName] = result;
+          if (isPromise(result)) {
+            containsPromise = true;
+          }
+        }
+      }
+    } catch (error) {
+      if (containsPromise) {
+        this.sharedExecutionContext.asyncWorkTracker.addValues(
+          Object.values(results),
+        );
+      }
+      throw error;
+    }
+
+    // If there are no promises, we can just return the object and any incrementalDataRecords
+    if (!containsPromise) {
+      return results;
+    }
+
+    // Otherwise, results is a map from field name to the result of resolving that
+    // field, which is possibly a promise. Return a promise that will return this
+    // same map, but with any promises replaced with the values they resolved to.
+    return promiseForObject(results, this.promiseAll);
+  }
+
+  executeBatchField(
+    parentType: GraphQLObjectType,
+    source: unknown,
+    fieldDetailsList: FieldDetailsList,
+    path: Path,
+    positionContext: TPositionContext | undefined,
+    responseTarget: ObjMap<unknown>,
+    responseKey: string,
+    tracingChannel: MinimalTracingChannel<GraphQLResolveContext> | undefined,
+  ): PromiseOrValue<unknown> {
+    const firstFieldDetails = fieldDetailsList[0];
+    const fieldName = firstFieldDetails.node.name.value;
+    const fieldDef = this.validatedExecutionArgs.schema.getField(
+      parentType,
+      fieldName,
+    );
+    if (!fieldDef) {
+      return;
+    }
+
+    const batchResolve = fieldDef.experimentalBatchResolve;
+    if (
+      this.validatedExecutionArgs.enableBatchResolvers &&
+      batchResolve !== undefined
+    ) {
+      enqueueBatchField(
+        this,
+        parentType,
+        fieldDef,
+        batchResolve,
+        fieldDetailsList,
+        source,
+        path,
+        positionContext,
+        responseTarget,
+        responseKey,
+      );
+      // Leave the response position for the batch to write after completion.
+      return undefined;
+    }
+
+    return this.executeField(
+      parentType,
+      source,
+      fieldDetailsList,
+      path,
+      positionContext,
+      tracingChannel,
+    );
   }
 
   /**
