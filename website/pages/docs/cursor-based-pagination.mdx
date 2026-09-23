@@ -2,7 +2,7 @@
 title: Implementing Cursor-based Pagination
 ---
 
-import { Callout } from 'nextra/components';
+import { Callout, Tabs } from 'nextra/components';
 
 # Implementing Cursor-based Pagination
 
@@ -90,6 +90,9 @@ more data is available.
 
 To support this structure in your schema, define a few custom types:
 
+<Tabs items={['Code', 'SDL']}>
+  <Tabs.Tab>
+
 ```js
 const PageInfoType = new GraphQLObjectType({
   name: 'PageInfo',
@@ -102,12 +105,30 @@ const PageInfoType = new GraphQLObjectType({
 });
 ```
 
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```graphql
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+```
+
+  </Tabs.Tab>
+</Tabs>
+
 The `PageInfo` type provides metadata about the current page of results.
 The `hasNextPage` and `hasPreviousPage` fields indicate whether more
 results are available in either direction. The `startCursor` and `endCursor`
 fields help clients resume pagination from a specific point.
 
 Next, define an edge type to represent individual items in the connection:
+
+<Tabs items={['Code', 'SDL']}>
+  <Tabs.Tab>
 
 ```js
 const UserEdgeType = new GraphQLObjectType({
@@ -119,10 +140,26 @@ const UserEdgeType = new GraphQLObjectType({
 });
 ```
 
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```graphql
+type UserEdge {
+  node: User
+  cursor: String!
+}
+```
+
+  </Tabs.Tab>
+</Tabs>
+
 Each edge includes a `node` and a `cursor`, which marks its position in
 the list.
 
 Then, define the connection type itself:
+
+<Tabs items={['Code', 'SDL']}>
+  <Tabs.Tab>
 
 ```js
 const UserConnectionType = new GraphQLObjectType({
@@ -138,10 +175,26 @@ const UserConnectionType = new GraphQLObjectType({
 });
 ```
 
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```graphql
+type UserConnection {
+  edges: [UserEdge!]!
+  pageInfo: PageInfo!
+}
+```
+
+  </Tabs.Tab>
+</Tabs>
+
 The connection type wraps a list of edges and includes the pagination
 metadata.
 
 Paginated fields typically accept the following arguments:
+
+<Tabs items={['Code', 'SDL']}>
+  <Tabs.Tab>
 
 ```js
 const connectionArgs = {
@@ -150,7 +203,24 @@ const connectionArgs = {
   last: { type: GraphQLInt },
   before: { type: GraphQLString },
 };
+
+const usersField = {
+  type: UserConnectionType,
+  args: connectionArgs,
+};
 ```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```graphql
+type Query {
+  users(first: Int, after: String, last: Int, before: String): UserConnection
+}
+```
+
+  </Tabs.Tab>
+</Tabs>
 
 Use `first` and `after` for forward pagination. The `last` and `before`
 arguments enable backward pagination if needed.

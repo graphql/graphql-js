@@ -58,36 +58,10 @@ npm install graphql@16 --save
 
 ## Writing Code
 
-To handle GraphQL queries, we need a schema that defines the `Query` type, and we need an API root with a function called a "resolver" for each API endpoint. For an API that just returns "Hello world!", create a file named `server.js` in your project root (the same directory as your `package.json`):
+To handle GraphQL queries, we need a schema that defines the `Query` type, and we need resolver functions for the fields clients can execute. GraphQL.js supports code-first constructors and SDL. For an API that just returns "Hello world!", create a file named `server.js` in your project root (the same directory as your `package.json`):
 
-<Tabs items={['SDL', 'Code']}>
+<Tabs items={['Code', 'SDL']}>
   <Tabs.Tab>
-
-```javascript
-import { graphql, buildSchema } from 'graphql';
-
-// Construct a schema, using GraphQL schema language
-const schema = buildSchema(`type Query { hello: String } `);
-
-// The rootValue provides a resolver function for each API endpoint
-const rootValue = {
-  hello() {
-    return 'Hello world!';
-  },
-};
-
-// Run the GraphQL query '{ hello }' and print out the response
-graphql({
-  schema,
-  source: '{ hello }',
-  rootValue,
-}).then((response) => {
-  console.log(response);
-});
-```
-
-</Tabs.Tab>
-<Tabs.Tab>
 
 ```javascript
 import {
@@ -97,7 +71,7 @@ import {
   GraphQLString,
 } from 'graphql';
 
-// Construct a schema
+// Construct a schema.
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
@@ -118,7 +92,40 @@ graphql({
 });
 ```
 
-</Tabs.Tab>
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```javascript
+import { graphql, buildSchema } from 'graphql';
+
+const schema = buildSchema(
+  /* GraphQL */ `
+    type Query {
+      hello: String
+    }
+  `,
+  {
+    supplementalConfig: {
+      objectTypes: {
+        Query: {
+          fields: {
+            hello: () => 'Hello world!',
+          },
+        },
+      },
+    },
+  },
+);
+
+graphql({
+  schema,
+  source: '{ hello }',
+}).then((response) => {
+  console.log(response);
+});
+```
+
+  </Tabs.Tab>
 </Tabs>
 
 If you run this with:

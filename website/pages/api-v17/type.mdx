@@ -11324,15 +11324,17 @@ Returns true when the scalar type is one of the scalars specified by GraphQL.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import {
-  GraphQLScalarType,
-  GraphQLString,
-  isSpecifiedScalarType,
-} from 'graphql/type';
+import { assertScalarType, GraphQLString, isSpecifiedScalarType } from 'graphql/type';
+import { buildSchema } from 'graphql/utilities';
 
-const DateTime = new GraphQLScalarType({
-  name: 'DateTime',
-});
+const schema = buildSchema(`
+  scalar DateTime
+
+  type Query {
+    now: DateTime
+  }
+`);
+const DateTime = assertScalarType(schema.getType('DateTime'));
 
 isSpecifiedScalarType(GraphQLString); // => true
 isSpecifiedScalarType(DateTime); // => false

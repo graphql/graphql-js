@@ -6,62 +6,13 @@ title: Constructing Types
 
 import { Tabs } from 'nextra/components';
 
-For many apps, you can define a fixed schema when the application starts, and define it using GraphQL schema language. In some cases, it's useful to construct a schema programmatically. You can do this using the `GraphQLSchema` constructor.
+GraphQL.js can construct a schema in code, from GraphQL schema language, or from schema language plus supplemental JavaScript config for behavior that SDL cannot represent directly, such as field resolvers, abstract type resolution, custom scalar coercion, and extension metadata.
 
-When you are using the `GraphQLSchema` constructor to create a schema, instead of defining `Query` and `Mutation` types solely using schema language, you create them as separate object types.
+When you are using the `GraphQLSchema` constructor to create a schema, instead of defining `Query` and `Mutation` types solely using schema language, you create them as separate object types. This can be a good fit when the schema is generated from JavaScript data structures or when you want native language composition to drive the schema shape.
 
-For example, let's say we are building a simple API that lets you fetch user data for a few hardcoded users based on an id. Using `buildSchema` we could write a server with:
+For example, let's say we are building a simple API that lets you fetch user data for a few hardcoded users based on an id. The same API can be written with code-first constructors or SDL.
 
-<Tabs items={['SDL', 'Code']}>
-  <Tabs.Tab>
-
-```js
-import express from 'express';
-import { createHandler } from 'graphql-http/lib/use/express';
-import { buildSchema } from 'graphql';
-
-const schema = buildSchema(`
-  type User {
-    id: String
-    name: String
-  }
-
-  type Query {
-    user(id: String): User
-  }
-`);
-
-// Maps id to User object
-const fakeDatabase = {
-  a: {
-    id: 'a',
-    name: 'alice',
-  },
-  b: {
-    id: 'b',
-    name: 'bob',
-  },
-};
-
-const root = {
-  user({ id }) {
-    return fakeDatabase[id];
-  },
-};
-
-const app = express();
-app.all(
-  '/graphql',
-  createHandler({
-    schema: schema,
-    rootValue: root,
-  }),
-);
-app.listen(4000);
-console.log('Running a GraphQL API server at localhost:4000/graphql');
-```
-
-  </Tabs.Tab>
+<Tabs items={['Code', 'SDL']}>
   <Tabs.Tab>
 
 ```js
@@ -121,8 +72,63 @@ console.log('Running a GraphQL API server at localhost:4000/graphql');
 ```
 
   </Tabs.Tab>
+  <Tabs.Tab>
+
+```js
+import express from 'express';
+import { createHandler } from 'graphql-http/lib/use/express';
+import { buildSchema } from 'graphql';
+
+// Maps id to User object
+const fakeDatabase = {
+  a: {
+    id: 'a',
+    name: 'alice',
+  },
+  b: {
+    id: 'b',
+    name: 'bob',
+  },
+};
+
+const schema = buildSchema(
+  /* GraphQL */ `
+    type User {
+      id: String
+      name: String
+    }
+
+    type Query {
+      user(id: String): User
+    }
+  `,
+  {
+    supplementalConfig: {
+      objectTypes: {
+        Query: {
+          fields: {
+            user: (_source, { id }) => fakeDatabase[id],
+          },
+        },
+      },
+    },
+  },
+);
+
+const app = express();
+app.all(
+  '/graphql',
+  createHandler({
+    schema: schema,
+  }),
+);
+app.listen(4000);
+console.log('Running a GraphQL API server at localhost:4000/graphql');
+```
+
+  </Tabs.Tab>
 </Tabs>
 
-When we use the `GraphQLSchema` constructor method of creating the API, the root level resolvers are implemented on the `Query` and `Mutation` types rather than on a `root` object.
+When we use the `GraphQLSchema` constructor method of creating the API, the root level resolvers are implemented on the `Query` and `Mutation` types. With SDL, those resolvers are installed on the built `Query` and `Mutation` fields.
 
-This can be particularly useful if you want to create a GraphQL schema automatically from something else, like a database schema. You might have a common format for something like creating and updating database records. This is also useful for implementing features like union types which don't map cleanly to ES6 classes and schema language.
+Programmatic construction can be particularly useful if you want to create a GraphQL schema automatically from something else, like a database schema, or if native JavaScript composition makes the schema easier to maintain. SDL is useful when you want schema language and schema-attached JavaScript behavior together.

@@ -39,22 +39,20 @@ import { replaceVariables } from './replaceVariables.ts';
  * @example
  * ```ts
  * // Coerce runtime input values, returning undefined when coercion fails.
- * import {
- *   GraphQLInputObjectType,
- *   GraphQLInt,
- *   GraphQLList,
- *   GraphQLNonNull,
- *   GraphQLString,
- * } from 'graphql/type';
- * import { coerceInputValue } from 'graphql/utilities';
+ * import { assertInputObjectType } from 'graphql/type';
+ * import { buildSchema, coerceInputValue } from 'graphql/utilities';
  *
- * const ReviewInput = new GraphQLInputObjectType({
- *   name: 'ReviewInput',
- *   fields: {
- *     stars: { type: new GraphQLNonNull(GraphQLInt) },
- *     tags: { type: new GraphQLList(GraphQLString) },
- *   },
- * });
+ * const schema = buildSchema(`
+ *   input ReviewInput {
+ *     stars: Int!
+ *     tags: [String]
+ *   }
+ *
+ *   type Query {
+ *     reviews(filter: ReviewInput): [String]
+ *   }
+ * `);
+ * const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
  *
  * coerceInputValue({ stars: '5', tags: ['featured'] }, ReviewInput); // => { stars: 5, tags: ['featured'] }
  * coerceInputValue({ stars: 'bad' }, ReviewInput); // => undefined
@@ -170,21 +168,20 @@ export function coerceInputValue(
  * ```ts
  * // Coerce literal input values without variables.
  * import { parseValue } from 'graphql/language';
- * import {
- *   GraphQLInputObjectType,
- *   GraphQLInt,
- *   GraphQLNonNull,
- *   GraphQLString,
- * } from 'graphql/type';
- * import { coerceInputLiteral } from 'graphql/utilities';
+ * import { assertInputObjectType } from 'graphql/type';
+ * import { buildSchema, coerceInputLiteral } from 'graphql/utilities';
  *
- * const ReviewInput = new GraphQLInputObjectType({
- *   name: 'ReviewInput',
- *   fields: {
- *     stars: { type: new GraphQLNonNull(GraphQLInt) },
- *     comment: { type: GraphQLString },
- *   },
- * });
+ * const schema = buildSchema(`
+ *   input ReviewInput {
+ *     stars: Int!
+ *     comment: String
+ *   }
+ *
+ *   type Query {
+ *     reviews(filter: ReviewInput): [String]
+ *   }
+ * `);
+ * const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
  *
  * coerceInputLiteral(
  *   parseValue('{ stars: 5, comment: "Loved it" }'),

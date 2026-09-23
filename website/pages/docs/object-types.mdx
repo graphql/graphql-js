@@ -10,7 +10,49 @@ In many cases, you don't want to return a number or a string from an API. You wa
 
 In GraphQL schema language, the way you define a new object type is the same way we have been defining the `Query` type in our examples. Each object can have fields that return a particular type, and methods that take arguments. For example, in the [Passing Arguments](./passing-arguments) documentation, we had a method to roll some random dice:
 
-<Tabs items={['SDL', 'Code']}>
+<Tabs items={['Code', 'buildSchema', 'SDL']}>
+  <Tabs.Tab>
+
+```js
+import {
+  GraphQLObjectType,
+  GraphQLNonNull,
+  GraphQLInt,
+  GraphQLList,
+} from 'graphql';
+
+new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+    rollDice: {
+      type: new GraphQLList(GraphQLInt),
+      args: {
+        numDice: {
+          type: new GraphQLNonNull(GraphQLInt),
+        },
+        numSides: {
+          type: GraphQLInt,
+        },
+      },
+    },
+  },
+});
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```js
+import { buildSchema } from 'graphql';
+
+const schema = buildSchema(/* GraphQL */ `
+  type Query {
+    rollDice(numDice: Int!, numSides: Int): [Int]
+  }
+`);
+```
+
+  </Tabs.Tab>
   <Tabs.Tab>
 
 ```graphql
@@ -20,55 +62,11 @@ type Query {
 ```
 
   </Tabs.Tab>
-  <Tabs.Tab>
-
-```js
-import {
-  GraphQLObjectType,
-  GraphQLNonNull,
-  GraphQLInt,
-  GraphQLString,
-  GraphQLList,
-  GraphQLFloat,
-} from 'graphql';
-
-new GraphQLObjectType({
-  name: 'Query',
-  fields: {
-    rollDice: {
-      type: new GraphQLList(GraphQLFloat),
-      args: {
-        numDice: {
-          type: new GraphQLNonNull(GraphQLInt),
-        },
-        numSides: {
-          type: new GraphQLNonNull(GraphQLInt),
-        },
-      },
-    },
-  },
-});
-```
-
-  </Tabs.Tab>
 </Tabs>
 
 If we wanted to have more and more methods based on a random die over time, we could implement this with a `RandomDie` object type instead.
 
-<Tabs items={['SDL', 'Code']}>
-  <Tabs.Tab>
-
-```graphql
-type RandomDie {
-  roll(numRolls: Int!): [Int]
-}
-
-type Query {
-  getDie(numSides: Int): RandomDie
-}
-```
-
-  </Tabs.Tab>
+<Tabs items={['Code', 'SDL']}>
   <Tabs.Tab>
 
 ```js
@@ -76,27 +74,13 @@ import {
   GraphQLObjectType,
   GraphQLNonNull,
   GraphQLInt,
-  GraphQLString,
   GraphQLList,
-  GraphQLFloat,
   GraphQLSchema,
 } from 'graphql';
 
 const RandomDie = new GraphQLObjectType({
   name: 'RandomDie',
   fields: {
-    numSides: {
-      type: new GraphQLNonNull(GraphQLInt),
-      resolve: function (die) {
-        return die.numSides;
-      },
-    },
-    rollOnce: {
-      type: new GraphQLNonNull(GraphQLInt),
-      resolve: function (die) {
-        return 1 + Math.floor(Math.random() * die.numSides);
-      },
-    },
     roll: {
       type: new GraphQLList(GraphQLInt),
       args: {
@@ -138,6 +122,47 @@ const schema = new GraphQLSchema({
 ```
 
   </Tabs.Tab>
+  <Tabs.Tab>
+
+```js
+import { buildSchema } from 'graphql';
+
+const schema = buildSchema(
+  /* GraphQL */ `
+    type RandomDie {
+      roll(numRolls: Int!): [Int]
+    }
+
+    type Query {
+      getDie(numSides: Int): RandomDie
+    }
+  `,
+  {
+    supplementalConfig: {
+      objectTypes: {
+        Query: {
+          fields: {
+            getDie: (_source, { numSides }) => {
+              return {
+                numSides: numSides || 6,
+                roll({ numRolls }) {
+                  const output = [];
+                  for (let i = 0; i < numRolls; i++) {
+                    output.push(1 + Math.floor(Math.random() * this.numSides));
+                  }
+                  return output;
+                },
+              };
+            },
+          },
+        },
+      },
+    },
+  },
+);
+```
+
+  </Tabs.Tab>
 </Tabs>
 
 Instead of a root-level resolver for the `RandomDie` type, we can instead use an ES6 class, where the resolvers are instance methods. This code shows how the `RandomDie` schema above can be implemented:
@@ -170,22 +195,7 @@ const root = {
 
 For fields that don't use any arguments, you can use either properties on the object or instance methods. So for the example code above, both `numSides` and `rollOnce` can actually be used to implement GraphQL fields, so that code also implements the schema of:
 
-<Tabs items={['SDL', 'Code']}>
-  <Tabs.Tab>
-
-```graphql
-type RandomDie {
-  numSides: Int!
-  rollOnce: Int!
-  roll(numRolls: Int!): [Int]
-}
-
-type Query {
-  getDie(numSides: Int): RandomDie
-}
-```
-
-  </Tabs.Tab>
+<Tabs items={['Code', 'SDL']}>
   <Tabs.Tab>
 
 ```js
@@ -193,69 +203,176 @@ import {
   GraphQLObjectType,
   GraphQLNonNull,
   GraphQLInt,
-  GraphQLString,
   GraphQLList,
-  GraphQLFloat,
   GraphQLSchema,
 } from 'graphql';
 
 const RandomDie = new GraphQLObjectType({
-  name: 'RandomDie',
-  fields: {
-    numSides: {
-      type: new GraphQLNonNull(GraphQLInt),
-      resolve: (die) => die.numSides,
-    },
-    rollOnce: {
-      type: new GraphQLNonNull(GraphQLInt),
-      resolve: (die) => 1 + Math.floor(Math.random() * die.numSides),
-    },
-    roll: {
-      type: new GraphQLList(GraphQLInt),
-      args: {
-        numRolls: {
-          type: new GraphQLNonNull(GraphQLInt),
-        },
-      },
-      resolve: (die, { numRolls }) => {
-        const output = [];
-        for (let i = 0; i < numRolls; i++) {
-          output.push(1 + Math.floor(Math.random() * die.numSides));
-        }
-        return output;
-      },
-    },
-  },
+name: 'RandomDie',
+fields: {
+numSides: {
+type: new GraphQLNonNull(GraphQLInt),
+resolve: (die) => die.numSides,
+},
+rollOnce: {
+type: new GraphQLNonNull(GraphQLInt),
+resolve: (die) => 1 + Math.floor(Math.random() _ die.numSides),
+},
+roll: {
+type: new GraphQLList(GraphQLInt),
+args: {
+numRolls: {
+type: new GraphQLNonNull(GraphQLInt),
+},
+},
+resolve: (die, { numRolls }) => {
+const output = [];
+for (let i = 0; i < numRolls; i++) {
+output.push(1 + Math.floor(Math.random() _ die.numSides));
+}
+return output;
+},
+},
+},
 });
 
 const schema = new GraphQLSchema({
-  query: new GraphQLObjectType({
-    name: 'Query',
-    fields: {
-      getDie: {
-        type: RandomDie,
-        args: {
-          numSides: {
-            type: GraphQLInt,
+query: new GraphQLObjectType({
+name: 'Query',
+fields: {
+getDie: {
+type: RandomDie,
+args: {
+numSides: {
+type: GraphQLInt,
+},
+},
+resolve: (_, { numSides }) => {
+return {
+numSides: numSides || 6,
+};
+},
+},
+},
+}),
+});
+
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```js
+import { buildSchema } from 'graphql';
+
+const schema = buildSchema(
+  /* GraphQL */ `
+    type RandomDie {
+      numSides: Int!
+      rollOnce: Int!
+      roll(numRolls: Int!): [Int]
+    }
+
+    type Query {
+      getDie(numSides: Int): RandomDie
+    }
+  `,
+  {
+    supplementalConfig: {
+      objectTypes: {
+        Query: {
+          fields: {
+            getDie: (_source, { numSides }) => new RandomDie(numSides || 6),
           },
-        },
-        resolve: (_, { numSides }) => {
-          return {
-            numSides: numSides || 6,
-          };
         },
       },
     },
-  }),
-});
+  },
+);
 ```
 
   </Tabs.Tab>
 </Tabs>
 
-Putting this all together, here is some sample code that runs a server with this GraphQL API:
+Putting this all together, here is some sample code that runs a server with this GraphQL API. The SDL versions rely on GraphQL.js's default field resolver for `RandomDie` instance properties and methods, while the code-first version attaches those same resolvers directly to field definitions:
 
-<Tabs items={['SDL', 'Code']}>
+<Tabs items={['Code', 'SDL']}>
+  <Tabs.Tab>
+
+```js
+import express from 'express';
+import { createHandler } from 'graphql-http/lib/use/express';
+import {
+  GraphQLObjectType,
+  GraphQLNonNull,
+  GraphQLInt,
+  GraphQLList,
+  GraphQLSchema,
+} from 'graphql';
+
+const RandomDie = new GraphQLObjectType({
+name: 'RandomDie',
+fields: {
+numSides: {
+type: new GraphQLNonNull(GraphQLInt),
+resolve: (die) => die.numSides,
+},
+rollOnce: {
+type: new GraphQLNonNull(GraphQLInt),
+resolve: (die) => 1 + Math.floor(Math.random() _ die.numSides),
+},
+roll: {
+type: new GraphQLList(GraphQLInt),
+args: {
+numRolls: {
+type: new GraphQLNonNull(GraphQLInt),
+},
+},
+resolve: (die, { numRolls }) => {
+const output = [];
+for (let i = 0; i < numRolls; i++) {
+output.push(1 + Math.floor(Math.random() _ die.numSides));
+}
+return output;
+},
+},
+},
+});
+
+const schema = new GraphQLSchema({
+query: new GraphQLObjectType({
+name: 'Query',
+fields: {
+getDie: {
+type: RandomDie,
+args: {
+numSides: {
+type: GraphQLInt,
+},
+},
+resolve: (_, { numSides }) => {
+return {
+numSides: numSides || 6,
+};
+},
+},
+},
+}),
+});
+
+const app = express();
+app.all(
+'/graphql',
+createHandler({
+schema: schema,
+}),
+);
+app.listen(4000);
+console.log('Running a GraphQL API server at localhost:4000/graphql');
+
+```
+
+  </Tabs.Tab>
   <Tabs.Tab>
 
 ```js
@@ -263,20 +380,31 @@ import express from 'express';
 import { createHandler } from 'graphql-http/lib/use/express';
 import { buildSchema } from 'graphql';
 
-// Construct a schema, using GraphQL schema language
-const schema = buildSchema(`
-  type RandomDie {
-    numSides: Int!
-    rollOnce: Int!
-    roll(numRolls: Int!): [Int]
-  }
+const schema = buildSchema(
+  /* GraphQL */ `
+    type RandomDie {
+      numSides: Int!
+      rollOnce: Int!
+      roll(numRolls: Int!): [Int]
+    }
 
-  type Query {
-    getDie(numSides: Int): RandomDie
-  }
-`);
+    type Query {
+      getDie(numSides: Int): RandomDie
+    }
+  `,
+  {
+    supplementalConfig: {
+      objectTypes: {
+        Query: {
+          fields: {
+            getDie: (_source, { numSides }) => new RandomDie(numSides || 6),
+          },
+        },
+      },
+    },
+  },
+);
 
-// This class implements the RandomDie GraphQL type
 class RandomDie {
   constructor(numSides) {
     this.numSides = numSides;
@@ -294,90 +422,6 @@ class RandomDie {
     return output;
   }
 }
-
-// The root provides the top-level API endpoints
-const root = {
-  getDie({ numSides }) {
-    return new RandomDie(numSides || 6);
-  },
-};
-
-const app = express();
-app.all(
-  '/graphql',
-  createHandler({
-    schema: schema,
-    rootValue: root,
-  }),
-);
-app.listen(4000);
-console.log('Running a GraphQL API server at localhost:4000/graphql');
-```
-
-  </Tabs.Tab>
-  <Tabs.Tab>
-
-```js
-import express from 'express';
-import { createHandler } from 'graphql-http/lib/use/express';
-import {
-  GraphQLObjectType,
-  GraphQLNonNull,
-  GraphQLInt,
-  GraphQLList,
-  GraphQLFloat,
-  GraphQLSchema,
-} from 'graphql';
-
-const RandomDie = new GraphQLObjectType({
-  name: 'RandomDie',
-  fields: {
-    numSides: {
-      type: new GraphQLNonNull(GraphQLInt),
-      resolve: (die) => die.numSides,
-    },
-    rollOnce: {
-      type: new GraphQLNonNull(GraphQLInt),
-      resolve: (die) => 1 + Math.floor(Math.random() * die.numSides),
-    },
-    roll: {
-      type: new GraphQLList(GraphQLInt),
-      args: {
-        numRolls: {
-          type: new GraphQLNonNull(GraphQLInt),
-        },
-      },
-      resolve: (die, { numRolls }) => {
-        const output = [];
-        for (let i = 0; i < numRolls; i++) {
-          output.push(1 + Math.floor(Math.random() * die.numSides));
-        }
-        return output;
-      },
-    },
-  },
-});
-
-const schema = new GraphQLSchema({
-  query: new GraphQLObjectType({
-    name: 'Query',
-    fields: {
-      getDie: {
-        type: RandomDie,
-        args: {
-          numSides: {
-            type: GraphQLInt,
-          },
-        },
-        resolve: (_, { numSides }) => {
-          return {
-            numSides: numSides || 6,
-          };
-        },
-      },
-    },
-  }),
-});
 
 const app = express();
 app.all(

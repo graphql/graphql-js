@@ -8,22 +8,9 @@ import { Tabs } from 'nextra/components';
 
 If you have an API endpoint that alters data, like inserting data into a database or altering data already in a database, you should make this endpoint a `Mutation` rather than a `Query`. This is as simple as making the API endpoint part of the top-level `Mutation` type instead of the top-level `Query` type.
 
-Let's say we have a "message of the day" server, where anyone can update the message of the day, and anyone can read the current one. The GraphQL schema for this is simply:
+Let's say we have a "message of the day" server, where anyone can update the message of the day, and anyone can read the current one. The same schema can be constructed in code, passed to `buildSchema`, or written as SDL:
 
-<Tabs items={['SDL', 'Code']}>
-  <Tabs.Tab>
-
-```graphql
-type Mutation {
-  setMessage(message: String): String
-}
-
-type Query {
-  getMessage: String
-}
-```
-
-  </Tabs.Tab>
+<Tabs items={['Code', 'buildSchema', 'SDL']}>
   <Tabs.Tab>
 
 ```js
@@ -43,6 +30,36 @@ const schema = new GraphQLSchema({
     },
   }),
 });
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```js
+import { buildSchema } from 'graphql';
+
+const schema = buildSchema(/* GraphQL */ `
+  type Mutation {
+    setMessage(message: String): String
+  }
+
+  type Query {
+    getMessage: String
+  }
+`);
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```graphql
+type Mutation {
+  setMessage(message: String): String
+}
+
+type Query {
+  getMessage: String
+}
 ```
 
   </Tabs.Tab>
@@ -67,34 +84,9 @@ const root = {
 
 You don't need anything more than this to implement mutations. But in many cases, you will find a number of different mutations that all accept the same input parameters. A common example is that creating an object in a database and updating an object in a database often take the same parameters. To make your schema simpler, you can use "input types" for this, by using the `input` keyword instead of the `type` keyword.
 
-For example, instead of a single message of the day, let's say we have many messages, indexed in a database by the `id` field, and each message has both a `content` string and an `author` string. We want a mutation API both for creating a new message and for updating an old message. We could use the schema:
+For example, instead of a single message of the day, let's say we have many messages, indexed in a database by the `id` field, and each message has both a `content` string and an `author` string. We want a mutation API both for creating a new message and for updating an old message. The same schema and behavior can be represented with code-first constructors or SDL:
 
-<Tabs items={['SDL', 'Code']}>
-  <Tabs.Tab>
-
-```graphql
-input MessageInput {
-  content: String
-  author: String
-}
-
-type Message {
-  id: ID!
-  content: String
-  author: String
-}
-
-type Query {
-  getMessage(id: ID!): Message
-}
-
-type Mutation {
-  createMessage(input: MessageInput): Message
-  updateMessage(id: ID!, input: MessageInput): Message
-}
-```
-
-  </Tabs.Tab>
+<Tabs items={['Code', 'SDL']}>
   <Tabs.Tab>
 
 ```js
@@ -196,6 +188,73 @@ const schema = new GraphQLSchema({
 ```
 
   </Tabs.Tab>
+  <Tabs.Tab>
+
+```js
+import { randomBytes } from 'node:crypto';
+import { buildSchema } from 'graphql';
+
+// Maps username to content
+const fakeDatabase = {};
+
+const schema = buildSchema(
+  /* GraphQL */ `
+    input MessageInput {
+      content: String
+      author: String
+    }
+
+    type Message {
+      id: ID!
+      content: String
+      author: String
+    }
+
+    type Query {
+      getMessage(id: ID!): Message
+    }
+
+    type Mutation {
+      createMessage(input: MessageInput): Message
+      updateMessage(id: ID!, input: MessageInput): Message
+    }
+  `,
+  {
+    supplementalConfig: {
+      objectTypes: {
+        Query: {
+          fields: {
+            getMessage: (_source, { id }) => {
+              if (!fakeDatabase[id]) {
+                throw new Error('no message exists with id ' + id);
+              }
+              return { id, ...fakeDatabase[id] };
+            },
+          },
+        },
+        Mutation: {
+          fields: {
+            createMessage: (_source, { input }) => {
+              const id = randomBytes(10).toString('hex');
+              fakeDatabase[id] = input;
+              return { id, ...input };
+            },
+            updateMessage: (_source, { id, input }) => {
+              if (!fakeDatabase[id]) {
+                throw new Error('no message exists with id ' + id);
+              }
+              fakeDatabase[id] = input;
+              return { id, ...input };
+            },
+          },
+        },
+      },
+    },
+  },
+);
+```
+
+  </Tabs.Tab>
 </Tabs>
 
 Here, the mutations return a `Message` type, so that the client can get more information about the newly-modified `Message` in the same request as the request that mutates it.
@@ -239,85 +298,9 @@ literal form internally when building a schema from SDL. Invalid defaults are
 reported by schema validation instead of waiting until a query happens to use
 that field.
 
-Here's some runnable code that implements this schema, keeping the data in memory:
+Here's some runnable code that implements this schema, keeping the data in memory. The code-first version defines the schema and resolvers together with constructors. The SDL version defines the schema with schema language and installs resolver functions on the built schema.
 
-<Tabs items={['SDL', 'Code']}>
-  <Tabs.Tab>
-
-```js
-import express from 'express';
-import { createHandler } from 'graphql-http/lib/use/express';
-import { buildSchema } from 'graphql';
-
-const fakeDatabase = {};
-
-// Construct a schema, using GraphQL schema language
-const schema = buildSchema(`
-  input MessageInput {
-    content: String
-    author: String
-  }
-
-  type Message {
-    id: ID!
-    content: String
-    author: String
-  }
-
-  type Query {
-    getMessage(id: ID!): Message
-    getMessages: [Message]
-  }
-
-  type Mutation {
-    createMessage(input: MessageInput): Message
-    updateMessage(id: ID!, input: MessageInput): Message
-  }
-`);
-
-// If Message had any complex fields, we'd put them on this object.
-class Message {
-  constructor(id, { content, author }) {
-    this.id = id;
-    this.content = content;
-    this.author = author;
-  }
-}
-
-const root = {
-  getMessage: ({ id }) => {
-    return fakeDatabase[id];
-  },
-  getMessages: () => {
-    return Object.values(fakeDatabase);
-  },
-  createMessage: ({ input }) => {
-    const id = String(Object.keys(fakeDatabase).length + 1);
-    const message = new Message(id, input);
-    fakeDatabase[id] = message;
-    return message;
-  },
-  updateMessage: ({ id, input }) => {
-    const message = fakeDatabase[id];
-    Object.assign(message, input);
-    return message;
-  },
-};
-
-const app = express();
-app.all(
-  '/graphql',
-  createHandler({
-    schema: schema,
-    rootValue: root,
-  }),
-);
-app.listen(4000, () => {
-  console.log('Running a GraphQL API server at localhost:4000/graphql');
-});
-```
-
-  </Tabs.Tab>
+<Tabs items={['Code', 'SDL']}>
   <Tabs.Tab>
 
 ```js
@@ -330,6 +313,7 @@ import {
   GraphQLID,
   GraphQLInputObjectType,
   GraphQLNonNull,
+  GraphQLList,
 } from 'graphql';
 
 // If Message had any complex fields, we'd put them on this object.
@@ -370,18 +354,11 @@ const schema = new GraphQLSchema({
         args: {
           id: { type: new GraphQLNonNull(GraphQLID) },
         },
-        resolve: (_, { id }) => {
-          if (!fakeDatabase[id]) {
-            throw new Error('no message exists with id ' + id);
-          }
-          return fakeDatabase[id]
-            ? {
-                id,
-                content: fakeDatabase[id].content,
-                author: fakeDatabase[id].author,
-              }
-            : null;
-        },
+        resolve: (_, { id }) => fakeDatabase[id],
+      },
+      getMessages: {
+        type: new GraphQLList(Message),
+        resolve: () => Object.values(fakeDatabase),
       },
     },
   }),
@@ -394,15 +371,10 @@ const schema = new GraphQLSchema({
           input: { type: new GraphQLNonNull(MessageInput) },
         },
         resolve: (_, { input }) => {
-          // Create a random id for our "database".
-          import { randomBytes } from 'crypto';
-          const id = randomBytes(10).toString('hex');
-          fakeDatabase[id] = input;
-          return {
-            id,
-            content: input.content,
-            author: input.author,
-          };
+          const id = String(Object.keys(fakeDatabase).length + 1);
+          const message = new Message(id, input);
+          fakeDatabase[id] = message;
+          return message;
         },
       },
       updateMessage: {
@@ -412,21 +384,98 @@ const schema = new GraphQLSchema({
           input: { type: new GraphQLNonNull(MessageInput) },
         },
         resolve: (_, { id, input }) => {
-          if (!fakeDatabase[id]) {
-            throw new Error('no message exists with id ' + id);
-          }
-          // This replaces all old data, but some apps might want partial update.
-          fakeDatabase[id] = input;
-          return {
-            id,
-            content: input.content,
-            author: input.author,
-          };
+          const message = fakeDatabase[id];
+          Object.assign(message, input);
+          return message;
         },
       },
     },
   }),
 });
+
+const app = express();
+app.all(
+  '/graphql',
+  createHandler({
+    schema: schema,
+  }),
+);
+app.listen(4000, () => {
+  console.log('Running a GraphQL API server at localhost:4000/graphql');
+});
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```js
+import express from 'express';
+import { createHandler } from 'graphql-http/lib/use/express';
+import { buildSchema } from 'graphql';
+
+// If Message had any complex fields, we'd put them on this object.
+class Message {
+  constructor(id, { content, author }) {
+    this.id = id;
+    this.content = content;
+    this.author = author;
+  }
+}
+
+// Maps username to content
+const fakeDatabase = {};
+
+const schema = buildSchema(
+  /* GraphQL */ `
+    input MessageInput {
+      content: String
+      author: String
+    }
+
+    type Message {
+      id: ID!
+      content: String
+      author: String
+    }
+
+    type Query {
+      getMessage(id: ID!): Message
+      getMessages: [Message]
+    }
+
+    type Mutation {
+      createMessage(input: MessageInput): Message
+      updateMessage(id: ID!, input: MessageInput): Message
+    }
+  `,
+  {
+    supplementalConfig: {
+      objectTypes: {
+        Query: {
+          fields: {
+            getMessage: (_source, { id }) => fakeDatabase[id],
+            getMessages: () => Object.values(fakeDatabase),
+          },
+        },
+        Mutation: {
+          fields: {
+            createMessage: (_source, { input }) => {
+              const id = String(Object.keys(fakeDatabase).length + 1);
+              const message = new Message(id, input);
+              fakeDatabase[id] = message;
+              return message;
+            },
+            updateMessage: (_source, { id, input }) => {
+              const message = fakeDatabase[id];
+              Object.assign(message, input);
+              return message;
+            },
+          },
+        },
+      },
+    },
+  },
+);
 
 const app = express();
 app.all(

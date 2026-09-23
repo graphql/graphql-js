@@ -47,21 +47,23 @@ import { GraphQLID } from '../type/scalars.ts';
  * ```ts
  * import { print } from 'graphql/language';
  * import {
- *   GraphQLInputObjectType,
- *   GraphQLInt,
- *   GraphQLList,
+ *   assertInputObjectType,
  *   GraphQLNonNull,
  *   GraphQLString,
  * } from 'graphql/type';
- * import { astFromValue } from 'graphql/utilities';
+ * import { astFromValue, buildSchema } from 'graphql/utilities';
  *
- * const ReviewInput = new GraphQLInputObjectType({
- *   name: 'ReviewInput',
- *   fields: {
- *     stars: { type: new GraphQLNonNull(GraphQLInt) },
- *     tags: { type: new GraphQLList(GraphQLString) },
- *   },
- * });
+ * const schema = buildSchema(`
+ *   input ReviewInput {
+ *     stars: Int!
+ *     tags: [String]
+ *   }
+ *
+ *   type Query {
+ *     reviews(filter: ReviewInput): [String]
+ *   }
+ * `);
+ * const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
  *
  * const valueNode = astFromValue(
  *   { stars: 5, tags: ['featured', 'verified'] },

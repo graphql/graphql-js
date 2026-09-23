@@ -1089,6 +1089,33 @@ describe('Schema Builder', () => {
     buildSchema(sdl, { assumeValidSDL: true });
   });
 
+  it('Rejects invalid supplemental config by default', () => {
+    const supplementalConfig = {
+      objectTypes: {
+        Missing: {},
+      },
+    };
+
+    expect(() => buildSchema('type Query', { supplementalConfig })).to.throw(
+      'Type supplemental config "Missing" does not match a type declared by the document.',
+    );
+  });
+
+  it('Allows to disable supplemental config validation', () => {
+    const supplementalConfig = {
+      objectTypes: {
+        Missing: {},
+      },
+    };
+
+    expect(() =>
+      buildSchema('type Query', {
+        assumeValidSupplementalConfig: true,
+        supplementalConfig,
+      }),
+    ).to.not.throw();
+  });
+
   it('buildSchema parses directives on directive definitions', () => {
     const schema = buildSchema(
       dedent`

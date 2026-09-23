@@ -2,7 +2,7 @@
 title: Operation Complexity Controls
 ---
 
-import { Callout } from 'nextra/components';
+import { Callout, Tabs } from 'nextra/components';
 
 # Operation Complexity Controls
 
@@ -115,17 +115,36 @@ costly than a scalar field. You can define per-field costs using
 `fieldExtensionsEstimator`, a feature supported by some complexity tools.
 
 This estimator reads cost metadata from the field's `extensions.complexity` function in
-your schema. For example:
+your schema. SDL describes the field, while `supplementalConfig` can attach the extension
+metadata used by the estimator:
+
+<Tabs items={['Code', 'SDL']}>
+  <Tabs.Tab>
 
 ```js
-import { GraphQLObjectType, GraphQLList, GraphQLInt } from 'graphql';
-import { PostType } from './post-type.js';
+import {
+  GraphQLID,
+  GraphQLInt,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLSchema,
+  GraphQLString,
+} from 'graphql';
 
-const UserType = new GraphQLObjectType({
+const Post = new GraphQLObjectType({
+  name: 'Post',
+  fields: {
+    id: { type: new GraphQLNonNull(GraphQLID) },
+    title: { type: GraphQLString },
+  },
+});
+
+const User = new GraphQLObjectType({
   name: 'User',
   fields: {
     posts: {
-      type: GraphQLList(PostType),
+      type: new GraphQLList(Post),
       args: {
         limit: { type: GraphQLInt },
       },
@@ -138,7 +157,63 @@ const UserType = new GraphQLObjectType({
     },
   },
 });
+
+const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      viewer: {
+        type: User,
+      },
+    },
+  }),
+});
 ```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```js
+import { buildSchema } from 'graphql';
+
+const schema = buildSchema(
+  /* GraphQL */ `
+    type Post {
+      id: ID!
+      title: String
+    }
+
+    type User {
+      posts(limit: Int): [Post]
+    }
+
+    type Query {
+      viewer: User
+    }
+  `,
+  {
+    supplementalConfig: {
+      objectTypes: {
+        User: {
+          fields: {
+            posts: {
+              extensions: {
+                complexity: ({ args, childComplexity }) => {
+                  const limit = args.limit ?? 10;
+                  return childComplexity * limit;
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+);
+```
+
+  </Tabs.Tab>
+</Tabs>
 
 In this example, the cost of `posts` depends on the number of items requested (`limit`) and the
 complexity of each child field.

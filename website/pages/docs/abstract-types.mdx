@@ -4,12 +4,14 @@ title: Abstract types in GraphQL.js
 
 # Abstract types in GraphQL.js
 
+import { Tabs } from 'nextra/components';
+
 GraphQL includes two kinds of abstract types: interfaces and unions. These types let a single
 field return values of different object types, while keeping your schema type-safe.
 
-This guide covers how to define and resolve abstract types using GraphQL.js. It focuses on
-constructing types in JavaScript using the GraphQL.js type system, not the schema definition
-language (SDL).
+This guide covers how to define and resolve abstract types using GraphQL.js. You can define
+abstract types with code-first constructors or SDL. Runtime type resolution can come from
+`resolveType`, `isTypeOf`, or from values that include `__typename`.
 
 ## What are abstract types?
 
@@ -31,11 +33,15 @@ GraphQL provides two kinds of abstract types:
 
 ## Defining interfaces
 
-To define an interface in GraphQL.js, use the `GraphQLInterfaceType` constructor. An interface
-must include a `name`, definition of the shared `fields`, and should include a `resolveType`
-function telling GraphQL which concrete type a given value corresponds to.
+An interface must include a name and shared fields. In SDL, object types implement the interface
+with `implements`. The `resolveType` function is JavaScript behavior, so provide it through
+`supplementalConfig` or through the `GraphQLInterfaceType` constructor. If your returned values
+include `__typename`, GraphQL.js can use that value for runtime type resolution.
 
 The following example defines a `ContentItem` interface for a publishing platform:
+
+<Tabs items={['Code', 'SDL']}>
+  <Tabs.Tab>
 
 ```js filename="ContentItemInterface.js"
 import { GraphQLInterfaceType, GraphQLString, GraphQLNonNull } from 'graphql';
@@ -61,17 +67,79 @@ const ContentItemInterface = new GraphQLInterfaceType({
 exports.ContentItemInterface = ContentItemInterface;
 ```
 
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```js filename="schema.js"
+import { buildSchema } from 'graphql';
+
+const schema = buildSchema(
+  /* GraphQL */ `
+    interface ContentItem {
+      id: String!
+      title: String
+      publishedAt: String
+    }
+
+    type Article implements ContentItem {
+      id: String!
+      title: String
+      publishedAt: String
+      bodyText: String
+    }
+
+    type PodcastEpisode implements ContentItem {
+      id: String!
+      title: String
+      publishedAt: String
+      audioUrl: String
+    }
+
+    type Query {
+      latest: ContentItem
+    }
+  `,
+  {
+    supplementalConfig: {
+      interfaceTypes: {
+        ContentItem: {
+          resolveType(value) {
+            if (value.audioUrl) {
+              return 'PodcastEpisode';
+            }
+            if (value.bodyText) {
+              return 'Article';
+            }
+            return null;
+          },
+        },
+      },
+    },
+  },
+);
+```
+
+  </Tabs.Tab>
+</Tabs>
+
 The `resolveType` function must return either the string type name corresponding
 to the `GraphQLObjectType` of the given `value`, or `null` if the type could not
 be determined.
+If returned values already include `__typename`, GraphQL.js can use that value
+for default runtime type resolution instead of a schema-attached `resolveType`.
 
 ## Implementing interfaces with object types
 
-To implement an interface, define a `GraphQLObjectType` and include the interface in its
-`interfaces` array. The object type must implement all fields defined by the interface.
+To implement an interface, declare the object type with `implements` in SDL or include the
+interface in a `GraphQLObjectType` `interfaces` array. The object type must implement all fields
+defined by the interface. `isTypeOf` is optional runtime behavior; it can be supplied through
+`supplementalConfig` or in the object type constructor.
 
 The following example implements the `Article` and `PodcastEpisode` types that
 conform to the `ContentItem` interface:
+
+<Tabs items={['Code', 'SDL']}>
+  <Tabs.Tab>
 
 ```js
 import { GraphQLObjectType, GraphQLString, GraphQLNonNull } from 'graphql';
@@ -102,19 +170,73 @@ const PodcastEpisodeType = new GraphQLObjectType({
 });
 ```
 
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```js
+import { buildSchema } from 'graphql';
+
+const schema = buildSchema(
+  /* GraphQL */ `
+    interface ContentItem {
+      id: String!
+      title: String
+      publishedAt: String
+    }
+
+    type Article implements ContentItem {
+      id: String!
+      title: String
+      publishedAt: String
+      bodyText: String
+    }
+
+    type PodcastEpisode implements ContentItem {
+      id: String!
+      title: String
+      publishedAt: String
+      audioUrl: String
+    }
+
+    type Query {
+      latest: ContentItem
+    }
+  `,
+  {
+    supplementalConfig: {
+      objectTypes: {
+        Article: {
+          isTypeOf: (value) => value.bodyText !== undefined,
+        },
+        PodcastEpisode: {
+          isTypeOf: (value) => value.audioUrl !== undefined,
+        },
+      },
+    },
+  },
+);
+```
+
+  </Tabs.Tab>
+</Tabs>
+
 The `isTypeOf` function is optional. It provides a fallback when `resolveType` isn't defined, or
 when runtime values could match multiple types. If both `resolveType` and `isTypeOf` are defined,
 GraphQL uses `resolveType`.
+In SDL, supply `isTypeOf` through `supplementalConfig` because it is schema configuration.
 
 ## Defining union types
 
-Use the `GraphQLUnionType` constructor to define a union. A union allows a field to return one
-of several object types that don't need to share fields.
+Use `union` in SDL or the `GraphQLUnionType` constructor to define a union. A union allows a field
+to return one of several object types that don't need to share fields.
 
-A union requires a name and a list of object types (`types`). It should also be
-provided a `resolveType` function the same as explained for interfaces above.
+A union requires a name and a list of object types. It should also be provided a `resolveType`
+function the same as explained for interfaces above.
 
 The following example defines a `SearchResult` union:
+
+<Tabs items={['Code', 'SDL']}>
+  <Tabs.Tab>
 
 ```js
 import { GraphQLUnionType } from 'graphql';
@@ -137,6 +259,61 @@ const SearchResultType = new GraphQLUnionType({
 });
 ```
 
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```js
+import { buildSchema } from 'graphql';
+
+const schema = buildSchema(
+  /* GraphQL */ `
+    type Book {
+      title: String
+      isbn: String
+    }
+
+    type Author {
+      name: String
+      bio: String
+    }
+
+    type Publisher {
+      name: String
+      catalogSize: Int
+    }
+
+    union SearchResult = Book | Author | Publisher
+
+    type Query {
+      search(term: String!): [SearchResult]
+    }
+  `,
+  {
+    supplementalConfig: {
+      unionTypes: {
+        SearchResult: {
+          resolveType(value) {
+            if (value.isbn) {
+              return 'Book';
+            }
+            if (value.bio) {
+              return 'Author';
+            }
+            if (value.catalogSize) {
+              return 'Publisher';
+            }
+            return null;
+          },
+        },
+      },
+    },
+  },
+);
+```
+
+  </Tabs.Tab>
+</Tabs>
+
 Unlike interfaces, unions don't declare any fields their members must implement.
 Clients use a fragment with a type condition to query fields from a concrete type.
 
@@ -149,7 +326,7 @@ This function receives the following arguments:
 
 {/* prettier-ignore */}
 ```js
-resolveType(value, context, info)
+resolveType(value, context, info);
 ```
 
 It can return:

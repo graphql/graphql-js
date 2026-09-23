@@ -128,33 +128,39 @@ describe('DateTime scalar', () => {
 ### Test custom scalars in a schema
 
 Integrate the scalar into a schema and run real GraphQL queries to validate end-to-end behavior.
+The scalar coercion functions must be part of the schema configuration.
 
 ```js
-import { graphql, GraphQLSchema, GraphQLObjectType } from 'graphql';
+import { graphql, buildSchema } from 'graphql';
 import { DateTimeResolver as DateTime } from 'graphql-scalars';
 
-const Query = new GraphQLObjectType({
-  name: 'Query',
-  fields: {
-    now: {
-      type: DateTime,
-      resolve() {
-        return new Date();
+const schema = buildSchema(
+  /* GraphQL */ `
+    scalar DateTime
+
+    type Query {
+      now: DateTime
+    }
+  `,
+  {
+    supplementalConfig: {
+      scalarTypes: {
+        DateTime: {
+          serialize: DateTime.serialize.bind(DateTime),
+          parseValue: DateTime.parseValue.bind(DateTime),
+          parseLiteral: DateTime.parseLiteral.bind(DateTime),
+        },
+      },
+      objectTypes: {
+        Query: {
+          fields: {
+            now: () => new Date(),
+          },
+        },
       },
     },
   },
-});
-
-/*
-  scalar DateTime
-
-  type Query {
-    now: DateTime
-  }
-*/
-const schema = new GraphQLSchema({
-  query: Query,
-});
+);
 
 async function testQuery() {
   const response = await graphql({

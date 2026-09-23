@@ -40,6 +40,11 @@ If you're using this approach with TypeScript, you already get some built-in typ
 with the types exposed by `graphql-js`. For example, TypeScript can help ensure your resolver
 functions return values that match their expected shapes.
 
+Another workflow is to define the schema in SDL and supply JavaScript-only behavior through
+`supplementalConfig`. That gives type-generation tools SDL directly while still letting you
+attach resolvers, custom scalar coercion, abstract type resolution, and extension metadata
+in code.
+
 However, code-first development has tradeoffs:
 
 - You won't get automatic type definitions for your resolvers unless you generate
@@ -48,7 +53,8 @@ However, code-first development has tradeoffs:
   a description of the schema in SDL first.
 
 You can still use type generation tools like GraphQL Code Generator in a code-first setup.
-You just need to convert your schema into SDL.
+You just need to convert your schema into SDL. If the schema is already constructed from
+SDL, that conversion step is unnecessary.
 
 To produce an SDL description of your schema:
 
@@ -60,8 +66,7 @@ import { writeFileSync } from 'fs';
 writeFileSync('./schema.graphql', printSchema(schema));
 ```
 
-Once you've written the SDL, you can treat the project like an SDL-first project
-for type generation.
+Once you have SDL, you can use it as the input for type generation.
 
 ## Schema-first development
 

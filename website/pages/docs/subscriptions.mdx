@@ -4,6 +4,8 @@ title: Subscriptions
 
 # Subscriptions
 
+import { Tabs } from 'nextra/components';
+
 Subscriptions allow a GraphQL server to push updates to clients in real time. Unlike queries and mutations, which use a request/response model, subscriptions maintain a long-lived connection between the client and server to stream data as events occur. This is useful for building features like chat apps, live dashboards, or collaborative tools that require real-time updates.
 
 This guide covers how to implement subscriptions in GraphQL.js, when to use them, and what to consider in production environments.
@@ -142,12 +144,20 @@ broadcast and listen for events.
 
 ### Define a subscription type
 
-Next, define your `Subscription` root type. Each field on this type should return
-an `AsyncIterable`. Subscribe functions can also accept standard resolver arguments
-such as `args`, `context`, and `info`, depending on your use case:
+Next, define your `Subscription` root type:
+
+<Tabs items={['Code', 'SDL']}>
+  <Tabs.Tab>
 
 ```js
 import { GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql';
+
+const QueryType = new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+    noop: { type: GraphQLString },
+  },
+});
 
 const SubscriptionType = new GraphQLObjectType({
   name: 'Subscription',
@@ -158,7 +168,47 @@ const SubscriptionType = new GraphQLObjectType({
     },
   },
 });
+
+const schema = new GraphQLSchema({
+  query: QueryType,
+  subscription: SubscriptionType,
+});
 ```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```js
+import { buildSchema } from 'graphql';
+
+const schema = buildSchema(
+  /* GraphQL */ `
+    type Query {
+      noop: String
+    }
+
+    type Subscription {
+      messageSent: String
+    }
+  `,
+  {
+    supplementalConfig: {
+      objectTypes: {
+        Subscription: {
+          fields: {
+            messageSent: {
+              subscribe: () => pubsub.asyncIterator(['MESSAGE_SENT']),
+            },
+          },
+        },
+      },
+    },
+  },
+);
+```
+
+  </Tabs.Tab>
+</Tabs>
 
 This schema defines a `messageSent` field that listens for the `MESSAGE_SENT` event and returns a string.
 
@@ -173,15 +223,7 @@ pubsub.publish('MESSAGE_SENT', { messageSent: 'Hello world!' });
 
 Clients subscribed to the `messageSent` field will receive this message.
 
-### Construct your schema
-
-Finally, build your schema and include the `Subscription` type:
-
-```js
-const schema = new GraphQLSchema({
-  subscription: SubscriptionType,
-});
-```
+### Use your schema
 
 A client can then initiate a subscription like this:
 

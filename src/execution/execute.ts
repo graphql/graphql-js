@@ -94,18 +94,28 @@ export type RootSelectionSetExecutor = (
  * import { buildSchema } from 'graphql/utilities';
  * import { execute } from 'graphql/execution';
  *
- * const schema = buildSchema(`
- *   type Query {
- *     greeting(name: String!): String
- *   }
- * `);
+ * const schema = buildSchema(
+ *   `
+ *     type Query {
+ *       greeting(name: String!): String
+ *     }
+ *   `,
+ *   {
+ *     supplementalConfig: {
+ *       objectTypes: {
+ *         Query: {
+ *           fields: {
+ *             greeting: (_source, { name }) => `Hello, ${name}!`,
+ *           },
+ *         },
+ *       },
+ *     },
+ *   },
+ * );
  *
  * const result = await execute({
  *   schema,
  *   document: parse('query ($name: String!) { greeting(name: $name) }'),
- *   rootValue: {
- *     greeting: ({ name }) => `Hello, ${name}!`,
- *   },
  *   variableValues: { name: 'Ada' },
  * });
  *
@@ -185,16 +195,28 @@ function executeImpl(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
  * import { buildSchema } from 'graphql/utilities';
  * import { experimentalExecuteIncrementally } from 'graphql/execution';
  *
- * const schema = buildSchema(`
- *   type Query {
- *     greeting: String
- *   }
- * `);
+ * const schema = buildSchema(
+ *   `
+ *     type Query {
+ *       greeting: String
+ *     }
+ *   `,
+ *   {
+ *     supplementalConfig: {
+ *       objectTypes: {
+ *         Query: {
+ *           fields: {
+ *             greeting: () => 'Hello',
+ *           },
+ *         },
+ *       },
+ *     },
+ *   },
+ * );
  *
  * const result = await experimentalExecuteIncrementally({
  *   schema,
  *   document: parse('{ greeting }'),
- *   rootValue: { greeting: 'Hello' },
  * });
  *
  * result; // => { data: { greeting: 'Hello' } }
@@ -455,7 +477,6 @@ export function executeSubscriptionEvent(
  * @returns A response stream for a valid subscription, or an execution result containing errors.
  * @example
  * ```ts
- * // Use a same-named rootValue function to provide the source event stream.
  * import assert from 'node:assert';
  * import { parse } from 'graphql/language';
  * import { buildSchema } from 'graphql/utilities';
@@ -466,20 +487,34 @@ export function executeSubscriptionEvent(
  *   yield { greeting: 'Bonjour' };
  * }
  *
- * const schema = buildSchema(`
- *   type Query {
- *     noop: String
- *   }
+ * const schema = buildSchema(
+ *   `
+ *     type Query {
+ *       noop: String
+ *     }
  *
- *   type Subscription {
- *     greeting: String
- *   }
- * `);
+ *     type Subscription {
+ *       greeting: String
+ *     }
+ *   `,
+ *   {
+ *     supplementalConfig: {
+ *       objectTypes: {
+ *         Subscription: {
+ *           fields: {
+ *             greeting: {
+ *               subscribe: () => greetings(),
+ *             },
+ *           },
+ *         },
+ *       },
+ *     },
+ *   },
+ * );
  *
  * const result = await subscribe({
  *   schema,
  *   document: parse('subscription { greeting }'),
- *   rootValue: { greeting: () => greetings() },
  * });
  *
  * assert('next' in result);
@@ -627,19 +662,33 @@ function subscribeImpl(
  *   yield { greeting: 'Hello' };
  * }
  *
- * const schema = buildSchema(`
- *   type Query {
- *     noop: String
- *   }
+ * const schema = buildSchema(
+ *   `
+ *     type Query {
+ *       noop: String
+ *     }
  *
- *   type Subscription {
- *     greeting: String
- *   }
- * `);
+ *     type Subscription {
+ *       greeting: String
+ *     }
+ *   `,
+ *   {
+ *     supplementalConfig: {
+ *       objectTypes: {
+ *         Subscription: {
+ *           fields: {
+ *             greeting: {
+ *               subscribe: () => greetings(),
+ *             },
+ *           },
+ *         },
+ *       },
+ *     },
+ *   },
+ * );
  * const validatedArgs = validateSubscriptionArgs({
  *   schema,
  *   document: parse('subscription { greeting }'),
- *   rootValue: { greeting: () => greetings() },
  * });
  *
  * assert('schema' in validatedArgs);
