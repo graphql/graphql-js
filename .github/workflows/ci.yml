@@ -166,6 +166,29 @@ jobs:
       - name: Run Tests with coverage
         run: npm run testonly:cover
 
+  generated-coverage:
+    name: Run generated executor coverage
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          cache: npm
+          node-version-file: '.node-version'
+
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run generated executor coverage
+        run: npm run generate:coverage
+
   codeql:
     name: Run CodeQL security scan
     runs-on: ubuntu-latest

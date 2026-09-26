@@ -2,12 +2,10 @@ import { describe, it } from 'node:test';
 
 import { assert, expect } from 'chai';
 
-import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualPromisesOrValues.ts';
 import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';
 
 import { inspect } from '../../jsutils/inspect.ts';
-import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.ts';
 
 import type { FieldNode } from '../../language/ast.ts';
@@ -32,38 +30,59 @@ import {
 } from '../../type/scalars.ts';
 import { GraphQLSchema } from '../../type/schema.ts';
 
+import { valueFromASTUntyped } from '../../utilities/valueFromASTUntyped.ts';
+
 import type { FieldDetailsList } from '../collectFields.ts';
 import {
-  execute as executeThrowingOnIncremental,
-  executeIgnoringIncremental,
-  executeSync as executeSyncWrappingThrowingOnIncremental,
-  experimentalExecuteIncrementally,
+  execute as originalExecute,
   validateExecutionArgs,
 } from '../execute.ts';
-import type { ExecutionArgs } from '../ExecutionArgs.ts';
-import type { ExecutionResult } from '../Executor.ts';
 import { collectSubfields, getStreamUsage } from '../Executor.ts';
-import { legacyExecuteIncrementally } from '../legacyIncremental/legacyExecuteIncrementally.ts';
 
-function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
-  return expectEqualPromisesOrValues([
-    executeThrowingOnIncremental(args),
-    executeIgnoringIncremental(args),
-    experimentalExecuteIncrementally(args),
-    legacyExecuteIncrementally(args),
-  ]) as PromiseOrValue<ExecutionResult>;
-}
+import {
+  executeSyncWithAllMethods as executeSync,
+  executeWithAllMethods as execute,
+} from './executeTestUtils.ts';
 
-function executeSync(args: ExecutionArgs): ExecutionResult {
-  return expectEqualPromisesOrValues([
-    executeSyncWrappingThrowingOnIncremental(args),
-    executeIgnoringIncremental(args),
-    experimentalExecuteIncrementally(args),
-    legacyExecuteIncrementally(args),
-  ]) as ExecutionResult;
+function fieldDetailsListFromNode(node: FieldNode): FieldDetailsList {
+  return [
+    {
+      node,
+      deferUsage: undefined,
+      fragmentVariableValues: undefined,
+      staticFragmentVariableValues: undefined,
+      compiledFieldPlan: undefined,
+    },
+  ];
 }
 
 describe('Execute: Handles basic execution tasks', () => {
+  it('removes external abort listener when execution setup throws', () => {
+    const abortController = new AbortController();
+    const result = originalExecute({
+      schema: new GraphQLSchema({
+        query: new GraphQLObjectType({
+          name: 'Query',
+          fields: {
+            value: { type: GraphQLString },
+          },
+        }),
+      }),
+      document: parse('mutation { value }'),
+      abortSignal: abortController.signal,
+    });
+
+    expectJSON(result).toDeepEqual({
+      data: null,
+      errors: [
+        {
+          message: 'Schema is not configured to execute mutation operation.',
+          locations: [{ line: 1, column: 1 }],
+        },
+      ],
+    });
+  });
+
   it('executes arbitrary code', async () => {
     const data = {
       a: () => 'Apple',
@@ -431,6 +450,54 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(resolvedArgs).to.deep.equal({ numArg: 123, stringArg: 'foo' });
   });
 
+  it('executes custom scalars with embedded nested fragment variables', () => {
+    const jsonScalar = new GraphQLScalarType({
+      name: 'JSONScalar',
+      coerceInputValue(value) {
+        return value;
+      },
+      coerceInputLiteral(value) {
+        return valueFromASTUntyped(value);
+      },
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          fieldWithJSONScalarInput: {
+            type: GraphQLString,
+            args: { input: { type: jsonScalar } },
+            resolve(_source, args) {
+              return inspect(args.input);
+            },
+          },
+        },
+      }),
+    });
+    const document = parse(
+      `
+        {
+          ...JSONFragment(input1: "foo")
+        }
+        fragment JSONFragment($input1: String) on Query {
+          ...JSONNestedFragment(input2: $input1)
+        }
+        fragment JSONNestedFragment($input2: String) on Query {
+          fieldWithJSONScalarInput(input: { a: $input2, b: ["bar"], c: "baz" })
+        }
+      `,
+      { experimentalFragmentArguments: true },
+    );
+
+    const result = executeSync({ schema, document });
+
+    expectJSON(result).toDeepEqual({
+      data: {
+        fieldWithJSONScalarInput: '{ a: "foo", b: ["bar"], c: "baz" }',
+      },
+    });
+  });
+
   it('nulls out error subtrees', async () => {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
@@ -693,7 +760,9 @@ describe('Execute: Handles basic execution tasks', () => {
       }
     `);
 
-    const result = execute({ schema, document });
+    // Compiled execution finishes already-started sibling work after null
+    // bubbling instead of returning early.
+    const result = originalExecute({ schema, document });
 
     expectJSON(await result).toDeepEqual({
       data: null,
@@ -1080,6 +1149,22 @@ describe('Execute: Handles basic execution tasks', () => {
         },
       ],
     });
+    expectJSON(
+      executeSync({
+        schema,
+        document,
+        operationName: 'M',
+        abortSignal: new AbortController().signal,
+      }),
+    ).toDeepEqual({
+      data: null,
+      errors: [
+        {
+          message: 'Schema is not configured to execute mutation operation.',
+          locations: [{ line: 3, column: 7 }],
+        },
+      ],
+    });
 
     expectJSON(
       executeSync({ schema, document, operationName: 'S' }),
@@ -1344,6 +1429,28 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(result).to.deep.equal({ data: { foo: null } });
   });
 
+  it('uses the default field resolver with a non-object source', () => {
+    const fooType = new GraphQLObjectType({
+      name: 'Foo',
+      fields: {
+        bar: { type: GraphQLString },
+      },
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          foo: { type: fooType },
+        },
+      }),
+    });
+    const document = parse('{ foo { bar } }');
+
+    const result = executeSync({ schema, document });
+
+    expect(result).to.deep.equal({ data: { foo: null } });
+  });
+
   it('uses a custom field resolver', () => {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
@@ -1365,6 +1472,35 @@ describe('Execute: Handles basic execution tasks', () => {
     });
 
     expect(result).to.deep.equal({ data: { foo: 'foo' } });
+  });
+
+  it('uses a custom field resolver for object fields', () => {
+    const fooType = new GraphQLObjectType({
+      name: 'Foo',
+      fields: {
+        bar: { type: GraphQLString },
+      },
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          foo: { type: fooType },
+        },
+      }),
+    });
+    const document = parse('{ foo { bar } }');
+
+    const result = executeSync({
+      schema,
+      document,
+      rootValue: { foo: { bar: 'BAR' } },
+      fieldResolver(source, _args, _context, info) {
+        return source[info.fieldName];
+      },
+    });
+
+    expect(result).to.deep.equal({ data: { foo: { bar: 'BAR' } } });
   });
 
   it('uses a custom type resolver', () => {
@@ -1510,7 +1646,7 @@ describe('Execute: Handles basic execution tasks', () => {
     const operation = validatedExecutionArgs.operation;
     const node = operation.selectionSet.selections[0] as FieldNode;
 
-    const fieldDetailsList: FieldDetailsList = [{ node }];
+    const fieldDetailsList = fieldDetailsListFromNode(node);
 
     const first = collectSubfields(
       validatedExecutionArgs,
@@ -1526,9 +1662,11 @@ describe('Execute: Handles basic execution tasks', () => {
 
     expect(second).to.equal(first);
 
-    const third = collectSubfields(validatedExecutionArgs, deepType, [
-      { node },
-    ]);
+    const third = collectSubfields(
+      validatedExecutionArgs,
+      deepType,
+      fieldDetailsListFromNode(node),
+    );
 
     expect(third).to.not.equal(first);
   });
@@ -1560,7 +1698,7 @@ describe('Execute: Handles basic execution tasks', () => {
     const operation = validatedExecutionArgs.operation;
     const node = operation.selectionSet.selections[0] as FieldNode;
 
-    const fieldDetailsList = [{ node }];
+    const fieldDetailsList = fieldDetailsListFromNode(node);
     const first = getStreamUsage(validatedExecutionArgs, fieldDetailsList);
 
     expect(first).to.not.equal(undefined);
@@ -1569,7 +1707,10 @@ describe('Execute: Handles basic execution tasks', () => {
 
     expect(second).to.equal(first);
 
-    const third = getStreamUsage(validatedExecutionArgs, [{ node }]);
+    const third = getStreamUsage(
+      validatedExecutionArgs,
+      fieldDetailsListFromNode(node),
+    );
 
     expect(third).to.not.equal(first);
   });

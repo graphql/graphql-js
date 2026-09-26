@@ -14,7 +14,9 @@ import { validate } from '../../validation/validate.ts';
 
 import { graphqlSync } from '../../graphql.ts';
 
-import { execute, executeSync } from '../execute.ts';
+import { executeSync as originalExecuteSync } from '../execute.ts';
+
+import { execute, executeSync } from './executeTestUtils.ts';
 
 describe('Execute: synchronously when possible', () => {
   const schema = new GraphQLSchema({
@@ -107,7 +109,7 @@ describe('Execute: synchronously when possible', () => {
     it('throws if encountering async execution', () => {
       const doc = 'query Example { syncField, asyncField }';
       expect(() => {
-        executeSync({
+        originalExecuteSync({
           schema,
           document: parse(doc),
           rootValue: 'rootValue',
@@ -125,7 +127,7 @@ describe('Execute: synchronously when possible', () => {
         }
       `;
       expect(() => {
-        executeSync({
+        originalExecuteSync({
           schema,
           document: parse(doc),
           rootValue: 'rootValue',

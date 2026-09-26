@@ -22,18 +22,26 @@ export {
   validateExecutionArgs,
   validateSubscriptionArgs,
 } from './execute.ts';
+export { compileExecution, compileSubscription } from './compile/index.ts';
+export { generateExecution, generateSubscription } from './generate/index.ts';
 export {
   legacyExecuteIncrementally,
   legacyExecuteRootSelectionSet,
 } from './legacyIncremental/legacyExecuteIncrementally.ts';
 export type {
   AsyncWorkFinishedInfo,
+  CompiledExecutionArgs,
+  CompileExecutionArgs,
   ExecutionArgs,
   ExecutionHooks,
+  RootSelectionSetExecutor,
   ValidatedExecutionArgs,
   ValidatedSubscriptionArgs,
 } from './ExecutionArgs.ts';
-export type { RootSelectionSetExecutor } from './execute.ts';
+export type {
+  CompiledExecution,
+  CompiledSubscription,
+} from './compile/index.ts';
 
 export type { ExecutionResult, FormattedExecutionResult } from './Executor.ts';
 

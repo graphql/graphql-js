@@ -140,6 +140,10 @@ describe('Type System: Specified scalar types', () => {
         },
       };
       expect(coerceOutputValue(customValueOfObj)).to.equal(5);
+      expect(coerceOutputValue({ valueOf: () => true })).to.equal(1);
+      expect(coerceOutputValue({ valueOf: () => false })).to.equal(0);
+      expect(coerceOutputValue({ valueOf: () => '6' })).to.equal(6);
+      expect(coerceOutputValue({ valueOf: () => 7n })).to.equal(7);
 
       // The GraphQL specification does not allow serializing non-integer values
       // as Int to avoid accidental data loss.
@@ -327,6 +331,10 @@ describe('Type System: Specified scalar types', () => {
         },
       };
       expect(coerceOutputValue(customValueOfObj)).to.equal(5.5);
+      expect(coerceOutputValue({ valueOf: () => true })).to.equal(1.0);
+      expect(coerceOutputValue({ valueOf: () => false })).to.equal(0.0);
+      expect(coerceOutputValue({ valueOf: () => '6.5' })).to.equal(6.5);
+      expect(coerceOutputValue({ valueOf: () => 7n })).to.equal(7.0);
 
       expect(() => coerceOutputValue(NaN)).to.throw(
         'Float cannot represent non numeric value: NaN',
@@ -437,6 +445,10 @@ describe('Type System: Specified scalar types', () => {
 
       const onlyToJSONValue = { toJSON };
       expect(coerceOutputValue(onlyToJSONValue)).to.equal('toJSON string');
+      expect(coerceOutputValue({ valueOf: () => true })).to.equal('true');
+      expect(coerceOutputValue({ valueOf: () => false })).to.equal('false');
+      expect(coerceOutputValue({ valueOf: () => 8 })).to.equal('8');
+      expect(coerceOutputValue({ valueOf: () => 9n })).to.equal('9');
 
       expect(() => coerceOutputValue(NaN)).to.throw(
         'String cannot represent value: NaN',
@@ -553,6 +565,8 @@ describe('Type System: Specified scalar types', () => {
           },
         }),
       ).to.equal(true);
+      expect(coerceOutputValue({ valueOf: () => 0 })).to.equal(false);
+      expect(coerceOutputValue({ valueOf: () => 1n })).to.equal(true);
 
       expect(() => coerceOutputValue(NaN)).to.throw(
         'Boolean cannot represent a non boolean value: NaN',
@@ -683,6 +697,8 @@ describe('Type System: Specified scalar types', () => {
 
       const onlyToJSONValue = { toJSON };
       expect(coerceOutputValue(onlyToJSONValue)).to.equal('toJSON ID');
+      expect(coerceOutputValue({ valueOf: () => 123 })).to.equal('123');
+      expect(coerceOutputValue({ valueOf: () => 123n })).to.equal('123');
 
       const badObjValue = {
         _id: false,

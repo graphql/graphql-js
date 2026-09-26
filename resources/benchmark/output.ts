@@ -12,7 +12,7 @@ export function printBenchmarkResults(
   const opsMaxLen = maxBy(results, ({ ops }) => beautifyNumber(ops).length);
   const memPerOpMaxLen = maxBy(
     results,
-    ({ memPerOp }) => beautifyBytes(memPerOp).length,
+    ({ memPerOp }) => formatMemory(memPerOp).length,
   );
 
   for (const result of results) {
@@ -51,7 +51,7 @@ export function printBenchmarkResults(
     }
 
     function memPerOpStr(): string {
-      return beautifyBytes(memPerOp).padStart(memPerOpMaxLen);
+      return formatMemory(memPerOp).padStart(memPerOpMaxLen);
     }
   }
 }
@@ -104,7 +104,15 @@ export function printPairedComparisons(
     );
   }
 }
+function formatMemory(bytes: number | undefined): string {
+  return bytes === undefined ? 'n/a' : beautifyBytes(bytes);
+}
+
 function beautifyBytes(bytes: number): string {
+  if (bytes < 1) {
+    return beautifyNumber(bytes) + ' Bytes';
+  }
+
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log2(bytes) / 10);
   return beautifyNumber(bytes / 2 ** (i * 10)) + ' ' + sizes[i];

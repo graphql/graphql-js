@@ -456,6 +456,34 @@ export default defineConfig(
           message:
             'String literals should not contain trailing spaces. If needed for tests please disable locally using eslint comment',
         },
+        {
+          selector: 'ImportDeclaration[source.value=/^(?:node:)?vm$/]',
+          message:
+            'Do not evaluate generated code through VM APIs. Write generated code to a module and import it normally.',
+        },
+        {
+          selector:
+            "CallExpression[callee.name='require'][arguments.0.value=/^(?:node:)?vm$/]",
+          message:
+            'Do not evaluate generated code through VM APIs. Write generated code to a module and import it normally.',
+        },
+        {
+          selector: 'ImportExpression[source.value=/^data:/]',
+          message:
+            'Do not import generated code from data URLs. Write generated code to a module and import it normally.',
+        },
+        {
+          selector:
+            "CallExpression[callee.object.name='vm'][callee.property.name=/^(?:compileFunction|runInContext|runInNewContext|runInThisContext)$/]",
+          message:
+            'Do not evaluate generated code through VM APIs. Write generated code to a module and import it normally.',
+        },
+        {
+          selector:
+            "NewExpression[callee.object.name='vm'][callee.property.name='Script']",
+          message:
+            'Do not evaluate generated code through VM APIs. Write generated code to a module and import it normally.',
+        },
       ],
       'no-return-assign': 'error',
       'no-script-url': 'error',
