@@ -17,8 +17,9 @@ import { GraphQLSchema } from '../../type/schema.ts';
 
 import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { execute, executeSync } from '../execute.ts';
 import type { ExecutionResult } from '../Executor.ts';
+
+import { execute, executeSync } from './executeTestUtils.ts';
 
 const syncError = new Error('sync');
 const syncNonNullError = new Error('syncNonNull');

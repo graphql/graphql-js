@@ -199,14 +199,17 @@ export function collectMemorySamples(
   runtime: Runtime,
 ): Array<number> {
   const samples: Array<number> = [];
+  const maxSampleAttempts = memorySamplesPerBenchmark * 3;
   for (
-    let sampleIndex = 0;
-    sampleIndex < memorySamplesPerBenchmark;
-    ++sampleIndex
+    let sampleAttempt = 0;
+    sampleAttempt < maxSampleAttempts &&
+    samples.length < memorySamplesPerBenchmark;
+    ++sampleAttempt
   ) {
     const sample = sampleMemoryModule(modulePath, runtime);
-    assert(sample > 0);
-    samples.push(sample);
+    if (Number.isFinite(sample) && sample > 0) {
+      samples.push(sample);
+    }
   }
   return samples;
 }

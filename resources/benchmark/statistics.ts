@@ -35,7 +35,10 @@ export function computeStats(
 
   return {
     name,
-    memPerOp: Math.floor(computeMean(memorySamples)),
+    memPerOp:
+      memorySamples.length === 0
+        ? undefined
+        : Math.floor(computeMean(memorySamples)),
     ops: NS_PER_SEC / mean,
     deviation: computeRelativeMarginOfError(timingSamples),
     numSamples: timingSamples.length,

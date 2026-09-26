@@ -41,7 +41,10 @@ ignoreRegExpList:
 words:
   - graphiql
   - Jsdocs
+  - backpressure
   - metafield
+  - microtask
+  - replayable
   - thunked
   - uncoerce
   - uncoerced

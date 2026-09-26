@@ -59,6 +59,8 @@ import type {
   DeferUsage,
   FieldDetailsList,
   GroupedFieldSet,
+  RootFieldCollection,
+  SubfieldCollection,
 } from './collectFields.ts';
 import {
   collectFields,
@@ -67,11 +69,15 @@ import {
 import { collectIteratorPromises } from './collectIteratorPromises.ts';
 import type { SharedExecutionContext } from './createSharedExecutionContext.ts';
 import { createSharedExecutionContext } from './createSharedExecutionContext.ts';
-import type { ValidatedExecutionArgs } from './ExecutionArgs.ts';
+import type {
+  FieldCollectors,
+  ValidatedExecutionArgs,
+} from './ExecutionArgs.ts';
 import type { StreamUsage } from './getStreamUsage.ts';
 import { getStreamUsage as _getStreamUsage } from './getStreamUsage.ts';
 import { runAsyncWorkFinishedHook } from './hooks.ts';
 import { returnIteratorCatchingErrors } from './returnIteratorCatchingErrors.ts';
+import type { VariableValues } from './values.ts';
 import { getArgumentValues } from './values.ts';
 
 /* eslint-disable max-params */
@@ -100,35 +106,96 @@ import { getArgumentValues } from './values.ts';
  * @internal
  */
 
-/**
- * A memoized collection of relevant subfields with regard to the return
- * type. Memoizing ensures the subfields are not repeatedly calculated, which
- * saves overhead when resolving lists of values.
- *
- * @internal
- */
-export const collectSubfields: (
+type FieldCollectorArgs = Pick<
+  ValidatedExecutionArgs,
+  'schema' | 'fragments' | 'operation' | 'hideSuggestions'
+>;
+
+/** @internal */
+export function collectRootFields(
   validatedExecutionArgs: ValidatedExecutionArgs,
-  returnType: GraphQLObjectType,
-  fieldDetailsList: FieldDetailsList,
-) => ReturnType<typeof _collectSubfields> = memoize3(
-  (
-    validatedExecutionArgs: ValidatedExecutionArgs,
+  rootType: GraphQLObjectType,
+): RootFieldCollection {
+  return validatedExecutionArgs.fieldCollectors.collectRootFields(
+    validatedExecutionArgs.variableValues,
+    rootType,
+  );
+}
+
+/** @internal */
+export function createFieldCollectors(
+  validatedExecutionArgs: FieldCollectorArgs,
+): FieldCollectors {
+  return new NonCompiledFieldCollectors(validatedExecutionArgs);
+}
+
+class NonCompiledFieldCollectors implements FieldCollectors {
+  private _validatedExecutionArgs: FieldCollectorArgs;
+  private _collectSubfieldsImpl:
+    | FieldCollectors['collectSubfields']
+    | undefined;
+
+  constructor(validatedExecutionArgs: FieldCollectorArgs) {
+    this._validatedExecutionArgs = validatedExecutionArgs;
+  }
+
+  collectRootFields(
+    variableValues: VariableValues,
+    rootType: GraphQLObjectType,
+  ): RootFieldCollection {
+    const validatedExecutionArgs = this._validatedExecutionArgs;
+    return collectFields(
+      validatedExecutionArgs.schema,
+      validatedExecutionArgs.fragments,
+      variableValues,
+      rootType,
+      validatedExecutionArgs.operation.selectionSet,
+      validatedExecutionArgs.hideSuggestions,
+    );
+  }
+
+  collectSubfields(
+    variableValues: VariableValues,
     returnType: GraphQLObjectType,
     fieldDetailsList: FieldDetailsList,
-  ) => {
-    const { schema, fragments, variableValues, hideSuggestions } =
-      validatedExecutionArgs;
-    return _collectSubfields(
-      schema,
-      fragments,
+  ): SubfieldCollection {
+    this._collectSubfieldsImpl ??= memoize3(
+      (
+        memoizedVariableValues: VariableValues,
+        memoizedReturnType: GraphQLObjectType,
+        memoizedFieldDetailsList: FieldDetailsList,
+      ): SubfieldCollection => {
+        const validatedExecutionArgs = this._validatedExecutionArgs;
+        return _collectSubfields(
+          validatedExecutionArgs.schema,
+          validatedExecutionArgs.fragments,
+          memoizedVariableValues,
+          memoizedReturnType,
+          memoizedFieldDetailsList,
+          validatedExecutionArgs.hideSuggestions,
+        );
+      },
+    );
+    return this._collectSubfieldsImpl(
       variableValues,
       returnType,
       fieldDetailsList,
-      hideSuggestions,
     );
-  },
-);
+  }
+}
+
+/** @internal */
+export function collectSubfields(
+  validatedExecutionArgs: ValidatedExecutionArgs,
+  returnType: GraphQLObjectType,
+  fieldDetailsList: FieldDetailsList,
+): SubfieldCollection {
+  return validatedExecutionArgs.fieldCollectors.collectSubfields(
+    validatedExecutionArgs.variableValues,
+    returnType,
+    fieldDetailsList,
+  );
+}
 
 /** @internal */
 export const getStreamUsage: typeof _getStreamUsage = memoize2(

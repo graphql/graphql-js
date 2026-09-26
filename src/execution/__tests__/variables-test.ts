@@ -33,25 +33,27 @@ import { GraphQLSchema } from '../../type/schema.ts';
 
 import { valueFromASTUntyped } from '../../utilities/valueFromASTUntyped.ts';
 
-import { executeSync, experimentalExecuteIncrementally } from '../execute.ts';
-import { getVariableValues } from '../values.ts';
+import {
+  executeSync,
+  experimentalExecuteIncrementally,
+  getVariableValues,
+} from './executeTestUtils.ts';
 
-const TestFaultyScalarGraphQLError = new GraphQLError(
-  'FaultyScalarErrorMessage',
-  {
+function createTestFaultyScalarGraphQLError(): GraphQLError {
+  return new GraphQLError('FaultyScalarErrorMessage', {
     extensions: {
       code: 'FaultyScalarErrorExtensionCode',
     },
-  },
-);
+  });
+}
 
 const TestFaultyScalar = new GraphQLScalarType({
   name: 'FaultyScalar',
   coerceInputValue() {
-    throw TestFaultyScalarGraphQLError;
+    throw createTestFaultyScalarGraphQLError();
   },
   coerceInputLiteral() {
-    throw TestFaultyScalarGraphQLError;
+    throw createTestFaultyScalarGraphQLError();
   },
 });
 
@@ -631,7 +633,7 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Variable "$input" has invalid value at .e: Argument "TestType.fieldWithObjectInput(input:)" has invalid value at .e: FaultyScalarErrorMessage',
+                'Variable "$input" has invalid value at .e: FaultyScalarErrorMessage',
               locations: [{ line: 2, column: 16 }],
               extensions: { code: 'FaultyScalarErrorExtensionCode' },
             },
