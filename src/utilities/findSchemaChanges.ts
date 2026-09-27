@@ -237,7 +237,7 @@ export function findDangerousChanges(
  *
  * const changes = findSchemaChanges(oldSchema, newSchema);
  *
- * changes.map((change) => change.type); // => ['OPTIONAL_ARG_ADDED', 'FIELD_ADDED']
+ * changes.map((change) => change.type); // => ['FIELD_ADDED', 'OPTIONAL_ARG_ADDED']
  * ```
  */
 export function findSchemaChanges(
