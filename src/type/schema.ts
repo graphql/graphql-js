@@ -890,7 +890,7 @@ export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
   mutation?: Maybe<GraphQLObjectType>;
   /** Root object type for subscription operations. */
   subscription?: Maybe<GraphQLObjectType>;
-  /** Object types that belong to this union type. */
+  /** Additional named types to include in the schema. */
   types?: Maybe<ReadonlyArray<GraphQLNamedType>>;
   /** Directives available in this schema or applied to this AST node. */
   directives?: Maybe<ReadonlyArray<GraphQLDirective>>;

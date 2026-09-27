@@ -88,7 +88,7 @@ function canBeSkippedViaIncludeDirective(node: DirectiveNode): boolean {
 /**
  * Defer And Stream Directives Are Used On Valid Operations
  *
- * A GraphQL document is only valid if defer and stream directives are not used on root mutation or subscription types.
+ * A GraphQL document is only valid if defer and stream directives are not used in subscription operations, unless they can be disabled via their `if` argument or the selection can be skipped via `@skip` or `@include`.
  * @param context - The validation context used while checking the document.
  * @returns A visitor that reports validation errors for this rule.
  * @example

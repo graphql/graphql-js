@@ -540,15 +540,15 @@ export interface ConstArgumentNode {
   readonly value: ConstValueNode;
 }
 
-/** Variable definition declared by a fragment argument. */
+/** An argument supplied to a fragment spread (experimental). */
 export interface FragmentArgumentNode {
   /** AST node kind for a fragment argument. */
   readonly kind: KindTypeMap['FRAGMENT_ARGUMENT'];
   /** Source location for this fragment argument. */
   readonly loc?: Location | undefined;
-  /** Variable name declared by this fragment argument. */
+  /** Name of the fragment variable this argument is supplied for. */
   readonly name: NameNode;
-  /** Default value literal for this fragment argument, if provided. */
+  /** Value supplied for this fragment argument. */
   readonly value: ValueNode;
 }
 
