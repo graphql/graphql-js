@@ -6,9 +6,9 @@ import type { GraphQLError } from '../../../error/GraphQLError.ts';
 
 import { parse } from '../../../language/parser.ts';
 
-import { buildSchema } from '../../../utilities/buildASTSchema.ts';
-
 import { validate } from '../../../validation/validate.ts';
+
+import { buildSchema } from '../../../utilities/buildASTSchema.ts';
 
 import { experimentalExecuteIncrementally } from '../../execute.ts';
 import { legacyExecuteIncrementally } from '../../legacyIncremental/legacyExecuteIncrementally.ts';
@@ -33,7 +33,7 @@ describe('Execute: collected errors before incremental failure', () => {
           if (!stream && mode === 'promised item') {
             continue;
           }
-          it(`observes the discarded nullable error (${stream ? 'stream' : 'defer'}, ${mode})`, async () => {
+          it(`preserves the collected nullable error (${stream ? 'stream' : 'defer'}, ${mode})`, async () => {
             const document = parse(
               stream
                 ? '{ users @stream(initialCount: 0) { nullable required } }'
@@ -79,6 +79,7 @@ describe('Execute: collected errors before incremental failure', () => {
             expect(nullableExecuted).to.equal(true);
             const prefix = stream ? ['users', 0] : [];
             expect(errors.map((error) => error.path)).to.deep.equal([
+              [...prefix, 'nullable'],
               [...prefix, 'required'],
             ]);
           });

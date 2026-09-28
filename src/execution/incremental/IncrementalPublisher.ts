@@ -1,12 +1,12 @@
 import type { ObjMap } from '../../jsutils/ObjMap.ts';
 import { pathToArray } from '../../jsutils/Path.ts';
 
-import { ensureGraphQLError } from '../../error/ensureGraphQLError.ts';
 import type { GraphQLError } from '../../error/GraphQLError.ts';
 
 import { mapAsyncIterable } from '../mapAsyncIterable.ts';
 import { withConcurrentAbruptClose } from '../withConcurrentAbruptClose.ts';
 
+import { getIncrementalErrors } from './IncrementalExecutionError.ts';
 import type {
   CompletedResult,
   DeliveryGroup,
@@ -210,7 +210,7 @@ export class IncrementalPublisher {
         const id = this._ensureId(group);
         context.completed.push({
           id,
-          errors: [ensureGraphQLError(error)],
+          errors: getIncrementalErrors(error),
         });
         this._ids.delete(group);
         break;
@@ -249,7 +249,7 @@ export class IncrementalPublisher {
         const stream = event.stream;
         context.completed.push({
           id: this._ensureId(stream),
-          errors: [ensureGraphQLError(event.error)],
+          errors: getIncrementalErrors(event.error),
         });
         this._ids.delete(stream);
         break;
