@@ -75,6 +75,7 @@ export function buildASTSchema(
     extensions: Object.create(null),
     extensionASTNodes: [],
     assumeValid: false,
+    experimentalAllowEmptyObjectTypes: false,
   };
   const config = extendSchemaImpl(emptySchemaConfig, documentAST, options);
 
@@ -154,10 +155,14 @@ export function buildSchema(
   const document = parse(source, {
     noLocation: options?.noLocation,
     experimentalFragmentArguments: options?.experimentalFragmentArguments,
+    experimentalAllowEmptyObjectTypes:
+      options?.experimentalAllowEmptyObjectTypes,
   });
 
   return buildASTSchema(document, {
     assumeValidSDL: options?.assumeValidSDL,
     assumeValid: options?.assumeValid,
+    experimentalAllowEmptyObjectTypes:
+      options?.experimentalAllowEmptyObjectTypes,
   });
 }

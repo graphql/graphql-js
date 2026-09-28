@@ -589,6 +589,81 @@ describe('Type System: Objects must have fields', () => {
     ]);
   });
 
+  it('accepts an Object type with no fields when experimentalAllowEmptyObjectTypes is enabled', () => {
+    const schema = buildSchema(
+      `
+      type Query {
+        test: EmptyObject
+      }
+
+      type EmptyObject
+    `,
+      { experimentalAllowEmptyObjectTypes: true },
+    );
+    expect(schema.experimentalAllowEmptyObjectTypes).to.equal(true);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+
+    const manualSchema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          test: {
+            type: new GraphQLObjectType({ name: 'EmptyObject', fields: {} }),
+          },
+        },
+      }),
+      experimentalAllowEmptyObjectTypes: true,
+    });
+    expectJSON(validateSchema(manualSchema)).toDeepEqual([]);
+
+    const extendedSchema = extendSchema(
+      schema,
+      parse('type AnotherEmptyObject'),
+    );
+    expect(extendedSchema.experimentalAllowEmptyObjectTypes).to.equal(true);
+    expectJSON(validateSchema(extendedSchema)).toDeepEqual([]);
+  });
+
+  it('accepts an Object type with empty braces when experimentalAllowEmptyObjectTypes is enabled', () => {
+    const schema = buildSchema(
+      `
+      type Query {
+        test: EmptyObject
+      }
+
+      type EmptyObject {}
+    `,
+      { experimentalAllowEmptyObjectTypes: true },
+    );
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts an empty Query root type when experimentalAllowEmptyObjectTypes is enabled', () => {
+    const schema = buildSchema('type Query', {
+      experimentalAllowEmptyObjectTypes: true,
+    });
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('rejects an Interface type with no fields even when experimentalAllowEmptyObjectTypes is enabled', () => {
+    const schema = buildSchema(
+      `
+      type Query {
+        test: EmptyInterface
+      }
+
+      interface EmptyInterface
+    `,
+      { experimentalAllowEmptyObjectTypes: true },
+    );
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message: 'Type EmptyInterface must define one or more fields.',
+        locations: [{ line: 6, column: 7 }],
+      },
+    ]);
+  });
+
   it('rejects an Object type with incorrectly named fields', () => {
     const schema = schemaWithFieldType(
       new GraphQLObjectType({
