@@ -66,6 +66,33 @@ describe('Type System: build schema from introspection', () => {
     expect(cycleIntrospection(sdl)).to.equal(sdl);
   });
 
+  it('builds a schema with an empty object type', () => {
+    const sdl = dedent`
+      type Query {
+        empty: Empty
+      }
+
+      type Empty
+    `;
+    const serverSchema = buildSchema(sdl, {
+      experimentalAllowEmptyObjectTypes: true,
+    });
+    const introspection = introspectionFromSchema(serverSchema);
+    const clientSchema = buildClientSchema(introspection, {
+      experimentalAllowEmptyObjectTypes: true,
+    });
+
+    expect(clientSchema.experimentalAllowEmptyObjectTypes).to.equal(true);
+    expect(printSchema(clientSchema)).to.equal(sdl);
+    expect(
+      graphqlSync({
+        schema: clientSchema,
+        source: '{ empty { __typename } }',
+        rootValue: { empty: {} },
+      }),
+    ).to.deep.equal({ data: { empty: { __typename: 'Empty' } } });
+  });
+
   it('builds a schema without the query type', () => {
     const sdl = dedent`
       type Query {
