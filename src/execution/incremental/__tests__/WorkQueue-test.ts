@@ -1,4 +1,5 @@
 import { describe, it } from 'node:test';
+import { setImmediate } from 'node:timers/promises';
 
 import { expect } from 'chai';
 
@@ -119,6 +120,210 @@ function streamFrom(
 }
 
 describe('WorkQueue', () => {
+  it('ignores a successful result after its only owner fails', async () => {
+    const root: TestGroup = {};
+    const keeper: TestGroup = {};
+    const failed = promiseWithResolvers<TestTaskValue>();
+    const late = promiseWithResolvers<TestTaskValue>();
+    const kept = promiseWithResolvers<TestTaskValue>();
+    const consumed = collectWorkRun({
+      groups: [root, keeper],
+      tasks: [
+        makeTask([root], async () => ({ value: await failed.promise })),
+        makeTask([root], async () => ({ value: await late.promise })),
+        makeTask([keeper], async () => ({ value: await kept.promise })),
+      ],
+    });
+    await setImmediate();
+    failed.reject(new Error('failure'));
+    await setImmediate();
+    late.resolve('cancelled');
+    await setImmediate();
+    kept.resolve('keeper');
+    const { events } = await consumed;
+    expect(
+      events.filter((event) => event.kind === 'GROUP_VALUES'),
+    ).to.deep.equal([
+      { kind: 'GROUP_VALUES', group: keeper, values: ['keeper'] },
+    ]);
+  });
+
+  for (const succeeds of [false, true]) {
+    it(`ignores a late descendant outcome of a retained failure (success=${succeeds})`, async () => {
+      const root: TestGroup = {};
+      const other: TestGroup = {};
+      const parent: TestGroup = {};
+      const child: TestGroup = { parent };
+      const descendant: TestGroup = { parent: child };
+      const failed = promiseWithResolvers<TestTaskValue>();
+      const otherFailed = promiseWithResolvers<TestTaskValue>();
+      const late = promiseWithResolvers<TestTaskValue>();
+      const released = promiseWithResolvers<TestTaskValue>();
+      const error = new Error('retained failure');
+      const consumed = collectWorkRun({
+        groups: [root, other, parent, child, descendant],
+        tasks: [
+          makeTask([root, child], async () => ({
+            value: await failed.promise,
+          })),
+          makeTask([other], async () => ({ value: await otherFailed.promise })),
+          makeTask([other, descendant], async () => ({
+            value: await late.promise,
+          })),
+          makeTask([parent], async () => ({ value: await released.promise })),
+        ],
+      });
+      await setImmediate();
+      otherFailed.reject(new Error('other failure'));
+      await setImmediate();
+      failed.reject(error);
+      await setImmediate();
+      if (succeeds) {
+        late.resolve('cancelled');
+      } else {
+        late.reject(new Error('cancelled'));
+      }
+      await setImmediate();
+      released.resolve('parent');
+      const { events } = await consumed;
+      expect(
+        events
+          .filter((event) => event.kind === 'GROUP_FAILURE')
+          .map((event) => event.errors),
+      ).to.deep.equal([[new Error('other failure')], [error], [error]]);
+      expect(
+        events.filter((event) => event.kind === 'GROUP_VALUES'),
+      ).to.deep.equal([
+        { kind: 'GROUP_VALUES', group: parent, values: ['parent'] },
+      ]);
+    });
+  }
+
+  it('retains failures accepted through independent healthy owners', async () => {
+    const first: TestGroup = {};
+    const second: TestGroup = {};
+    const parent: TestGroup = {};
+    const child: TestGroup = { parent };
+    const failures = [new Error('first'), new Error('second')];
+    const one = promiseWithResolvers<TestTaskValue>();
+    const two = promiseWithResolvers<TestTaskValue>();
+    const released = promiseWithResolvers<TestTaskValue>();
+    const consumed = collectWorkRun({
+      groups: [first, second, parent, child],
+      tasks: [
+        makeTask([first, child], async () => ({ value: await one.promise })),
+        makeTask([second, child], async () => ({ value: await two.promise })),
+        makeTask([parent], async () => ({ value: await released.promise })),
+      ],
+    });
+    await setImmediate();
+    one.reject(failures[0]);
+    await setImmediate();
+    two.reject(failures[1]);
+    await setImmediate();
+    released.resolve('parent');
+    const { events } = await consumed;
+    expect(
+      events
+        .filter((event) => event.kind === 'GROUP_FAILURE')
+        .map((event) => event.errors),
+    ).to.deep.equal([[failures[0]], [failures[1]], failures]);
+  });
+
+  it('drains released co-owners without publishing their shared value twice', async () => {
+    const root: TestGroup = {};
+    const parent: TestGroup = {};
+    const first: TestGroup = { parent };
+    const second: TestGroup = { parent };
+    const failed = promiseWithResolvers<TestTaskValue>();
+    const buffered = promiseWithResolvers<TestTaskValue>();
+    const released = promiseWithResolvers<TestTaskValue>();
+    const consumed = collectWorkRun({
+      groups: [root, parent, first, second],
+      tasks: [
+        makeTask([root], async () => ({ value: await failed.promise })),
+        makeTask([root, first, second], async () => ({
+          value: await buffered.promise,
+        })),
+        makeTask([parent], async () => ({ value: await released.promise })),
+      ],
+    });
+    await setImmediate();
+    failed.reject(new Error('failure'));
+    await setImmediate();
+    buffered.resolve('shared');
+    await setImmediate();
+    released.resolve('parent');
+    const { events } = await consumed;
+    expect(
+      events.filter((event) => event.kind === 'GROUP_VALUES'),
+    ).to.deep.equal([
+      { kind: 'GROUP_VALUES', group: parent, values: ['parent'] },
+      { kind: 'GROUP_VALUES', group: first, values: ['shared'] },
+    ]);
+    expect(
+      events
+        .filter((event) => event.kind === 'GROUP_SUCCESS')
+        .map((event) => event.group),
+    ).to.deep.equal([parent, first, second]);
+  });
+
+  it('releases a buffered shared producer and its child stream', async () => {
+    const root: TestGroup = {};
+    const parent: TestGroup = {};
+    const child: TestGroup = { parent };
+    const stream = streamFrom([{ value: 1 }]);
+    const failed = promiseWithResolvers<TestTaskValue>();
+    const produced = promiseWithResolvers<TestTaskValue>();
+    const released = promiseWithResolvers<TestTaskValue>();
+    const work = {
+      groups: [root, parent, child],
+      tasks: [
+        makeTask([root], async () => ({ value: await failed.promise })),
+        makeTask([root, child], async () => ({
+          value: await produced.promise,
+          work: { streams: [stream] },
+        })),
+        makeTask([parent], async () => ({ value: await released.promise })),
+      ],
+    };
+    const consumed = collectWorkRun(work);
+    await setImmediate();
+    const error = new Error('root failure');
+    failed.reject(error);
+    await setImmediate();
+    produced.resolve('producer');
+    await setImmediate();
+    released.resolve('parent');
+    const result = await consumed;
+    expect(result.events).to.deep.equal([
+      { kind: 'GROUP_FAILURE', group: root, errors: [error] },
+      { kind: 'GROUP_VALUES', group: parent, values: ['parent'] },
+      {
+        kind: 'GROUP_SUCCESS',
+        group: parent,
+        newGroups: [child],
+        newStreams: [],
+      },
+      { kind: 'GROUP_VALUES', group: child, values: ['producer'] },
+      {
+        kind: 'GROUP_SUCCESS',
+        group: child,
+        newGroups: [],
+        newStreams: [stream],
+      },
+      {
+        kind: 'STREAM_VALUES',
+        stream,
+        values: [1],
+        newGroups: [],
+        newStreams: [],
+      },
+      { kind: 'STREAM_SUCCESS', stream },
+      { kind: 'WORK_QUEUE_TERMINATION' },
+    ]);
+  });
+
   it('runs parent and child groups sequentially', async () => {
     const root: TestGroup = { parent: undefined };
     const child: TestGroup = { parent: root };
@@ -252,7 +457,7 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group: child,
-          error: boom,
+          errors: [boom],
         },
         { kind: 'WORK_QUEUE_TERMINATION' },
       ],
@@ -260,6 +465,42 @@ describe('WorkQueue', () => {
 
     expect(grandchildRanSpy.callCount).to.equal(0);
     expect(childRanSpy.callCount).to.equal(1);
+  });
+
+  it('releases a retained failure after announcing its group', async () => {
+    const failingRoot: TestGroup = { parent: undefined };
+    const otherRoot: TestGroup = { parent: undefined };
+    const child: TestGroup = { parent: otherRoot };
+    const error = new Error('shared failure');
+    const sharedTask = makeTask([failingRoot, child], () => {
+      throw error;
+    });
+    const otherTask = makeTask([otherRoot], async () => {
+      await resolveOnNextTick();
+      return { value: 'other' };
+    });
+
+    const workQueue = await collectWorkRun({
+      groups: [failingRoot, otherRoot, child],
+      tasks: [sharedTask, otherTask],
+    });
+
+    expect(workQueue).to.deep.equal({
+      initialGroups: [failingRoot, otherRoot],
+      initialStreams: [],
+      events: [
+        { kind: 'GROUP_FAILURE', group: failingRoot, errors: [error] },
+        { kind: 'GROUP_VALUES', group: otherRoot, values: ['other'] },
+        {
+          kind: 'GROUP_SUCCESS',
+          group: otherRoot,
+          newGroups: [child],
+          newStreams: [],
+        },
+        { kind: 'GROUP_FAILURE', group: child, errors: [error] },
+        { kind: 'WORK_QUEUE_TERMINATION' },
+      ],
+    });
   });
 
   it('integrates work object returned by task', async () => {
@@ -378,7 +619,7 @@ describe('WorkQueue', () => {
     });
   });
 
-  it('skips child groups with only completed tasks when parent finishes later', async () => {
+  it('publishes buffered shared tasks when their second owner is released', async () => {
     const parent1: TestGroup = { parent: undefined };
     const parent2: TestGroup = { parent: undefined };
     const child1: TestGroup = { parent: parent1 };
@@ -430,13 +671,13 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_SUCCESS',
           group: parent2,
-          newGroups: [],
+          newGroups: [child2],
           newStreams: [],
         },
         {
           kind: 'GROUP_VALUES',
           group: child2,
-          values: ['child-shared', 'child1-slow'],
+          values: ['child-shared'],
         },
         {
           kind: 'GROUP_SUCCESS',
@@ -444,6 +685,8 @@ describe('WorkQueue', () => {
           newGroups: [],
           newStreams: [],
         },
+        { kind: 'GROUP_VALUES', group: child1, values: ['child1-slow'] },
+        { kind: 'GROUP_SUCCESS', group: child1, newGroups: [], newStreams: [] },
         { kind: 'WORK_QUEUE_TERMINATION' },
       ],
     });
@@ -486,7 +729,7 @@ describe('WorkQueue', () => {
     });
   });
 
-  it('skips child groups with shared tasks completed by a parent', async () => {
+  it('publishes a ready child before its shared co-owner completes', async () => {
     const parent: TestGroup = { parent: undefined };
     const child: TestGroup = { parent };
     const otherRoot: TestGroup = { parent: undefined };
@@ -523,13 +766,15 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_SUCCESS',
           group: parent,
-          newGroups: [],
+          newGroups: [child],
           newStreams: [],
         },
+        { kind: 'GROUP_VALUES', group: child, values: ['shared'] },
+        { kind: 'GROUP_SUCCESS', group: child, newGroups: [], newStreams: [] },
         {
           kind: 'GROUP_VALUES',
           group: otherRoot,
-          values: ['shared', 'other-root'],
+          values: ['other-root'],
         },
         {
           kind: 'GROUP_SUCCESS',
@@ -602,7 +847,7 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group,
-          error: new Error('fail early'),
+          errors: [new Error('fail early')],
         },
         { kind: 'WORK_QUEUE_TERMINATION' },
       ],
@@ -785,7 +1030,7 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group,
-          error: boom,
+          errors: [boom],
         },
         { kind: 'WORK_QUEUE_TERMINATION' },
       ],
@@ -821,7 +1066,7 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group: groupA,
-          error: boom,
+          errors: [boom],
         },
         {
           kind: 'GROUP_VALUES',
@@ -1127,7 +1372,7 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group,
-          error: primedFailure,
+          errors: [primedFailure],
         },
         { kind: 'WORK_QUEUE_TERMINATION' },
       ],
