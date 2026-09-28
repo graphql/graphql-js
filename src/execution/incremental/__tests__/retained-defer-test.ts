@@ -7,9 +7,9 @@ import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.ts';
 
 import { parse } from '../../../language/parser.ts';
 
-import { buildSchema } from '../../../utilities/buildASTSchema.ts';
-
 import { validate } from '../../../validation/validate.ts';
+
+import { buildSchema } from '../../../utilities/buildASTSchema.ts';
 
 import { experimentalExecuteIncrementally } from '../../execute.ts';
 
@@ -26,7 +26,7 @@ const schema = buildSchema(`
 
 async function run(
   query: string,
-  stages: ReadonlyArray<Record<string, unknown>>,
+  stages: ReadonlyArray<{ [key: string]: unknown }>,
   enableEarlyExecution = false,
 ) {
   const document = parse(query);
@@ -67,6 +67,24 @@ async function run(
     await setImmediate();
   }
   await consumed;
+  const announced = new Set(
+    result.initialResult.pending.map((entry) => entry.id),
+  );
+  const open = new Set(announced);
+  for (const update of updates) {
+    for (const entry of update.pending ?? []) {
+      expect(announced.has(entry.id)).to.equal(false);
+      announced.add(entry.id);
+      open.add(entry.id);
+    }
+    for (const patch of update.incremental ?? []) {
+      expect(open.has(patch.id)).to.equal(true);
+    }
+    for (const entry of update.completed ?? []) {
+      expect(open.delete(entry.id)).to.equal(true);
+    }
+  }
+  expect(open.size).to.equal(0);
   const pending = [
     ...result.initialResult.pending,
     ...updates.flatMap((update) => update.pending ?? []),
@@ -97,14 +115,14 @@ describe('Execute: outcomes settled before defer release', () => {
   }`;
 
   for (const early of [false, true]) {
-    it(`observes a buffered shared value being pruned (early=${early})`, async () => {
+    it(`delivers a buffered shared value after release (early=${early})`, async () => {
       const result = await run(
         query,
         [{ bad: null }, { x: 'X' }, { slow: 'ok' }],
         early,
       );
-      expect(result.labels).to.deep.equal(['R', 'P']);
-      expect(result.data).to.deep.equal([{ slow: 'ok' }]);
+      expect(result.labels).to.deep.equal(['R', 'P', 'C']);
+      expect(result.data).to.deep.equal([{ slow: 'ok' }, { x: 'X' }]);
       expect(result.hasNext).to.equal(false);
     });
 
@@ -120,23 +138,7 @@ describe('Execute: outcomes settled before defer release', () => {
     });
   }
 
-  it('observes a child stream being pruned with its buffered producer', async () => {
-    const result = await run(
-      `{
-      ... @defer(label: "R") { bad ...Streamed }
-      ... @defer(label: "P") { slow ... @defer(label: "C") { ...Streamed } }
-    }
-    fragment Streamed on Query { xs @stream(initialCount: 0, label: "items") }
-    `,
-      [{ bad: null }, { xs: ['a', 'b'] }, { slow: 'ok' }],
-    );
-    expect(result.labels).to.deep.equal(['R', 'P']);
-    expect(result.data).to.deep.equal([{ slow: 'ok' }]);
-    expect(result.items).to.deep.equal([]);
-    expect(result.hasNext).to.equal(false);
-  });
-
-  it('observes suppression discarding a surviving child failure', async () => {
+  it('retains a failure after the shared task loses its announced owner', async () => {
     const result = await run(
       `{
       ... @defer(label: "R") { first: bad bad }
@@ -144,16 +146,17 @@ describe('Execute: outcomes settled before defer release', () => {
     }`,
       [{ first: null }, { bad: null }, { slow: 'ok' }],
     );
-    expect(result.labels).to.deep.equal(['R', 'P']);
+    expect(result.labels).to.deep.equal(['R', 'P', 'C']);
     expect(result.completed).to.deep.equal([
       { label: 'R', errors: [['first']] },
       { label: 'P', errors: undefined },
+      { label: 'C', errors: [['bad']] },
     ]);
     expect(result.hasNext).to.equal(false);
   });
 
   for (const wrapper of [false, true]) {
-    it(`observes failure handling after a parent disappears (wrapper=${wrapper})`, async () => {
+    it(`cancels children registered after their parent fails (wrapper=${wrapper})`, async () => {
       const child = '... @defer(label: "C") { x: bad }';
       const result = await run(
         `{
@@ -176,12 +179,13 @@ describe('Execute: outcomes settled before defer release', () => {
           { keepQ: 'ok' },
         ],
       );
-      expect(result.labels).to.deep.equal(['P', 'Q', 'R', 'S']);
+      expect(result.labels).to.deep.equal(['P', 'Q', 'R', 'S', 'D']);
       expect(result.completed).to.deep.equal([
         { label: 'P', errors: [['pBad']] },
         { label: 'S', errors: [['user', 'y']] },
         { label: 'R', errors: [['rBad']] },
         { label: 'Q', errors: undefined },
+        { label: 'D', errors: [['user', 'y']] },
       ]);
       expect(result.hasNext).to.equal(false);
     });

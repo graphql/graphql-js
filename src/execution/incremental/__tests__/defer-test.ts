@@ -1891,7 +1891,7 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it('Does not complete an unannounced nested group when a shared task fails', async () => {
+  it('Announces a nested group before completing its retained failure', async () => {
     const document = parse(`
       {
         ... @defer(label: "R") { bad }
@@ -1913,6 +1913,7 @@ describe('Execute: defer directive', () => {
         hasNext: true,
       },
       {
+        pending: [{ id: '2', path: [], label: 'C' }],
         incremental: [{ id: '1', data: { slow: 'ok' } }],
         completed: [
           {
@@ -1929,6 +1930,19 @@ describe('Execute: defer directive', () => {
             ],
           },
           { id: '1' },
+          {
+            id: '2',
+            errors: [
+              {
+                message: 'Cannot return null for non-nullable field Query.bad.',
+                locations: [
+                  { line: 3, column: 34 },
+                  { line: 6, column: 36 },
+                ],
+                path: ['bad'],
+              },
+            ],
+          },
         ],
         hasNext: false,
       },
