@@ -148,6 +148,35 @@ describe('Schema Parser', () => {
     expectJSON(doc).toDeepNestedProperty('definitions[1].fields', []);
   });
 
+  it('rejects empty interface fields definition by default', () => {
+    expectSyntaxError('interface Hello {}').to.deep.equal({
+      message: 'Syntax Error: Expected Name, found "}".',
+      locations: [{ line: 1, column: 18 }],
+    });
+  });
+
+  it('parses empty fields definition with experimentalAllowEmptyInterfaceTypes', () => {
+    const doc = parse('interface Hello {}', {
+      experimentalAllowEmptyInterfaceTypes: true,
+    });
+
+    expectJSON(doc).toDeepEqual({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'InterfaceTypeDefinition',
+          name: nameNode('Hello', { start: 10, end: 15 }),
+          description: undefined,
+          interfaces: undefined,
+          directives: undefined,
+          fields: [],
+          loc: { start: 0, end: 18 },
+        },
+      ],
+      loc: { start: 0, end: 18 },
+    });
+  });
+
   it('parses type with description string', () => {
     const doc = parse(dedent`
       "Description"

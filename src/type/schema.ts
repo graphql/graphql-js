@@ -231,6 +231,8 @@ export class GraphQLSchema {
   assumeValid: boolean;
   /** Whether object types are allowed to define no fields. */
   experimentalAllowEmptyObjectTypes: boolean;
+  /** Whether interface types are allowed to define no fields. */
+  experimentalAllowEmptyInterfaceTypes: boolean;
   /**
    * Cached schema validation errors, if validation has already run.
    * @private
@@ -349,6 +351,8 @@ export class GraphQLSchema {
     this.__validationErrors = config.assumeValid === true ? [] : undefined;
     this.experimentalAllowEmptyObjectTypes =
       config.experimentalAllowEmptyObjectTypes ?? false;
+    this.experimentalAllowEmptyInterfaceTypes =
+      config.experimentalAllowEmptyInterfaceTypes ?? false;
 
     this.description = config.description;
     this.extensions = toObjMapWithSymbols(config.extensions);
@@ -891,6 +895,8 @@ export class GraphQLSchema {
       extensionASTNodes: this.extensionASTNodes,
       assumeValid: this.assumeValid,
       experimentalAllowEmptyObjectTypes: this.experimentalAllowEmptyObjectTypes,
+      experimentalAllowEmptyInterfaceTypes:
+        this.experimentalAllowEmptyInterfaceTypes,
     };
   }
 }
@@ -916,11 +922,22 @@ export interface GraphQLSchemaValidationOptions {
    * If enabled, object types are allowed to define no fields, as proposed in
    * https://github.com/graphql/graphql-spec/pull/1228
    *
-   * Interface types and input object types must still define one or more fields.
+   * Interface types (unless `experimentalAllowEmptyInterfaceTypes` is enabled)
+   * and input object types must still define one or more fields.
    *
    * Default: false
    */
   experimentalAllowEmptyObjectTypes?: boolean | undefined;
+
+  /**
+   * EXPERIMENTAL:
+   *
+   * If enabled, interface types are allowed to define no fields, as proposed in
+   * https://github.com/graphql/graphql-spec/pull/1229
+   *
+   * Default: false
+   */
+  experimentalAllowEmptyInterfaceTypes?: boolean | undefined;
 }
 
 /** Configuration used to construct a GraphQLSchema. */
@@ -954,6 +971,7 @@ export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
   assumeValid: boolean;
   experimentalAllowEmptyObjectTypes: boolean;
+  experimentalAllowEmptyInterfaceTypes: boolean;
 }
 
 function collectReferencedTypes(

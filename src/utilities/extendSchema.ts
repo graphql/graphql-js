@@ -304,6 +304,9 @@ export function extendSchemaImpl(
           experimentalAllowEmptyObjectTypes:
             options?.experimentalAllowEmptyObjectTypes ??
             config.experimentalAllowEmptyObjectTypes,
+          experimentalAllowEmptyInterfaceTypes:
+            options?.experimentalAllowEmptyInterfaceTypes ??
+            config.experimentalAllowEmptyInterfaceTypes,
         };
       },
       [SchemaElementKind.INPUT_OBJECT]: (config) => {

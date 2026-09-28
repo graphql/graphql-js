@@ -93,6 +93,39 @@ describe('Type System: build schema from introspection', () => {
     ).to.deep.equal({ data: { empty: { __typename: 'Empty' } } });
   });
 
+  it('builds a schema with an empty interface type', () => {
+    const sdl = dedent`
+      type Query {
+        empty: Empty
+      }
+
+      interface Empty
+
+      type Impl implements Empty {
+        field: String
+      }
+    `;
+    const serverSchema = buildSchema(sdl, {
+      experimentalAllowEmptyInterfaceTypes: true,
+    });
+    const introspection = introspectionFromSchema(serverSchema);
+    const clientSchema = buildClientSchema(introspection, {
+      experimentalAllowEmptyInterfaceTypes: true,
+    });
+
+    expect(clientSchema.experimentalAllowEmptyInterfaceTypes).to.equal(true);
+    expect(printSchema(clientSchema)).to.equal(sdl);
+    expect(
+      graphqlSync({
+        schema: clientSchema,
+        source: '{ empty { __typename ... on Impl { field } } }',
+        rootValue: { empty: { __typename: 'Impl', field: 'value' } },
+      }),
+    ).to.deep.equal({
+      data: { empty: { __typename: 'Impl', field: 'value' } },
+    });
+  });
+
   it('builds a schema without the query type', () => {
     const sdl = dedent`
       type Query {
