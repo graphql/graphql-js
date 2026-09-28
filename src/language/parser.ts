@@ -138,6 +138,20 @@ export interface ParseOptions {
    * This is equivalent to omitting the braces entirely (`type Empty`).
    */
   experimentalAllowEmptyObjectTypes?: boolean | undefined;
+
+  /**
+   * EXPERIMENTAL:
+   *
+   * If enabled, the parser accepts an empty set of braces as a fields
+   * definition, as proposed in https://github.com/graphql/graphql-spec/pull/1229
+   *
+   * ```graphql
+   * interface Empty {}
+   * ```
+   *
+   * This is equivalent to omitting the braces entirely (`interface Empty`).
+   */
+  experimentalAllowEmptyInterfaceTypes?: boolean | undefined;
 }
 
 /**
@@ -1158,7 +1172,8 @@ export class Parser {
    * FieldsDefinition : { FieldDefinition+ }
    * ```
    *
-   * With `experimentalAllowEmptyObjectTypes`:
+   * With `experimentalAllowEmptyObjectTypes` or
+   * `experimentalAllowEmptyInterfaceTypes`:
    *
    * ```
    * FieldsDefinition : { FieldDefinition* }
@@ -1168,7 +1183,8 @@ export class Parser {
    */
   parseFieldsDefinition(): Array<FieldDefinitionNode> | undefined {
     if (
-      this._options.experimentalAllowEmptyObjectTypes === true &&
+      (this._options.experimentalAllowEmptyObjectTypes === true ||
+        this._options.experimentalAllowEmptyInterfaceTypes === true) &&
       this.peek(TokenKind.BRACE_L)
     ) {
       return this.any(

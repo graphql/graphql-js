@@ -479,11 +479,11 @@ function validateFields(
   const fields = Object.values(type.getFields());
 
   // Objects and Interfaces both must define one or more fields, unless empty
-  // object types are explicitly allowed.
-  if (
-    fields.length === 0 &&
-    !(isObjectType(type) && context.schema.experimentalAllowEmptyObjectTypes)
-  ) {
+  // object or interface types are explicitly allowed.
+  const allowEmpty = isObjectType(type)
+    ? context.schema.experimentalAllowEmptyObjectTypes
+    : context.schema.experimentalAllowEmptyInterfaceTypes;
+  if (fields.length === 0 && !allowEmpty) {
     context.reportError(`Type ${type} must define one or more fields.`, [
       type.astNode,
       ...type.extensionASTNodes,
