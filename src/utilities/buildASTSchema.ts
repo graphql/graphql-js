@@ -76,6 +76,7 @@ export function buildASTSchema(
     extensionASTNodes: [],
     assumeValid: false,
     experimentalAllowEmptyObjectTypes: false,
+    experimentalAllowEmptyInterfaceTypes: false,
   };
   const config = extendSchemaImpl(emptySchemaConfig, documentAST, options);
 
@@ -159,5 +160,7 @@ export function buildSchema(
     assumeValid: options?.assumeValid,
     experimentalAllowEmptyObjectTypes:
       options?.experimentalAllowEmptyObjectTypes,
+    experimentalAllowEmptyInterfaceTypes:
+      options?.experimentalAllowEmptyInterfaceTypes,
   });
 }
