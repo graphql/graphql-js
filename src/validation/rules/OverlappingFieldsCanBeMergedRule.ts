@@ -187,6 +187,11 @@ interface ArgumentComparison {
 }
 type FieldDetailsList = Array<FieldDetails>;
 type GroupedFieldSet = Map<string, FieldDetailsList>;
+interface OverlappingFields {
+  responseName: string;
+  fieldDetailsList1: FieldDetailsList;
+  fieldDetailsList2: FieldDetailsList;
+}
 // Equivalent spreads share a scope. The signature identifies declarations;
 // object identity distinguishes scopes with different fragment arguments.
 interface VariableScope {
@@ -203,6 +208,7 @@ interface CollectFieldsResult {
   groupedFieldSet: GroupedFieldSet;
   spreads: ReadonlyArray<FragmentSpreadNode>;
   byScope?: Map<VariableScope | undefined, FragmentSpreads>;
+  overlappingFields?: Map<CollectFieldsResult, Array<OverlappingFields>>;
 }
 type ArgumentNodes =
   | ReadonlyArray<ArgumentNode>
@@ -749,6 +755,44 @@ function collectConflictsBetween(
   // response name. For any response name which appears in both provided field
   // maps, each field from the first field map must be compared to every field
   // in the second field map to find potential conflicts.
+  for (const {
+    responseName,
+    fieldDetailsList1,
+    fieldDetailsList2,
+  } of getOverlappingFields(collectFieldsResult1, collectFieldsResult2)) {
+    for (const fieldDetails1 of fieldDetailsList1) {
+      for (const fieldDetails2 of fieldDetailsList2) {
+        const conflict = findConflict(
+          validationContext,
+          ruleContext,
+          parentFieldsAreMutuallyExclusive,
+          responseName,
+          fieldDetails1,
+          scope1,
+          fieldDetails2,
+          scope2,
+        );
+        if (conflict) {
+          conflicts.push(conflict);
+        }
+      }
+    }
+  }
+}
+
+function getOverlappingFields(
+  collectFieldsResult1: CollectFieldsResult,
+  collectFieldsResult2: CollectFieldsResult,
+): Array<OverlappingFields> {
+  // Matching response names is independent of variable scopes. Reuse that
+  // matching across scopes, while still comparing fields in their own scope.
+  const byCollectFieldsResult = (collectFieldsResult1.overlappingFields ??=
+    new Map());
+  const cached = byCollectFieldsResult.get(collectFieldsResult2);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const overlappingFields: Array<OverlappingFields> = [];
   for (const [
     responseName,
     fieldDetailsList1,
@@ -756,25 +800,15 @@ function collectConflictsBetween(
     const fieldDetailsList2 =
       collectFieldsResult2.groupedFieldSet.get(responseName);
     if (fieldDetailsList2 != null) {
-      for (const fieldDetails1 of fieldDetailsList1) {
-        for (const fieldDetails2 of fieldDetailsList2) {
-          const conflict = findConflict(
-            validationContext,
-            ruleContext,
-            parentFieldsAreMutuallyExclusive,
-            responseName,
-            fieldDetails1,
-            scope1,
-            fieldDetails2,
-            scope2,
-          );
-          if (conflict) {
-            conflicts.push(conflict);
-          }
-        }
-      }
+      overlappingFields.push({
+        responseName,
+        fieldDetailsList1,
+        fieldDetailsList2,
+      });
     }
   }
+  byCollectFieldsResult.set(collectFieldsResult2, overlappingFields);
+  return overlappingFields;
 }
 
 // Determines if there is a conflict between two particular fields, including
