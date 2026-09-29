@@ -40,6 +40,105 @@ function expectValidWithSchema(schema: GraphQLSchema, queryStr: string) {
 }
 
 describe('Validate: Overlapping fields can be merged', () => {
+  it('omits large fragment arguments only in descriptions', () => {
+    const schema = buildSchema(
+      'scalar Input type Query { field(value: Input): String }',
+    );
+    const document = parse(
+      `
+          { ...Local(x: "${'small words '.repeat(24)}") ...Local(x: 2) }
+        fragment Local($x: Input) on Query { field(value: $x) }
+      `,
+      { experimentalFragmentArguments: true },
+    );
+    const errors = validate(schema, document, [
+      OverlappingFieldsCanBeMergedRule,
+    ]);
+    expect(errors.map((error) => error.message)).to.deep.equal([
+      'Spreads "Local" conflict because Local(...) and Local(x: 2) have different fragment arguments.',
+    ]);
+    expect(print(document)).to.include('small words '.repeat(24));
+  });
+
+  it('prints structured fragment arguments in conflict descriptions', () => {
+    const schema = buildSchema(
+      'scalar Input type Query { field(value: Input): String }',
+    );
+    const document = parse(
+      `
+        query ($outside: Int) {
+          ...Local(x: { list: [null, true, false, 1, 1.5, "text", $outside] })
+          ...Local(x: 0)
+        }
+        fragment Local($x: Input) on Query { field(value: $x) }
+      `,
+      { experimentalFragmentArguments: true },
+    );
+    expect(
+      validate(schema, document, [OverlappingFieldsCanBeMergedRule]).map(
+        (error) => error.message,
+      ),
+    ).to.deep.equal([
+      'Spreads "Local" conflict because Local(x: { list: [null, true, false, 1, 1.5, "text", $outside] }) and Local(x: 0) have different fragment arguments.',
+    ]);
+  });
+
+  it('retains small nested descriptions and conflict locations', () => {
+    const schema = buildSchema(
+      'type Query { child: Query, left: Int, right: Int }',
+    );
+    const first = 'child { '.repeat(7) + 'same: left' + ' }'.repeat(7);
+    const second = 'child { '.repeat(7) + 'same: right' + ' }'.repeat(7);
+    const document = parse(`{ ${first} ${second} }`);
+    const errors = validate(schema, document, [
+      OverlappingFieldsCanBeMergedRule,
+    ]);
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0].message).to.include(
+      '"left" and "right" are different fields',
+    );
+    expect(errors[0].locations).to.have.lengthOf(16);
+    expect(
+      errors[0].nodes?.filter(
+        (node) => node.kind === Kind.FIELD && node.alias?.value === 'same',
+      ),
+    ).to.have.lengthOf(2);
+  });
+
+  it('abbreviates long names in conflict messages', () => {
+    const schema = buildSchema('type Query { field(value: Int): String }');
+    const name = 'name'.repeat(260);
+    const document = parse(`{ ${name}: ${name} ${name}: field }`);
+    const errors = validate(schema, document, [
+      OverlappingFieldsCanBeMergedRule,
+    ]);
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0].message).to.include(name.slice(0, 1000) + '...');
+    expect(errors[0].message).not.to.include(name);
+    expect(errors[0].locations).to.have.lengthOf(2);
+  });
+
+  it('abbreviates long lists of nested reasons', () => {
+    const schema = buildSchema(
+      'type Query { child: Query, left: Int, right: Int }',
+    );
+    const names = Array.from(
+      { length: 5 },
+      (_, i) => `field${i}_${'detail'.repeat(40)}`,
+    );
+    const first = names.map((name) => `${name}: left`).join(' ');
+    const second = names.map((name) => `${name}: right`).join(' ');
+    const errors = validate(
+      schema,
+      parse(`{ child { ${first} } child { ${second} } }`),
+      [OverlappingFieldsCanBeMergedRule],
+    );
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0].message).to.include('...');
+    expect(errors[0].message.length).to.be.lessThan(1200);
+    expect(errors[0].locations).to.have.lengthOf(12);
+  });
+
   it('reports fragment argument conflicts when one spread omits arguments', () => {
     const schema = buildSchema('type Query { field(value: Int): String }');
     const document = parse(
