@@ -1,10 +1,16 @@
 import { describe, it } from 'node:test';
 
+import { expect } from 'chai';
+
+import { Kind } from '../../language/kinds.ts';
+import { parse } from '../../language/parser.ts';
+
 import type { GraphQLSchema } from '../../type/schema.ts';
 
 import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
 import { OverlappingFieldsCanBeMergedRule } from '../rules/OverlappingFieldsCanBeMergedRule.ts';
+import { validate } from '../validate.ts';
 
 import {
   expectValidationErrors,
@@ -441,6 +447,36 @@ describe('Validate: Overlapping fields can be merged', () => {
         }
       `,
     );
+  });
+
+  it('keeps field definitions separate when a selection set is shared between types', () => {
+    const schema = buildSchema(`
+      type Query { node: Union }
+      union Union = First | Second
+      type First { value: Int }
+      type Second { value: String }
+    `);
+    const document = parse(`
+      { node { ...First ...Second } }
+      fragment First on First { value }
+      fragment Second on Second { value }
+    `);
+    const [first, second] = document.definitions.filter(
+      (definition) => definition.kind === Kind.FRAGMENT_DEFINITION,
+    );
+    const sharedDocument = {
+      ...document,
+      definitions: document.definitions.map((definition) =>
+        definition === second
+          ? { ...second, selectionSet: first.selectionSet }
+          : definition,
+      ),
+    };
+    expect(
+      validate(schema, sharedDocument).map((error) => error.message),
+    ).to.deep.equal([
+      'Fields "value" conflict because they return conflicting types "Int" and "String". Use different aliases on the fields to fetch both if this was intentional.',
+    ]);
   });
 
   it('encounters conflict in fragments', () => {
