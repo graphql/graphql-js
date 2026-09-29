@@ -36,6 +36,7 @@ import {
 import { typeFromAST } from '../../utilities/typeFromAST.ts';
 import type { FragmentSignature } from '../../utilities/TypeInfo.ts';
 
+import { validationAbortedError } from '../validationAbortedError.ts';
 import type { ValidationContext } from '../ValidationContext.ts';
 
 /* eslint-disable max-params */
@@ -46,6 +47,10 @@ import type { ValidationContext } from '../ValidationContext.ts';
 const MAX_CONFLICT_DETAIL_LENGTH = 1000;
 const MAX_CONFLICT_NODES = 20;
 const MAX_FRAGMENT_ARGUMENT_SIZE = 256;
+
+// Meter work that can grow through repeated comparisons and fragment scopes.
+// Collecting a selection set's fields is shared across scopes and is not charged.
+const MAX_COMPLEXITY_BUDGET = 500_000;
 
 /**
  * Overlapping fields can be merged
@@ -108,6 +113,7 @@ export function OverlappingFieldsCanBeMergedRule(
     valueInfoByNode: new Map(),
     fragmentSpreadInfoByNode: new Map(),
     fragmentSpreadInfoByKey: new Map(),
+    remainingComplexityBudget: MAX_COMPLEXITY_BUDGET,
   };
   let fragmentScope: VariableScope | undefined;
 
@@ -235,6 +241,7 @@ interface RuleContext {
   valueInfoByNode: Map<ValueNode, ValueInfo>;
   fragmentSpreadInfoByNode: Map<FragmentSpreadNode, FragmentSpreadInfo>;
   fragmentSpreadInfoByKey: Map<string, FragmentSpreadInfo>;
+  remainingComplexityBudget: number;
 }
 
 /**
@@ -376,6 +383,10 @@ function collectConflictsBetweenFieldsAndFragment(
   scope: VariableScope | undefined,
   fragmentSpread: FragmentSpread,
 ): void {
+  // Callers can enumerate more field-map/fragment pairs than document nodes.
+  // Count attempts even when an empty collection or the pair cache skips them.
+  spendComplexityBudget(ruleContext, 1);
+
   if (collectFieldsResult.groupedFieldSet.size === 0) {
     return;
   }
@@ -479,6 +490,9 @@ function collectConflictsBetweenFragments(
   const fragment2 = fragmentSpread2.definition;
   const scope1 = fragmentSpread1.scope;
   const scope2 = fragmentSpread2.scope;
+  // Count attempted fragment pairs, including identity and cache hits.
+  spendComplexityBudget(ruleContext, 2);
+
   // No need to compare a fragment to itself.
   if (fragment1 === fragment2 && scope1 === scope2) {
     return;
@@ -755,7 +769,11 @@ function collectConflictsBetween(
     responseName,
     fieldDetailsList1,
     fieldDetailsList2,
-  } of getOverlappingFields(collectFieldsResult1, collectFieldsResult2)) {
+  } of getOverlappingFields(
+    ruleContext,
+    collectFieldsResult1,
+    collectFieldsResult2,
+  )) {
     for (const fieldDetails1 of fieldDetailsList1) {
       for (const fieldDetails2 of fieldDetailsList2) {
         const conflict = findConflict(
@@ -777,6 +795,7 @@ function collectConflictsBetween(
 }
 
 function getOverlappingFields(
+  ruleContext: RuleContext,
   collectFieldsResult1: CollectFieldsResult,
   collectFieldsResult2: CollectFieldsResult,
 ): Array<OverlappingFields> {
@@ -793,6 +812,8 @@ function getOverlappingFields(
     responseName,
     fieldDetailsList1,
   ] of collectFieldsResult1.groupedFieldSet.entries()) {
+    // A field map can participate in many distinct comparisons.
+    spendComplexityBudget(ruleContext, 1);
     const fieldDetailsList2 =
       collectFieldsResult2.groupedFieldSet.get(responseName);
     if (fieldDetailsList2 != null) {
@@ -844,6 +865,8 @@ function findConflict(
       isObjectType(parentType1) &&
       isObjectType(parentType2));
 
+  // Count attempted field pairs, including pairs skipped by type exclusivity.
+  spendComplexityBudget(ruleContext, 2);
   const fieldInfo1 = getFieldInfo(fieldDetails1);
   const fieldInfo2 = getFieldInfo(fieldDetails2);
   let comparison = fieldInfo1.comparisons.get(fieldInfo2);
@@ -873,7 +896,7 @@ function findConflict(
       fieldInfo1.arguments,
       fieldInfo2.arguments,
     ));
-    if (!sameArguments(comparedArguments, scope1, scope2)) {
+    if (!sameArguments(ruleContext, comparedArguments, scope1, scope2)) {
       return {
         responseName,
         reason: 'they have differing arguments',
@@ -892,7 +915,7 @@ function findConflict(
           fieldInfo1.streamArguments,
           fieldInfo2.streamArguments,
         ));
-      if (sameArguments(comparedArguments, scope1, scope2)) {
+      if (sameArguments(ruleContext, comparedArguments, scope1, scope2)) {
         // This was allowed in previous alpha versions of `graphql-js`.
         reason +=
           '. See https://github.com/graphql/defer-stream-wg/discussions/100';
@@ -988,6 +1011,8 @@ function compareArguments(
     return { sameStructure: false, valuesWithVariables };
   }
   for (const arg1 of argumentInfo1.nodes) {
+    // A prepared argument list can participate in many field-pair comparisons.
+    spendComplexityBudget(ruleContext, 1);
     const value2 = argumentInfo2.values.get(arg1.name.value);
     if (value2 === undefined) {
       return { sameStructure: false, valuesWithVariables };
@@ -1007,6 +1032,7 @@ function compareArguments(
 }
 
 function sameArguments(
+  ruleContext: RuleContext,
   comparison: ArgumentComparison,
   scope1: VariableScope | undefined,
   scope2: VariableScope | undefined,
@@ -1018,11 +1044,14 @@ function sameArguments(
   // they agree only when every reference is an operation variable.
   return (
     scope1 === scope2 ||
-    comparison.valuesWithVariables.every(
-      (value) =>
-        !usesLocalVariables(value, scope1) &&
-        !usesLocalVariables(value, scope2),
-    )
+    comparison.valuesWithVariables.every((value) => {
+      // Different scope pairs can revisit the same prepared values.
+      spendComplexityBudget(ruleContext, 1);
+      return (
+        !usesLocalVariables(ruleContext, value, scope1) &&
+        !usesLocalVariables(ruleContext, value, scope2)
+      );
+    })
   );
 }
 
@@ -1033,6 +1062,7 @@ interface ValueInfo {
 }
 
 function usesLocalVariables(
+  ruleContext: RuleContext,
   value: ValueInfo,
   scope: VariableScope | undefined,
 ): boolean {
@@ -1045,9 +1075,11 @@ function usesLocalVariables(
   if (cached !== undefined) {
     return cached;
   }
-  const dependsOnScope = value.variables.some((variable) =>
-    scope.signature.variableDefinitions.has(variable),
-  );
+  const dependsOnScope = value.variables.some((variable) => {
+    // A source value can be checked in several declaration contexts.
+    spendComplexityBudget(ruleContext, 1);
+    return scope.signature.variableDefinitions.has(variable);
+  });
   dependencies.set(scope.signature, dependsOnScope);
   return dependsOnScope;
 }
@@ -1280,6 +1312,8 @@ function getFragmentSpread(
   fragmentSpreadNode: FragmentSpreadNode,
   scope: VariableScope | undefined,
 ): FragmentSpread {
+  // New enclosing scopes can repeat spread resolution, including cache hits.
+  spendComplexityBudget(ruleContext, 1);
   let fragmentSpreadInfo =
     ruleContext.fragmentSpreadInfoByNode.get(fragmentSpreadNode);
   if (fragmentSpreadInfo === undefined) {
@@ -1335,9 +1369,11 @@ function getFragmentSpread(
 
   // The source key fixes the variable names. Any local reference identifies
   // the enclosing scope; otherwise all references are operation variables.
-  const variableScope = fragmentSpreadInfo.values.some((value) =>
-    usesLocalVariables(value, scope),
-  )
+  const variableScope = fragmentSpreadInfo.values.some((value) => {
+    // Enclosing scopes can revisit these prepared argument values.
+    spendComplexityBudget(ruleContext, 1);
+    return usesLocalVariables(ruleContext, value, scope);
+  })
     ? scope
     : undefined;
   let fragmentScope = fragmentSpreadInfo.byScope.get(variableScope);
@@ -1436,6 +1472,14 @@ function maybeAbbreviate(text: string): string {
   return text.length > MAX_CONFLICT_DETAIL_LENGTH
     ? text.slice(0, MAX_CONFLICT_DETAIL_LENGTH) + '...'
     : text;
+}
+
+function spendComplexityBudget(ruleContext: RuleContext, cost: number): void {
+  ruleContext.remainingComplexityBudget -= cost;
+  /* node:coverage ignore next 3 */
+  if (ruleContext.remainingComplexityBudget < 0) {
+    throw validationAbortedError;
+  }
 }
 
 /**
