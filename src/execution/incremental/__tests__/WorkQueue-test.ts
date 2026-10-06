@@ -5,7 +5,7 @@ import { expect } from 'chai';
 
 import { expectPromise } from '../../../__testUtils__/expectPromise.ts';
 import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.ts';
-import { spyOn } from '../../../__testUtils__/spyOn.ts';
+import { spyOn, spyOnMethod } from '../../../__testUtils__/spyOn.ts';
 
 import { isPromise } from '../../../jsutils/isPromise.ts';
 import type { PromiseOrValue } from '../../../jsutils/PromiseOrValue.ts';
@@ -120,6 +120,94 @@ function streamFrom(
 }
 
 describe('WorkQueue', () => {
+  it('does not rescan unrelated pending roots after each task settles', async () => {
+    const groups: Array<TestGroup> = Array.from({ length: 32 }, () => ({}));
+    const lookups = spyOnMethod(Map.prototype, 'get', {
+      stackMatcher: (stack) => stack.includes('drainReadyGroups'),
+    });
+    try {
+      const { events } = await collectWorkRun({
+        groups,
+        tasks: groups.map((group, index) => makeTask([group], index)),
+      });
+      expect(
+        events
+          .filter((event) => event.kind === 'GROUP_SUCCESS')
+          .map((event) => event.group),
+      ).to.deep.equal(groups);
+      expect(lookups.callCount).to.equal(0);
+    } finally {
+      lookups.restore();
+    }
+  });
+
+  it('drains a released failure while another contributor is still pending', async () => {
+    const root: TestGroup = {};
+    const parent: TestGroup = {};
+    const child: TestGroup = { parent };
+    const error = new Error('retained failure');
+    const childRan = spyOn(() => ({ value: 'unreachable' }));
+    const { events } = await collectWorkRun({
+      groups: [root, parent, child],
+      tasks: [
+        makeTask([root, child], () => {
+          throw error;
+        }),
+        makeTask([parent], async () => {
+          await resolveOnNextTick();
+          return { value: 'parent' };
+        }),
+        makeTask([child], childRan),
+      ],
+    });
+    expect(
+      events.filter((event) => event.kind === 'GROUP_FAILURE'),
+    ).to.deep.equal([
+      { kind: 'GROUP_FAILURE', group: root, errors: [error] },
+      { kind: 'GROUP_FAILURE', group: child, errors: [error] },
+    ]);
+    expect(childRan.callCount).to.equal(0);
+    expect(events.at(-1)).to.deep.equal({ kind: 'WORK_QUEUE_TERMINATION' });
+  });
+
+  it('drains newly released settled descendants in the same release order', async () => {
+    const parent: TestGroup = {};
+    const keeper: TestGroup = {};
+    const descendants: Array<TestGroup> = [];
+    for (let index = 0; index < 16; index++) {
+      descendants.push({ parent: descendants.at(-1) ?? parent });
+    }
+    const released = promiseWithResolvers<TestTaskValue>();
+    const kept = promiseWithResolvers<TestTaskValue>();
+    const consumed = collectWorkRun({
+      groups: [parent, keeper, ...descendants],
+      tasks: [
+        makeTask([parent], async () => ({ value: await released.promise })),
+        makeTask([keeper], async () => ({ value: await kept.promise })),
+        ...descendants.map((group, index) => makeTask([keeper, group], index)),
+      ],
+    });
+    await setImmediate();
+    released.resolve('parent');
+    await setImmediate();
+    kept.resolve('keeper');
+    const { events } = await consumed;
+    expect(
+      events
+        .filter((event) => event.kind === 'GROUP_SUCCESS')
+        .map((event) => event.group),
+    ).to.deep.equal([parent, ...descendants, keeper]);
+    expect(
+      events
+        .filter((event) => event.kind === 'GROUP_VALUES')
+        .map((event) => event.values),
+    ).to.deep.equal([
+      ['parent'],
+      ...descendants.map((_, index) => [index]),
+      ['keeper'],
+    ]);
+  });
+
   it('ignores a successful result after its only owner fails', async () => {
     const root: TestGroup = {};
     const keeper: TestGroup = {};

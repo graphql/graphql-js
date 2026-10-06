@@ -215,6 +215,9 @@ export function createWorkQueue<
   S extends Stream<T, I, G, S>,
 >(initialWork: Work<T, I, G, S> | undefined): WorkQueue<T, I, G, S> {
   const rootGroups = new Set<G>();
+  // Released groups whose outcomes settled before announcement need draining.
+  // Ordinary task completions already finish their directly affected roots.
+  const readyGroups = new Set<G>();
   const rootStreams = new Set<S>();
   const cancelledGroups = new WeakSet<G>();
   const groupNodes = new Map<G, GroupNode<T, I, G, S>>();
@@ -228,7 +231,7 @@ export function createWorkQueue<
   // Initialize root groups and streams at startup to prepare for cancellation
   // prior to starting the work queue
   for (const group of nonEmptyInitialRootGroups) {
-    rootGroups.add(group);
+    addRootGroup(group);
   }
   for (const stream of initialRootStreams) {
     rootStreams.add(stream);
@@ -390,6 +393,9 @@ export function createWorkQueue<
       if (groupNode) {
         groupNode.tasks.add(task);
         groupNode.pending++;
+        if (groupNode.errors.length === 0) {
+          readyGroups.delete(group);
+        }
         if (rootGroups.has(group)) {
           startTask(task);
         }
@@ -424,6 +430,7 @@ export function createWorkQueue<
           newGroupState.errors.length === 0
         ) {
           groupNodes.delete(newGroup);
+          readyGroups.delete(newGroup);
           pruneEmptyGroups(newGroupState.childGroups, nonEmptyNewGroups);
         } else {
           nonEmptyNewGroups.push(newGroup);
@@ -438,13 +445,22 @@ export function createWorkQueue<
     newStreams: ReadonlyArray<S>,
   ): void {
     for (const group of newGroups) {
-      rootGroups.add(group);
+      addRootGroup(group);
       startGroup(group);
     }
     for (const stream of newStreams) {
       rootStreams.add(stream);
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       startStream(stream);
+    }
+  }
+
+  function addRootGroup(group: G): void {
+    rootGroups.add(group);
+    const groupNode = groupNodes.get(group);
+    invariant(groupNode !== undefined);
+    if (groupNode.pending === 0 || groupNode.errors.length > 0) {
+      readyGroups.add(group);
     }
   }
 
@@ -647,15 +663,18 @@ export function createWorkQueue<
 
   function drainReadyGroups(): Array<WorkQueueEvent<T, I, G, S>> {
     const readyEvents: Array<WorkQueueEvent<T, I, G, S>> = [];
-    // Set iteration also visits descendants released by an earlier completion.
-    for (const group of rootGroups) {
+    // Insertion order matches release order. Set iteration also visits ready
+    // descendants released by an earlier completion in this drain.
+    for (const group of readyGroups) {
+      readyGroups.delete(group);
       const groupNode = groupNodes.get(group);
       invariant(groupNode !== undefined);
       if (groupNode.errors.length > 0) {
         readyEvents.push(
           finishGroupFailure(group, groupNode, groupNode.errors),
         );
-      } else if (groupNode.pending === 0) {
+      } else {
+        invariant(groupNode.pending === 0);
         const { groupValuesEvent, groupSuccessEvent, newGroups, newStreams } =
           finishGroupSuccess(group, groupNode);
         if (groupValuesEvent) {
@@ -714,6 +733,7 @@ export function createWorkQueue<
     newStreams: ReadonlyArray<S>;
   } {
     groupNodes.delete(group);
+    readyGroups.delete(group);
     const values: Array<T> = [];
     const newStreams: Array<S> = [];
     for (const task of groupNode.tasks) {
@@ -757,6 +777,7 @@ export function createWorkQueue<
 
   function removeGroup(group: G, groupNode: GroupNode<T, I, G, S>): void {
     cancelledGroups.add(group);
+    readyGroups.delete(group);
     rootGroups.delete(group);
     groupNodes.delete(group);
     for (const task of groupNode.tasks) {
