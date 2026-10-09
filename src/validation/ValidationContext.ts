@@ -342,7 +342,7 @@ export class ValidationContext extends ASTValidationContext {
                 node: variable,
                 type: typeInfo.getInputType(),
                 parentType: typeInfo.getParentInputType(),
-                defaultValue: undefined, // fragment variables have a variable default but no location default, which is what this default value represents
+                defaultValue: typeInfo.getDefaultValue(),
                 fragmentVariableDefinition,
               });
             } else {
