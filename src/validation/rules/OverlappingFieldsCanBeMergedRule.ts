@@ -178,10 +178,9 @@ interface FieldDetails {
   parentType: Maybe<GraphQLNamedType>;
   node: FieldNode;
   definition: Maybe<GraphQLField<unknown, unknown>>;
-  info?: FieldInfo;
 }
 interface FieldInfo {
-  comparisons: Map<FieldInfo, FieldComparison>;
+  comparisons?: Map<FieldInfo, FieldComparison>;
   arguments: ArgumentInfo | undefined;
   hasStream: boolean;
   streamArguments: ArgumentInfo | undefined;
@@ -236,6 +235,7 @@ interface FragmentSpreadInfo {
   byScope: Map<VariableScope | undefined, VariableScope | undefined>;
 }
 interface RuleContext {
+  fieldInfoByNode?: Map<FieldNode, FieldInfo>;
   comparedFieldsAndFragmentPairs: Map<
     VariableScope | undefined,
     Map<
@@ -880,12 +880,13 @@ function findConflict(
 
   // Count attempted field pairs, including pairs skipped by type exclusivity.
   spendComplexityBudget(ruleContext, 2);
-  const fieldInfo1 = getFieldInfo(fieldDetails1);
-  const fieldInfo2 = getFieldInfo(fieldDetails2);
-  let comparison = fieldInfo1.comparisons.get(fieldInfo2);
+  const fieldInfo1 = getFieldInfo(ruleContext, fieldDetails1);
+  const fieldInfo2 = getFieldInfo(ruleContext, fieldDetails2);
+  const comparisons = (fieldInfo1.comparisons ??= new Map());
+  let comparison = comparisons.get(fieldInfo2);
   if (comparison === undefined) {
     comparison = {};
-    fieldInfo1.comparisons.set(fieldInfo2, comparison);
+    comparisons.set(fieldInfo2, comparison);
   }
 
   if (!areMutuallyExclusive) {
@@ -974,20 +975,25 @@ function findConflict(
 }
 
 // Prepare argument and directive lookups only when a field overlaps.
-function getFieldInfo(fieldDetails: FieldDetails): FieldInfo {
-  if (fieldDetails.info === undefined) {
-    const node = fieldDetails.node;
+function getFieldInfo(
+  ruleContext: RuleContext,
+  fieldDetails: FieldDetails,
+): FieldInfo {
+  const node = fieldDetails.node;
+  const byNode = (ruleContext.fieldInfoByNode ??= new Map());
+  let info = byNode.get(node);
+  if (info === undefined) {
     const stream = node.directives?.find(
       (directive) => directive.name.value === 'stream',
     );
-    fieldDetails.info = {
-      comparisons: new Map(),
+    info = {
       arguments: getArgumentInfo(node.arguments),
       hasStream: stream !== undefined,
       streamArguments: getArgumentInfo(stream?.arguments),
     };
+    byNode.set(node, info);
   }
-  return fieldDetails.info;
+  return info;
 }
 
 function getArgumentInfo(
