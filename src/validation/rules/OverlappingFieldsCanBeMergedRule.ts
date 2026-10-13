@@ -2,6 +2,7 @@
 
 import { inspect } from '../../jsutils/inspect.ts';
 import type { Maybe } from '../../jsutils/Maybe.ts';
+import { SetMap } from '../../jsutils/SetMap.ts';
 
 import { GraphQLError } from '../../error/GraphQLError.ts';
 
@@ -23,6 +24,7 @@ import { BREAK } from '../../language/visitor.ts';
 import type {
   GraphQLField,
   GraphQLNamedType,
+  GraphQLObjectType,
   GraphQLOutputType,
 } from '../../type/definition.ts';
 import {
@@ -102,6 +104,13 @@ const conflictReported = new Error('Conflict reported.');
 export function OverlappingFieldsCanBeMergedRule(
   validationContext: ValidationContext,
 ): ASTVisitor {
+  const hasFragmentArguments = validationContext
+    .getDocument()
+    .definitions.some(
+      (definition) =>
+        definition.kind === Kind.FRAGMENT_DEFINITION &&
+        (definition.variableDefinitions?.length ?? 0) !== 0,
+    );
   const ruleContext: RuleContext = {
     // A memoization for when fields and a fragment or two fragments are compared
     // "between" each other for conflicts. Comparisons may be made many times,
@@ -138,24 +147,40 @@ export function OverlappingFieldsCanBeMergedRule(
         return;
       }
       try {
-        const conflicts = findConflictsWithinSelectionSet(
+        if (hasFragmentArguments) {
+          const conflicts = findConflictsWithinSelectionSet(
+            validationContext,
+            ruleContext,
+            validationContext.getParentType(),
+            selectionSet,
+            fragmentScope,
+          );
+          const conflict = conflicts[0];
+          if (conflict !== undefined) {
+            const { responseName, reason, fields1, fields2 } = conflict;
+            validationContext.reportError(
+              new GraphQLError(
+                `Fields "${maybeAbbreviate(responseName)}" conflict because ${reason}. Use different aliases on the fields or their ancestors to fetch both if this was intentional.`,
+                { nodes: fields1.concat(fields2) },
+              ),
+            );
+            return BREAK;
+          }
+          return;
+        }
+        const collection = collectFields(
           validationContext,
           ruleContext,
           validationContext.getParentType(),
           selectionSet,
-          fragmentScope,
         );
-        const conflict = conflicts[0];
-        if (conflict !== undefined) {
-          const { responseName, reason, fields1, fields2 } = conflict;
-          validationContext.reportError(
-            new GraphQLError(
-              `Fields "${maybeAbbreviate(responseName)}" conflict because ${reason}. Use different aliases on the fields or their ancestors to fetch both if this was intentional.`,
-              { nodes: fields1.concat(fields2) },
-            ),
-          );
-          return BREAK;
+        // Children and fragment definitions are visited independently. With no
+        // peers here, there is nothing to merge at this response level.
+        if (!collection.needsComparison) {
+          return;
         }
+        checkCommonParents(validationContext, ruleContext, collection);
+        checkResponseShape(validationContext, ruleContext, collection);
       } catch (error) {
         if (error !== conflictReported) {
           throw error;
@@ -213,11 +238,21 @@ interface FragmentSpread {
 }
 type FragmentSpreads = ReadonlyArray<FragmentSpread>;
 
-interface CollectFieldsResult {
+interface CollectFieldsResult extends FieldSetState {
   groupedFieldSet: GroupedFieldSet;
   spreads: ReadonlyArray<FragmentSpreadNode>;
+  needsComparison: boolean;
   byScope?: Map<VariableScope | undefined, FragmentSpreads>;
   overlappingFields?: Map<CollectFieldsResult, Array<OverlappingFields>>;
+}
+type FieldSet = CollectFieldsResult | MergedFieldSet;
+interface MergedFieldSet extends FieldSetState {
+  sets: ReadonlySet<CollectFieldsResult>;
+}
+interface FieldSetState {
+  fields?: GroupedFieldSet;
+  responseShape?: boolean;
+  commonParent?: boolean;
 }
 type ArgumentNodes =
   | ReadonlyArray<ArgumentNode>
@@ -254,9 +289,315 @@ interface RuleContext {
   valueInfoByNode: Map<ValueNode, ValueInfo>;
   fragmentSpreadInfoByNode: Map<FragmentSpreadNode, FragmentSpreadInfo>;
   fragmentSpreadInfoByKey: Map<string, FragmentSpreadInfo>;
+  mergeChecks?: SetMap<CollectFieldsResult, MergedFieldSet>;
   remainingComplexityBudget: number;
 }
 
+// Sangria's set-based algorithm checks groups instead of every field pair:
+// https://github.com/graphql/graphql-js/issues/2185
+//
+// Collect direct fields and inline fragments once per selection set and parent
+// type. When a comparison needs named fragments, expand their collections
+// at this response level and group the resulting fields by response name.
+//
+// Two separate walks apply different requirements to each group:
+// - checkCommonParents compares names and arguments among parents that can
+//   overlap. Separate child groups preserve exclusivity inherited from ancestors.
+// - checkResponseShape compares return shapes across all parents, including
+//   mutually exclusive ones, and checks overlapping stream directives.
+// Each walk merges all child selections in its group before descending. Equality
+// checks need only one representative, but child selections need every member.
+//
+// Cache the walks by their sets of source collections. The complexity
+// budget still bounds distinct merged states and repeated expansion: caching
+// sets alone does not make that work linear. Report the first conflicting pair
+// directly, without a second walk to reconstruct ancestry paths.
+function checkResponseShape(
+  validationContext: ValidationContext,
+  ruleContext: RuleContext,
+  check: FieldSet,
+): void {
+  if (check.responseShape) {
+    return;
+  }
+  // Mark before descending so invalid fragment cycles do not recurse forever.
+  check.responseShape = true;
+  for (const fields of getMergedFields(
+    validationContext,
+    ruleContext,
+    check,
+  ).values()) {
+    // A lone field's own selection set is visited independently.
+    if (fields.length === 1) {
+      continue;
+    }
+    let knownField: FieldDetails | undefined;
+    for (const field of fields) {
+      // Fields can participate in several distinct merged groups.
+      spendComplexityBudget(ruleContext, 1);
+      const info = getFieldInfo(ruleContext, field);
+      if (info.hasStream) {
+        const other = field === fields[0] ? fields[1] : fields[0];
+        const otherInfo = getFieldInfo(ruleContext, other);
+        let reason = 'they have overlapping stream directives';
+        if (
+          otherInfo.hasStream &&
+          compareArguments(
+            ruleContext,
+            info.streamArguments,
+            otherInfo.streamArguments,
+          ) !== false
+        ) {
+          reason +=
+            '. See https://github.com/graphql/defer-stream-wg/discussions/100';
+        }
+        reportFieldConflict(
+          validationContext,
+          fields[0],
+          field === fields[0] ? other : field,
+          reason,
+        );
+      }
+      const type = field.definition?.type;
+      if (type !== undefined) {
+        const knownType = knownField?.definition?.type;
+        if (knownType !== undefined && doTypesConflict(knownType, type)) {
+          reportFieldConflict(
+            validationContext,
+            knownField as FieldDetails,
+            field,
+            `they return conflicting types "${inspect(knownType)}" and "${inspect(type)}"`,
+          );
+        }
+        knownField = field;
+      }
+    }
+    const children = getMergedChildren(validationContext, ruleContext, fields);
+    if (children) {
+      checkResponseShape(validationContext, ruleContext, children);
+    }
+  }
+}
+
+function getMergedFields(
+  validationContext: ValidationContext,
+  ruleContext: RuleContext,
+  check: FieldSet,
+): GroupedFieldSet {
+  if (check.fields !== undefined) {
+    return check.fields;
+  }
+  // Without fragment expansion, the collected map is already complete.
+  if ('groupedFieldSet' in check && check.spreads.length === 0) {
+    check.fields = check.groupedFieldSet;
+    return check.fields;
+  }
+  const groups: GroupedFieldSet = new Map();
+  // Expand each source once at this response level.
+  const pending = new Set('sets' in check ? check.sets : [check]);
+  for (const collection of pending) {
+    for (const [name, fields] of collection.groupedFieldSet) {
+      let group = groups.get(name);
+      if (group === undefined) {
+        group = [];
+        groups.set(name, group);
+      }
+      for (const details of fields) {
+        if (pending.size > 1) {
+          // Distinct merges can revisit a source field.
+          spendComplexityBudget(ruleContext, 1);
+        }
+        group.push(details);
+      }
+    }
+    if (collection.spreads.length === 0) {
+      continue;
+    }
+    for (const spread of getFragmentSpreads(
+      validationContext,
+      ruleContext,
+      collection,
+      undefined,
+    )) {
+      // Each merge can revisit the same fragment references, including hits.
+      spendComplexityBudget(ruleContext, 1);
+      const definition = spread.definition;
+      if (definition === undefined) {
+        continue;
+      }
+      pending.add(
+        collectFragmentFields(validationContext, ruleContext, definition),
+      );
+    }
+  }
+  check.fields = groups;
+  return groups;
+}
+
+function getMergedChildren(
+  validationContext: ValidationContext,
+  ruleContext: RuleContext,
+  fields: ReadonlyArray<FieldDetails>,
+): FieldSet | undefined {
+  let sets: Set<CollectFieldsResult> | undefined;
+  for (const field of fields) {
+    // The completed group comparison already charged for these members.
+    if (field.node.selectionSet !== undefined) {
+      (sets ??= new Set()).add(
+        collectFields(
+          validationContext,
+          ruleContext,
+          getNamedType(field.definition?.type),
+          field.node.selectionSet,
+        ),
+      );
+    }
+  }
+  if (sets === undefined) {
+    return;
+  }
+  if (sets.size === 1) {
+    return sets.values().next().value;
+  }
+  for (const _set of sets) {
+    // Distinct merges can repeatedly index the same source collections.
+    spendComplexityBudget(ruleContext, 1);
+  }
+  const checks = (ruleContext.mergeChecks ??= new SetMap());
+  return checks.getOrInsertComputed(sets, () => ({ sets }));
+}
+
+function checkCommonParents(
+  validationContext: ValidationContext,
+  ruleContext: RuleContext,
+  check: FieldSet,
+): void {
+  if (check.commonParent) {
+    return;
+  }
+  check.commonParent = true;
+  for (const fields of getMergedFields(
+    validationContext,
+    ruleContext,
+    check,
+  ).values()) {
+    if (fields.length === 1) {
+      continue;
+    }
+    // Distinct object parents cannot overlap. Abstract or unknown parents may
+    // overlap every object group, so include their fields in each one. Walking
+    // these groups separately preserves exclusivity inherited from ancestors.
+    const abstract = new Array<FieldDetails>();
+    const concrete = new Map<GraphQLObjectType, Array<FieldDetails>>();
+    for (const field of fields) {
+      const parentType = field.parentType;
+      if (isObjectType(parentType)) {
+        let group = concrete.get(parentType);
+        if (group === undefined) {
+          group = [];
+          concrete.set(parentType, group);
+        }
+        group.push(field);
+      } else {
+        // Unknown parents retain the conservative overlap behavior.
+        abstract.push(field);
+      }
+    }
+    const commonGroups = concrete.size === 0 ? [abstract] : concrete.values();
+    for (const concreteGroup of commonGroups) {
+      checkCommonParentFields(
+        validationContext,
+        ruleContext,
+        concreteGroup,
+        concrete.size === 0 ? [] : abstract,
+      );
+    }
+  }
+}
+
+function checkCommonParentFields(
+  validationContext: ValidationContext,
+  ruleContext: RuleContext,
+  group: ReadonlyArray<FieldDetails>,
+  shared: ReadonlyArray<FieldDetails>,
+): void {
+  if (group.length + shared.length === 1) {
+    return;
+  }
+  const first = group[0];
+  const fieldInfo1 = getFieldInfo(ruleContext, first);
+  for (const fields of [group, shared]) {
+    for (const field of fields) {
+      if (field === first) {
+        continue;
+      }
+      // Equality within each common-parent group needs only a representative.
+      spendComplexityBudget(ruleContext, 2);
+      const fieldInfo2 = getFieldInfo(ruleContext, field);
+      // Source comparisons are shared across merged sets and bindings.
+      const comparisons = (fieldInfo1.comparisons ??= new Map());
+      let comparison = comparisons.get(fieldInfo2);
+      if (comparison === undefined) {
+        comparison = {};
+        comparisons.set(fieldInfo2, comparison);
+      }
+      const name1 = first.node.name.value;
+      const name2 = field.node.name.value;
+      if (!(comparison.sameName ??= name1 === name2)) {
+        reportFieldConflict(
+          validationContext,
+          first,
+          field,
+          `"${maybeAbbreviate(name1)}" and "${maybeAbbreviate(name2)}" are different fields`,
+        );
+      }
+      if (
+        (comparison.arguments ??= compareArguments(
+          ruleContext,
+          fieldInfo1.arguments,
+          fieldInfo2.arguments,
+        )) === false
+      ) {
+        reportFieldConflict(
+          validationContext,
+          first,
+          field,
+          'they have differing arguments',
+        );
+      }
+    }
+  }
+  // Copy only after every member was checked and charged. A failed comparison
+  // must not copy a large shared group before it can stop.
+  const children = getMergedChildren(
+    validationContext,
+    ruleContext,
+    shared.length === 0 ? group : group.concat(shared),
+  );
+  if (children) {
+    checkCommonParents(validationContext, ruleContext, children);
+  }
+}
+
+// Report one witness with its two locations, without rebuilding ancestry paths.
+function reportFieldConflict(
+  validationContext: ValidationContext,
+  first: FieldDetails,
+  second: FieldDetails,
+  reason: string,
+): never {
+  const node = first.node;
+  const responseName = node.alias?.value ?? node.name.value;
+  validationContext.reportError(
+    new GraphQLError(
+      `Fields "${maybeAbbreviate(responseName)}" conflict because ${reason}. Use different aliases on the fields or their ancestors to fetch both if this was intentional.`,
+      { nodes: [node, second.node] },
+    ),
+  );
+  throw conflictReported;
+}
+
+/* node:coverage disable */
 /**
  * Find all conflicts found "within" a selection set, including those found
  * via spreading in fragments. Inline-fragment selection sets are included in
@@ -974,6 +1315,8 @@ function findConflict(
   }
 }
 
+/* node:coverage enable */
+
 // Prepare argument and directive lookups only when a field overlaps.
 function getFieldInfo(
   ruleContext: RuleContext,
@@ -1204,7 +1547,16 @@ function collectFields(
       groupedFieldSet,
       spreads,
     );
-    collectFieldsResult = { groupedFieldSet, spreads };
+    let needsComparison =
+      spreads.length > 1 ||
+      (spreads.length === 1 && groupedFieldSet.size !== 0);
+    for (const fields of groupedFieldSet.values()) {
+      if (fields.length > 1) {
+        needsComparison = true;
+        break;
+      }
+    }
+    collectFieldsResult = { groupedFieldSet, spreads, needsComparison };
     bySelectionSet.set(selectionSet, collectFieldsResult);
   }
   return collectFieldsResult;
@@ -1453,6 +1805,7 @@ function spendComplexityBudget(ruleContext: RuleContext, cost: number): void {
   }
 }
 
+/* node:coverage disable */
 /**
  * A way to keep track of pairs of things where the ordering of the pair
  * matters.
@@ -1512,3 +1865,4 @@ class PairSet<T> {
     this._orderedPairSet.add(a, b, weaklyPresent);
   }
 }
+/* node:coverage enable */

@@ -84,6 +84,123 @@ describe('Validate: Overlapping fields can be merged', () => {
     ]);
   });
 
+  it('merges repeated references to the same child selection set', () => {
+    const schema = buildSchema('type Query { child: Query, value: Int }');
+    const document = parse('{ child { value } child { value } }');
+    const operation = document.definitions[0];
+    if (operation.kind !== Kind.OPERATION_DEFINITION) {
+      throw new Error('Expected an operation.');
+    }
+    const first = operation.selectionSet.selections[0];
+    expect(
+      validate(schema, {
+        ...document,
+        definitions: [
+          {
+            ...operation,
+            selectionSet: {
+              selections: [first, first],
+              kind: Kind.SELECTION_SET,
+            },
+          },
+        ],
+      }),
+    ).to.deep.equal([]);
+  });
+
+  it('merges every child selection, not just pairs with a representative', () => {
+    const schema = buildSchema(
+      'type Query { child: Query, value(arg: Int): Int, other: Int }',
+    );
+    const document = parse(`
+      { ...First ...Second ...Third }
+      fragment First on Query { child { other } }
+      fragment Second on Query { child { value(arg: 1) } }
+      fragment Third on Query { child { value(arg: 2) } }
+    `);
+    expect(
+      validate(schema, document).map((error) => error.message),
+    ).to.deep.equal([
+      'Fields "value" conflict because they have differing arguments. Use different aliases on the fields or their ancestors to fetch both if this was intentional.',
+    ]);
+  });
+
+  it('preserves exclusive ancestors while sharing abstract child selections', () => {
+    const schema = buildSchema(`
+      interface Node { child: Child }
+      type First implements Node { child: Child }
+      type Second implements Node { child: Child }
+      type Child { value(arg: Int): Int, other: Int }
+      type Query { node: Node }
+    `);
+    expect(
+      validate(
+        schema,
+        parse(`{
+        node {
+          child { other }
+          ... on First { child { value(arg: 1) } }
+          ... on Second { child { value(arg: 2) } }
+        }
+      }`),
+      ),
+    ).to.deep.equal([]);
+  });
+
+  it('merges matching list and non-null shapes across object parents', () => {
+    const schema = buildSchema(`
+      union Node = First | Second
+      type First { values: [Int!]! }
+      type Second { values: [Int!]! }
+      type Query { node: Node }
+    `);
+    expectValidWithSchema(
+      schema,
+      '{ node { ... on First { values } ... on Second { values } } }',
+    );
+  });
+
+  it('checks known return shapes after an unknown field', () => {
+    const schema = buildSchema(`
+      union Node = First | Second | Third
+      type First { other: Int }
+      type Second { value: Int }
+      type Third { value: String }
+      type Query { node: Node }
+    `);
+    const document = parse(`{
+      node {
+        ... on First { value }
+        ... on Second { value }
+        ... on Third { value }
+      }
+    }`);
+    expect(
+      validate(schema, document, [OverlappingFieldsCanBeMergedRule]).map(
+        (error) => error.message,
+      ),
+    ).to.deep.equal([
+      'Fields "value" conflict because they return conflicting types "Int" and "String". Use different aliases on the fields or their ancestors to fetch both if this was intentional.',
+    ]);
+  });
+
+  it('reports field conflicts while ignoring unknown fragments in either order', () => {
+    const schema = buildSchema('type Query { first: Int, second: Int }');
+    for (const spreads of ['...Known ...Unknown', '...Unknown ...Known']) {
+      const document = parse(`
+        { value: first value: second ${spreads} }
+        fragment Known on Query { first }
+      `);
+      expect(
+        validate(schema, document, [OverlappingFieldsCanBeMergedRule]).map(
+          (error) => error.message,
+        ),
+      ).to.deep.equal([
+        'Fields "value" conflict because "first" and "second" are different fields. Use different aliases on the fields or their ancestors to fetch both if this was intentional.',
+      ]);
+    }
+  });
+
   it('reports the first conflicting leaf pair without ancestor locations', () => {
     const schema = buildSchema(
       'type Query { child: Query, left: Int, right: Int }',
@@ -360,6 +477,24 @@ describe('Validate: Overlapping fields can be merged', () => {
       fragment conflictingArgs on Dog {
         name @stream(label: "streamLabel", initialCount: 1)
         name @stream(label: "anotherLabel", initialCount: 1)
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Fields "name" conflict because they have overlapping stream directives. Use different aliases on the fields or their ancestors to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
+      },
+    ]);
+  });
+
+  it('detects stream overlap when only the later field is streamed', () => {
+    expectErrors(`
+      fragment streamed on Dog {
+        name
+        name @stream
       }
     `).toDeepEqual([
       {
@@ -1074,10 +1209,10 @@ second line"""
     `).toDeepEqual([
       {
         message:
-          'Fields "value" conflict because "name" and "mother" are different fields. Use different aliases on the fields or their ancestors to fetch both if this was intentional.',
+          'Fields "parent" conflict because "mother" and "father" are different fields. Use different aliases on the fields or their ancestors to fetch both if this was intentional.',
         locations: [
-          { line: 4, column: 11 },
-          { line: 7, column: 11 },
+          { line: 3, column: 9 },
+          { line: 9, column: 9 },
         ],
       },
     ]);
@@ -1092,10 +1227,10 @@ second line"""
     `).toDeepEqual([
       {
         message:
-          'Fields "parent" conflict because they have overlapping stream directives. Use different aliases on the fields or their ancestors to fetch both if this was intentional.',
+          'Fields "value" conflict because "name" and "father" are different fields. Use different aliases on the fields or their ancestors to fetch both if this was intentional.',
         locations: [
-          { line: 3, column: 9 },
-          { line: 4, column: 9 },
+          { line: 3, column: 34 },
+          { line: 4, column: 26 },
         ],
       },
     ]);
