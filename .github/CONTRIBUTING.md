@@ -79,16 +79,29 @@ The documentation website is published from the `17.x.x` branch. Website source
 lives under `website/`, with general guides in `website/pages/docs` and upgrade
 guides in `website/pages/upgrade-guides`.
 
-The API reference pages are generated snapshots:
+The API reference pages under `website/pages/api-v*/` are generated during
+website builds and are not committed. The build uses the working tree for the
+current major and fetches the other documented release branches. Updates to
+those branches appear on the next website deployment. The production build
+includes the generated pages in `website/out`; the existing website deployment
+publishes that output. The build does not commit or push generated source files
+back to the release branches.
 
-- `website/pages/api-v16` is generated from a v16 source ref.
-- `website/pages/api-v17` is generated from a v17 source ref.
-
-Generate API docs from the website package:
+Install dependencies and build from the website package:
 
 ```bash
 cd website
-npm run generate:docs -- 16.x.x 17.x.x
+npm ci --ignore-scripts
+npm run build
+```
+
+Use `npm run dev` instead of `npm run build` to start the development server.
+Both commands generate API docs first and require network access.
+
+To generate API pages separately from `website/`, specify one or more source refs:
+
+```bash
+npm run generate:docs -- local
 ```
 
 Each argument is either `local` or a local git ref such as a branch, tag, SHA,
@@ -97,17 +110,6 @@ or `HEAD`. For git refs, the generator creates detached temporary worktrees. For
 The generator infers the major version from each source's `package.json`, writes
 the corresponding `api-v*` output directory, and fails if more than one input
 resolves to the same major version.
-
-Use `local` when a PR changes API source comments or exported TypeScript
-surfaces and you want to regenerate docs before committing those source changes:
-
-```bash
-cd website
-npm run generate:docs -- 16.x.x local
-```
-
-Generated API docs are not published automatically at this time; PRs that
-change website API output must include the generated files.
 
 ### Executable API examples
 

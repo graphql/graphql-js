@@ -24,6 +24,8 @@ export default defineConfig(
       'npmEsmDist',
       'denoDist',
       'website/.next',
+      'website/out',
+      'website/pages/api-v*',
       'integrationTests/ts/*.ts',
     ],
   },

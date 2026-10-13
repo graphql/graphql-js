@@ -8,8 +8,8 @@
     "doc": "docs"
   },
   "scripts": {
-    "build": "next build",
-    "dev": "next",
+    "build": "node build-api.js && next build",
+    "dev": "node build-api.js && next",
     "generate:docs": "node generate-api.js"
   },
   "devDependencies": {
