@@ -18,6 +18,7 @@ import { isNode } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
 import { print } from '../../language/printer.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
+import { BREAK } from '../../language/visitor.ts';
 
 import type {
   GraphQLField,
@@ -45,12 +46,12 @@ import type { ValidationContext } from '../ValidationContext.ts';
 
 // Keep diagnostic detail bounded independently of document size.
 const MAX_CONFLICT_DETAIL_LENGTH = 1000;
-const MAX_CONFLICT_NODES = 20;
 const MAX_FRAGMENT_ARGUMENT_SIZE = 256;
 
 // Meter work that can grow through repeated comparisons and fragment scopes.
 // Collecting a selection set's fields is shared across scopes and is not charged.
 const MAX_COMPLEXITY_BUDGET = 500_000;
+const conflictReported = new Error('Conflict reported.');
 
 /**
  * Overlapping fields can be merged
@@ -58,6 +59,7 @@ const MAX_COMPLEXITY_BUDGET = 500_000;
  * A selection set is only valid if all fields (including spreading any
  * fragments) either correspond to distinct response names or can be merged
  * without ambiguity.
+ * Reports the first conflicting pair, at the conflicting nodes themselves.
  *
  * See https://spec.graphql.org/draft/#sec-Field-Selection-Merging
  * @param validationContext - The validation context used while checking the document.
@@ -135,20 +137,31 @@ export function OverlappingFieldsCanBeMergedRule(
       if (parent && 'kind' in parent && parent.kind === Kind.INLINE_FRAGMENT) {
         return;
       }
-      const conflicts = findConflictsWithinSelectionSet(
-        validationContext,
-        ruleContext,
-        validationContext.getParentType(),
-        selectionSet,
-        fragmentScope,
-      );
-      for (const { responseName, reason, fields1, fields2 } of conflicts) {
-        validationContext.reportError(
-          new GraphQLError(
-            `Fields "${maybeAbbreviate(responseName)}" conflict because ${reason}. Use different aliases on the fields to fetch both if this was intentional.`,
-            { nodes: fields1.concat(fields2) },
-          ),
+      try {
+        const conflicts = findConflictsWithinSelectionSet(
+          validationContext,
+          ruleContext,
+          validationContext.getParentType(),
+          selectionSet,
+          fragmentScope,
         );
+        const conflict = conflicts[0];
+        if (conflict !== undefined) {
+          const { responseName, reason, fields1, fields2 } = conflict;
+          validationContext.reportError(
+            new GraphQLError(
+              `Fields "${maybeAbbreviate(responseName)}" conflict because ${reason}. Use different aliases on the fields or their ancestors to fetch both if this was intentional.`,
+              { nodes: fields1.concat(fields2) },
+            ),
+          );
+          return BREAK;
+        }
+      } catch (error) {
+        if (error !== conflictReported) {
+          throw error;
+        }
+        // Stop only this rule after its first conflict; other rules continue.
+        return BREAK;
       }
     },
   };
@@ -523,7 +536,7 @@ function collectConflictsBetweenFragments(
         { nodes: [fragmentSpread1.node, fragmentSpread2.node] },
       ),
     );
-    return;
+    throw conflictReported;
   }
 
   // Memoize so two fragments are not compared for conflicts more than once.
@@ -956,7 +969,7 @@ function findConflict(
       selectionSet2,
       scope2,
     );
-    return subfieldConflicts(conflicts, responseName, node1, node2);
+    return conflicts[0];
   }
 }
 
@@ -1418,54 +1431,6 @@ function getFragmentSpreadDescription(
     }
   }
   return print(description).slice(3);
-}
-
-// Given a series of Conflicts which occurred between two sub-fields, generate
-// a single Conflict.
-function subfieldConflicts(
-  conflicts: ReadonlyArray<Conflict>,
-  responseName: string,
-  node1: FieldNode,
-  node2: FieldNode,
-): Maybe<Conflict> {
-  if (conflicts.length > 0) {
-    // Abbreviate while combining child reasons, not after expanding a whole
-    // tree of conflicts.
-    let message = '';
-    for (const { responseName: name, reason } of conflicts) {
-      message +=
-        (message === '' ? '' : ' and ') +
-        `subfields "${maybeAbbreviate(name)}" conflict because ${reason}`;
-      if (message.length > MAX_CONFLICT_DETAIL_LENGTH) {
-        break;
-      }
-    }
-    return {
-      responseName,
-      reason: maybeAbbreviate(message),
-      fields1: collectConflictNodes(node1, conflicts, 'fields1'),
-      fields2: collectConflictNodes(node2, conflicts, 'fields2'),
-    };
-  }
-}
-
-function collectConflictNodes(
-  node: FieldNode,
-  conflicts: ReadonlyArray<Conflict>,
-  side: 'fields1' | 'fields2',
-): Array<FieldNode> {
-  const nodes = [node];
-  for (const conflict of conflicts) {
-    const remaining = MAX_CONFLICT_NODES - nodes.length;
-    // Locations start with the enclosing field. Take from the end so that
-    // truncation favors the deeper fields involved in the conflict.
-    const retainedNodes = conflict[side].slice(-remaining);
-    nodes.push(...retainedNodes);
-    if (nodes.length === MAX_CONFLICT_NODES) {
-      break;
-    }
-  }
-  return nodes;
 }
 
 function maybeAbbreviate(text: string): string {
