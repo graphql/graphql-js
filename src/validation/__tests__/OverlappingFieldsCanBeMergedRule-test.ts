@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 
 import { expect } from 'chai';
 
+import type { SelectionSetNode } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
 import { parse } from '../../language/parser.ts';
 
@@ -1821,6 +1822,46 @@ describe('Validate: Overlapping fields can be merged', () => {
           a(x: $size)
         }
       `);
+    });
+
+    it('compares a shared selection set in distinct variable scopes', () => {
+      const schema = buildSchema(
+        'type Query { child: Query, value(arg: Int): Int }',
+      );
+      const document = parse(
+        `
+          query ($x: Int) {
+            child { value(arg: $x) }
+            child { ...Local(x: 1) }
+          }
+          fragment Local($x: Int) on Query { value(arg: $x) }
+        `,
+        { experimentalFragmentArguments: true },
+      );
+      const [operation] = document.definitions.filter(
+        (definition) => definition.kind === Kind.OPERATION_DEFINITION,
+      );
+      const [field] = operation.selectionSet.selections.filter(
+        (selection) => selection.kind === Kind.FIELD,
+      );
+      const sharedDocument = {
+        ...document,
+        definitions: document.definitions.map((definition) =>
+          definition.kind === Kind.FRAGMENT_DEFINITION
+            ? {
+                ...definition,
+                selectionSet: field.selectionSet as SelectionSetNode,
+              }
+            : definition,
+        ),
+      };
+      for (const ast of [document, sharedDocument]) {
+        expect(
+          validate(schema, ast).map((error) => error.message),
+        ).to.deep.equal([
+          'Fields "child" conflict because subfields "value" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
+        ]);
+      }
     });
 
     it('encounters nested field conflict in fragments that could otherwise merge', () => {
