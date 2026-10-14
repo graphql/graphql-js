@@ -36,4 +36,14 @@ describe('ValidationContext', () => {
       '[object ValidationContext]',
     );
   });
+
+  it('supports the deprecated hideSuggestions boolean argument', () => {
+    const schema = new GraphQLSchema({});
+    const typeInfo = new TypeInfo(schema);
+    const ast = parse('{ foo }');
+    const onError = () => undefined;
+
+    const context = new ValidationContext(schema, ast, typeInfo, onError, true);
+    expect(context.hideSuggestions).to.equal(true);
+  });
 });

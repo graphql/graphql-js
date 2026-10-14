@@ -70,7 +70,10 @@ const printDocASTReducer: ASTReducer<string> = {
       wrap(' = ', defaultValue) +
       wrap(' ', join(directives, ' ')),
   },
-  SelectionSet: { leave: ({ selections }) => block(selections) },
+  SelectionSet: {
+    leave: ({ selections }) =>
+      selections.length === 0 ? '{}' : block(selections),
+  },
 
   Field: {
     leave({ alias, name, arguments: args, directives, selectionSet }) {

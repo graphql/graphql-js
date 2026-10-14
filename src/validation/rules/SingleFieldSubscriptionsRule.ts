@@ -104,7 +104,16 @@ export function SingleFieldSubscriptionsRule(
             );
             return;
           }
-          if (groupedFieldSet.size > 1) {
+          if (groupedFieldSet.size === 0) {
+            context.reportError(
+              new GraphQLError(
+                operationName != null
+                  ? `Subscription "${operationName}" must select one top level field.`
+                  : 'Anonymous Subscription must select one top level field.',
+                { nodes: node.selectionSet },
+              ),
+            );
+          } else if (groupedFieldSet.size > 1) {
             const fieldDetailsLists = [...groupedFieldSet.values()];
             const extraFieldDetailsLists = fieldDetailsLists.slice(1);
             const extraFieldSelections = extraFieldDetailsLists.flatMap(
