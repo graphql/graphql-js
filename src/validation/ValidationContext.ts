@@ -244,8 +244,32 @@ export class ValidationContext extends ASTValidationContext {
     onError: (error: GraphQLError) => void,
     options?: ValidationContextOptions,
   );
-  // eslint-disable-next-line
-  /** @deprecated Please pass options object; this signature will be removed in V18 */
+  /**
+   * Creates a ValidationContext instance using the legacy positional options.
+   * @param schema - Schema used to validate the document.
+   * @param ast - Document AST being validated.
+   * @param typeInfo - TypeInfo instance used to track traversal state.
+   * @param onError - Callback invoked for each validation error.
+   * @param hideSuggestions - Whether suggestion text should be omitted from errors.
+   * @example
+   * ```ts
+   * import { parse } from 'graphql/language';
+   * import { buildSchema, TypeInfo } from 'graphql/utilities';
+   * import { ValidationContext } from 'graphql/validation';
+   *
+   * const schema = buildSchema('type Query { greeting: String }');
+   * const context = new ValidationContext(
+   *   schema,
+   *   parse('{ greeting }'),
+   *   new TypeInfo(schema),
+   *   () => {},
+   *   true,
+   * );
+   *
+   * context.hideSuggestions; // => true
+   * ```
+   * @deprecated Please pass an options object instead; this signature will be removed in v18.
+   */
   constructor(
     schema: GraphQLSchema,
     ast: DocumentNode,
