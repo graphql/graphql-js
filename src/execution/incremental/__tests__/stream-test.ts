@@ -2279,6 +2279,116 @@ describe('Execute: stream directive', () => {
     });
   });
 
+  it('Does not publish a shared stream when its remaining fragment replays a failure', async () => {
+    const document = parse(`
+      {
+        nestedObject {
+          ... @defer(label: "R") {
+            nonNullScalarField
+            ...Friends
+          }
+          ... @defer(label: "P") {
+            scalarField
+            ... @defer(label: "C") {
+              nonNullScalarField
+              ...Friends
+            }
+          }
+        }
+      }
+      fragment Friends on NestedObject {
+        nestedFriendList @stream(initialCount: 0) {
+          name
+        }
+      }
+    `);
+    const { promise: scalarPromise, resolve: resolveScalar } =
+      promiseWithResolvers<string>();
+    const { promise: friendsPromise, resolve: resolveFriends } =
+      promiseWithResolvers<typeof friends>();
+    const result = experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        nestedObject: {
+          nonNullScalarField: null,
+          scalarField: scalarPromise,
+          nestedFriendList: friendsPromise,
+        },
+      },
+    });
+
+    assert('initialResult' in result);
+
+    expectJSON(result.initialResult).toDeepEqual({
+      data: { nestedObject: {} },
+      pending: [
+        { id: '0', path: ['nestedObject'], label: 'R' },
+        { id: '1', path: ['nestedObject'], label: 'P' },
+      ],
+      hasNext: true,
+    });
+
+    const iterator = result.subsequentResults[Symbol.asyncIterator]();
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        completed: [
+          {
+            id: '0',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field NestedObject.nonNullScalarField.',
+                locations: [
+                  { line: 5, column: 13 },
+                  { line: 11, column: 15 },
+                ],
+                path: ['nestedObject', 'nonNullScalarField'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    resolveFriends(friends);
+    await resolveOnNextTick();
+    resolveScalar('parent');
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        pending: [{ id: '2', path: ['nestedObject'], label: 'C' }],
+        incremental: [{ id: '1', data: { scalarField: 'parent' } }],
+        completed: [
+          { id: '1' },
+          {
+            id: '2',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field NestedObject.nonNullScalarField.',
+                locations: [
+                  { line: 5, column: 13 },
+                  { line: 11, column: 15 },
+                ],
+                path: ['nestedObject', 'nonNullScalarField'],
+              },
+            ],
+          },
+        ],
+        hasNext: false,
+      },
+      done: false,
+    });
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
   it('Filters stream payloads that are nulled in a deferred payload', async () => {
     const document = parse(`
       query {

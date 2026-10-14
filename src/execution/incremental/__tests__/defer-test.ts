@@ -12,6 +12,7 @@ import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.ts';
 import type { DocumentNode } from '../../../language/ast.ts';
 import { parse } from '../../../language/parser.ts';
 
+import type { GraphQLResolveInfo } from '../../../type/definition.ts';
 import {
   GraphQLList,
   GraphQLNonNull,
@@ -1971,7 +1972,7 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it.skip('Announces a nested fragment before completing its shared failure', async () => {
+  it('Announces a nested fragment before completing its shared failure', async () => {
     const document = parse(`
       {
         hero {
@@ -2045,7 +2046,7 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it.skip('Reports one cached shared failure when a nested fragment is announced', async () => {
+  it('Reports one cached shared failure when a nested fragment is announced', async () => {
     const document = parse(`
       {
         hero {
@@ -2137,6 +2138,430 @@ describe('Execute: defer directive', () => {
       },
     ]);
   });
+
+  it('Replays cached failures in field order after independent child work succeeds', async () => {
+    const document = parse(`
+      {
+        hero {
+          ... @defer(label: "P") {
+            name
+            ... @defer(label: "C") {
+              id
+              first: nonNullName
+              second: nonNullName
+            }
+          }
+          ... @defer(label: "R1") {
+            first: nonNullName
+          }
+          ... @defer(label: "R2") {
+            second: nonNullName
+          }
+        }
+      }
+    `);
+    const { promise: firstPromise, resolve: resolveFirst } =
+      promiseWithResolvers<null>();
+    const { promise: namePromise, resolve: resolveName } =
+      promiseWithResolvers<string>();
+    const id = spyOn(() => 1);
+    const nonNullName = spyOn(
+      (_args: unknown, _context: unknown, info: GraphQLResolveInfo) =>
+        info.path.key === 'first' ? firstPromise : null,
+    );
+    const result = experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: { hero: { id, name: namePromise, nonNullName } },
+    });
+
+    assert('initialResult' in result);
+
+    expectJSON(result.initialResult).toDeepEqual({
+      data: { hero: {} },
+      pending: [
+        { id: '0', path: ['hero'], label: 'P' },
+        { id: '1', path: ['hero'], label: 'R1' },
+        { id: '2', path: ['hero'], label: 'R2' },
+      ],
+      hasNext: true,
+    });
+
+    const iterator = result.subsequentResults[Symbol.asyncIterator]();
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        completed: [
+          {
+            id: '2',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field Hero.nonNullName.',
+                locations: [
+                  { line: 9, column: 15 },
+                  { line: 16, column: 13 },
+                ],
+                path: ['hero', 'second'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    resolveFirst(null);
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        completed: [
+          {
+            id: '1',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field Hero.nonNullName.',
+                locations: [
+                  { line: 8, column: 15 },
+                  { line: 13, column: 13 },
+                ],
+                path: ['hero', 'first'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    resolveName('Luke');
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        pending: [{ id: '3', path: ['hero'], label: 'C' }],
+        incremental: [{ id: '0', data: { name: 'Luke' } }],
+        completed: [
+          { id: '0' },
+          {
+            id: '3',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field Hero.nonNullName.',
+                locations: [
+                  { line: 8, column: 15 },
+                  { line: 13, column: 13 },
+                ],
+                path: ['hero', 'first'],
+              },
+            ],
+          },
+        ],
+        hasNext: false,
+      },
+      done: false,
+    });
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
+    expect(id.callCount).to.equal(1);
+    expect(nonNullName.callCount).to.equal(2);
+  });
+
+  it('Discards deferred descendants discovered after their parent fails while retaining a live owner', async () => {
+    const testSchema = buildSchema(`
+      type Query {
+        bad: String!
+        parent: String
+        user: User
+      }
+      type User {
+        bad: String!
+      }
+    `);
+    const document = parse(`
+      {
+        ... @defer(label: "P") {
+          bad
+          user {
+            ... @defer(label: "Empty") {
+              ... @defer(label: "Discarded") {
+                x: bad
+              }
+            }
+          }
+        }
+        ... @defer(label: "Q") {
+          parent
+          user {
+            ... @defer(label: "D") {
+              x: bad
+            }
+          }
+        }
+        ... @defer(label: "R") {
+          user {
+            x: bad
+          }
+        }
+      }
+    `);
+    const { promise: userPromise, resolve: resolveUser } =
+      promiseWithResolvers<{ bad: null }>();
+    const { promise: parentPromise, resolve: resolveParent } =
+      promiseWithResolvers<string>();
+    const result = experimentalExecuteIncrementally({
+      schema: testSchema,
+      document,
+      rootValue: { bad: null, parent: parentPromise, user: userPromise },
+    });
+
+    assert('initialResult' in result);
+
+    expectJSON(result.initialResult).toDeepEqual({
+      data: {},
+      pending: [
+        { id: '0', path: [], label: 'P' },
+        { id: '1', path: [], label: 'Q' },
+        { id: '2', path: [], label: 'R' },
+      ],
+      hasNext: true,
+    });
+
+    const iterator = result.subsequentResults[Symbol.asyncIterator]();
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        completed: [
+          {
+            id: '0',
+            errors: [
+              {
+                message: 'Cannot return null for non-nullable field Query.bad.',
+                locations: [{ line: 4, column: 11 }],
+                path: ['bad'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    resolveUser({ bad: null });
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        completed: [
+          {
+            id: '2',
+            errors: [
+              {
+                message: 'Cannot return null for non-nullable field User.bad.',
+                locations: [
+                  { line: 8, column: 17 },
+                  { line: 17, column: 15 },
+                  { line: 23, column: 13 },
+                ],
+                path: ['user', 'x'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    resolveParent('parent');
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        pending: [{ id: '3', path: ['user'], label: 'D' }],
+        incremental: [
+          { id: '1', data: { user: {} } },
+          { id: '1', data: { parent: 'parent' } },
+        ],
+        completed: [
+          { id: '1' },
+          {
+            id: '3',
+            errors: [
+              {
+                message: 'Cannot return null for non-nullable field User.bad.',
+                locations: [
+                  { line: 8, column: 17 },
+                  { line: 17, column: 15 },
+                  { line: 23, column: 13 },
+                ],
+                path: ['user', 'x'],
+              },
+            ],
+          },
+        ],
+        hasNext: false,
+      },
+      done: false,
+    });
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
+  for (const rejectLate of [false, true]) {
+    it(`Ignores late shared outcomes after a fragment and its descendants fail (rejectLate: ${rejectLate})`, async () => {
+      const testSchema = buildSchema(`
+        type Query {
+          bad: String!
+          parent: String
+          keep: String
+          value: String
+          lateBad: String!
+        }
+      `);
+      const document = parse(`
+        {
+          ... @defer(label: "R") {
+            bad
+            root: value
+            descendant: value
+            lateBad
+          }
+          ... @defer(label: "P") {
+            parent
+            ... @defer(label: "C") {
+              bad
+              ... @defer(label: "D") {
+                descendant: value
+                lateBad
+              }
+            }
+          }
+          ... @defer(label: "K") {
+            keep
+          }
+        }
+      `);
+      const { promise: parentPromise, resolve: resolveParent } =
+        promiseWithResolvers<string>();
+      const { promise: keepPromise, resolve: resolveKeep } =
+        promiseWithResolvers<string>();
+      const { promise: valuePromise, resolve: resolveValue } =
+        promiseWithResolvers<string>();
+      const {
+        promise: latePromise,
+        resolve: resolveLate,
+        reject: rejectLatePromise,
+      } = promiseWithResolvers<string>();
+      const value = spyOn(() => valuePromise);
+      const result = experimentalExecuteIncrementally({
+        schema: testSchema,
+        document,
+        rootValue: {
+          bad: null,
+          parent: parentPromise,
+          keep: keepPromise,
+          value,
+          lateBad: latePromise,
+        },
+      });
+
+      assert('initialResult' in result);
+
+      expectJSON(result.initialResult).toDeepEqual({
+        data: {},
+        pending: [
+          { id: '0', path: [], label: 'R' },
+          { id: '1', path: [], label: 'P' },
+          { id: '2', path: [], label: 'K' },
+        ],
+        hasNext: true,
+      });
+
+      const iterator = result.subsequentResults[Symbol.asyncIterator]();
+
+      expectJSON(await iterator.next()).toDeepEqual({
+        value: {
+          completed: [
+            {
+              id: '0',
+              errors: [
+                {
+                  message:
+                    'Cannot return null for non-nullable field Query.bad.',
+                  locations: [
+                    { line: 4, column: 13 },
+                    { line: 12, column: 15 },
+                  ],
+                  path: ['bad'],
+                },
+              ],
+            },
+          ],
+          hasNext: true,
+        },
+        done: false,
+      });
+
+      resolveParent('parent');
+
+      expectJSON(await iterator.next()).toDeepEqual({
+        value: {
+          pending: [{ id: '3', path: [], label: 'C' }],
+          incremental: [{ id: '1', data: { parent: 'parent' } }],
+          completed: [
+            { id: '1' },
+            {
+              id: '3',
+              errors: [
+                {
+                  message:
+                    'Cannot return null for non-nullable field Query.bad.',
+                  locations: [
+                    { line: 4, column: 13 },
+                    { line: 12, column: 15 },
+                  ],
+                  path: ['bad'],
+                },
+              ],
+            },
+          ],
+          hasNext: true,
+        },
+        done: false,
+      });
+
+      // Keep K pending while work owned by the failed fragments settles.
+      resolveValue('late');
+      if (rejectLate) {
+        rejectLatePromise(new Error('late failure'));
+      } else {
+        resolveLate('late');
+      }
+      await resolveOnNextTick();
+      resolveKeep('kept');
+
+      expectJSON(await iterator.next()).toDeepEqual({
+        value: {
+          incremental: [{ id: '2', data: { keep: 'kept' } }],
+          completed: [{ id: '2' }],
+          hasNext: false,
+        },
+        done: false,
+      });
+      expectJSON(await iterator.next()).toDeepEqual({
+        value: undefined,
+        done: true,
+      });
+      expect(value.callCount).to.equal(2);
+    });
+  }
 
   for (const enableEarlyExecution of [false, true]) {
     it(`Delivers a buffered shared value after its other fragment fails (enableEarlyExecution: ${enableEarlyExecution})`, async () => {
