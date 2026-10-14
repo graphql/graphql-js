@@ -776,8 +776,8 @@ export class TypeInfo {
     }
   }
   /**
-   * Updates this TypeInfo instance for a left AST node.
-   * @param node - AST node being entered.
+   * Updates this TypeInfo instance when leaving an AST node.
+   * @param node - AST node being left.
    * @returns Nothing.
    * @example
    * ```ts
@@ -801,7 +801,7 @@ export class TypeInfo {
    * String(typeInfo.getType()); // => 'String'
    *
    * typeInfo.leave(field);
-   * typeInfo.getType(); // => undefined
+   * String(typeInfo.getType()); // => 'Query'
    * ```
    */
   leave(node: ASTNode): void {

@@ -2728,7 +2728,7 @@ export interface GraphQLResolveInfoHelpers {
 }
 /** Information about the currently executing GraphQL field. */
 export interface GraphQLResolveInfo {
-  /** The field name referenced by this schema coordinate. */
+  /** Name of the field being resolved. */
   readonly fieldName: string;
   /** AST field nodes that contributed to the current field execution. */
   readonly fieldNodes: ReadonlyArray<FieldNode>;
@@ -2736,9 +2736,9 @@ export interface GraphQLResolveInfo {
   readonly returnType: GraphQLOutputType;
   /** Object type that owns the current field. */
   readonly parentType: GraphQLObjectType;
-  /** Response path where this error occurred during execution. */
+  /** Response path of the field being resolved. */
   readonly path: Path;
-  /** The schema used for validation or execution. */
+  /** The schema being executed. */
   readonly schema: GraphQLSchema;
   /** Fragment definitions in the operation document keyed by fragment name. */
   readonly fragments: ObjMap<FragmentDefinitionNode>;
@@ -4279,8 +4279,8 @@ export class GraphQLEnumType /* <T> */ /* <T> */
     return enumValue.value;
   }
   /**
-   * Converts a runtime enum value to a GraphQL enum value AST node.
-   * @param value - Runtime enum value to convert.
+   * Converts an external enum value name to a GraphQL enum value AST node.
+   * @param value - External enum value name to convert.
    * @returns Enum value AST node, or undefined if the value is invalid.
    * @example
    * ```ts
@@ -4296,8 +4296,9 @@ export class GraphQLEnumType /* <T> */ /* <T> */
    *   },
    * });
    *
-   * print(RGB.valueToLiteral(2)); // => 'BLUE'
-   * RGB.valueToLiteral(3); // => undefined
+   * print(RGB.valueToLiteral('BLUE')); // => 'BLUE'
+   * RGB.valueToLiteral(2); // => undefined
+   * RGB.valueToLiteral('PURPLE'); // => undefined
    * ```
    */
   valueToLiteral(value: unknown): ConstValueNode | undefined {
