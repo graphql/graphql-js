@@ -49,6 +49,16 @@ export declare class SDLValidationContext extends ASTValidationContext {
 }
 /** @internal */
 export type SDLValidationRule = (context: SDLValidationContext) => ASTVisitor;
+/** Options used when constructing a {@link ValidationContext}. */
+interface ValidationContextOptions {
+    /** Whether suggestion text should be omitted from errors. */
+    hideSuggestions?: Maybe<boolean>;
+    /**
+     * Whether selection sets on composite types may be empty.
+     * @deprecated empty selection sets are now always allowed;
+     */
+    allowEmptySelectionSets?: Maybe<boolean>;
+}
 /** Validation context passed to query validation rules. */
 export declare class ValidationContext extends ASTValidationContext {
     private _schema;
@@ -56,13 +66,14 @@ export declare class ValidationContext extends ASTValidationContext {
     private _variableUsages;
     private _recursiveVariableUsages;
     private _hideSuggestions;
+    private _allowEmptySelectionSets;
     /**
      * Creates a ValidationContext instance.
      * @param schema - Schema used to validate the document.
      * @param ast - Document AST being validated.
      * @param typeInfo - TypeInfo instance used to track traversal state.
      * @param onError - Callback invoked for each validation error.
-     * @param hideSuggestions - Whether suggestion text should be omitted from errors.
+     * @param options - Validation options.
      * @example
      * ```ts
      * import { parse } from 'graphql/language';
@@ -90,6 +101,33 @@ export declare class ValidationContext extends ASTValidationContext {
      * errors[0].message; // => 'Example validation error.'
      * ```
      */
+    constructor(schema: GraphQLSchema, ast: DocumentNode, typeInfo: TypeInfo, onError: (error: GraphQLError) => void, options?: ValidationContextOptions);
+    /**
+     * Creates a ValidationContext instance using the legacy positional options.
+     * @param schema - Schema used to validate the document.
+     * @param ast - Document AST being validated.
+     * @param typeInfo - TypeInfo instance used to track traversal state.
+     * @param onError - Callback invoked for each validation error.
+     * @param hideSuggestions - Whether suggestion text should be omitted from errors.
+     * @example
+     * ```ts
+     * import { parse } from 'graphql/language';
+     * import { buildSchema, TypeInfo } from 'graphql/utilities';
+     * import { ValidationContext } from 'graphql/validation';
+     *
+     * const schema = buildSchema('type Query { greeting: String }');
+     * const context = new ValidationContext(
+     *   schema,
+     *   parse('{ greeting }'),
+     *   new TypeInfo(schema),
+     *   () => {},
+     *   true,
+     * );
+     *
+     * context.hideSuggestions; // => true
+     * ```
+     * @deprecated Please pass an options object instead; this signature will be removed in v18.
+     */
     constructor(schema: GraphQLSchema, ast: DocumentNode, typeInfo: TypeInfo, onError: (error: GraphQLError) => void, hideSuggestions?: Maybe<boolean>);
     /**
      * Returns the value used by `Object.prototype.toString`.
@@ -101,6 +139,12 @@ export declare class ValidationContext extends ASTValidationContext {
      * @returns True when suggestion text should be omitted from errors.
      */
     get hideSuggestions(): boolean;
+    /**
+     * Returns whether empty selection sets on composite types are allowed.
+     * @returns True when a selection set on a composite type may be empty.
+     * @deprecated empty selection sets are now always allowed;
+     */
+    get allowEmptySelectionSets(): boolean;
     /**
      * Returns the schema being used by this validation context.
      * @returns The schema being validated against.

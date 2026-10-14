@@ -13,6 +13,16 @@ export interface ValidationOptions {
     maxErrors?: number;
     /** Whether suggestion text should be omitted from validation errors. */
     hideSuggestions?: Maybe<boolean>;
+    /**
+     * If enabled (the default), a selection set on an object, interface or
+     * union type is only required to be present, rather than to be non-empty.
+     *
+     * Pair this with the `allowEmptySelectionSets` parse option.
+     *
+     * See https://github.com/graphql/graphql-spec/pull/1227
+     * @deprecated empty selection sets are now always allowed;
+     */
+    allowEmptySelectionSets?: boolean | undefined;
 }
 /**
  * Implements the "Validation" section of the spec.

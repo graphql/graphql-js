@@ -100,19 +100,27 @@ class SDLValidationContext extends ASTValidationContext {
 }
 exports.SDLValidationContext = SDLValidationContext;
 class ValidationContext extends ASTValidationContext {
-    constructor(schema, ast, typeInfo, onError, hideSuggestions) {
+    constructor(schema, ast, typeInfo, onError, hideSuggestionsOrOptions) {
+        const options = typeof hideSuggestionsOrOptions === 'boolean'
+            ? { hideSuggestions: hideSuggestionsOrOptions }
+            : (hideSuggestionsOrOptions ?? {});
+        const { hideSuggestions, allowEmptySelectionSets } = options;
         super(ast, onError);
         this._schema = schema;
         this._typeInfo = typeInfo;
         this._variableUsages = new Map();
         this._recursiveVariableUsages = new Map();
         this._hideSuggestions = hideSuggestions ?? false;
+        this._allowEmptySelectionSets = allowEmptySelectionSets ?? true;
     }
     get [Symbol.toStringTag]() {
         return 'ValidationContext';
     }
     get hideSuggestions() {
         return this._hideSuggestions;
+    }
+    get allowEmptySelectionSets() {
+        return this._allowEmptySelectionSets;
     }
     getSchema() {
         return this._schema;

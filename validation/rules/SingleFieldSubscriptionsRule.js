@@ -30,7 +30,12 @@ function SingleFieldSubscriptionsRule(context) {
                             : 'Anonymous Subscription must not use `@skip` or `@include` directives in the top level selection.', { nodes: forbiddenDirectiveInstances }));
                         return;
                     }
-                    if (groupedFieldSet.size > 1) {
+                    if (groupedFieldSet.size === 0) {
+                        context.reportError(new GraphQLError_ts_1.GraphQLError(operationName != null
+                            ? `Subscription "${operationName}" must select one top level field.`
+                            : 'Anonymous Subscription must select one top level field.', { nodes: node.selectionSet }));
+                    }
+                    else if (groupedFieldSet.size > 1) {
                         const fieldDetailsLists = [...groupedFieldSet.values()];
                         const extraFieldDetailsLists = fieldDetailsLists.slice(1);
                         const extraFieldSelections = extraFieldDetailsLists.flatMap((fieldDetailsList) => toNodes(fieldDetailsList));

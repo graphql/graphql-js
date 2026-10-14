@@ -17,6 +17,7 @@ export function validate(schema, documentAST, rules = specifiedRules, options) {
 function validateImpl(schema, documentAST, rules, options) {
     const maxErrors = options?.maxErrors ?? 100;
     const hideSuggestions = options?.hideSuggestions ?? false;
+    const allowEmptySelectionSets = options?.allowEmptySelectionSets ?? true;
     assertValidSchema(schema);
     const errors = [];
     const typeInfo = new TypeInfo(schema);
@@ -25,7 +26,7 @@ function validateImpl(schema, documentAST, rules, options) {
             throw tooManyValidationErrorsError;
         }
         errors.push(error);
-    }, hideSuggestions);
+    }, { hideSuggestions, allowEmptySelectionSets });
     const visitor = visitInParallel(rules.map((rule) => rule(context)));
     try {
         visit(documentAST, visitWithTypeInfo(typeInfo, visitor), QueryDocumentKeysToValidate);

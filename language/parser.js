@@ -203,7 +203,9 @@ class Parser {
     parseSelectionSet() {
         return this.node(this._lexer.token, {
             kind: kinds_ts_1.Kind.SELECTION_SET,
-            selections: this.many(tokenKind_ts_1.TokenKind.BRACE_L, this.parseSelection, tokenKind_ts_1.TokenKind.BRACE_R),
+            selections: this._options.allowEmptySelectionSets === false
+                ? this.many(tokenKind_ts_1.TokenKind.BRACE_L, this.parseSelection, tokenKind_ts_1.TokenKind.BRACE_R)
+                : this.any(tokenKind_ts_1.TokenKind.BRACE_L, this.parseSelection, tokenKind_ts_1.TokenKind.BRACE_R),
         });
     }
     parseSelection() {

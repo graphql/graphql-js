@@ -23,6 +23,7 @@ function validate(schema, documentAST, rules = specifiedRules_ts_1.specifiedRule
 function validateImpl(schema, documentAST, rules, options) {
     const maxErrors = options?.maxErrors ?? 100;
     const hideSuggestions = options?.hideSuggestions ?? false;
+    const allowEmptySelectionSets = options?.allowEmptySelectionSets ?? true;
     (0, validate_ts_1.assertValidSchema)(schema);
     const errors = [];
     const typeInfo = new TypeInfo_ts_1.TypeInfo(schema);
@@ -31,7 +32,7 @@ function validateImpl(schema, documentAST, rules, options) {
             throw tooManyValidationErrorsError;
         }
         errors.push(error);
-    }, hideSuggestions);
+    }, { hideSuggestions, allowEmptySelectionSets });
     const visitor = (0, visitor_ts_1.visitInParallel)(rules.map((rule) => rule(context)));
     try {
         (0, visitor_ts_1.visit)(documentAST, (0, TypeInfo_ts_1.visitWithTypeInfo)(typeInfo, visitor), QueryDocumentKeysToValidate);
