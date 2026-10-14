@@ -4,7 +4,9 @@ import type { ValidationContext } from "../ValidationContext.mjs";
 /**
  * Defer And Stream Directives Are Used On Valid Operations
  *
- * A GraphQL document is only valid if defer and stream directives are not used on root mutation or subscription types.
+ * Subscription operations must not use unconditional `@defer` or `@stream`.
+ * Their `if` argument must be `false` or a variable, unless the selection or
+ * an enclosing selection can be skipped via `@skip` or `@include`.
  * @param context - The validation context used while checking the document.
  * @returns A visitor that reports validation errors for this rule.
  * @example

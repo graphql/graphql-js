@@ -54,7 +54,7 @@ export interface ValidationOptions {
  *
  * const schema = buildSchema(`
  *   type Query {
- *     fullName: String
+ *     greeting: String
  *   }
  * `);
  *

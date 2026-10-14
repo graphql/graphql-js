@@ -69,7 +69,7 @@ type VariableValuesOrErrors = {
  * const operation = document.definitions[0];
  *
  * const result = getVariableValues(schema, operation.variableDefinitions, {
- *   stars: '5',
+ *   stars: 5,
  * });
  *
  * assert('variableValues' in result);
@@ -170,7 +170,7 @@ export declare function getFragmentVariableValues(fragmentSpreadNode: FragmentSp
  * const operation = document.definitions[0];
  * const fieldNode = document.definitions[0].selectionSet.selections[0];
  * const variables = getVariableValues(schema, operation.variableDefinitions, {
- *   stars: '5',
+ *   stars: 5,
  * });
  *
  * assert('variableValues' in variables);

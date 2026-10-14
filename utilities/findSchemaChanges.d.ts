@@ -166,7 +166,7 @@ export declare function findDangerousChanges(oldSchema: GraphQLSchema, newSchema
  *
  * const changes = findSchemaChanges(oldSchema, newSchema);
  *
- * changes.map((change) => change.type); // => ['OPTIONAL_ARG_ADDED', 'FIELD_ADDED']
+ * changes.map((change) => change.type); // => ['FIELD_ADDED', 'OPTIONAL_ARG_ADDED']
  * ```
  */
 export declare function findSchemaChanges(oldSchema: GraphQLSchema, newSchema: GraphQLSchema): Array<SchemaChange>;
