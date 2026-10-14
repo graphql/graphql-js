@@ -46,9 +46,7 @@ import type { ValidationContext } from '../../ValidationContext.ts';
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   NoSchemaIntrospectionCustomRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export function NoSchemaIntrospectionCustomRule(

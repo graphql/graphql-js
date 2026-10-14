@@ -38,9 +38,7 @@ import type { ValidationContext } from '../ValidationContext.ts';
  * const validDocument = parse(`
  *   query ($id: ID) { field(arg: $id) }
  * `);
- * const validErrors = validate(schema, validDocument, [NoUndefinedVariablesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [NoUndefinedVariablesRule]); // => []
  * ```
  */
 export function NoUndefinedVariablesRule(

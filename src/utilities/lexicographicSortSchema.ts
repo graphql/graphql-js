@@ -36,18 +36,18 @@ import { mapSchemaConfig, SchemaElementKind } from './mapSchemaConfig.ts';
  *
  * const sortedSchema = lexicographicSortSchema(schema);
  *
- * printSchema(sortedSchema);
- * // =>
- * // enum Episode {
- * //   EMPIRE
- * //   JEDI
- * //   NEW_HOPE
- * // }
- * //
- * // type Query {
- * //   apple: String
- * //   zebra: String
- * // }
+ * const expectedSDL = `enum Episode {
+ *   EMPIRE
+ *   JEDI
+ *   NEW_HOPE
+ * }
+ *
+ * type Query {
+ *   apple: String
+ *   zebra: String
+ * }`;
+ *
+ * printSchema(sortedSchema); // => expectedSDL
  * ```
  */
 export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {

@@ -86,9 +86,7 @@ import { assertSchema } from './schema.ts';
  *     name: String
  *   }
  * `);
- * const errors = validateSchema(schema);
- *
- * errors; // => []
+ * const errors = validateSchema(schema); // => []
  * ```
  */
 export function validateSchema(

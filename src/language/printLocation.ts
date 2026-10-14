@@ -17,9 +17,7 @@ import type { Source } from './source.ts';
  * const location = document.definitions[0].loc;
  *
  * if (location) {
- *   const printed = printLocation(location);
- *
- *   printed; // => 'GraphQL request:1:1\n1 | type Query { hello: String }\n  | ^'
+ *   const printed = printLocation(location); // => 'GraphQL request:1:1\n1 | type Query { hello: String }\n  | ^'
  * }
  * ```
  */
@@ -40,9 +38,7 @@ export function printLocation(location: Location): string {
  * import { Source, printSourceLocation } from 'graphql/language';
  *
  * const source = new Source('type Query { hello: String }');
- * const printed = printSourceLocation(source, { line: 1, column: 14 });
- *
- * printed; // => 'GraphQL request:1:14\n1 | type Query { hello: String }\n  |              ^'
+ * const printed = printSourceLocation(source, { line: 1, column: 14 }); // => 'GraphQL request:1:14\n1 | type Query { hello: String }\n  |              ^'
  * ```
  */
 export function printSourceLocation(

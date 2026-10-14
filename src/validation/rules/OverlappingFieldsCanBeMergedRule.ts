@@ -95,9 +95,7 @@ function reasonMessage(reason: ConflictReasonMessage): string {
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   OverlappingFieldsCanBeMergedRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export function OverlappingFieldsCanBeMergedRule(

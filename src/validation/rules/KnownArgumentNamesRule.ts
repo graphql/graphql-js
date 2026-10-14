@@ -48,9 +48,7 @@ import type {
  * const validDocument = parse(`
  *   { field(arg: "1") }
  * `);
- * const validErrors = validate(schema, validDocument, [KnownArgumentNamesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [KnownArgumentNamesRule]); // => []
  * ```
  */
 export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {

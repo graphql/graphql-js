@@ -50,9 +50,7 @@ import type { ValidationContext } from '../ValidationContext.ts';
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   VariablesAreInputTypesRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export function VariablesAreInputTypesRule(
