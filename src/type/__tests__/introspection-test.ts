@@ -1796,6 +1796,64 @@ describe('Introspection', () => {
     });
   });
 
+  it('returns null for descriptions of wrapping types', () => {
+    const schema = buildSchema(`
+      """Object description"""
+      type SomeObject {
+        listField: [SomeObject]
+        nonNullField: SomeObject!
+      }
+
+      schema {
+        query: SomeObject
+      }
+    `);
+
+    const source = `
+      {
+        __type(name: "SomeObject") {
+          description
+          fields {
+            name
+            type {
+              kind
+              description
+              ofType {
+                description
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    expect(graphqlSync({ schema, source })).to.deep.equal({
+      data: {
+        __type: {
+          description: 'Object description',
+          fields: [
+            {
+              name: 'listField',
+              type: {
+                kind: 'LIST',
+                description: null,
+                ofType: { description: 'Object description' },
+              },
+            },
+            {
+              name: 'nonNullField',
+              type: {
+                kind: 'NON_NULL',
+                description: null,
+                ofType: { description: 'Object description' },
+              },
+            },
+          ],
+        },
+      },
+    });
+  });
+
   it('executes an introspection query without calling global resolvers', () => {
     const schema = buildSchema(`
       type Query {
