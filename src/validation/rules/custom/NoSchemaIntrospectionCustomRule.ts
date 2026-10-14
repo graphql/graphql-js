@@ -37,7 +37,7 @@ import type { ValidationContext } from '../../ValidationContext';
  * `);
  * const invalidErrors = validate(schema, invalidDocument, [NoSchemaIntrospectionCustomRule]);
  *
- * invalidErrors.length; // => 1
+ * invalidErrors.length; // => 2
  *
  * const validDocument = parse(`
  *   { name }

@@ -2516,7 +2516,7 @@ export type GraphQLFieldResolver<
 
 /** Information about the currently executing GraphQL field. */
 export interface GraphQLResolveInfo {
-  /** The field name referenced by this schema coordinate. */
+  /** Name of the field being resolved. */
   readonly fieldName: string;
   /** AST field nodes that contributed to the current field execution. */
   readonly fieldNodes: ReadonlyArray<FieldNode>;
@@ -2524,9 +2524,9 @@ export interface GraphQLResolveInfo {
   readonly returnType: GraphQLOutputType;
   /** Object type that owns the current field. */
   readonly parentType: GraphQLObjectType;
-  /** Response path where this error occurred during execution. */
+  /** Response path of the field being resolved. */
   readonly path: Path;
-  /** The schema used for validation or execution. */
+  /** The schema being executed. */
   readonly schema: GraphQLSchema;
   /** Fragment definitions in the operation document keyed by fragment name. */
   readonly fragments: ObjMap<FragmentDefinitionNode>;

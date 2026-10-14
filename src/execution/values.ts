@@ -76,7 +76,7 @@ export interface GetVariableValuesOptions {
  * const result = getVariableValues(
  *   schema,
  *   operation.variableDefinitions,
- *   { stars: '5' },
+ *   { stars: 5 },
  * );
  *
  * result; // => { coerced: { stars: 5, limit: 10 } }

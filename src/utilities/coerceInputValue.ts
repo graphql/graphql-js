@@ -52,7 +52,7 @@ type OnErrorCB = (
  *   },
  * });
  *
- * coerceInputValue({ stars: '5', tags: ['featured'] }, ReviewInput); // => { stars: 5, tags: ['featured'] }
+ * coerceInputValue({ stars: 5, tags: ['featured'] }, ReviewInput); // => { stars: 5, tags: ['featured'] }
  * coerceInputValue({ stars: 'bad' }, ReviewInput); // throws an error
  * ```
  * @example
