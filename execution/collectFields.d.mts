@@ -6,6 +6,7 @@ import type { GraphQLVariableSignature } from "./getVariableSignature.mjs";
 import type { VariableValues } from "./values.mjs";
 /** @internal */
 export interface DeferUsage {
+    directiveNode: DirectiveNode;
     label: string | undefined;
     parentDeferUsage: DeferUsage | undefined;
 }

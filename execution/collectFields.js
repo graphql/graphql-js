@@ -94,23 +94,21 @@ function collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsage
                     continue;
                 }
                 const newDeferUsage = getDeferUsage(variableValues, fragmentVariableValues, selection, deferUsage);
-                const visitedAsDeferred = visitedFragmentNames.get(fragName);
-                let maybeNewDeferUsage;
-                if (!newDeferUsage) {
-                    if (visitedAsDeferred === false) {
-                        continue;
-                    }
-                    visitedFragmentNames.set(fragName, false);
-                    maybeNewDeferUsage = deferUsage;
+                const maybeNewDeferUsage = newDeferUsage ?? deferUsage;
+                let visitedDeferSet = visitedFragmentNames.get(fragName);
+                if (!visitedDeferSet) {
+                    visitedDeferSet = new Set();
+                    visitedFragmentNames.set(fragName, visitedDeferSet);
                 }
-                else {
-                    if (visitedAsDeferred !== undefined) {
-                        continue;
-                    }
-                    visitedFragmentNames.set(fragName, true);
+                if (visitedDeferSet.has(null) ||
+                    (maybeNewDeferUsage &&
+                        visitedDeferSet.has(maybeNewDeferUsage.directiveNode))) {
+                    continue;
+                }
+                if (newDeferUsage) {
                     newDeferUsages.push(newDeferUsage);
-                    maybeNewDeferUsage = newDeferUsage;
                 }
+                visitedDeferSet.add(maybeNewDeferUsage?.directiveNode ?? null);
                 const fragmentVariableSignatures = fragment.variableSignatures;
                 let newFragmentVariableValues;
                 if (fragmentVariableSignatures) {
@@ -123,15 +121,17 @@ function collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsage
     }
 }
 function getDeferUsage(variableValues, fragmentVariableValues, node, parentDeferUsage) {
-    const defer = (0, values_ts_1.getDirectiveValues)(directives_ts_1.GraphQLDeferDirective, node, variableValues, fragmentVariableValues);
-    if (!defer) {
+    const directiveNode = node.directives?.find((directive) => directive.name.value === directives_ts_1.GraphQLDeferDirective.name);
+    if (!directiveNode) {
         return;
     }
+    const defer = (0, values_ts_1.getArgumentValues)(directives_ts_1.GraphQLDeferDirective, directiveNode, variableValues, fragmentVariableValues);
     if (defer.if === false) {
         return;
     }
     return {
         label: typeof defer.label === 'string' ? defer.label : undefined,
+        directiveNode,
         parentDeferUsage,
     };
 }
