@@ -799,7 +799,7 @@ export class TypeInfo {
   }
 
   /**
-   * Updates this TypeInfo instance for a left AST node.
+   * Updates this TypeInfo instance when leaving an AST node.
    * @param node - AST node being left.
    * @returns Nothing.
    * @example

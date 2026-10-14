@@ -4485,7 +4485,8 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
    * });
    *
    * print(RGB.valueToLiteral('BLUE')); // => 'BLUE'
-   * RGB.valueToLiteral(3); // => undefined
+   * RGB.valueToLiteral(2); // => undefined
+   * RGB.valueToLiteral('PURPLE'); // => undefined
    * ```
    */
   valueToLiteral(value: unknown): ConstValueNode | undefined {
