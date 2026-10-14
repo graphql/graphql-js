@@ -1,3 +1,4 @@
+import { invariant } from '../../jsutils/invariant.ts';
 import { isPromise } from '../../jsutils/isPromise.ts';
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 
@@ -408,7 +409,8 @@ export function createWorkQueue<
     for (const newGroup of newGroups) {
       const newGroupState = groupNodes.get(newGroup);
       if (newGroupState) {
-        if (newGroupState.pending === 0) {
+        // Settled tasks can still hold values that have not been published.
+        if (newGroupState.tasks.size === 0) {
           groupNodes.delete(newGroup);
           pruneEmptyGroups(newGroupState.childGroups, nonEmptyNewGroups);
         } else {
@@ -422,16 +424,35 @@ export function createWorkQueue<
   function startNewWork(
     newGroups: ReadonlyArray<G>,
     newStreams: ReadonlyArray<S>,
-  ): void {
-    for (const group of newGroups) {
+  ): ReadonlyArray<
+    GroupValuesEvent<T, I, G, S> | GroupSuccessEvent<T, I, G, S>
+  > {
+    const groupEvents: Array<
+      GroupValuesEvent<T, I, G, S> | GroupSuccessEvent<T, I, G, S>
+    > = [];
+    // Completing a released group can append more groups and streams to start.
+    const groupsToStart = [...newGroups];
+    const streamsToStart = [...newStreams];
+    for (const group of groupsToStart) {
       rootGroups.add(group);
       startGroup(group);
+      const groupNode = groupNodes.get(group);
+      if (groupNode) {
+        maybeFinishGroup(
+          group,
+          groupNode,
+          groupEvents,
+          groupsToStart,
+          streamsToStart,
+        );
+      }
     }
-    for (const stream of newStreams) {
+    for (const stream of streamsToStart) {
       rootStreams.add(stream);
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       startStream(stream);
     }
+    return groupEvents;
   }
 
   function startGroup(group: G): void {
@@ -558,8 +579,7 @@ export function createWorkQueue<
       }
     }
 
-    startNewWork(newGroups, newStreams);
-    return groupEvents;
+    return [...groupEvents, ...startNewWork(newGroups, newStreams)];
   }
 
   function maybeFinishGroup(
@@ -618,7 +638,10 @@ export function createWorkQueue<
       const { newGroups: itemNewGroups, newStreams: itemNewStreams } =
         maybeIntegrateWork(work);
       const nonEmptyNewGroups = pruneEmptyGroups(itemNewGroups);
-      startNewWork(nonEmptyNewGroups, itemNewStreams);
+      const groupEvents = startNewWork(nonEmptyNewGroups, itemNewStreams);
+      // These groups are newly introduced, so their task outcomes have not yet
+      // been processed. Even synchronous task results are queued as graph events.
+      invariant(groupEvents.length === 0);
       values.push(value);
       newGroups.push(...nonEmptyNewGroups);
       newStreams.push(...itemNewStreams);
