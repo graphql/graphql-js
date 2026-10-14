@@ -8,6 +8,7 @@ import { GraphQLError } from '../../error/GraphQLError.ts';
 
 import type {
   ArgumentNode,
+  ASTNode,
   FieldNode,
   FragmentArgumentNode,
   FragmentDefinitionNode,
@@ -104,13 +105,6 @@ const conflictReported = new Error('Conflict reported.');
 export function OverlappingFieldsCanBeMergedRule(
   validationContext: ValidationContext,
 ): ASTVisitor {
-  const hasFragmentArguments = validationContext
-    .getDocument()
-    .definitions.some(
-      (definition) =>
-        definition.kind === Kind.FRAGMENT_DEFINITION &&
-        (definition.variableDefinitions?.length ?? 0) !== 0,
-    );
   const ruleContext: RuleContext = {
     // A memoization for when fields and a fragment or two fragments are compared
     // "between" each other for conflicts. Comparisons may be made many times,
@@ -146,41 +140,21 @@ export function OverlappingFieldsCanBeMergedRule(
       if (parent && 'kind' in parent && parent.kind === Kind.INLINE_FRAGMENT) {
         return;
       }
+      const collection = collectFields(
+        validationContext,
+        ruleContext,
+        validationContext.getParentType(),
+        selectionSet,
+      );
+      // Children and fragment definitions are visited independently. With no
+      // peers here, there is nothing to merge at this response level.
+      if (!collection.needsComparison) {
+        return;
+      }
+      const scoped = getScopedFields(collection, fragmentScope);
       try {
-        if (hasFragmentArguments) {
-          const conflicts = findConflictsWithinSelectionSet(
-            validationContext,
-            ruleContext,
-            validationContext.getParentType(),
-            selectionSet,
-            fragmentScope,
-          );
-          const conflict = conflicts[0];
-          if (conflict !== undefined) {
-            const { responseName, reason, fields1, fields2 } = conflict;
-            validationContext.reportError(
-              new GraphQLError(
-                `Fields "${maybeAbbreviate(responseName)}" conflict because ${reason}. Use different aliases on the fields or their ancestors to fetch both if this was intentional.`,
-                { nodes: fields1.concat(fields2) },
-              ),
-            );
-            return BREAK;
-          }
-          return;
-        }
-        const collection = collectFields(
-          validationContext,
-          ruleContext,
-          validationContext.getParentType(),
-          selectionSet,
-        );
-        // Children and fragment definitions are visited independently. With no
-        // peers here, there is nothing to merge at this response level.
-        if (!collection.needsComparison) {
-          return;
-        }
-        checkCommonParents(validationContext, ruleContext, collection);
-        checkResponseShape(validationContext, ruleContext, collection);
+        checkCommonParents(validationContext, ruleContext, scoped);
+        checkResponseShape(validationContext, ruleContext, scoped);
       } catch (error) {
         if (error !== conflictReported) {
           throw error;
@@ -203,6 +177,7 @@ interface FieldDetails {
   parentType: Maybe<GraphQLNamedType>;
   node: FieldNode;
   definition: Maybe<GraphQLField<unknown, unknown>>;
+  scope?: VariableScope;
 }
 interface FieldInfo {
   comparisons?: Map<FieldInfo, FieldComparison>;
@@ -242,7 +217,10 @@ interface CollectFieldsResult extends FieldSetState {
   groupedFieldSet: GroupedFieldSet;
   spreads: ReadonlyArray<FragmentSpreadNode>;
   needsComparison: boolean;
-  byScope?: Map<VariableScope | undefined, FragmentSpreads>;
+  scope?: VariableScope;
+  byScope?: Map<VariableScope, CollectFieldsResult>;
+  resolvedSpreads?: FragmentSpreads;
+  fragmentSpreadsByScope?: Map<VariableScope | undefined, FragmentSpreads>;
   overlappingFields?: Map<CollectFieldsResult, Array<OverlappingFields>>;
 }
 type FieldSet = CollectFieldsResult | MergedFieldSet;
@@ -297,7 +275,7 @@ interface RuleContext {
 // https://github.com/graphql/graphql-js/issues/2185
 //
 // Collect direct fields and inline fragments once per selection set and parent
-// type. When a comparison needs named fragments, expand their collections
+// type. When a comparison needs named fragments, expand their scoped collections
 // at this response level and group the resulting fields by response name.
 //
 // Two separate walks apply different requirements to each group:
@@ -308,10 +286,33 @@ interface RuleContext {
 // Each walk merges all child selections in its group before descending. Equality
 // checks need only one representative, but child selections need every member.
 //
-// Cache the walks by their sets of source collections. The complexity
+// Cache the walks by their sets of scoped source collections. The complexity
 // budget still bounds distinct merged states and repeated expansion: caching
 // sets alone does not make that work linear. Report the first conflicting pair
 // directly, without a second walk to reconstruct ancestry paths.
+function getScopedFields(
+  collection: CollectFieldsResult,
+  scope: VariableScope | undefined,
+): CollectFieldsResult {
+  // The source collection is already the unbound instance. Only fragment
+  // arguments require a separate record; its source fields remain shared.
+  if (scope === undefined) {
+    return collection;
+  }
+  const byScope = (collection.byScope ??= new Map());
+  let scoped = byScope.get(scope);
+  if (scoped === undefined) {
+    scoped = {
+      groupedFieldSet: collection.groupedFieldSet,
+      spreads: collection.spreads,
+      needsComparison: collection.needsComparison,
+      scope,
+    };
+    byScope.set(scope, scoped);
+  }
+  return scoped;
+}
+
 function checkResponseShape(
   validationContext: ValidationContext,
   ruleContext: RuleContext,
@@ -342,11 +343,16 @@ function checkResponseShape(
         let reason = 'they have overlapping stream directives';
         if (
           otherInfo.hasStream &&
-          compareArguments(
+          sameArguments(
             ruleContext,
-            info.streamArguments,
-            otherInfo.streamArguments,
-          ) !== false
+            compareArguments(
+              ruleContext,
+              info.streamArguments,
+              otherInfo.streamArguments,
+            ),
+            field.scope,
+            other.scope,
+          )
         ) {
           reason +=
             '. See https://github.com/graphql/defer-stream-wg/discussions/100';
@@ -387,15 +393,22 @@ function getMergedFields(
   if (check.fields !== undefined) {
     return check.fields;
   }
-  // Without fragment expansion, the collected map is already complete.
-  if ('groupedFieldSet' in check && check.spreads.length === 0) {
+  // With no binding or expansion, the collected map is already complete.
+  if (
+    'groupedFieldSet' in check &&
+    check.scope === undefined &&
+    check.spreads.length === 0
+  ) {
     check.fields = check.groupedFieldSet;
     return check.fields;
   }
   const groups: GroupedFieldSet = new Map();
-  // Expand each source once at this response level.
+  // Expand each scoped source once at this response level. Keep a spread per
+  // definition as well: equal fields do not imply equal fragment bindings.
   const pending = new Set('sets' in check ? check.sets : [check]);
+  const fragments = new Map<FragmentDefinitionNode, FragmentSpread>();
   for (const collection of pending) {
+    const { scope } = collection;
     for (const [name, fields] of collection.groupedFieldSet) {
       let group = groups.get(name);
       if (group === undefined) {
@@ -403,11 +416,11 @@ function getMergedFields(
         groups.set(name, group);
       }
       for (const details of fields) {
-        if (pending.size > 1) {
-          // Distinct merges can revisit a source field.
+        if (pending.size > 1 || scope !== undefined) {
+          // Merges and bound fragment uses can revisit a source field.
           spendComplexityBudget(ruleContext, 1);
         }
-        group.push(details);
+        group.push(scope === undefined ? details : { ...details, scope });
       }
     }
     if (collection.spreads.length === 0) {
@@ -417,7 +430,6 @@ function getMergedFields(
       validationContext,
       ruleContext,
       collection,
-      undefined,
     )) {
       // Each merge can revisit the same fragment references, including hits.
       spendComplexityBudget(ruleContext, 1);
@@ -425,8 +437,24 @@ function getMergedFields(
       if (definition === undefined) {
         continue;
       }
+      const previous = fragments.get(definition);
+      if (
+        previous !== undefined &&
+        getFragmentSpreadKey(previous) !== getFragmentSpreadKey(spread)
+      ) {
+        reportConflict(
+          validationContext,
+          previous.node,
+          spread.node,
+          `Spreads "${maybeAbbreviate(spread.node.name.value)}" conflict because ${getFragmentSpreadDescription(ruleContext, previous.node)} and ${getFragmentSpreadDescription(ruleContext, spread.node)} have different fragment arguments.`,
+        );
+      }
+      fragments.set(definition, spread);
       pending.add(
-        collectFragmentFields(validationContext, ruleContext, definition),
+        getScopedFields(
+          collectFragmentFields(validationContext, ruleContext, definition),
+          spread.scope,
+        ),
       );
     }
   }
@@ -444,11 +472,14 @@ function getMergedChildren(
     // The completed group comparison already charged for these members.
     if (field.node.selectionSet !== undefined) {
       (sets ??= new Set()).add(
-        collectFields(
-          validationContext,
-          ruleContext,
-          getNamedType(field.definition?.type),
-          field.node.selectionSet,
+        getScopedFields(
+          collectFields(
+            validationContext,
+            ruleContext,
+            getNamedType(field.definition?.type),
+            field.node.selectionSet,
+          ),
+          field.scope,
         ),
       );
     }
@@ -552,11 +583,16 @@ function checkCommonParentFields(
         );
       }
       if (
-        (comparison.arguments ??= compareArguments(
+        !sameArguments(
           ruleContext,
-          fieldInfo1.arguments,
-          fieldInfo2.arguments,
-        )) === false
+          (comparison.arguments ??= compareArguments(
+            ruleContext,
+            fieldInfo1.arguments,
+            fieldInfo2.arguments,
+          )),
+          first.scope,
+          field.scope,
+        )
       ) {
         reportFieldConflict(
           validationContext,
@@ -588,11 +624,22 @@ function reportFieldConflict(
 ): never {
   const node = first.node;
   const responseName = node.alias?.value ?? node.name.value;
+  reportConflict(
+    validationContext,
+    node,
+    second.node,
+    `Fields "${maybeAbbreviate(responseName)}" conflict because ${reason}. Use different aliases on the fields or their ancestors to fetch both if this was intentional.`,
+  );
+}
+
+function reportConflict(
+  validationContext: ValidationContext,
+  first: ASTNode,
+  second: ASTNode,
+  message: string,
+): never {
   validationContext.reportError(
-    new GraphQLError(
-      `Fields "${maybeAbbreviate(responseName)}" conflict because ${reason}. Use different aliases on the fields or their ancestors to fetch both if this was intentional.`,
-      { nodes: [node, second.node] },
-    ),
+    new GraphQLError(message, { nodes: [first, second] }),
   );
   throw conflictReported;
 }
@@ -657,7 +704,9 @@ function reportFieldConflict(
  *
  * @internal
  */
-function findConflictsWithinSelectionSet(
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore The retired entry point is removed in the next commit.
+function findConflictsWithinSelectionSet( // eslint-disable-line @typescript-eslint/no-unused-vars
   validationContext: ValidationContext,
   ruleContext: RuleContext,
   parentType: Maybe<GraphQLNamedType>,
@@ -689,7 +738,7 @@ function findConflictsWithinSelectionSet(
     (collectFieldsResult.groupedFieldSet.size !== 0 ||
       collectFieldsResult.spreads.length > 1)
   ) {
-    const fragmentSpreads = getFragmentSpreads(
+    const fragmentSpreads = getLegacyFragmentSpreads(
       validationContext,
       ruleContext,
       collectFieldsResult,
@@ -787,7 +836,7 @@ function collectConflictsBetweenFieldsAndFragment(
     ruleContext,
     fragment,
   );
-  const referencedFragmentSpreads = getFragmentSpreads(
+  const referencedFragmentSpreads = getLegacyFragmentSpreads(
     validationContext,
     ruleContext,
     collectFieldsResult2,
@@ -895,7 +944,7 @@ function collectConflictsBetweenFragments(
     ruleContext,
     fragment1,
   );
-  const referencedFragmentSpreads1 = getFragmentSpreads(
+  const referencedFragmentSpreads1 = getLegacyFragmentSpreads(
     validationContext,
     ruleContext,
     collectFieldsResult1,
@@ -906,7 +955,7 @@ function collectConflictsBetweenFragments(
     ruleContext,
     fragment2,
   );
-  const referencedFragmentSpreads2 = getFragmentSpreads(
+  const referencedFragmentSpreads2 = getLegacyFragmentSpreads(
     validationContext,
     ruleContext,
     collectFieldsResult2,
@@ -975,7 +1024,7 @@ function findConflictsBetweenSubSelectionSets(
     parentType1,
     selectionSet1,
   );
-  const fragmentSpreads1 = getFragmentSpreads(
+  const fragmentSpreads1 = getLegacyFragmentSpreads(
     validationContext,
     ruleContext,
     collectFieldsResult1,
@@ -987,7 +1036,7 @@ function findConflictsBetweenSubSelectionSets(
     parentType2,
     selectionSet2,
   );
-  const fragmentSpreads2 = getFragmentSpreads(
+  const fragmentSpreads2 = getLegacyFragmentSpreads(
     validationContext,
     ruleContext,
     collectFieldsResult2,
@@ -1315,6 +1364,33 @@ function findConflict(
   }
 }
 
+function getLegacyFragmentSpreads(
+  validationContext: ValidationContext,
+  ruleContext: RuleContext,
+  collectFieldsResult: CollectFieldsResult,
+  scope: VariableScope | undefined,
+): FragmentSpreads {
+  const byScope = (collectFieldsResult.fragmentSpreadsByScope ??= new Map());
+  const cached = byScope.get(scope);
+  if (cached) {
+    return cached;
+  }
+
+  const fragmentSpreads = new Map<FragmentSpreadKey, FragmentSpread>();
+  for (const spreadNode of collectFieldsResult.spreads) {
+    const spread = getFragmentSpread(
+      validationContext,
+      ruleContext,
+      spreadNode,
+      scope,
+    );
+    fragmentSpreads.set(getFragmentSpreadKey(spread), spread);
+  }
+  const result = Array.from(fragmentSpreads.values());
+  byScope.set(scope, result);
+  return result;
+}
+
 /* node:coverage enable */
 
 // Prepare argument and directive lookups only when a field overlaps.
@@ -1639,10 +1715,8 @@ function getFragmentSpreads(
   validationContext: ValidationContext,
   ruleContext: RuleContext,
   collectFieldsResult: CollectFieldsResult,
-  scope: VariableScope | undefined,
 ): FragmentSpreads {
-  const byScope = (collectFieldsResult.byScope ??= new Map());
-  const cached = byScope.get(scope);
+  const cached = collectFieldsResult.resolvedSpreads;
   if (cached) {
     return cached;
   }
@@ -1657,7 +1731,7 @@ function getFragmentSpreads(
       validationContext,
       ruleContext,
       spreadNode,
-      scope,
+      collectFieldsResult.scope,
     );
     let byDefinition = spreadsByScope.get(spread.scope);
     if (byDefinition === undefined) {
@@ -1673,7 +1747,7 @@ function getFragmentSpreads(
       previous.node = spread.node;
     }
   }
-  byScope.set(scope, result);
+  collectFieldsResult.resolvedSpreads = result;
   return result;
 }
 
