@@ -245,7 +245,7 @@ export interface IntrospectionSchema {
   readonly subscriptionType: Maybe<
     IntrospectionNamedTypeRef<IntrospectionObjectType>
   >;
-  /** Object types that belong to this union type. */
+  /** All named types that belong to this schema. */
   readonly types: ReadonlyArray<IntrospectionType>;
   /** Directives available in this schema or applied to this AST node. */
   readonly directives: ReadonlyArray<IntrospectionDirective>;

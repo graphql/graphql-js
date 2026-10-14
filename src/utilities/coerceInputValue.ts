@@ -56,7 +56,7 @@ import { replaceVariables } from './replaceVariables.ts';
  *   },
  * });
  *
- * coerceInputValue({ stars: '5', tags: ['featured'] }, ReviewInput); // => { stars: 5, tags: ['featured'] }
+ * coerceInputValue({ stars: 5, tags: ['featured'] }, ReviewInput); // => { stars: 5, tags: ['featured'] }
  * coerceInputValue({ stars: 'bad' }, ReviewInput); // => undefined
  * ```
  */
@@ -209,7 +209,7 @@ export function coerceInputValue(
  * const document = parse('query ($stars: Int = 5) { review(stars: $stars) }');
  * const operation = document.definitions[0];
  * const result = getVariableValues(schema, operation.variableDefinitions, {
- *   stars: '4',
+ *   stars: 4,
  * });
  *
  * assert('variableValues' in result);

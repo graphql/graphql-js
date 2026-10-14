@@ -85,7 +85,7 @@ const tooManyValidationErrorsError = new GraphQLError(
  *
  * const schema = buildSchema(`
  *   type Query {
- *     fullName: String
+ *     greeting: String
  *   }
  * `);
  *

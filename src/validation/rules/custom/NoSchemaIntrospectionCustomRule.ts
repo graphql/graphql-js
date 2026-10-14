@@ -39,7 +39,7 @@ import type { ValidationContext } from '../../ValidationContext.ts';
  *   NoSchemaIntrospectionCustomRule,
  * ]);
  *
- * invalidErrors.length; // => 1
+ * invalidErrors.length; // => 2
  *
  * const validDocument = parse(`
  *   { name }

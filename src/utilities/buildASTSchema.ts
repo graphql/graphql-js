@@ -133,7 +133,7 @@ export function buildASTSchema(
  * import { buildSchema } from 'graphql/utilities';
  *
  * const schema = buildSchema(
- *   'directive @tag on FIELD_DEFINITION\n' +
+ *   'directive @tag on DIRECTIVE_DEFINITION\n' +
  *     'directive @compose @tag on FIELD_DEFINITION',
  *   {
  *     experimentalFragmentArguments: true,
