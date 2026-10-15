@@ -49,6 +49,22 @@ export type { BuildSchemaOptions } from './buildASTSchema.ts';
 
 // Extends an existing GraphQLSchema from a parsed GraphQL Schema language AST.
 export { extendSchema } from './extendSchema.ts';
+export type { ExtendSchemaOptions } from './extendSchema.ts';
+export type {
+  GraphQLSchemaSupplementalConfig,
+  GraphQLScalarTypeSupplementalConfig,
+  GraphQLObjectTypeSupplementalConfig,
+  GraphQLFieldSupplementalConfig,
+  GraphQLFieldSupplementalConfigMap,
+  GraphQLArgumentSupplementalConfig,
+  GraphQLInterfaceTypeSupplementalConfig,
+  GraphQLUnionTypeSupplementalConfig,
+  GraphQLEnumTypeSupplementalConfig,
+  GraphQLEnumValueSupplementalConfig,
+  GraphQLInputObjectTypeSupplementalConfig,
+  GraphQLInputFieldSupplementalConfig,
+  GraphQLDirectiveSupplementalConfig,
+} from './extendSchema.ts';
 
 // Sort a GraphQLSchema.
 export { lexicographicSortSchema } from './lexicographicSortSchema.ts';

@@ -7,6 +7,7 @@ import { dedent } from '../../__testUtils__/dedent.ts';
 import type { Maybe } from '../../jsutils/Maybe.ts';
 
 import type { ASTNode } from '../../language/ast.ts';
+import { Kind } from '../../language/kinds.ts';
 import { parse } from '../../language/parser.ts';
 import { print } from '../../language/printer.ts';
 
@@ -43,7 +44,7 @@ function expectExtensionASTNodes(obj: {
 }
 
 function expectASTNode(obj: Maybe<{ readonly astNode: Maybe<ASTNode> }>) {
-  assert(obj?.astNode != null);
+  assert(obj?.astNode !== undefined && obj.astNode !== null);
   return expect(print(obj.astNode));
 }
 
@@ -67,6 +68,37 @@ describe('extendSchema', () => {
     expect(extendedSchema).to.equal(schema);
   });
 
+  it('supplements schema extensions when there are no type definitions', () => {
+    const schema = buildSchema('type Query');
+    const extendedSchema = extendSchema(schema, parse('{ field }'), {
+      supplementalConfig: {
+        extensions: { added: 'supplement' },
+      },
+    });
+
+    expect(extendedSchema).to.not.equal(schema);
+    expect(extendedSchema.extensions).to.deep.equal({
+      added: 'supplement',
+    });
+  });
+
+  it('does not supplement schema extensions when the schema already has extensions', () => {
+    const schema = new GraphQLSchema({
+      ...buildSchema('type Query').toConfig(),
+      extensions: { existing: 'schema' },
+    });
+
+    expect(() =>
+      extendSchema(schema, parse('{ field }'), {
+        supplementalConfig: {
+          extensions: { added: 'supplement' },
+        },
+      }),
+    ).to.throw(
+      'Schema supplemental config cannot add extensions to a schema that already has extensions.',
+    );
+  });
+
   it('can be used for limited execution', () => {
     const schema = buildSchema('type Query');
     const extendAST = parse(`
@@ -84,6 +116,1307 @@ describe('extendSchema', () => {
     expect(result).to.deep.equal({
       data: { newField: '123' },
     });
+  });
+
+  it('supplements SDL definitions and extensions with supported config', () => {
+    const serialize = (value: unknown) => `legacy:${String(value)}`;
+    const parseValue = (value: unknown) => `parse:${String(value)}`;
+    const parseLiteral = () => 'literal';
+    const coerceOutputValue = (value: unknown) => `output:${String(value)}`;
+    const coerceInputValue = (value: unknown) => `input:${String(value)}`;
+    const coerceInputLiteral = () => 'inputLiteral';
+    const valueToLiteral = (value: unknown) =>
+      ({
+        kind: Kind.STRING,
+        value: String(value),
+      }) as const;
+
+    const schema = new GraphQLSchema({});
+    const extendAST = parse(`
+      schema {
+        query: Query
+      }
+
+      directive @tag(label: String) on FIELD_DEFINITION
+      directive @marker on FIELD_DEFINITION
+
+      interface Node {
+        id: ID
+      }
+
+      type Result implements Node {
+        id: ID
+      }
+
+      scalar Odd @specifiedBy(url: "https://odd.example")
+
+      enum Episode {
+        NEW_HOPE
+      }
+
+      enum Side {
+        LEFT
+      }
+
+      input Filter {
+        text: String
+      }
+
+      union SearchResult = Result
+
+      type Query {
+        result: Result
+      }
+
+      interface Named {
+        name: String
+      }
+
+      type Product implements Named {
+        name: String
+      }
+
+      type ObjectOnly {
+        id: ID
+      }
+
+      input ProductFilter {
+        id: ID = "1"
+      }
+
+      input InputOnly {
+        id: ID
+      }
+
+      enum EnumOnly {
+        VALUE
+      }
+
+      scalar Even
+      scalar MethodOnly
+      union ProductSearch = Product
+
+      extend interface Node {
+        label: String
+      }
+
+      extend type Result {
+        label: String
+      }
+
+      extend enum Episode {
+        EMPIRE
+      }
+
+      extend enum Side {
+        RIGHT
+      }
+
+      extend input Filter {
+        limit: Int
+      }
+
+      extend union SearchResult = Product
+
+      extend type Query {
+        product(name: String): Product
+        salutation(name: String): String
+        greeting: String
+      }
+    `);
+
+    const extendedSchema = extendSchema(schema, extendAST, {
+      supplementalConfig: {
+        extensions: { added: 'schema' },
+        directives: {
+          tag: {
+            args: {
+              label: { extensions: { argument: true } },
+            },
+            extensions: { directive: true },
+          },
+          marker: {
+            extensions: { marker: true },
+          },
+        },
+        objectTypes: {
+          Query: {
+            fields: {
+              greeting: () => 'hi',
+              product: {
+                resolve: () => ({ name: 'Ada' }),
+                subscribe: () => undefined,
+                args: {
+                  name: { extensions: { queryArgument: true } },
+                },
+                extensions: { queryField: true },
+              },
+              salutation: {
+                resolve: (_source, args) => `Hello ${String(args.name)}`,
+              },
+            },
+          },
+          Result: {
+            fields: {
+              label: { extensions: { objectExtension: true } },
+            },
+          },
+          Product: {
+            isTypeOf: () => true,
+            fields: {
+              name: { extensions: { objectDefinition: true } },
+            },
+            extensions: { objectType: true },
+          },
+          ObjectOnly: {
+            isTypeOf: () => true,
+            extensions: { objectOnly: true },
+          },
+        },
+        scalarTypes: {
+          Even: {
+            serialize,
+            parseValue,
+            parseLiteral,
+            coerceOutputValue,
+            coerceInputValue,
+            coerceInputLiteral,
+            valueToLiteral,
+            extensions: { scalar: true },
+          },
+          MethodOnly: {
+            serialize,
+          },
+        },
+        interfaceTypes: {
+          Named: {
+            resolveType: () => 'Product',
+            fields: {
+              name: { extensions: { interfaceDefinition: true } },
+            },
+            extensions: { interfaceType: true },
+          },
+          Node: {
+            fields: {
+              label: { extensions: { interfaceExtension: true } },
+            },
+          },
+        },
+        unionTypes: {
+          ProductSearch: {
+            resolveType: () => 'Product',
+            extensions: { unionType: true },
+          },
+        },
+        enumTypes: {
+          EnumOnly: {
+            values: {
+              VALUE: { value: 'value', extensions: { enumValue: true } },
+            },
+            extensions: { enumOnly: true },
+          },
+          Episode: {
+            values: {
+              EMPIRE: { value: 5, extensions: { enumExtension: true } },
+            },
+          },
+          Side: {},
+        },
+        inputObjectTypes: {
+          ProductFilter: {
+            fields: {
+              id: { extensions: { inputDefinition: true } },
+            },
+            extensions: { inputType: true },
+          },
+          InputOnly: {
+            extensions: { inputOnly: true },
+          },
+          Filter: {
+            fields: {
+              limit: { extensions: { inputExtension: true } },
+            },
+          },
+        },
+      },
+    });
+
+    expect(extendedSchema.extensions).to.deep.equal({ added: 'schema' });
+
+    const tag = assertDirective(extendedSchema.getDirective('tag'));
+    expect(tag.extensions).to.deep.equal({ directive: true });
+    expect(tag.args[0].extensions).to.deep.equal({ argument: true });
+    const marker = assertDirective(extendedSchema.getDirective('marker'));
+    expect(marker.extensions).to.deep.equal({ marker: true });
+
+    const query = assertObjectType(extendedSchema.getType('Query'));
+    const greetingField = query.getFields().greeting;
+    expect(greetingField.resolve).to.be.a('function');
+    const productField = query.getFields().product;
+    expect(productField.resolve).to.be.a('function');
+    expect(productField.subscribe).to.be.a('function');
+    expect(productField.extensions).to.deep.equal({ queryField: true });
+    expect(productField.args[0].extensions).to.deep.equal({
+      queryArgument: true,
+    });
+    expect(
+      graphqlSync({
+        schema: extendedSchema,
+        source:
+          '{ greeting salutation(name: "Ada") product(name: "Ada") { name } }',
+      }),
+    ).to.deep.equal({
+      data: {
+        greeting: 'hi',
+        salutation: 'Hello Ada',
+        product: { name: 'Ada' },
+      },
+    });
+
+    const named = assertInterfaceType(extendedSchema.getType('Named'));
+    expect(named.resolveType).to.be.a('function');
+    expect(named.extensions).to.deep.equal({ interfaceType: true });
+    expect(named.getFields().name.extensions).to.deep.equal({
+      interfaceDefinition: true,
+    });
+
+    const product = assertObjectType(extendedSchema.getType('Product'));
+    expect(product.isTypeOf).to.be.a('function');
+    expect(product.extensions).to.deep.equal({ objectType: true });
+    expect(product.getFields().name.extensions).to.deep.equal({
+      objectDefinition: true,
+    });
+
+    const result = assertObjectType(extendedSchema.getType('Result'));
+    expect(result.getFields().label.extensions).to.deep.equal({
+      objectExtension: true,
+    });
+
+    const objectOnly = assertObjectType(extendedSchema.getType('ObjectOnly'));
+    expect(objectOnly.isTypeOf).to.be.a('function');
+    expect(objectOnly.extensions).to.deep.equal({ objectOnly: true });
+
+    const productFilter = assertInputObjectType(
+      extendedSchema.getType('ProductFilter'),
+    );
+    expect(productFilter.extensions).to.deep.equal({ inputType: true });
+    expect(productFilter.getFields().id.extensions).to.deep.equal({
+      inputDefinition: true,
+    });
+
+    const inputOnly = assertInputObjectType(
+      extendedSchema.getType('InputOnly'),
+    );
+    expect(inputOnly.extensions).to.deep.equal({ inputOnly: true });
+
+    const productSearch = assertUnionType(
+      extendedSchema.getType('ProductSearch'),
+    );
+    expect(productSearch.resolveType).to.be.a('function');
+    expect(productSearch.extensions).to.deep.equal({ unionType: true });
+
+    const enumOnly = assertEnumType(extendedSchema.getType('EnumOnly'));
+    expect(enumOnly.extensions).to.deep.equal({ enumOnly: true });
+    expect(enumOnly.getValue('VALUE')?.value).to.equal('value');
+    expect(enumOnly.getValue('VALUE')?.extensions).to.deep.equal({
+      enumValue: true,
+    });
+
+    const node = assertInterfaceType(extendedSchema.getType('Node'));
+    expect(node.getFields().label.extensions).to.deep.equal({
+      interfaceExtension: true,
+    });
+
+    const episode = assertEnumType(extendedSchema.getType('Episode'));
+    expect(episode.getValue('EMPIRE')?.value).to.equal(5);
+    expect(episode.getValue('EMPIRE')?.extensions).to.deep.equal({
+      enumExtension: true,
+    });
+
+    const filter = assertInputObjectType(extendedSchema.getType('Filter'));
+    expect(filter.getFields().limit.extensions).to.deep.equal({
+      inputExtension: true,
+    });
+
+    const odd = assertScalarType(extendedSchema.getType('Odd'));
+    expect(odd.specifiedByURL).to.equal('https://odd.example');
+    const even = assertScalarType(extendedSchema.getType('Even'));
+    expect(even.serialize).to.equal(serialize);
+    expect(even.parseValue).to.equal(parseValue);
+    expect(even.parseLiteral).to.equal(parseLiteral);
+    expect(even.coerceOutputValue).to.equal(coerceOutputValue);
+    expect(even.coerceInputValue).to.equal(coerceInputValue);
+    expect(even.coerceInputLiteral).to.equal(coerceInputLiteral);
+    expect(even.valueToLiteral).to.equal(valueToLiteral);
+    expect(even.extensions).to.deep.equal({ scalar: true });
+    const methodOnly = assertScalarType(extendedSchema.getType('MethodOnly'));
+    expect(methodOnly.serialize).to.equal(serialize);
+
+    const side = assertEnumType(extendedSchema.getType('Side'));
+    expect(side.getValue('RIGHT')).to.not.equal(undefined);
+
+    const searchResult = assertUnionType(
+      extendedSchema.getType('SearchResult'),
+    );
+    expect(searchResult.getTypes().map((type) => type.name)).to.deep.equal([
+      'Result',
+      'Product',
+    ]);
+  });
+
+  it('supplements a new non-root object definition and extension', () => {
+    const defined = () => 'defined';
+    const extended = () => 'extended';
+    const schema = buildSchema('type Query');
+    const extendAST = parse(`
+      type ObjectType {
+        defined: String
+      }
+
+      extend type ObjectType {
+        extended: String
+      }
+
+      extend type Query {
+        object: ObjectType
+      }
+    `);
+    const extendedSchema = extendSchema(schema, extendAST, {
+      supplementalConfig: {
+        objectTypes: {
+          ObjectType: {
+            fields: {
+              defined,
+              extended,
+            },
+          },
+        },
+      },
+    });
+
+    expect(
+      graphqlSync({
+        schema: extendedSchema,
+        source: '{ object { defined extended } }',
+        rootValue: { object: {} },
+      }),
+    ).to.deep.equal({
+      data: {
+        object: {
+          defined: 'defined',
+          extended: 'extended',
+        },
+      },
+    });
+  });
+
+  it('preserves SDL descriptions and defaults without supplemental config', () => {
+    const schema = buildSchema('type Query');
+    const extendedSchema = extendSchema(
+      schema,
+      parse(`
+        """Directive description"""
+        directive @other on SCALAR
+
+        """Object description"""
+        type DescribedObject {
+          describedField(
+            """Argument description"""
+            arg: String = "default"
+          ): String
+        }
+
+        """Interface description"""
+        interface DescribedInterface {
+          id: ID
+        }
+
+        """Enum description"""
+        enum DescribedEnum {
+          VALUE
+        }
+
+        """Union description"""
+        union DescribedUnion = DescribedObject
+
+        """Scalar description"""
+        scalar DescribedScalar
+
+        extend scalar DescribedScalar @specifiedBy(url: "https://specified.example/v2")
+
+        scalar FallbackScalar @specifiedBy(url: "https://specified.example/v1")
+
+        extend scalar FallbackScalar @other
+
+        """Input description"""
+        input DescribedInput {
+          value: String
+        }
+      `),
+    );
+
+    const object = assertObjectType(extendedSchema.getType('DescribedObject'));
+    expect(object.description).to.equal('Object description');
+    const arg = object.getFields().describedField.args[0];
+    expect(arg.description).to.equal('Argument description');
+    expect(arg.default?.literal).to.include({
+      kind: Kind.STRING,
+      value: 'default',
+      block: false,
+    });
+
+    const iface = assertInterfaceType(
+      extendedSchema.getType('DescribedInterface'),
+    );
+    expect(iface.description).to.equal('Interface description');
+
+    const enumType = assertEnumType(extendedSchema.getType('DescribedEnum'));
+    expect(enumType.description).to.equal('Enum description');
+
+    const union = assertUnionType(extendedSchema.getType('DescribedUnion'));
+    expect(union.description).to.equal('Union description');
+
+    const scalar = assertScalarType(extendedSchema.getType('DescribedScalar'));
+    expect(scalar.description).to.equal('Scalar description');
+    expect(scalar.specifiedByURL).to.equal('https://specified.example/v2');
+    const fallbackScalar = assertScalarType(
+      extendedSchema.getType('FallbackScalar'),
+    );
+    expect(fallbackScalar.specifiedByURL).to.equal(
+      'https://specified.example/v1',
+    );
+
+    const input = assertInputObjectType(
+      extendedSchema.getType('DescribedInput'),
+    );
+    expect(input.description).to.equal('Input description');
+  });
+
+  it('extends existing elements while supplementing only new definitions', () => {
+    const schema = buildSchema(`
+      interface Node {
+        id: ID
+      }
+
+      type Result implements Node {
+        id: ID
+      }
+
+      enum Episode {
+        NEW_HOPE
+      }
+
+      input Filter {
+        text: String
+      }
+
+      type Query {
+        result: Result
+      }
+    `);
+
+    const extendedSchema = extendSchema(
+      schema,
+      parse(`
+        extend interface Node {
+          label: String
+        }
+
+        extend type Query {
+          filter(input: Filter): Episode
+        }
+
+        extend enum Episode {
+          EMPIRE
+        }
+
+        extend input Filter {
+          limit: Int
+        }
+
+        type AddedObject {
+          id: ID
+        }
+
+        interface AddedInterface {
+          id: ID
+        }
+
+        enum AddedEnum {
+          VALUE
+        }
+
+        input AddedInput {
+          value: String
+        }
+      `),
+      {
+        supplementalConfig: {
+          objectTypes: {
+            Query: {},
+            AddedObject: {
+              extensions: { added: true },
+            },
+          },
+          interfaceTypes: {
+            Node: {},
+            AddedInterface: {
+              extensions: { added: true },
+            },
+          },
+          enumTypes: {
+            Episode: {},
+            AddedEnum: {
+              extensions: { added: true },
+            },
+          },
+          inputObjectTypes: {
+            Filter: {},
+            AddedInput: {
+              extensions: { added: true },
+            },
+          },
+        },
+      },
+    );
+
+    const query = assertObjectType(extendedSchema.getType('Query'));
+    expect(query.getFields().filter).to.not.equal(undefined);
+
+    const node = assertInterfaceType(extendedSchema.getType('Node'));
+    expect(node.getFields().label).to.not.equal(undefined);
+
+    const episode = assertEnumType(extendedSchema.getType('Episode'));
+    expect(episode.getValue('EMPIRE')).to.not.equal(undefined);
+
+    const filter = assertInputObjectType(extendedSchema.getType('Filter'));
+    expect(filter.getFields().limit).to.not.equal(undefined);
+  });
+
+  it('rejects supplemental config for a missing directive', () => {
+    const schema = buildSchema('type Query');
+
+    expect(() =>
+      extendSchema(
+        schema,
+        parse('directive @tag(label: String) on FIELD_DEFINITION'),
+        {
+          supplementalConfig: {
+            directives: {
+              missing: {},
+            },
+          },
+        },
+      ),
+    ).to.throw(
+      'Directive supplemental config "@missing" does not match a directive declared by the document.',
+    );
+  });
+
+  it('rejects supplemental config for a missing directive argument', () => {
+    const schema = buildSchema('type Query');
+
+    expect(() =>
+      extendSchema(
+        schema,
+        parse('directive @tag(label: String) on FIELD_DEFINITION'),
+        {
+          supplementalConfig: {
+            directives: {
+              tag: {
+                args: {
+                  missing: { extensions: { argument: true } },
+                },
+              },
+            },
+          },
+        },
+      ),
+    ).to.throw(
+      'Argument supplemental config "@tag(missing:)" does not match an argument declared by the document.',
+    );
+  });
+
+  it('rejects supplemental config for a missing field coordinate', () => {
+    const schema = buildSchema('type Query');
+
+    expect(() =>
+      extendSchema(
+        schema,
+        parse('extend type Query { fieldKnown(argKnown: String): String }'),
+        {
+          supplementalConfig: {
+            objectTypes: {
+              Query: {
+                fields: {
+                  fieldUnknown: () => 'unknown',
+                },
+              },
+            },
+          },
+        },
+      ),
+    ).to.throw(
+      'Field supplemental config "Query.fieldUnknown" does not match a field declared by the document.',
+    );
+  });
+
+  it('rejects supplemental config for a missing field argument coordinate', () => {
+    const schema = buildSchema('type Query');
+
+    expect(() =>
+      extendSchema(
+        schema,
+        parse('extend type Query { fieldKnown(argKnown: String): String }'),
+        {
+          supplementalConfig: {
+            objectTypes: {
+              Query: {
+                fields: {
+                  fieldKnown: {
+                    args: {
+                      argUnknown: { extensions: { argument: true } },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      ),
+    ).to.throw(
+      'Argument supplemental config "Query.fieldKnown(argUnknown:)" does not match an argument declared by the document.',
+    );
+  });
+
+  it('rejects supplemental config for an existing object field', () => {
+    const schema = buildSchema('type Query { oldField: String }');
+
+    expect(() =>
+      extendSchema(schema, parse('extend type Query { oldField: String }'), {
+        assumeValidSDL: true,
+        supplementalConfig: {
+          objectTypes: {
+            Query: {
+              fields: {
+                oldField: () => 'old',
+              },
+            },
+          },
+        },
+      }),
+    ).to.throw(
+      'Field supplemental config "Query.oldField" cannot modify an existing field.',
+    );
+  });
+
+  it('rejects supplemental config for an existing interface field', () => {
+    const schema = buildSchema(`
+      interface Node { id: ID }
+      type Item implements Node { id: ID }
+      type Query { item: Item }
+    `);
+
+    expect(() =>
+      extendSchema(schema, parse('extend interface Node { id: ID }'), {
+        assumeValidSDL: true,
+        supplementalConfig: {
+          interfaceTypes: {
+            Node: {
+              fields: {
+                id: { extensions: { field: true } },
+              },
+            },
+          },
+        },
+      }),
+    ).to.throw(
+      'Field supplemental config "Node.id" cannot modify an existing field.',
+    );
+  });
+
+  it('rejects supplemental config for an input field not added by the extension', () => {
+    const schema = buildSchema('input Filter { text: String } type Query');
+
+    expect(() =>
+      extendSchema(schema, parse('extend input Filter { missing: String }'), {
+        supplementalConfig: {
+          inputObjectTypes: {
+            Filter: {
+              fields: {
+                text: { extensions: { input: true } },
+              },
+            },
+          },
+        },
+      }),
+    ).to.throw(
+      'Input field supplemental config "Filter.text" does not match an input field declared by the document.',
+    );
+  });
+
+  it('rejects supplemental config for a missing input field coordinate', () => {
+    const schema = buildSchema('type Query');
+
+    expect(() =>
+      extendSchema(schema, parse('input EmptyInput'), {
+        supplementalConfig: {
+          inputObjectTypes: {
+            EmptyInput: {
+              fields: {
+                missing: { extensions: { input: true } },
+              },
+            },
+          },
+        },
+      }),
+    ).to.throw(
+      'Input field supplemental config "EmptyInput.missing" does not match an input field declared by the document.',
+    );
+  });
+
+  it('rejects supplemental config for an existing input field', () => {
+    const schema = buildSchema('input Filter { text: String } type Query');
+
+    expect(() =>
+      extendSchema(schema, parse('extend input Filter { text: String }'), {
+        assumeValidSDL: true,
+        supplementalConfig: {
+          inputObjectTypes: {
+            Filter: {
+              fields: {
+                text: { extensions: { input: true } },
+              },
+            },
+          },
+        },
+      }),
+    ).to.throw(
+      'Input field supplemental config "Filter.text" cannot modify an existing input field.',
+    );
+  });
+
+  it('rejects supplemental config for an enum value not added by the extension', () => {
+    const schema = buildSchema('enum Episode { NEW_HOPE } type Query');
+
+    expect(() =>
+      extendSchema(schema, parse('extend enum Episode { EMPIRE }'), {
+        supplementalConfig: {
+          enumTypes: {
+            Episode: {
+              values: {
+                JEDI: { value: 6 },
+              },
+            },
+          },
+        },
+      }),
+    ).to.throw(
+      'Enum value supplemental config "Episode.JEDI" does not match an enum value declared by the document.',
+    );
+  });
+
+  it('rejects supplemental config for a missing enum value coordinate', () => {
+    const schema = buildSchema('type Query');
+
+    expect(() =>
+      extendSchema(schema, parse('enum EmptyEnum'), {
+        supplementalConfig: {
+          enumTypes: {
+            EmptyEnum: {
+              values: {
+                MISSING: { value: 1 },
+              },
+            },
+          },
+        },
+      }),
+    ).to.throw(
+      'Enum value supplemental config "EmptyEnum.MISSING" does not match an enum value declared by the document.',
+    );
+  });
+
+  it('rejects supplemental config for an existing enum value', () => {
+    const schema = buildSchema('enum Episode { NEW_HOPE } type Query');
+
+    expect(() =>
+      extendSchema(schema, parse('extend enum Episode { NEW_HOPE }'), {
+        assumeValidSDL: true,
+        supplementalConfig: {
+          enumTypes: {
+            Episode: {
+              values: {
+                NEW_HOPE: { value: 4 },
+              },
+            },
+          },
+        },
+      }),
+    ).to.throw(
+      'Enum value supplemental config "Episode.NEW_HOPE" cannot modify an existing enum value.',
+    );
+  });
+
+  it('rejects supplemental config for a missing type coordinate', () => {
+    const schema = buildSchema('type Query');
+
+    expect(() =>
+      extendSchema(schema, parse('extend type Query { newField: String }'), {
+        supplementalConfig: {
+          objectTypes: {
+            Missing: {},
+          },
+        },
+      }),
+    ).to.throw(
+      'Type supplemental config "Missing" does not match a type declared by the document.',
+    );
+  });
+
+  it('suggests the matching supplementalConfig property for a type in the wrong bucket', () => {
+    const schema = buildSchema('type Query');
+
+    expect(() =>
+      extendSchema(schema, parse('scalar Odd'), {
+        supplementalConfig: {
+          objectTypes: {
+            Odd: { extensions: { objectType: true } },
+          },
+        },
+      }),
+    ).to.throw(
+      'Type supplemental config property "objectTypes.Odd" does not match the type declared or extended by the document. Did you mean "scalarTypes.Odd"?',
+    );
+  });
+
+  it('suggests the matching supplementalConfig property for a type extension in the wrong bucket', () => {
+    const schema = buildSchema('scalar Odd type Query');
+
+    expect(() =>
+      extendSchema(
+        schema,
+        parse('extend scalar Odd @specifiedBy(url: "https://odd.example")'),
+        {
+          supplementalConfig: {
+            objectTypes: {
+              Odd: {},
+            },
+          },
+        },
+      ),
+    ).to.throw(
+      'Type supplemental config property "objectTypes.Odd" does not match the type declared or extended by the document. Did you mean "scalarTypes.Odd"?',
+    );
+  });
+
+  it('rejects supplemental extensions for an existing type extension', () => {
+    const schema = buildSchema('type Query');
+
+    expect(() =>
+      extendSchema(schema, parse('extend type Query { newField: String }'), {
+        supplementalConfig: {
+          objectTypes: {
+            Query: {
+              fields: {
+                newField: () => 'new',
+              },
+              extensions: { query: true },
+            },
+          },
+        },
+      }),
+    ).to.throw(
+      'Type supplemental config "Query.extensions" cannot modify an existing type.',
+    );
+  });
+
+  it('rejects extra supplemental config for an existing type extension', () => {
+    const schema = buildSchema('type Query');
+
+    expect(() =>
+      extendSchema(schema, parse('extend type Query { newField: String }'), {
+        supplementalConfig: {
+          objectTypes: {
+            Query: {
+              unusedOption: 'unused',
+            },
+          },
+        } as any,
+      }),
+    ).to.throw(
+      'Type supplemental config "Query.unusedOption" cannot modify an existing type.',
+    );
+  });
+
+  it('rejects field supplemental config when an object extension adds no fields', () => {
+    const schema = buildSchema('type Query');
+
+    expect(() =>
+      extendSchema(
+        schema,
+        parse('directive @objectTag on OBJECT extend type Query @objectTag'),
+        {
+          supplementalConfig: {
+            objectTypes: {
+              Query: {
+                fields: {
+                  missing: () => 'missing',
+                },
+              },
+            },
+          },
+        },
+      ),
+    ).to.throw(
+      'Field supplemental config "Query.missing" does not match a field declared by the document.',
+    );
+  });
+
+  it('rejects field supplemental config for a missing interface field coordinate', () => {
+    const schema = buildSchema('type Query');
+
+    expect(() =>
+      extendSchema(schema, parse('interface Empty'), {
+        supplementalConfig: {
+          interfaceTypes: {
+            Empty: {
+              fields: {
+                missing: { extensions: { field: true } },
+              },
+            },
+          },
+        },
+      }),
+    ).to.throw(
+      'Field supplemental config "Empty.missing" does not match a field declared by the document.',
+    );
+  });
+
+  it('rejects field supplemental config when an interface extension adds no fields', () => {
+    const schema = buildSchema('interface Node { id: ID } type Query');
+
+    expect(() =>
+      extendSchema(
+        schema,
+        parse(
+          'directive @interfaceTag on INTERFACE extend interface Node @interfaceTag',
+        ),
+        {
+          supplementalConfig: {
+            interfaceTypes: {
+              Node: {
+                fields: {
+                  missing: { extensions: { field: true } },
+                },
+              },
+            },
+          },
+        },
+      ),
+    ).to.throw(
+      'Field supplemental config "Node.missing" does not match a field declared by the document.',
+    );
+  });
+
+  it('rejects input field supplemental config when an input extension adds no fields', () => {
+    const schema = buildSchema('input Filter { text: String } type Query');
+
+    expect(() =>
+      extendSchema(
+        schema,
+        parse(
+          'directive @inputTag on INPUT_OBJECT extend input Filter @inputTag',
+        ),
+        {
+          supplementalConfig: {
+            inputObjectTypes: {
+              Filter: {
+                fields: {
+                  missing: { extensions: { input: true } },
+                },
+              },
+            },
+          },
+        },
+      ),
+    ).to.throw(
+      'Input field supplemental config "Filter.missing" does not match an input field declared by the document.',
+    );
+  });
+
+  it('rejects enum value supplemental config when an enum extension adds no values', () => {
+    const schema = buildSchema('enum Episode { NEW_HOPE } type Query');
+
+    expect(() =>
+      extendSchema(
+        schema,
+        parse('directive @enumTag on ENUM extend enum Episode @enumTag'),
+        {
+          supplementalConfig: {
+            enumTypes: {
+              Episode: {
+                values: {
+                  MISSING: { value: 1 },
+                },
+              },
+            },
+          },
+        },
+      ),
+    ).to.throw(
+      'Enum value supplemental config "Episode.MISSING" does not match an enum value declared by the document.',
+    );
+  });
+
+  it('rejects supplemental config for an existing type without a matching extension', () => {
+    const schema = buildSchema('type Query { oldField: String }');
+
+    expect(() =>
+      extendSchema(schema, parse('type Added'), {
+        supplementalConfig: {
+          objectTypes: {
+            Query: {
+              fields: {
+                oldField: () => 'old',
+              },
+            },
+          },
+        },
+      }),
+    ).to.throw(
+      'Type supplemental config "Query" cannot modify an existing type.',
+    );
+  });
+
+  it('rejects scalar supplemental config for an existing type without a matching extension', () => {
+    const schema = buildSchema('scalar Odd type Query');
+
+    expect(() =>
+      extendSchema(schema, parse('type Added'), {
+        supplementalConfig: {
+          scalarTypes: {
+            Odd: { extensions: { scalar: true } },
+          },
+        },
+      }),
+    ).to.throw(
+      'Type supplemental config "Odd" cannot modify an existing type.',
+    );
+  });
+
+  it('rejects interface supplemental config for an existing type without a matching extension', () => {
+    const schema = buildSchema('interface Node { id: ID } type Query');
+
+    expect(() =>
+      extendSchema(schema, parse('type Added'), {
+        supplementalConfig: {
+          interfaceTypes: {
+            Node: {
+              fields: {
+                label: { extensions: { field: true } },
+              },
+            },
+          },
+        },
+      }),
+    ).to.throw(
+      'Type supplemental config "Node" cannot modify an existing type.',
+    );
+  });
+
+  it('rejects union supplemental config for an existing type without a matching extension', () => {
+    const schema = buildSchema(
+      'type Result union SearchResult = Result type Query',
+    );
+
+    expect(() =>
+      extendSchema(schema, parse('type Added'), {
+        supplementalConfig: {
+          unionTypes: {
+            SearchResult: { resolveType: () => 'Result' },
+          },
+        },
+      }),
+    ).to.throw(
+      'Type supplemental config "SearchResult" cannot modify an existing type.',
+    );
+  });
+
+  it('rejects enum supplemental config for an existing type without a matching extension', () => {
+    const schema = buildSchema('enum Episode { NEW_HOPE } type Query');
+
+    expect(() =>
+      extendSchema(schema, parse('type Added'), {
+        supplementalConfig: {
+          enumTypes: {
+            Episode: {
+              values: {
+                EMPIRE: { value: 5 },
+              },
+            },
+          },
+        },
+      }),
+    ).to.throw(
+      'Type supplemental config "Episode" cannot modify an existing type.',
+    );
+  });
+
+  it('rejects input object supplemental config for an existing type without a matching extension', () => {
+    const schema = buildSchema('input Filter { text: String } type Query');
+
+    expect(() =>
+      extendSchema(schema, parse('type Added'), {
+        supplementalConfig: {
+          inputObjectTypes: {
+            Filter: {
+              fields: {
+                limit: { extensions: { input: true } },
+              },
+            },
+          },
+        },
+      }),
+    ).to.throw(
+      'Type supplemental config "Filter" cannot modify an existing type.',
+    );
+  });
+
+  it('rejects object type supplemental config for an existing type extension', () => {
+    const schema = buildSchema('type Query');
+
+    expect(() =>
+      extendSchema(schema, parse('extend type Query { newField: String }'), {
+        supplementalConfig: {
+          objectTypes: {
+            Query: {
+              isTypeOf: () => true,
+            },
+          },
+        },
+      }),
+    ).to.throw(
+      'Type supplemental config "Query.isTypeOf" cannot modify an existing type.',
+    );
+  });
+
+  it('rejects scalar supplemental config for an existing type extension', () => {
+    const schema = buildSchema('scalar Odd type Query');
+
+    expect(() =>
+      extendSchema(
+        schema,
+        parse('extend scalar Odd @specifiedBy(url: "https://odd.example")'),
+        {
+          supplementalConfig: {
+            scalarTypes: {
+              Odd: {
+                extensions: { scalar: true },
+              },
+            },
+          },
+        },
+      ),
+    ).to.throw(
+      'Type supplemental config "Odd.extensions" cannot modify an existing type.',
+    );
+  });
+
+  it('rejects union supplemental config for an existing type extension', () => {
+    const schema = buildSchema(`
+      type Result
+      type Product
+      union SearchResult = Result
+      type Query
+    `);
+
+    expect(() =>
+      extendSchema(schema, parse('extend union SearchResult = Product'), {
+        supplementalConfig: {
+          unionTypes: {
+            SearchResult: {
+              resolveType: () => 'Product',
+            },
+          },
+        },
+      }),
+    ).to.throw(
+      'Type supplemental config "SearchResult.resolveType" cannot modify an existing type.',
+    );
+  });
+
+  it('does not supplement fields that already existed on the schema', () => {
+    const schema = buildSchema('type Query { oldField: String }');
+    const extendAST = parse('extend type Query { newField: String }');
+
+    expect(() =>
+      extendSchema(schema, extendAST, {
+        supplementalConfig: {
+          objectTypes: {
+            Query: {
+              fields: {
+                oldField: () => 'old',
+              },
+            },
+          },
+        },
+      }),
+    ).to.throw(
+      'Field supplemental config "Query.oldField" does not match a field declared by the document.',
+    );
+  });
+
+  it('ignores extra top-level supplementalConfig fields', () => {
+    const schema = buildSchema('type Query');
+    const extendAST = parse('type Added');
+
+    const extendedSchema = extendSchema(schema, extendAST, {
+      supplementalConfig: {
+        unusedOption: 'ignored',
+      } as any,
+    });
+
+    expect(extendedSchema.getType('Added')).to.not.equal(undefined);
+  });
+
+  it('ignores extra type supplementalConfig fields from the regular config API', () => {
+    const schema = buildSchema('type Query');
+    const extendAST = parse('type Added');
+
+    const extendedSchema = extendSchema(schema, extendAST, {
+      supplementalConfig: {
+        objectTypes: {
+          Added: {
+            description: 'Use SDL for descriptions',
+          },
+        },
+      } as any,
+    });
+
+    const added = assertObjectType(extendedSchema.getType('Added'));
+    expect(added.description).to.equal(undefined);
+  });
+
+  it('ignores extra field supplementalConfig fields from the regular config API', () => {
+    const schema = buildSchema('type Query');
+    const extendAST = parse('type Added { newField: String }');
+
+    const extendedSchema = extendSchema(schema, extendAST, {
+      supplementalConfig: {
+        objectTypes: {
+          Added: {
+            fields: {
+              newField: {
+                description: 'Use SDL for descriptions',
+              },
+            },
+          },
+        },
+      } as any,
+    });
+
+    const added = assertObjectType(extendedSchema.getType('Added'));
+    expect(added.getFields().newField.description).to.equal(undefined);
   });
 
   it('Do not modify built-in types and directives', () => {
@@ -1252,6 +2585,7 @@ describe('extendSchema', () => {
       expect(schema.getQueryType()).to.equal(undefined);
 
       const extensionSDL = dedent`
+        """Root schema."""
         schema @foo {
           query: Foo
         }

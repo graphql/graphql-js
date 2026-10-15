@@ -11,28 +11,34 @@ It's simple to use any Express middleware in conjunction with `graphql-http`. In
 
 To use middleware with a GraphQL resolver, just use the middleware like you would with a normal Express app. The `request` object is then available as the second argument in any resolver.
 
-For example, let's say we wanted our server to log the IP address of every request, and we also want to write an API that returns the IP address of the caller. We can do the former with middleware, and the latter by accessing the `request` object in a resolver. Here's server code that implements this:
+For example, let's say we wanted our server to log the IP address of every request, and we also want to write an API that returns the IP address of the caller. We can do the former with middleware, and the latter by accessing the `request` object in a resolver.
 
-<Tabs items={['SDL', 'Code']}>
+<Tabs items={['Code', 'SDL']}>
   <Tabs.Tab>
 
 ```js
 import express from 'express';
 import { createHandler } from 'graphql-http/lib/use/express';
-import { buildSchema } from 'graphql';
+import { GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql';
 
-const schema = buildSchema(`type Query { ip: String }`);
+const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      ip: {
+        type: GraphQLString,
+        resolve: (_source, _args, context) => {
+          return context.ip;
+        },
+      },
+    },
+  }),
+});
 
 function loggingMiddleware(req, res, next) {
   console.log('ip:', req.ip);
   next();
 }
-
-const root = {
-  ip(args, context) {
-    return context.ip;
-  },
-};
 
 const app = express();
 app.use(loggingMiddleware);
@@ -40,7 +46,6 @@ app.all(
   '/graphql',
   createHandler({
     schema: schema,
-    rootValue: root,
     context: (req) => ({
       ip: req.raw.ip,
     }),
@@ -56,21 +61,28 @@ console.log('Running a GraphQL API server at localhost:4000/graphql');
 ```js
 import express from 'express';
 import { createHandler } from 'graphql-http/lib/use/express';
-import { GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql';
+import { buildSchema } from 'graphql';
 
-const schema = new GraphQLSchema({
-  query: new GraphQLObjectType({
-    name: 'Query',
-    fields: {
-      ip: {
-        type: GraphQLString,
-        resolve: (_, args, context) => {
-          return context.ip;
+const schema = buildSchema(
+  /* GraphQL */ `
+    type Query {
+      ip: String
+    }
+  `,
+  {
+    supplementalConfig: {
+      objectTypes: {
+        Query: {
+          fields: {
+            ip: (_source, _args, context) => {
+              return context.ip;
+            },
+          },
         },
       },
     },
-  }),
-});
+  },
+);
 
 function loggingMiddleware(req, res, next) {
   console.log('ip:', req.ip);

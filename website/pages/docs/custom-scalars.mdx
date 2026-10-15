@@ -2,7 +2,7 @@
 title: Using Custom Scalars
 ---
 
-import { Callout } from 'nextra/components';
+import { Callout, Tabs } from 'nextra/components';
 
 # Custom Scalars: When and How to Use Them
 
@@ -15,10 +15,13 @@ APIs often need. For example, you might want to represent a timestamp as an ISO 
 ensure a user-submitted field is a valid email address. In these cases, you can define a custom
 scalar type.
 
-In GraphQL.js, custom scalars are created using the `GraphQLScalarType` class. This gives you
-full control over how values are serialized, parsed, and validated.
+GraphQL.js can define custom scalars by constructing a `GraphQLScalarType`, or by declaring
+the scalar in SDL and supplying JavaScript coercion functions through `supplementalConfig`.
 
 Here’s a simple example of a custom scalar that handles date-time strings:
+
+<Tabs items={['Code', 'SDL']}>
+  <Tabs.Tab>
 
 ```js
 import { GraphQLScalarType, Kind } from 'graphql';
@@ -38,13 +41,59 @@ const DateTime = new GraphQLScalarType({
     return value instanceof Date ? value.toISOString() : null;
   },
   parseValue(value) {
-    return typeof value === 'string' ? new Date(value) : null;
+    return typeof value === 'string' ? parseDate(value) : null;
   },
   parseLiteral(ast) {
-    return ast.kind === Kind.STRING ? new Date(ast.value) : null;
+    return ast.kind === Kind.STRING ? parseDate(ast.value) : null;
   },
 });
 ```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```js
+import { Kind, buildSchema } from 'graphql';
+
+function parseDate(value) {
+  const date = new Date(value);
+  if (isNaN(date.getTime())) {
+    throw new TypeError(`DateTime cannot represent an invalid date: ${value}`);
+  }
+  return date;
+}
+
+const schema = buildSchema(
+  /* GraphQL */ `
+    "An ISO-8601 encoded UTC date string."
+    scalar DateTime
+
+    type Query {
+      now: DateTime
+    }
+  `,
+  {
+    supplementalConfig: {
+      scalarTypes: {
+        DateTime: {
+          serialize(value) {
+            return value instanceof Date ? value.toISOString() : null;
+          },
+          parseValue(value) {
+            return typeof value === 'string' ? parseDate(value) : null;
+          },
+          parseLiteral(ast) {
+            return ast.kind === Kind.STRING ? parseDate(ast.value) : null;
+          },
+        },
+      },
+    },
+  },
+);
+```
+
+  </Tabs.Tab>
+</Tabs>
 
 Custom scalars offer flexibility, but they also shift responsibility onto you. You're
 defining not just the format of a value, but also how it is validated and how it moves
@@ -85,8 +134,9 @@ system, not to replace structured types altogether.
 
 ## How to define a custom scalar in GraphQL.js
 
-In GraphQL.js, a custom scalar is defined by creating an instance of `GraphQLScalarType`,
-providing a name, description, and three functions:
+In code-first schemas, custom scalar behavior is supplied to `GraphQLScalarType`. With SDL,
+the scalar is declared with `scalar`, and its JavaScript behavior is supplied by
+`supplementalConfig`. In either style, provide a name, description, and coercion functions:
 
 - `serialize`: How the server sends internal values to clients.
 - `parseValue`: How the server parses incoming variable values.
@@ -99,8 +149,19 @@ providing a name, description, and three functions:
 The following example is a custom `DateTime` scalar that handles ISO-8601 encoded
 date strings:
 
+<Tabs items={['Code', 'SDL']}>
+  <Tabs.Tab>
+
 ```js
 import { GraphQLScalarType, Kind } from 'graphql';
+
+function parseDate(value) {
+  const date = new Date(value);
+  if (isNaN(date.getTime())) {
+    throw new TypeError(`DateTime cannot represent an invalid date: ${value}`);
+  }
+  return date;
+}
 
 const DateTime = new GraphQLScalarType({
   name: 'DateTime',
@@ -115,13 +176,7 @@ const DateTime = new GraphQLScalarType({
   },
 
   parseValue(value) {
-    const date = new Date(value);
-    if (isNaN(date.getTime())) {
-      throw new TypeError(
-        `DateTime cannot represent an invalid date: ${value}`,
-      );
-    }
-    return date;
+    return parseDate(value);
   },
 
   parseLiteral(ast) {
@@ -130,16 +185,66 @@ const DateTime = new GraphQLScalarType({
         `DateTime can only parse string values, but got: ${ast.kind}`,
       );
     }
-    const date = new Date(ast.value);
-    if (isNaN(date.getTime())) {
-      throw new TypeError(
-        `DateTime cannot represent an invalid date: ${ast.value}`,
-      );
-    }
-    return date;
+    return parseDate(ast.value);
   },
 });
 ```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```js
+import { Kind, buildSchema } from 'graphql';
+
+function parseDate(value) {
+  const date = new Date(value);
+  if (isNaN(date.getTime())) {
+    throw new TypeError(`DateTime cannot represent an invalid date: ${value}`);
+  }
+  return date;
+}
+
+const schema = buildSchema(
+  /* GraphQL */ `
+    scalar DateTime
+      @specifiedBy(url: "https://scalars.graphql.org/andimarek/date-time.html")
+
+    type Query {
+      now: DateTime
+    }
+  `,
+  {
+    supplementalConfig: {
+      scalarTypes: {
+        DateTime: {
+          serialize(value) {
+            if (!(value instanceof Date)) {
+              throw new TypeError('DateTime can only serialize Date instances');
+            }
+            return value.toISOString();
+          },
+
+          parseValue(value) {
+            return parseDate(value);
+          },
+
+          parseLiteral(ast) {
+            if (ast.kind !== Kind.STRING) {
+              throw new TypeError(
+                `DateTime can only parse string values, but got: ${ast.kind}`,
+              );
+            }
+            return parseDate(ast.value);
+          },
+        },
+      },
+    },
+  },
+);
+```
+
+  </Tabs.Tab>
+</Tabs>
 
 These functions give you full control over validation and data flow.
 
@@ -164,12 +269,22 @@ During execution, GraphQL.js replaces variables before calling
 coercion directly outside execution, it must call `replaceVariables()` itself
 before passing the literal to `coerceInputLiteral()`.
 
+<Tabs items={['Code', 'SDL']}>
+  <Tabs.Tab>
+
 ```js
 import { GraphQLScalarType, Kind } from 'graphql';
 
+function parseDate(value) {
+  const date = new Date(value);
+  if (isNaN(date.getTime())) {
+    throw new TypeError(`DateTime cannot represent an invalid date: ${value}`);
+  }
+  return date;
+}
+
 const DateTime = new GraphQLScalarType({
   name: 'DateTime',
-  description: 'An ISO-8601 encoded UTC date string.',
 
   coerceOutputValue(value) {
     if (!(value instanceof Date)) {
@@ -198,6 +313,67 @@ const DateTime = new GraphQLScalarType({
   },
 });
 ```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```js
+import { Kind, buildSchema } from 'graphql';
+
+function parseDate(value) {
+  const date = new Date(value);
+  if (isNaN(date.getTime())) {
+    throw new TypeError(`DateTime cannot represent an invalid date: ${value}`);
+  }
+  return date;
+}
+
+const schema = buildSchema(
+  /* GraphQL */ `
+    scalar DateTime
+
+    type Query {
+      now: DateTime
+    }
+  `,
+  {
+    supplementalConfig: {
+      scalarTypes: {
+        DateTime: {
+          coerceOutputValue(value) {
+            if (!(value instanceof Date)) {
+              throw new TypeError('DateTime can only serialize Date instances');
+            }
+            return value.toISOString();
+          },
+
+          coerceInputValue(value) {
+            return parseDate(value);
+          },
+
+          coerceInputLiteral(ast) {
+            if (ast.kind !== Kind.STRING) {
+              throw new TypeError(
+                `DateTime can only parse string values, but got: ${ast.kind}`,
+              );
+            }
+            return parseDate(ast.value);
+          },
+
+          valueToLiteral(value) {
+            if (typeof value === 'string') {
+              return { kind: Kind.STRING, value, block: false };
+            }
+          },
+        },
+      },
+    },
+  },
+);
+```
+
+  </Tabs.Tab>
+</Tabs>
 
 If you need one scalar definition that supports both v16 and v17, keep the
 v16 method names until your minimum GraphQL.js version is v17.

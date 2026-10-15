@@ -2,6 +2,8 @@
 title: Scaling your GraphQL API
 ---
 
+import { Tabs } from 'nextra/components';
+
 As your application grows, so does your GraphQL schema. What starts as a small,
 self-contained monolith may eventually need to support multiple teams, services, and
 domains.
@@ -17,25 +19,57 @@ A monolithic schema is a single GraphQL schema served from a single service. All
 resolvers, and business logic are located and deployed together.
 
 This is the default approach when using GraphQL.js. You define the entire schema in one
-place using the `GraphQLSchema` constructor and expose it through a single HTTP endpoint.
+place and expose it through a single HTTP endpoint.
 
 The following example defines a minimal schema that serves a single `hello` field:
 
-```js
-import { GraphQLSchema, GraphQLObjectType, GraphQLString } from 'graphql';
+<Tabs items={['Code', 'SDL']}>
+  <Tabs.Tab>
 
-const QueryType = new GraphQLObjectType({
-  name: 'Query',
-  fields: {
-    hello: {
-      type: GraphQLString,
-      resolve: () => 'Hello from a monolithic schema!',
+```js
+import { GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql';
+
+export const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      hello: {
+        type: GraphQLString,
+        resolve: () => 'Hello from a monolithic schema!',
+      },
+    },
+  }),
+});
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```js
+import { buildSchema } from 'graphql';
+
+export const schema = buildSchema(
+  /* GraphQL */ `
+    type Query {
+      hello: String
+    }
+  `,
+  {
+    supplementalConfig: {
+      objectTypes: {
+        Query: {
+          fields: {
+            hello: () => 'Hello from a monolithic schema!',
+          },
+        },
+      },
     },
   },
-});
-
-export const schema = new GraphQLSchema({ query: QueryType });
+);
 ```
+
+  </Tabs.Tab>
+</Tabs>
 
 This structure works well for small to medium projects, especially when a single team owns the entire
 graph. It's simple to test, deploy, and reason about. As long as the schema remains manageable

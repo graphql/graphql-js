@@ -14,28 +14,16 @@ type Query {
 }
 ```
 
-Instead of hard coding "three", we might want a more general function that rolls `numDice` dice, each of which have `numSides` sides. We can add arguments to the GraphQL schema language like this:
+Instead of hard coding "three", we might want a more general function that rolls `numDice` dice, each of which have `numSides` sides:
 
-<Tabs items={['SDL', 'Code']}>
-  <Tabs.Tab>
-
-```graphql
-type Query {
-  rollDice(numDice: Int!, numSides: Int): [Int]
-}
-```
-
-  </Tabs.Tab>
+<Tabs items={['Code', 'SDL']}>
   <Tabs.Tab>
 
 ```js
-import express from 'express';
-import { createHandler } from 'graphql-http/lib/use/express';
 import {
   GraphQLObjectType,
   GraphQLSchema,
   GraphQLList,
-  GraphQLFloat,
   GraphQLInt,
   GraphQLNonNull,
 } from 'graphql';
@@ -45,7 +33,7 @@ const schema = new GraphQLSchema({
     name: 'Query',
     fields: {
       rollDice: {
-        type: new GraphQLList(GraphQLFloat),
+        type: new GraphQLList(GraphQLInt),
         args: {
           numDice: { type: new GraphQLNonNull(GraphQLInt) },
           numSides: { type: GraphQLInt },
@@ -61,16 +49,38 @@ const schema = new GraphQLSchema({
     },
   }),
 });
+```
 
-const app = express();
-app.all(
-  '/graphql',
-  createHandler({
-    schema: schema,
-  }),
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```js
+import { buildSchema } from 'graphql';
+
+const schema = buildSchema(
+  /* GraphQL */ `
+    type Query {
+      rollDice(numDice: Int!, numSides: Int): [Int]
+    }
+  `,
+  {
+    supplementalConfig: {
+      objectTypes: {
+        Query: {
+          fields: {
+            rollDice: (_source, { numDice, numSides }) => {
+              const output = [];
+              for (let i = 0; i < numDice; i++) {
+                output.push(1 + Math.floor(Math.random() * (numSides || 6)));
+              }
+              return output;
+            },
+          },
+        },
+      },
+    },
+  },
 );
-app.listen(4000);
-console.log('Running a GraphQL API server at localhost:4000/graphql');
 ```
 
   </Tabs.Tab>
@@ -94,7 +104,7 @@ When constructing a schema in code, GraphQL.js v16 uses `defaultValue`:
 
 ```js
 const rollDiceField = {
-  type: new GraphQLList(GraphQLFloat),
+  type: new GraphQLList(GraphQLInt),
   args: {
     numDice: { type: new GraphQLNonNull(GraphQLInt) },
     numSides: { type: GraphQLInt, defaultValue: 6 },
@@ -106,7 +116,7 @@ GraphQL.js v17 also supports the more explicit `default` shape for new code:
 
 ```js
 const rollDiceField = {
-  type: new GraphQLList(GraphQLFloat),
+  type: new GraphQLList(GraphQLInt),
   args: {
     numDice: { type: new GraphQLNonNull(GraphQLInt) },
     numSides: { type: GraphQLInt, default: { value: 6 } },
@@ -155,47 +165,9 @@ const root = {
 
 If you're familiar with destructuring, this is a bit nicer because the line of code where `rollDice` is defined tells you about what the arguments are.
 
-The entire code for a server that hosts this `rollDice` API is:
+The entire code for a server that hosts this `rollDice` API can use code-first schema construction or SDL:
 
-<Tabs items={['SDL', 'Code']}>
-  <Tabs.Tab>
-
-```js
-import express from 'express';
-import { createHandler } from 'graphql-http/lib/use/express';
-import { buildSchema } from 'graphql';
-
-// Construct a schema, using GraphQL schema language
-const schema = buildSchema(/* GraphQL */ `
-  type Query {
-    rollDice(numDice: Int!, numSides: Int): [Int]
-  }
-`);
-
-// The root provides a resolver function for each API endpoint
-const root = {
-  rollDice({ numDice, numSides }) {
-    const output = [];
-    for (let i = 0; i < numDice; i++) {
-      output.push(1 + Math.floor(Math.random() * (numSides || 6)));
-    }
-    return output;
-  },
-};
-
-const app = express();
-app.all(
-  '/graphql',
-  createHandler({
-    schema: schema,
-    rootValue: root,
-  }),
-);
-app.listen(4000);
-console.log('Running a GraphQL API server at localhost:4000/graphql');
-```
-
-  </Tabs.Tab>
+<Tabs items={['Code', 'SDL']}>
   <Tabs.Tab>
 
 ```js
@@ -205,25 +177,23 @@ import {
   GraphQLObjectType,
   GraphQLNonNull,
   GraphQLInt,
-  GraphQLString,
   GraphQLList,
-  GraphQLFloat,
   GraphQLSchema,
 } from 'graphql';
 
-// Construct a schema, using GraphQL schema language
+// Construct a schema in code.
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
     fields: {
       rollDice: {
-        type: new GraphQLList(GraphQLFloat),
+        type: new GraphQLList(GraphQLInt),
         args: {
           numDice: {
             type: new GraphQLNonNull(GraphQLInt),
           },
           numSides: {
-            type: new GraphQLNonNull(GraphQLInt),
+            type: GraphQLInt,
           },
         },
         resolve: (_, { numDice, numSides }) => {
@@ -237,6 +207,50 @@ const schema = new GraphQLSchema({
     },
   }),
 });
+
+const app = express();
+app.all(
+  '/graphql',
+  createHandler({
+    schema: schema,
+  }),
+);
+app.listen(4000);
+console.log('Running a GraphQL API server at localhost:4000/graphql');
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```js
+import express from 'express';
+import { createHandler } from 'graphql-http/lib/use/express';
+import { buildSchema } from 'graphql';
+
+const schema = buildSchema(
+  /* GraphQL */ `
+    type Query {
+      rollDice(numDice: Int!, numSides: Int): [Int]
+    }
+  `,
+  {
+    supplementalConfig: {
+      objectTypes: {
+        Query: {
+          fields: {
+            rollDice: (_source, { numDice, numSides }) => {
+              const output = [];
+              for (let i = 0; i < numDice; i++) {
+                output.push(1 + Math.floor(Math.random() * (numSides || 6)));
+              }
+              return output;
+            },
+          },
+        },
+      },
+    },
+  },
+);
 
 const app = express();
 app.all(

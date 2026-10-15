@@ -66,18 +66,28 @@ export interface GraphQLArgs
  * // Execute a complete asynchronous request with variables.
  * import { graphql, buildSchema } from 'graphql';
  *
- * const schema = buildSchema(`
- *   type Query {
- *     greeting(name: String!): String
- *   }
- * `);
+ * const schema = buildSchema(
+ *   `
+ *     type Query {
+ *       greeting(name: String!): String
+ *     }
+ *   `,
+ *   {
+ *     supplementalConfig: {
+ *       objectTypes: {
+ *         Query: {
+ *           fields: {
+ *             greeting: (_source, { name }) => `Hello, ${name}!`,
+ *           },
+ *         },
+ *       },
+ *     },
+ *   },
+ * );
  *
  * const result = await graphql({
  *   schema,
  *   source: 'query SayHello($name: String!) { greeting(name: $name) }',
- *   rootValue: {
- *     greeting: ({ name }) => `Hello, ${name}!`,
- *   },
  *   variableValues: { name: 'Ada' },
  *   operationName: 'SayHello',
  * });
@@ -124,11 +134,24 @@ export interface GraphQLArgs
  * // This variant customizes the request pipeline with a harness.
  * import { buildSchema, defaultHarness, graphql } from 'graphql';
  *
- * const schema = buildSchema(`
- *   type Query {
- *     greeting: String
- *   }
- * `);
+ * const schema = buildSchema(
+ *   `
+ *     type Query {
+ *       greeting: String
+ *     }
+ *   `,
+ *   {
+ *     supplementalConfig: {
+ *       objectTypes: {
+ *         Query: {
+ *           fields: {
+ *             greeting: () => 'Hello',
+ *           },
+ *         },
+ *       },
+ *     },
+ *   },
+ * );
  * const stages = [];
  * const abortController = new AbortController();
  * const harness = {
@@ -153,7 +176,6 @@ export interface GraphQLArgs
  * const result = await graphql({
  *   schema,
  *   source: '{ greeting }',
- *   rootValue: { greeting: 'Hello' },
  *   rules: [],
  *   maxErrors: 25,
  *   hideSuggestions: true,
@@ -186,18 +208,28 @@ export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
  * // Execute a complete synchronous request with variables.
  * import { graphqlSync, buildSchema } from 'graphql';
  *
- * const schema = buildSchema(`
- *   type Query {
- *     greeting(name: String!): String
- *   }
- * `);
+ * const schema = buildSchema(
+ *   `
+ *     type Query {
+ *       greeting(name: String!): String
+ *     }
+ *   `,
+ *   {
+ *     supplementalConfig: {
+ *       objectTypes: {
+ *         Query: {
+ *           fields: {
+ *             greeting: (_source, { name }) => `Hello, ${name}!`,
+ *           },
+ *         },
+ *       },
+ *     },
+ *   },
+ * );
  *
  * const result = graphqlSync({
  *   schema,
  *   source: 'query SayHello($name: String!) { greeting(name: $name) }',
- *   rootValue: {
- *     greeting: ({ name }) => `Hello, ${name}!`,
- *   },
  *   variableValues: { name: 'Ada' },
  *   operationName: 'SayHello',
  * });
