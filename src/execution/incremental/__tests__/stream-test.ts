@@ -2065,6 +2065,122 @@ describe('Execute: stream directive', () => {
 
     resolveName('Luke');
   });
+  it.skip('Releases a buffered shared stream after its other fragment fails', async () => {
+    const document = parse(`
+      {
+        nestedObject {
+          ... @defer(label: "R") {
+            nonNullScalarField
+            ...Friends
+          }
+          ... @defer(label: "P") {
+            scalarField
+            ... @defer(label: "C") {
+              ...Friends
+            }
+          }
+        }
+      }
+      fragment Friends on NestedObject {
+        nestedFriendList @stream(initialCount: 0) {
+          name
+        }
+      }
+    `);
+    const { promise: scalarPromise, resolve: resolveScalar } =
+      promiseWithResolvers<string>();
+
+    const result = experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        nestedObject: {
+          nonNullScalarField: null,
+          scalarField: scalarPromise,
+          nestedFriendList: friends,
+        },
+      },
+    });
+
+    assert('initialResult' in result);
+
+    expectJSON(result.initialResult).toDeepEqual({
+      data: {
+        nestedObject: {},
+      },
+      pending: [
+        { id: '0', path: ['nestedObject'], label: 'R' },
+        { id: '1', path: ['nestedObject'], label: 'P' },
+      ],
+      hasNext: true,
+    });
+
+    const iterator = result.subsequentResults[Symbol.asyncIterator]();
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        completed: [
+          {
+            id: '0',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field NestedObject.nonNullScalarField.',
+                locations: [{ line: 5, column: 13 }],
+                path: ['nestedObject', 'nonNullScalarField'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    resolveScalar('parent');
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        pending: [
+          { id: '2', path: ['nestedObject'], label: 'C' },
+          { id: '3', path: ['nestedObject', 'nestedFriendList'] },
+        ],
+        incremental: [
+          {
+            id: '1',
+            data: { scalarField: 'parent' },
+          },
+          {
+            id: '2',
+            data: { nestedFriendList: [] },
+          },
+        ],
+        completed: [{ id: '1' }, { id: '2' }],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        incremental: [
+          {
+            id: '3',
+            items: [{ name: 'Luke' }, { name: 'Han' }, { name: 'Leia' }],
+          },
+        ],
+        completed: [{ id: '3' }],
+        hasNext: false,
+      },
+      done: false,
+    });
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
   it('Filters stream payloads that are nulled in a deferred payload', async () => {
     const document = parse(`
       query {

@@ -1,4 +1,3 @@
-import { invariant } from '../../jsutils/invariant.ts';
 import { isPromise } from '../../jsutils/isPromise.ts';
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 
@@ -162,7 +161,7 @@ interface GroupSuccessEvent<
 interface GroupFailureEvent<G extends Group<G>> {
   kind: 'GROUP_FAILURE';
   group: G;
-  errors: ReadonlyArray<unknown>;
+  error: unknown;
 }
 
 interface StreamValuesEvent<
@@ -199,7 +198,6 @@ interface GroupNode<T, I, G extends Group<G>, S extends Stream<T, I, G, S>> {
   childGroups: Array<G>;
   tasks: Set<Task<T, I, G, S>>;
   pending: number;
-  errors: Array<unknown>;
 }
 
 interface TaskNode<T, I, G extends Group<G>, S extends Stream<T, I, G, S>> {
@@ -215,11 +213,7 @@ export function createWorkQueue<
   S extends Stream<T, I, G, S>,
 >(initialWork: Work<T, I, G, S> | undefined): WorkQueue<T, I, G, S> {
   const rootGroups = new Set<G>();
-  // Released groups whose outcomes settled before announcement need draining.
-  // Ordinary task completions already finish their directly affected roots.
-  const readyGroups = new Set<G>();
   const rootStreams = new Set<S>();
-  const cancelledGroups = new WeakSet<G>();
   const groupNodes = new Map<G, GroupNode<T, I, G, S>>();
   const taskNodes = new Map<Task<T, I, G, S>, TaskNode<T, I, G, S>>();
   let pushGraphEvent!: (e: GraphEvent<T, I, G, S>) => PromiseOrValue<void>;
@@ -231,7 +225,7 @@ export function createWorkQueue<
   // Initialize root groups and streams at startup to prepare for cancellation
   // prior to starting the work queue
   for (const group of nonEmptyInitialRootGroups) {
-    addRootGroup(group);
+    rootGroups.add(group);
   }
   for (const stream of initialRootStreams) {
     rootStreams.add(stream);
@@ -366,17 +360,10 @@ export function createWorkQueue<
       addGroup(parent, groupSet, newRootGroups, visited, parentTask);
     }
 
-    // A shared producer can reveal a child after its parent has failed.
-    if (parent !== undefined && cancelledGroups.has(parent)) {
-      cancelledGroups.add(group);
-      return;
-    }
-
     const groupNode: GroupNode<T, I, G, S> = {
       childGroups: [],
       tasks: new Set(),
       pending: 0,
-      errors: [],
     };
     groupNodes.set(group, groupNode);
 
@@ -393,9 +380,6 @@ export function createWorkQueue<
       if (groupNode) {
         groupNode.tasks.add(task);
         groupNode.pending++;
-        if (groupNode.errors.length === 0) {
-          readyGroups.delete(group);
-        }
         if (rootGroups.has(group)) {
           startTask(task);
         }
@@ -424,13 +408,8 @@ export function createWorkQueue<
     for (const newGroup of newGroups) {
       const newGroupState = groupNodes.get(newGroup);
       if (newGroupState) {
-        // Settled tasks can still hold values that have not been published.
-        if (
-          newGroupState.tasks.size === 0 &&
-          newGroupState.errors.length === 0
-        ) {
+        if (newGroupState.pending === 0) {
           groupNodes.delete(newGroup);
-          readyGroups.delete(newGroup);
           pruneEmptyGroups(newGroupState.childGroups, nonEmptyNewGroups);
         } else {
           nonEmptyNewGroups.push(newGroup);
@@ -445,7 +424,7 @@ export function createWorkQueue<
     newStreams: ReadonlyArray<S>,
   ): void {
     for (const group of newGroups) {
-      addRootGroup(group);
+      rootGroups.add(group);
       startGroup(group);
     }
     for (const stream of newStreams) {
@@ -455,18 +434,9 @@ export function createWorkQueue<
     }
   }
 
-  function addRootGroup(group: G): void {
-    rootGroups.add(group);
-    const groupNode = groupNodes.get(group);
-    invariant(groupNode !== undefined);
-    if (groupNode.pending === 0 || groupNode.errors.length > 0) {
-      readyGroups.add(group);
-    }
-  }
-
   function startGroup(group: G): void {
     const groupNode = groupNodes.get(group);
-    if (groupNode?.errors.length === 0) {
+    if (groupNode) {
       for (const task of groupNode.tasks) {
         startTask(task);
       }
@@ -564,18 +534,15 @@ export function createWorkQueue<
 
   function taskSuccess(
     graphEvent: TaskSuccessGraphEvent<T, I, G, S>,
-  ): ReadonlyArray<WorkQueueEvent<T, I, G, S>> {
+  ): ReadonlyArray<
+    GroupValuesEvent<T, I, G, S> | GroupSuccessEvent<T, I, G, S>
+  > {
     const { task, result } = graphEvent;
     const { value, work } = result;
     const taskNode = taskNodes.get(task);
-    if (!taskNode) {
-      return [];
+    if (taskNode) {
+      taskNode.value = value;
     }
-    if (!task.groups.some(isHealthyGroup)) {
-      removeTask(task);
-      return [];
-    }
-    taskNode.value = value;
     maybeIntegrateWork(work, task);
 
     const groupEvents: Array<
@@ -587,11 +554,7 @@ export function createWorkQueue<
       const groupNode = groupNodes.get(group);
       if (groupNode) {
         groupNode.pending--;
-        if (
-          rootGroups.has(group) &&
-          groupNode.pending === 0 &&
-          groupNode.errors.length === 0
-        ) {
+        if (rootGroups.has(group) && groupNode.pending === 0) {
           const {
             groupValuesEvent,
             groupSuccessEvent,
@@ -609,87 +572,29 @@ export function createWorkQueue<
     }
 
     startNewWork(newGroups, newStreams);
-    return [...groupEvents, ...drainReadyGroups()];
+    return groupEvents;
   }
 
   function taskFailure(
     graphEvent: TaskFailureGraphEvent<T, I, G, S>,
   ): ReadonlyArray<GroupFailureEvent<G>> {
     const { task, error } = graphEvent;
-    if (!taskNodes.has(task)) {
-      return [];
-    }
-    // Retained failure records do not keep an otherwise cancelled task active.
-    const hasHealthyOwner = task.groups.some(isHealthyGroup);
-    removeTask(task);
-    if (!hasHealthyOwner) {
-      return [];
-    }
+    taskNodes.delete(task);
     const groupFailureEvents: Array<GroupFailureEvent<G>> = [];
     for (const group of task.groups) {
       const groupNode = groupNodes.get(group);
       if (groupNode) {
-        if (rootGroups.has(group)) {
-          groupFailureEvents.push(
-            finishGroupFailure(group, groupNode, [error]),
-          );
-        } else {
-          groupNode.pending--;
-          groupNode.errors.push(error);
-        }
+        groupFailureEvents.push(finishGroupFailure(group, groupNode, error));
       }
     }
     return groupFailureEvents;
   }
 
-  function isHealthyGroup(group: G): boolean {
-    const node = groupNodes.get(group);
-    if (!node || node.errors.length > 0) {
-      return false;
-    }
-    let parent = group.parent;
-    while (parent !== undefined) {
-      const parentNode = groupNodes.get(parent);
-      if (!parentNode) {
-        break;
-      }
-      if (parentNode.errors.length > 0) {
-        return false;
-      }
-      parent = parent.parent;
-    }
-    return true;
-  }
-
-  function drainReadyGroups(): Array<WorkQueueEvent<T, I, G, S>> {
-    const readyEvents: Array<WorkQueueEvent<T, I, G, S>> = [];
-    // Insertion order matches release order. Set iteration also visits ready
-    // descendants released by an earlier completion in this drain.
-    for (const group of readyGroups) {
-      readyGroups.delete(group);
-      const groupNode = groupNodes.get(group);
-      invariant(groupNode !== undefined);
-      if (groupNode.errors.length > 0) {
-        readyEvents.push(
-          finishGroupFailure(group, groupNode, groupNode.errors),
-        );
-      } else {
-        invariant(groupNode.pending === 0);
-        const { groupValuesEvent, groupSuccessEvent, newGroups, newStreams } =
-          finishGroupSuccess(group, groupNode);
-        if (groupValuesEvent) {
-          readyEvents.push(groupValuesEvent);
-        }
-        readyEvents.push(groupSuccessEvent);
-        startNewWork(newGroups, newStreams);
-      }
-    }
-    return readyEvents;
-  }
-
   function streamItems(
     graphEvent: StreamItemsEvent<T, I, G, S>,
-  ): ReadonlyArray<WorkQueueEvent<T, I, G, S>> {
+  ):
+    | [StreamValuesEvent<T, I, G, S>]
+    | [StreamValuesEvent<T, I, G, S>, StreamSuccessEvent<T, I, G, S>] {
     const { stream, items } = graphEvent;
     const values: Array<I> = [];
     const newGroups: Array<G> = [];
@@ -711,16 +616,12 @@ export function createWorkQueue<
       newStreams,
     };
 
-    const readyEvents: Array<WorkQueueEvent<T, I, G, S>> = [
-      streamValuesEvent,
-      ...drainReadyGroups(),
-    ];
     // queues allow peeking ahead see if stream has stopped
     if (stream.queue.isStopped()) {
       rootStreams.delete(stream);
-      readyEvents.push({ kind: 'STREAM_SUCCESS', stream });
+      return [streamValuesEvent, { kind: 'STREAM_SUCCESS', stream }];
     }
-    return readyEvents;
+    return [streamValuesEvent];
   }
 
   function finishGroupSuccess(
@@ -733,7 +634,6 @@ export function createWorkQueue<
     newStreams: ReadonlyArray<S>;
   } {
     groupNodes.delete(group);
-    readyGroups.delete(group);
     const values: Array<T> = [];
     const newStreams: Array<S> = [];
     for (const task of groupNode.tasks) {
@@ -769,16 +669,14 @@ export function createWorkQueue<
   function finishGroupFailure(
     group: G,
     groupNode: GroupNode<T, I, G, S>,
-    errors: ReadonlyArray<unknown>,
+    error: unknown,
   ): GroupFailureEvent<G> {
     removeGroup(group, groupNode);
-    return { kind: 'GROUP_FAILURE', group, errors };
+    rootGroups.delete(group);
+    return { kind: 'GROUP_FAILURE', group, error };
   }
 
   function removeGroup(group: G, groupNode: GroupNode<T, I, G, S>): void {
-    cancelledGroups.add(group);
-    readyGroups.delete(group);
-    rootGroups.delete(group);
     groupNodes.delete(group);
     for (const task of groupNode.tasks) {
       if (task.groups.every((taskGroup) => !groupNodes.has(taskGroup))) {

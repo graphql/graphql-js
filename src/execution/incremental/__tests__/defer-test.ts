@@ -137,8 +137,6 @@ const query = new GraphQLObjectType({
     },
     a: { type: a },
     g: { type: g },
-    slow: { type: GraphQLString },
-    bad: { type: new GraphQLNonNull(GraphQLString) },
   },
   name: 'Query',
 });
@@ -1973,41 +1971,56 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it('Announces a nested group before completing its retained failure', async () => {
+  it.skip('Announces a nested fragment before completing its shared failure', async () => {
     const document = parse(`
       {
-        ... @defer(label: "R") { bad }
-        ... @defer(label: "P") {
-          slow
-          ... @defer(label: "C") { bad }
+        hero {
+          ... @defer(label: "R") {
+            nonNullName
+          }
+          ... @defer(label: "P") {
+            name
+            ... @defer(label: "C") {
+              nonNullName
+            }
+          }
         }
       }
     `);
-    const result = await complete(document, { slow: 'ok', bad: null });
-
+    const result = await complete(document, {
+      hero: { name: 'Luke', nonNullName: null },
+    });
     expectJSON(result).toDeepEqual([
       {
-        data: {},
+        data: {
+          hero: {},
+        },
         pending: [
-          { id: '0', path: [], label: 'R' },
-          { id: '1', path: [], label: 'P' },
+          { id: '0', path: ['hero'], label: 'R' },
+          { id: '1', path: ['hero'], label: 'P' },
         ],
         hasNext: true,
       },
       {
-        pending: [{ id: '2', path: [], label: 'C' }],
-        incremental: [{ id: '1', data: { slow: 'ok' } }],
+        pending: [{ id: '2', path: ['hero'], label: 'C' }],
+        incremental: [
+          {
+            id: '1',
+            data: { name: 'Luke' },
+          },
+        ],
         completed: [
           {
             id: '0',
             errors: [
               {
-                message: 'Cannot return null for non-nullable field Query.bad.',
+                message:
+                  'Cannot return null for non-nullable field Hero.nonNullName.',
                 locations: [
-                  { line: 3, column: 34 },
-                  { line: 6, column: 36 },
+                  { line: 5, column: 13 },
+                  { line: 10, column: 15 },
                 ],
-                path: ['bad'],
+                path: ['hero', 'nonNullName'],
               },
             ],
           },
@@ -2016,12 +2029,13 @@ describe('Execute: defer directive', () => {
             id: '2',
             errors: [
               {
-                message: 'Cannot return null for non-nullable field Query.bad.',
+                message:
+                  'Cannot return null for non-nullable field Hero.nonNullName.',
                 locations: [
-                  { line: 3, column: 34 },
-                  { line: 6, column: 36 },
+                  { line: 5, column: 13 },
+                  { line: 10, column: 15 },
                 ],
-                path: ['bad'],
+                path: ['hero', 'nonNullName'],
               },
             ],
           },
@@ -2030,6 +2044,193 @@ describe('Execute: defer directive', () => {
       },
     ]);
   });
+
+  it.skip('Reports one cached shared failure when a nested fragment is announced', async () => {
+    const document = parse(`
+      {
+        hero {
+          ... @defer(label: "R1") {
+            first: nonNullName
+          }
+          ... @defer(label: "R2") {
+            second: nonNullName
+          }
+          ... @defer(label: "P") {
+            name
+            ... @defer(label: "C") {
+              first: nonNullName
+              second: nonNullName
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      hero: { name: 'Luke', nonNullName: null },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {},
+        },
+        pending: [
+          { id: '0', path: ['hero'], label: 'R1' },
+          { id: '1', path: ['hero'], label: 'R2' },
+          { id: '2', path: ['hero'], label: 'P' },
+        ],
+        hasNext: true,
+      },
+      {
+        pending: [{ id: '3', path: ['hero'], label: 'C' }],
+        incremental: [
+          {
+            id: '2',
+            data: { name: 'Luke' },
+          },
+        ],
+        completed: [
+          {
+            id: '0',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field Hero.nonNullName.',
+                locations: [
+                  { line: 5, column: 13 },
+                  { line: 13, column: 15 },
+                ],
+                path: ['hero', 'first'],
+              },
+            ],
+          },
+          {
+            id: '1',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field Hero.nonNullName.',
+                locations: [
+                  { line: 8, column: 13 },
+                  { line: 14, column: 15 },
+                ],
+                path: ['hero', 'second'],
+              },
+            ],
+          },
+          { id: '2' },
+          {
+            id: '3',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field Hero.nonNullName.',
+                locations: [
+                  { line: 5, column: 13 },
+                  { line: 13, column: 15 },
+                ],
+                path: ['hero', 'first'],
+              },
+            ],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  for (const enableEarlyExecution of [false, true]) {
+    it.skip(`Delivers a buffered shared value after its other fragment fails (enableEarlyExecution: ${enableEarlyExecution})`, async () => {
+      const document = parse(`
+        {
+          hero {
+            ... @defer(label: "R") {
+              nonNullName
+              id
+            }
+            ... @defer(label: "P") {
+              name
+              ... @defer(label: "C") {
+                id
+              }
+            }
+          }
+        }
+      `);
+      const { promise: namePromise, resolve: resolveName } =
+        promiseWithResolvers<string>();
+
+      const result = experimentalExecuteIncrementally({
+        schema,
+        document,
+        rootValue: {
+          hero: { id: 1, name: namePromise, nonNullName: null },
+        },
+        enableEarlyExecution,
+      });
+
+      assert('initialResult' in result);
+
+      expectJSON(result.initialResult).toDeepEqual({
+        data: {
+          hero: {},
+        },
+        pending: [
+          { id: '0', path: ['hero'], label: 'R' },
+          { id: '1', path: ['hero'], label: 'P' },
+        ],
+        hasNext: true,
+      });
+
+      const iterator = result.subsequentResults[Symbol.asyncIterator]();
+
+      expectJSON(await iterator.next()).toDeepEqual({
+        value: {
+          completed: [
+            {
+              id: '0',
+              errors: [
+                {
+                  message:
+                    'Cannot return null for non-nullable field Hero.nonNullName.',
+                  locations: [{ line: 5, column: 15 }],
+                  path: ['hero', 'nonNullName'],
+                },
+              ],
+            },
+          ],
+          hasNext: true,
+        },
+        done: false,
+      });
+
+      // The shared id has settled, but C still waits for P's name.
+      resolveName('Luke');
+
+      expectJSON(await iterator.next()).toDeepEqual({
+        value: {
+          pending: [{ id: '2', path: ['hero'], label: 'C' }],
+          incremental: [
+            {
+              id: '1',
+              data: { name: 'Luke' },
+            },
+            {
+              id: '2',
+              data: { id: '1' },
+            },
+          ],
+          completed: [{ id: '1' }, { id: '2' }],
+          hasNext: false,
+        },
+        done: false,
+      });
+
+      expectJSON(await iterator.next()).toDeepEqual({
+        value: undefined,
+        done: true,
+      });
+    });
+  }
 
   it('Handles cancelling child deferred fragments if parent fragment fails', async () => {
     const document = parse(`

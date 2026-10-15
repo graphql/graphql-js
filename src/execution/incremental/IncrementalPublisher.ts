@@ -206,11 +206,11 @@ export class IncrementalPublisher {
         break;
       }
       case 'GROUP_FAILURE': {
-        const { group, errors } = event;
+        const { group, error } = event;
         const id = this._ensureId(group);
         context.completed.push({
           id,
-          errors: errors.map(ensureGraphQLError),
+          errors: [ensureGraphQLError(error)],
         });
         this._ids.delete(group);
         break;

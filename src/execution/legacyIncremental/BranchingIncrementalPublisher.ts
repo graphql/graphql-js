@@ -156,7 +156,7 @@ export class BranchingIncrementalPublisher {
               path: pathToArray(group.path),
             },
             group.label,
-            event.errors.map(ensureGraphQLError),
+            [ensureGraphQLError(event.error)],
           ),
         );
         break;
