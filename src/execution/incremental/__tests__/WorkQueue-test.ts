@@ -517,7 +517,7 @@ describe('WorkQueue', () => {
     });
   });
 
-  it.skip('releases buffered shared work and its stream when its group is announced', async () => {
+  it('releases buffered shared work and its stream when its group is announced', async () => {
     const root: TestGroup = {};
     const parent: TestGroup = {};
     const child: TestGroup = { parent };
@@ -751,15 +751,24 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_SUCCESS',
           group: parent2,
-          // FIXME: Announce child2 and deliver its buffered shared value here.
+          newGroups: [child2],
+          newStreams: [],
+        },
+        {
+          kind: 'GROUP_VALUES',
+          group: child2,
+          values: ['child-shared'],
+        },
+        {
+          kind: 'GROUP_SUCCESS',
+          group: child2,
           newGroups: [],
           newStreams: [],
         },
         {
           kind: 'GROUP_VALUES',
           group: child1,
-          // FIXME: child2 should deliver the shared value before this slow task.
-          values: ['child-shared', 'child1-slow'],
+          values: ['child1-slow'],
         },
         {
           kind: 'GROUP_SUCCESS',
@@ -846,15 +855,24 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_SUCCESS',
           group: parent,
-          // FIXME: Announce child here; its shared value is ready to deliver.
+          newGroups: [child],
+          newStreams: [],
+        },
+        {
+          kind: 'GROUP_VALUES',
+          group: child,
+          values: ['shared'],
+        },
+        {
+          kind: 'GROUP_SUCCESS',
+          group: child,
           newGroups: [],
           newStreams: [],
         },
         {
           kind: 'GROUP_VALUES',
           group: otherRoot,
-          // FIXME: Deliver the shared value through child before this work ends.
-          values: ['shared', 'other-root'],
+          values: ['other-root'],
         },
         {
           kind: 'GROUP_SUCCESS',
@@ -867,7 +885,7 @@ describe('WorkQueue', () => {
     });
   });
 
-  it.skip('accounts for shared work delivered before another owner is announced', async () => {
+  it('accounts for shared work delivered before another owner is announced', async () => {
     const root: TestGroup = {};
     const firstParent: TestGroup = {};
     const secondParent: TestGroup = {};
@@ -992,7 +1010,7 @@ describe('WorkQueue', () => {
     });
   });
 
-  it.skip('does not promote children when their final shared task completes the parent', async () => {
+  it('does not promote children when their final shared task completes the parent', async () => {
     const parent: TestGroup = { parent: undefined };
     const child: TestGroup = { parent };
 

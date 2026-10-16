@@ -5,7 +5,7 @@ import { assert, expect } from 'chai';
 import { expectJSON } from '../../../__testUtils__/expectJSON.ts';
 import { expectPromise } from '../../../__testUtils__/expectPromise.ts';
 import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.ts';
-import { spyOnMethod } from '../../../__testUtils__/spyOn.ts';
+import { spyOn, spyOnMethod } from '../../../__testUtils__/spyOn.ts';
 
 import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.ts';
 
@@ -2139,7 +2139,7 @@ describe('Execute: defer directive', () => {
   });
 
   for (const enableEarlyExecution of [false, true]) {
-    it.skip(`Delivers a buffered shared value after its other fragment fails (enableEarlyExecution: ${enableEarlyExecution})`, async () => {
+    it(`Delivers a buffered shared value after its other fragment fails (enableEarlyExecution: ${enableEarlyExecution})`, async () => {
       const document = parse(`
         {
           hero {
@@ -2231,6 +2231,295 @@ describe('Execute: defer directive', () => {
       });
     });
   }
+
+  it('Delivers a shared value before another fragment finishes its separate field', async () => {
+    const document = parse(`
+      {
+        hero {
+          ... @defer(label: "R") {
+            nonNullName
+            id
+          }
+          ... @defer(label: "P") {
+            name
+            ... @defer(label: "C") {
+              id
+            }
+          }
+        }
+      }
+    `);
+    const { promise: namePromise, resolve: resolveName } =
+      promiseWithResolvers<string>();
+    const { promise: nonNullNamePromise, resolve: resolveNonNullName } =
+      promiseWithResolvers<string>();
+    const result = experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        hero: { id: 1, name: namePromise, nonNullName: nonNullNamePromise },
+      },
+    });
+
+    assert('initialResult' in result);
+
+    expectJSON(result.initialResult).toDeepEqual({
+      data: { hero: {} },
+      pending: [
+        { id: '0', path: ['hero'], label: 'R' },
+        { id: '1', path: ['hero'], label: 'P' },
+      ],
+      hasNext: true,
+    });
+
+    const iterator = result.subsequentResults[Symbol.asyncIterator]();
+
+    resolveName('Luke');
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        pending: [{ id: '2', path: ['hero'], label: 'C' }],
+        incremental: [
+          { id: '1', data: { name: 'Luke' } },
+          { id: '2', data: { id: '1' } },
+        ],
+        completed: [{ id: '1' }, { id: '2' }],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    resolveNonNullName('Luke');
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        incremental: [{ id: '0', data: { nonNullName: 'Luke' } }],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+      done: false,
+    });
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
+  it('Delivers shared child data when the second parent finishes before the first child', async () => {
+    const document = parse(`
+      {
+        hero {
+          ... @defer(label: "P1") {
+            name
+            ... @defer(label: "C1") {
+              id
+              friends { name }
+            }
+          }
+          ... @defer(label: "P2") {
+            nonNullName
+            ... @defer(label: "C2") {
+              id
+            }
+          }
+        }
+      }
+    `);
+    const { promise: namePromise, resolve: resolveName } =
+      promiseWithResolvers<string>();
+    const { promise: friendsPromise, resolve: resolveFriends } =
+      promiseWithResolvers<typeof friends>();
+    const result = experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        hero: {
+          id: 1,
+          name: 'Luke',
+          nonNullName: namePromise,
+          friends: friendsPromise,
+        },
+      },
+    });
+
+    assert('initialResult' in result);
+
+    expectJSON(result.initialResult).toDeepEqual({
+      data: { hero: {} },
+      pending: [
+        { id: '0', path: ['hero'], label: 'P1' },
+        { id: '1', path: ['hero'], label: 'P2' },
+      ],
+      hasNext: true,
+    });
+
+    const iterator = result.subsequentResults[Symbol.asyncIterator]();
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        pending: [{ id: '2', path: ['hero'], label: 'C1' }],
+        incremental: [{ id: '0', data: { name: 'Luke' } }],
+        completed: [{ id: '0' }],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    resolveName('Luke');
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        pending: [{ id: '3', path: ['hero'], label: 'C2' }],
+        incremental: [
+          { id: '1', data: { nonNullName: 'Luke' } },
+          { id: '3', data: { id: '1' } },
+        ],
+        completed: [{ id: '1' }, { id: '3' }],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    resolveFriends(friends);
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        incremental: [
+          {
+            id: '2',
+            data: {
+              friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
+            },
+          },
+        ],
+        completed: [{ id: '2' }],
+        hasNext: false,
+      },
+      done: false,
+    });
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
+  it('Finishes a later shared owner without repeating data delivered after another owner failed', async () => {
+    const document = parse(`
+      {
+        hero {
+          ... @defer(label: "R") {
+            nonNullName
+            id
+          }
+          ... @defer(label: "P1") {
+            name
+            ... @defer(label: "C1") {
+              id
+            }
+          }
+          ... @defer(label: "P2") {
+            nestedObject { name }
+            ... @defer(label: "C2") {
+              id
+              friends { name }
+            }
+          }
+        }
+      }
+    `);
+    const { promise: namePromise, resolve: resolveName } =
+      promiseWithResolvers<string>();
+    const { promise: objectPromise, resolve: resolveObject } =
+      promiseWithResolvers<{ name: string }>();
+    const id = spyOn(() => 1);
+    const result = experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        hero: {
+          id,
+          name: namePromise,
+          nonNullName: null,
+          nestedObject: objectPromise,
+          friends,
+        },
+      },
+    });
+
+    assert('initialResult' in result);
+
+    expectJSON(result.initialResult).toDeepEqual({
+      data: { hero: {} },
+      pending: [
+        { id: '0', path: ['hero'], label: 'R' },
+        { id: '1', path: ['hero'], label: 'P1' },
+        { id: '2', path: ['hero'], label: 'P2' },
+      ],
+      hasNext: true,
+    });
+
+    const iterator = result.subsequentResults[Symbol.asyncIterator]();
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        completed: [
+          {
+            id: '0',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field Hero.nonNullName.',
+                locations: [{ line: 5, column: 13 }],
+                path: ['hero', 'nonNullName'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    resolveName('Luke');
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        pending: [{ id: '3', path: ['hero'], label: 'C1' }],
+        incremental: [
+          { id: '1', data: { name: 'Luke' } },
+          { id: '3', data: { id: '1' } },
+        ],
+        completed: [{ id: '1' }, { id: '3' }],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    resolveObject({ name: 'parent' });
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        pending: [{ id: '4', path: ['hero'], label: 'C2' }],
+        incremental: [
+          { id: '2', data: { nestedObject: { name: 'parent' } } },
+          {
+            id: '4',
+            data: {
+              friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
+            },
+          },
+        ],
+        completed: [{ id: '2' }, { id: '4' }],
+        hasNext: false,
+      },
+      done: false,
+    });
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
+    expect(id.callCount).to.equal(1);
+  });
 
   it('Handles cancelling child deferred fragments if parent fragment fails', async () => {
     const document = parse(`
