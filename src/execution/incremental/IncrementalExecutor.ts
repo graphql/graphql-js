@@ -7,7 +7,7 @@ import { memoize1 } from '../../jsutils/memoize1.ts';
 import { memoize2 } from '../../jsutils/memoize2.ts';
 import type { ObjMap } from '../../jsutils/ObjMap.ts';
 import type { Path } from '../../jsutils/Path.ts';
-import { addPath, pathToArray } from '../../jsutils/Path.ts';
+import { addPath, pathToArray, pathToDigest } from '../../jsutils/Path.ts';
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 import type { SetMap } from '../../jsutils/SetMap.ts';
 
@@ -25,6 +25,7 @@ import type {
   GraphQLOutputType,
   GraphQLResolveInfo,
 } from '../../type/definition.ts';
+import { isNonNullType } from '../../type/definition.ts';
 
 import type {
   DeferUsage,
@@ -883,7 +884,7 @@ export class IncrementalExecutor<
             throw locatedError(
               rawError,
               toNodes(fieldDetailsList),
-              pathToArray(streamPath),
+              pathToDigest(streamPath),
             );
           }
 
@@ -898,7 +899,12 @@ export class IncrementalExecutor<
             return;
           }
 
-          const itemPath = addPath(streamPath, index, undefined);
+          const itemPath = addPath(
+            streamPath,
+            index,
+            undefined,
+            isNonNullType(itemType),
+          );
 
           const executor = createSubExecutor();
 

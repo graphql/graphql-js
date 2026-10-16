@@ -253,6 +253,7 @@ describe('Execute: stream directive (legacy)', () => {
               column: 3,
             },
           ],
+          pathNonNull: [false],
           path: ['scalarList'],
         },
       ],
@@ -641,6 +642,7 @@ describe('Execute: stream directive (legacy)', () => {
           {
             message: 'bad',
             locations: [{ line: 3, column: 9 }],
+            pathNonNull: [false, false],
             path: ['friendList', 1],
           },
         ],
@@ -693,6 +695,7 @@ describe('Execute: stream directive (legacy)', () => {
               {
                 message: 'bad',
                 locations: [{ line: 3, column: 9 }],
+                pathNonNull: [false, false],
                 path: ['friendList', 1],
               },
             ],
@@ -814,6 +817,7 @@ describe('Execute: stream directive (legacy)', () => {
         {
           message: 'initialCount must be a positive integer',
           locations: [{ line: 3, column: 9 }],
+          pathNonNull: [false],
           path: ['friendList'],
         },
       ],
@@ -1001,6 +1005,7 @@ describe('Execute: stream directive (legacy)', () => {
         {
           message: 'bad',
           locations: [{ line: 3, column: 9 }],
+          pathNonNull: [false],
           path: ['friendList'],
         },
       ],
@@ -1040,6 +1045,7 @@ describe('Execute: stream directive (legacy)', () => {
               {
                 message: 'bad',
                 locations: [{ line: 3, column: 9 }],
+                pathNonNull: [false],
                 path: ['friendList'],
               },
             ],
@@ -1078,6 +1084,7 @@ describe('Execute: stream directive (legacy)', () => {
                 message:
                   'Cannot return null for non-nullable field Query.nonNullFriendList.',
                 locations: [{ line: 3, column: 9 }],
+                pathNonNull: [false, true],
                 path: ['nonNullFriendList', 1],
               },
             ],
@@ -1125,6 +1132,7 @@ describe('Execute: stream directive (legacy)', () => {
                 message:
                   'Cannot return null for non-nullable field Query.nonNullFriendList.',
                 locations: [{ line: 3, column: 9 }],
+                pathNonNull: [false, true],
                 path: ['nonNullFriendList', 1],
               },
             ],
@@ -1158,6 +1166,7 @@ describe('Execute: stream directive (legacy)', () => {
               {
                 message: 'String cannot represent value: {}',
                 locations: [{ line: 3, column: 9 }],
+                pathNonNull: [false, false],
                 path: ['scalarList', 1],
               },
             ],
@@ -1200,6 +1209,7 @@ describe('Execute: stream directive (legacy)', () => {
               {
                 message: 'Oops',
                 locations: [{ line: 4, column: 11 }],
+                pathNonNull: [false, false, true],
                 path: ['friendList', 1, 'nonNullName'],
               },
             ],
@@ -1249,6 +1259,7 @@ describe('Execute: stream directive (legacy)', () => {
               {
                 message: 'Oops',
                 locations: [{ line: 4, column: 11 }],
+                pathNonNull: [false, false, true],
                 path: ['friendList', 1, 'nonNullName'],
               },
             ],
@@ -1349,6 +1360,7 @@ describe('Execute: stream directive (legacy)', () => {
               {
                 message: 'Oops',
                 locations: [{ line: 7, column: 11 }],
+                pathNonNull: [false, false, true],
                 path: ['friendList', 1, 'nonNullName'],
               },
             ],
@@ -1411,6 +1423,7 @@ describe('Execute: stream directive (legacy)', () => {
               {
                 message: 'Oops',
                 locations: [{ line: 4, column: 11 }],
+                pathNonNull: [false, true, true],
                 path: ['nonNullFriendList', 1, 'nonNullName'],
               },
             ],
@@ -1451,6 +1464,7 @@ describe('Execute: stream directive (legacy)', () => {
               {
                 message: 'Oops',
                 locations: [{ line: 4, column: 11 }],
+                pathNonNull: [false, true, true],
                 path: ['nonNullFriendList', 1, 'nonNullName'],
               },
             ],
@@ -1492,6 +1506,7 @@ describe('Execute: stream directive (legacy)', () => {
               {
                 message: 'Oops',
                 locations: [{ line: 4, column: 11 }],
+                pathNonNull: [false, false, true],
                 path: ['friendList', 1, 'nonNullName'],
               },
             ],
@@ -1543,6 +1558,7 @@ describe('Execute: stream directive (legacy)', () => {
               {
                 message: 'Oops',
                 locations: [{ line: 4, column: 11 }],
+                pathNonNull: [false, true, true],
                 path: ['nonNullFriendList', 1, 'nonNullName'],
               },
             ],
@@ -1606,6 +1622,7 @@ describe('Execute: stream directive (legacy)', () => {
               {
                 message: 'Oops',
                 locations: [{ line: 4, column: 11 }],
+                pathNonNull: [false, true, true],
                 path: ['nonNullFriendList', 1, 'nonNullName'],
               },
             ],
@@ -1679,6 +1696,7 @@ describe('Execute: stream directive (legacy)', () => {
               {
                 message: 'Oops',
                 locations: [{ line: 4, column: 11 }],
+                pathNonNull: [false, true, true],
                 path: ['nonNullFriendList', 1, 'nonNullName'],
               },
             ],
@@ -1714,6 +1732,7 @@ describe('Execute: stream directive (legacy)', () => {
           message:
             'Cannot return null for non-nullable field NestedObject.nonNullScalarField.',
           locations: [{ line: 4, column: 11 }],
+          pathNonNull: [false, true],
           path: ['nestedObject', 'nonNullScalarField'],
         },
       ],
@@ -1747,6 +1766,7 @@ describe('Execute: stream directive (legacy)', () => {
           message:
             'Cannot return null for non-nullable field NestedObject.nonNullScalarField.',
           locations: [{ line: 7, column: 11 }],
+          pathNonNull: [false, true],
           path: ['nestedObject', 'nonNullScalarField'],
         },
       ],
@@ -1794,6 +1814,7 @@ describe('Execute: stream directive (legacy)', () => {
               {
                 message: 'Oops',
                 locations: [{ line: 5, column: 13 }],
+                pathNonNull: [false, false],
                 path: ['otherNestedObject', 'scalarField'],
               },
             ],
@@ -1856,6 +1877,7 @@ describe('Execute: stream directive (legacy)', () => {
           message:
             'Cannot return null for non-nullable field NestedObject.nonNullScalarField.',
           locations: [{ line: 7, column: 11 }],
+          pathNonNull: [false, true],
           path: ['nestedObject', 'nonNullScalarField'],
         },
       ],
@@ -1909,6 +1931,7 @@ describe('Execute: stream directive (legacy)', () => {
                 message:
                   'Cannot return null for non-nullable field DeeperNestedObject.nonNullScalarField.',
                 locations: [{ line: 6, column: 15 }],
+                pathNonNull: [false, false, true],
                 path: [
                   'nestedObject',
                   'deeperNestedObject',
@@ -1958,6 +1981,7 @@ describe('Execute: stream directive (legacy)', () => {
                 message:
                   'Cannot return null for non-nullable field Friend.nonNullName.',
                 locations: [{ line: 4, column: 9 }],
+                pathNonNull: [false, false, true],
                 path: ['friendList', 0, 'nonNullName'],
               },
             ],
@@ -2051,6 +2075,7 @@ describe('Execute: stream directive (legacy)', () => {
                 message:
                   'Cannot return null for non-nullable field DeeperNestedObject.nonNullScalarField.',
                 locations: [{ line: 6, column: 15 }],
+                pathNonNull: [false, false, true],
                 path: [
                   'nestedObject',
                   'deeperNestedObject',

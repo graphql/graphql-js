@@ -336,6 +336,7 @@ describe('Execute: Handles inputs', () => {
             {
               message:
                 'Argument "TestType.fieldWithObjectInput(input:)" has invalid value: Expected value of type "TestInputObject" to be an object, found: ["foo", "bar", "baz"].',
+              pathNonNull: [false],
               path: ['fieldWithObjectInput'],
               locations: [{ line: 3, column: 41 }],
             },
@@ -372,6 +373,7 @@ describe('Execute: Handles inputs', () => {
             {
               message:
                 'Argument "TestType.fieldWithObjectInput(input:)" has invalid value at .e: FaultyScalarErrorMessage',
+              pathNonNull: [false],
               path: ['fieldWithObjectInput'],
               locations: [{ line: 3, column: 13 }],
               extensions: { code: 'FaultyScalarErrorExtensionCode' },
@@ -958,6 +960,7 @@ describe('Execute: Handles inputs', () => {
             message:
               'Argument "TestType.fieldWithNonNullableStringInput(input:)" of required type "String!" was not provided.',
             locations: [{ line: 1, column: 3 }],
+            pathNonNull: [false],
             path: ['fieldWithNonNullableStringInput'],
           },
         ],
@@ -1006,6 +1009,7 @@ describe('Execute: Handles inputs', () => {
             message:
               'Argument "TestType.fieldWithNonNullableStringInput(input:)" has invalid value: Expected variable "$foo" provided to type "String!" to provide a runtime value.',
             locations: [{ line: 3, column: 50 }],
+            pathNonNull: [false],
             path: ['fieldWithNonNullableStringInput'],
           },
         ],
@@ -1346,6 +1350,7 @@ describe('Execute: Handles inputs', () => {
             message:
               'Argument "TestType.fieldWithDefaultArgumentValue(input:)" has invalid value: String cannot represent a non string value: WRONG_TYPE',
             locations: [{ line: 3, column: 48 }],
+            pathNonNull: [false],
             path: ['fieldWithDefaultArgumentValue'],
           },
         ],
@@ -1401,6 +1406,7 @@ describe('Execute: Handles inputs', () => {
             message:
               'Argument "TestTypeWithInvalidDefaultArgumentValue.fieldWithInvalidDefaultArgumentValue(input:)" has invalid default value: String cannot represent a non string value: 123',
             locations: [{ line: 1, column: 3 }],
+            pathNonNull: [false],
             path: ['fieldWithInvalidDefaultArgumentValue'],
           },
         ],
@@ -1427,6 +1433,7 @@ describe('Execute: Handles inputs', () => {
             message:
               'Argument "TestTypeWithInvalidNestedDefaultArgumentValue.fieldWithInvalidNestedDefaultArgumentValue(input:)" has invalid default value: Expected value of type "String" to be valid, found: 123.',
             locations: [{ line: 1, column: 3 }],
+            pathNonNull: [false],
             path: ['fieldWithInvalidNestedDefaultArgumentValue'],
           },
         ],

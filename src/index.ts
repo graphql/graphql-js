@@ -381,6 +381,7 @@ export {
   defaultFieldResolver,
   defaultTypeResolver,
   responsePathAsArray,
+  getResponsePathDigest,
   getArgumentValues,
   getVariableValues,
   getDirectiveValues,
@@ -399,6 +400,7 @@ export type {
   VariableValues,
   ValidatedExecutionArgs,
   ValidatedSubscriptionArgs,
+  PathDigest,
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
   InitialIncrementalExecutionResult,
@@ -484,13 +486,19 @@ export {
 export type { ValidationOptions, ValidationRule } from './validation/index.ts';
 
 // Create, format, and print GraphQL errors.
-export { GraphQLError, syntaxError, locatedError } from './error/index.ts';
+export {
+  GraphQLError,
+  syntaxError,
+  locatedError,
+  isErrorBehavior,
+} from './error/index.ts';
 
 export type {
   GraphQLErrorOptions,
   GraphQLFormattedError,
   GraphQLErrorExtensions,
   GraphQLFormattedErrorExtensions,
+  GraphQLErrorBehavior,
 } from './error/index.ts';
 
 // Utilities for operating on GraphQL type schema and parsed sources.
