@@ -505,24 +505,38 @@ export function createWorkQueue<
       const groupNode = groupNodes.get(group);
       if (groupNode) {
         groupNode.pending--;
-        if (rootGroups.has(group) && groupNode.pending === 0) {
-          const {
-            groupValuesEvent,
-            groupSuccessEvent,
-            newGroups: childNewGroups,
-            newStreams: childNewStreams,
-          } = finishGroupSuccess(group, groupNode);
-          if (groupValuesEvent) {
-            groupEvents.push(groupValuesEvent);
-          }
-          groupEvents.push(groupSuccessEvent);
-          newGroups.push(...childNewGroups);
-          newStreams.push(...childNewStreams);
-        }
+        maybeFinishGroup(group, groupNode, groupEvents, newGroups, newStreams);
       }
     }
     startNewWork(newGroups, newStreams);
     return groupEvents;
+  }
+  function maybeFinishGroup(
+    group: G,
+    groupNode: GroupNode<T, I, G, S>,
+    groupEvents: Array<
+      GroupValuesEvent<T, I, G, S> | GroupSuccessEvent<T, I, G, S>
+    >,
+    newGroups: Array<G>,
+    newStreams: Array<S>,
+  ): void {
+    if (!rootGroups.has(group)) {
+      return;
+    }
+    if (groupNode.pending === 0) {
+      const {
+        groupValuesEvent,
+        groupSuccessEvent,
+        newGroups: childNewGroups,
+        newStreams: childNewStreams,
+      } = finishGroupSuccess(group, groupNode);
+      if (groupValuesEvent) {
+        groupEvents.push(groupValuesEvent);
+      }
+      groupEvents.push(groupSuccessEvent);
+      newGroups.push(...childNewGroups);
+      newStreams.push(...childNewStreams);
+    }
   }
   function taskFailure(
     graphEvent: TaskFailureGraphEvent<T, I, G, S>,
