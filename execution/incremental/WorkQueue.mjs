@@ -1,3 +1,4 @@
+import { invariant } from "../../jsutils/invariant.mjs";
 import { isPromise } from "../../jsutils/isPromise.mjs";
 import { Queue } from "./Queue.mjs";
 export function createWorkQueue(initialWork) {
@@ -145,7 +146,7 @@ export function createWorkQueue(initialWork) {
         for (const newGroup of newGroups) {
             const newGroupState = groupNodes.get(newGroup);
             if (newGroupState) {
-                if (newGroupState.pending === 0) {
+                if (newGroupState.tasks.size === 0) {
                     groupNodes.delete(newGroup);
                     pruneEmptyGroups(newGroupState.childGroups, nonEmptyNewGroups);
                 }
@@ -157,14 +158,22 @@ export function createWorkQueue(initialWork) {
         return nonEmptyNewGroups;
     }
     function startNewWork(newGroups, newStreams) {
-        for (const group of newGroups) {
+        const groupEvents = [];
+        const groupsToStart = [...newGroups];
+        const streamsToStart = [...newStreams];
+        for (const group of groupsToStart) {
             rootGroups.add(group);
             startGroup(group);
+            const groupNode = groupNodes.get(group);
+            if (groupNode) {
+                maybeFinishGroup(group, groupNode, groupEvents, groupsToStart, streamsToStart);
+            }
         }
-        for (const stream of newStreams) {
+        for (const stream of streamsToStart) {
             rootStreams.add(stream);
             startStream(stream);
         }
+        return groupEvents;
     }
     function startGroup(group) {
         const groupNode = groupNodes.get(group);
@@ -266,8 +275,7 @@ export function createWorkQueue(initialWork) {
                 maybeFinishGroup(group, groupNode, groupEvents, newGroups, newStreams);
             }
         }
-        startNewWork(newGroups, newStreams);
-        return groupEvents;
+        return [...groupEvents, ...startNewWork(newGroups, newStreams)];
     }
     function maybeFinishGroup(group, groupNode, groupEvents, newGroups, newStreams) {
         if (!rootGroups.has(group)) {
@@ -303,7 +311,9 @@ export function createWorkQueue(initialWork) {
         for (const { value, work } of items) {
             const { newGroups: itemNewGroups, newStreams: itemNewStreams } = maybeIntegrateWork(work);
             const nonEmptyNewGroups = pruneEmptyGroups(itemNewGroups);
-            startNewWork(nonEmptyNewGroups, itemNewStreams);
+            const groupEvents = startNewWork(nonEmptyNewGroups, itemNewStreams);
+            if (!(groupEvents.length === 0))
+                invariant(false);
             values.push(value);
             newGroups.push(...nonEmptyNewGroups);
             newStreams.push(...itemNewStreams);
