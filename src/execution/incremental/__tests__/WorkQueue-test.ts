@@ -262,7 +262,7 @@ describe('WorkQueue', () => {
     expect(childRanSpy.callCount).to.equal(1);
   });
 
-  it.skip('replays the first cached shared failure when its group is announced', async () => {
+  it('replays the first cached shared failure when its group is announced', async () => {
     const failingRoot: TestGroup = { parent: undefined };
     const secondRoot: TestGroup = { parent: undefined };
     const otherRoot: TestGroup = { parent: undefined };
@@ -322,7 +322,7 @@ describe('WorkQueue', () => {
     });
   });
 
-  it.skip('replays cached failures in task order when earlier child work succeeds', async () => {
+  it('replays cached failures in task order when earlier child work succeeds', async () => {
     const firstRoot: TestGroup = {};
     const secondRoot: TestGroup = {};
     const parent: TestGroup = {};
@@ -388,7 +388,7 @@ describe('WorkQueue', () => {
     expect(firstTaskSpy.callCount).to.equal(1);
   });
 
-  it.skip('discards children discovered after their parent fails', async () => {
+  it('discards children discovered after their parent fails', async () => {
     const root: TestGroup = {};
     const otherRoot: TestGroup = {};
     const parent: TestGroup = {};
@@ -460,7 +460,7 @@ describe('WorkQueue', () => {
     });
   });
 
-  it.skip('ignores late outcomes owned only by failed groups and their descendants', async () => {
+  it('ignores late outcomes owned only by failed groups and their descendants', async () => {
     const root: TestGroup = {};
     const parent: TestGroup = {};
     const child: TestGroup = { parent };
