@@ -107,8 +107,13 @@ function createWorkQueue(initialWork) {
         }
         visited.add(group);
         const parent = group.parent;
-        if (parent !== undefined && groupSet.has(parent)) {
-            addGroup(parent, groupSet, newRootGroups, visited, parentTask);
+        if (parent !== undefined) {
+            if (groupSet.has(parent)) {
+                addGroup(parent, groupSet, newRootGroups, visited, parentTask);
+            }
+            if (!groupNodes.has(parent)) {
+                return;
+            }
         }
         const groupNode = {
             childGroups: [],
@@ -187,15 +192,18 @@ function createWorkQueue(initialWork) {
         }
     }
     function startTask(task) {
-        if (taskNodes.has(task)) {
-            return;
+        const alreadyStarted = taskNodes.has(task);
+        if (!alreadyStarted) {
+            taskNodes.set(task, {
+                value: undefined,
+                childStreams: [],
+            });
         }
-        taskNodes.set(task, {
-            value: undefined,
-            childStreams: [],
-        });
         try {
             const result = task.computation.result();
+            if (alreadyStarted) {
+                return;
+            }
             if ((0, isPromise_ts_1.isPromise)(result)) {
                 result.then((resolved) => {
                     pushGraphEvent({ kind: 'TASK_SUCCESS', task, result: resolved });
@@ -264,9 +272,10 @@ function createWorkQueue(initialWork) {
         const { task, result } = graphEvent;
         const { value, work } = result;
         const taskNode = taskNodes.get(task);
-        if (taskNode) {
-            taskNode.value = value;
+        if (!taskNode) {
+            return [];
         }
+        taskNode.value = value;
         maybeIntegrateWork(work, task);
         const groupEvents = [];
         const newGroups = [];
@@ -296,11 +305,13 @@ function createWorkQueue(initialWork) {
     }
     function taskFailure(graphEvent) {
         const { task, error } = graphEvent;
-        taskNodes.delete(task);
+        if (!taskNodes.has(task)) {
+            return [];
+        }
         const groupFailureEvents = [];
         for (const group of task.groups) {
             const groupNode = groupNodes.get(group);
-            if (groupNode) {
+            if (groupNode && rootGroups.has(group)) {
                 groupFailureEvents.push(finishGroupFailure(group, groupNode, error));
             }
         }
@@ -369,10 +380,10 @@ function createWorkQueue(initialWork) {
     }
     function finishGroupFailure(group, groupNode, error) {
         removeGroup(group, groupNode);
-        rootGroups.delete(group);
         return { kind: 'GROUP_FAILURE', group, error };
     }
     function removeGroup(group, groupNode) {
+        rootGroups.delete(group);
         groupNodes.delete(group);
         for (const task of groupNode.tasks) {
             if (task.groups.every((taskGroup) => !groupNodes.has(taskGroup))) {
