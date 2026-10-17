@@ -28,6 +28,7 @@ import type {
   UnionTypeExtensionNode,
 } from '../language/ast.ts';
 import { OperationTypeNode } from '../language/ast.ts';
+import { DirectiveLocation } from '../language/directiveLocation.ts';
 import { Kind } from '../language/kinds.ts';
 
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators.ts';
@@ -44,6 +45,7 @@ import type {
   GraphQLInputObjectType,
   GraphQLInputType,
   GraphQLInterfaceType,
+  GraphQLNamedType,
   GraphQLObjectType,
   GraphQLUnionType,
 } from './definition.ts';
@@ -103,16 +105,90 @@ export function validateSchema(
   }
 
   // Validate the schema, producing a list of errors.
-  const context = new SchemaValidationContext(schema);
-  validateRootTypes(context);
-  validateDirectives(context);
-  validateTypes(context);
+  const errors = validateSchemaImpl(schema, false);
 
   // Persist the results of validation before returning to ensure validation
   // does not run multiple times for this schema.
-  const errors = context.getErrors();
   schema.__validationErrors = errors;
   return errors;
+}
+
+/**
+ * Implements the "Type Validation" sub-sections of the specification's
+ * "Type System" section, with the exception that names reserved by GraphQL
+ * introspection (those beginning with `__`) are permitted.
+ *
+ * Unlike `validateSchema`, this validates a "full schema": one that includes
+ * the built-in definitions and service capabilities added by an implementation,
+ * such as a schema reconstructed from an introspection result. Such a schema may
+ * legitimately contain reserved names, including ones added by a newer version
+ * of GraphQL than this library implements, so those names are not rejected
+ * outright. Instead, a reserved name is reported only when it is part of the
+ * queryable surface: reachable from the root operation types through ordinary
+ * fields, arguments, and their types, or belonging to a directive usable in
+ * executable documents.
+ *
+ * Note: This API is experimental and may change or be removed in a future
+ * version while the behavior and test coverage for full schemas converge.
+ *
+ * Validation runs synchronously, returning an array of encountered errors, or
+ * an empty array if no errors were encountered and the Schema is valid.
+ * @param schema - GraphQL full schema to use.
+ * @returns Schema validation errors, or an empty array when the schema is valid.
+ * @experimental
+ * @example
+ * ```ts
+ * import { experimentalValidateFullSchema } from 'graphql/type';
+ * import { buildSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ *
+ *   enum __ErrorBehavior {
+ *     NULL
+ *     PROPAGATE
+ *     HALT
+ *   }
+ * `);
+ * const errors = experimentalValidateFullSchema(schema);
+ *
+ * errors; // => []
+ * ```
+ */
+export function experimentalValidateFullSchema(
+  schema: GraphQLSchema,
+): ReadonlyArray<GraphQLError> {
+  // First check to ensure the provided value is in fact a GraphQLSchema.
+  assertSchema(schema);
+
+  // If this Schema has already been validated, return the previous results.
+  if (schema.__fullSchemaValidationErrors) {
+    return schema.__fullSchemaValidationErrors;
+  }
+
+  // Validate the schema, producing a list of errors.
+  const errors = validateSchemaImpl(schema, true);
+
+  // Persist the results of validation before returning to ensure validation
+  // does not run multiple times for this schema.
+  schema.__fullSchemaValidationErrors = errors;
+  return errors;
+}
+
+function validateSchemaImpl(
+  schema: GraphQLSchema,
+  isFullSchema: boolean,
+): ReadonlyArray<GraphQLError> {
+  const context = new SchemaValidationContext(schema, isFullSchema);
+  validateRootTypes(context);
+  validateDirectives(context);
+  validateTypes(context);
+  if (isFullSchema) {
+    validateReachableReservedNames(context);
+  }
+  return context.getErrors();
 }
 
 /**
@@ -140,13 +216,50 @@ export function assertValidSchema(schema: GraphQLSchema): void {
   }
 }
 
+/**
+ * Utility function which asserts a full schema is valid by throwing an error if
+ * it is invalid.
+ *
+ * Note: This API is experimental and may change or be removed in a future
+ * version while the behavior and test coverage for full schemas converge.
+ * @param schema - GraphQL full schema to use.
+ * @experimental
+ * @example
+ * ```ts
+ * import { experimentalAssertValidFullSchema } from 'graphql/type';
+ * import { buildSchema } from 'graphql/utilities';
+ *
+ * const schema = buildSchema(`
+ *   type Query {
+ *     name: String
+ *   }
+ *
+ *   enum __ErrorBehavior {
+ *     NULL
+ *     PROPAGATE
+ *     HALT
+ *   }
+ * `);
+ *
+ * experimentalAssertValidFullSchema(schema); // does not throw
+ * ```
+ */
+export function experimentalAssertValidFullSchema(schema: GraphQLSchema): void {
+  const errors = experimentalValidateFullSchema(schema);
+  if (errors.length !== 0) {
+    throw new Error(errors.map((error) => error.message).join('\n\n'));
+  }
+}
+
 class SchemaValidationContext {
   readonly _errors: Array<GraphQLError>;
   readonly schema: GraphQLSchema;
+  readonly isFullSchema: boolean;
 
-  constructor(schema: GraphQLSchema) {
+  constructor(schema: GraphQLSchema, isFullSchema: boolean) {
     this._errors = [];
     this.schema = schema;
+    this.isFullSchema = isFullSchema;
   }
 
   reportError(
@@ -395,12 +508,134 @@ function validateName(
   context: SchemaValidationContext,
   node: { readonly name: string; readonly astNode: Maybe<ASTNode> },
 ): void {
-  // Ensure names are valid, however introspection types opt out.
-  if (node.name.startsWith('__')) {
-    context.reportError(
-      `Name "${node.name}" must not begin with "__", which is reserved by GraphQL introspection.`,
-      node.astNode,
-    );
+  // Ensure names are valid, however introspection types opt out. When
+  // validating a full schema, reserved names are instead checked by
+  // reachability from the root operation types (see
+  // validateReachableReservedNames), so they are not rejected here.
+  if (!context.isFullSchema && node.name.startsWith('__')) {
+    reportReservedName(context, node);
+  }
+}
+
+function reportReservedName(
+  context: SchemaValidationContext,
+  node: { readonly name: string; readonly astNode: Maybe<ASTNode> },
+): void {
+  context.reportError(
+    `Name "${node.name}" must not begin with "__", which is reserved by GraphQL introspection.`,
+    node.astNode,
+  );
+}
+
+// Directive locations that appear in executable documents. A directive with
+// any of these locations is part of the queryable surface of a schema.
+const executableDirectiveLocations = new Set<DirectiveLocation>([
+  DirectiveLocation.QUERY,
+  DirectiveLocation.MUTATION,
+  DirectiveLocation.SUBSCRIPTION,
+  DirectiveLocation.FIELD,
+  DirectiveLocation.FRAGMENT_DEFINITION,
+  DirectiveLocation.FRAGMENT_SPREAD,
+  DirectiveLocation.INLINE_FRAGMENT,
+  DirectiveLocation.VARIABLE_DEFINITION,
+  DirectiveLocation.FRAGMENT_VARIABLE_DEFINITION,
+]);
+
+// A full schema is permitted to contain reserved names (those beginning with
+// `__`) among the built-in definitions and service capabilities added by an
+// implementation, such as the introspection types. Those definitions are only
+// reachable through the `__schema`, `__type`, and `__typename` meta-fields,
+// which are not part of any type's fields and so are never traversed here.
+//
+// A reserved name is only invalid when it is part of the queryable surface:
+// reachable from the root operation types through ordinary fields, arguments,
+// and their types, or belonging to a directive usable in executable documents.
+// This ensures that, for example, a user type or field is not allowed to
+// expose an introspection type, while newer reserved definitions that are not
+// part of the queryable surface (such as those referenced only by type-system
+// directives) are still accepted.
+function validateReachableReservedNames(
+  context: SchemaValidationContext,
+): void {
+  const { schema } = context;
+  const visited = new Set<GraphQLNamedType>();
+
+  for (const operationType of Object.values(OperationTypeNode)) {
+    const rootType = schema.getRootType(operationType);
+    if (rootType != null) {
+      visit(rootType);
+    }
+  }
+
+  for (const directive of schema.getDirectives()) {
+    // Non-directive values are reported by validateDirectives.
+    if (!isDirective(directive)) {
+      continue;
+    }
+
+    // Directives limited to type-system locations are not part of the
+    // queryable surface, so they may reference reserved definitions.
+    if (
+      !directive.locations.some((location) =>
+        executableDirectiveLocations.has(location),
+      )
+    ) {
+      continue;
+    }
+
+    if (directive.name.startsWith('__')) {
+      reportReservedName(context, directive);
+    }
+    for (const arg of directive.args) {
+      if (arg.name.startsWith('__')) {
+        reportReservedName(context, arg);
+      }
+      visit(getNamedType(arg.type));
+    }
+  }
+
+  function visit(type: GraphQLNamedType): void {
+    if (visited.has(type)) {
+      return;
+    }
+    visited.add(type);
+
+    // A reserved type must not be reachable. Report it and stop traversing so
+    // its internals (for example the rest of the introspection types) are not
+    // reported as well.
+    if (type.name.startsWith('__')) {
+      reportReservedName(context, type);
+      return;
+    }
+
+    if (isObjectType(type) || isInterfaceType(type)) {
+      for (const iface of type.getInterfaces()) {
+        visit(iface);
+      }
+      for (const field of Object.values(type.getFields())) {
+        if (field.name.startsWith('__')) {
+          reportReservedName(context, field);
+        }
+        for (const arg of field.args) {
+          if (arg.name.startsWith('__')) {
+            reportReservedName(context, arg);
+          }
+          visit(getNamedType(arg.type));
+        }
+        visit(getNamedType(field.type));
+      }
+    } else if (isUnionType(type)) {
+      for (const memberType of type.getTypes()) {
+        visit(memberType);
+      }
+    } else if (isInputObjectType(type)) {
+      for (const field of Object.values(type.getFields())) {
+        if (field.name.startsWith('__')) {
+          reportReservedName(context, field);
+        }
+        visit(getNamedType(field.type));
+      }
+    }
   }
 }
 
