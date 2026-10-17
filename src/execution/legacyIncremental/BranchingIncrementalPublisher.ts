@@ -1,9 +1,9 @@
 import type { ObjMap } from '../../jsutils/ObjMap.ts';
 import { addPath, pathToArray } from '../../jsutils/Path.ts';
 
-import { ensureGraphQLError } from '../../error/ensureGraphQLError.ts';
 import type { GraphQLError } from '../../error/GraphQLError.ts';
 
+import { getIncrementalErrors } from '../incremental/IncrementalExecutionError.ts';
 import type {
   DeliveryGroup,
   ExecutionGroupValue,
@@ -156,7 +156,7 @@ export class BranchingIncrementalPublisher {
               path: pathToArray(group.path),
             },
             group.label,
-            [ensureGraphQLError(event.error)],
+            getIncrementalErrors(event.error),
           ),
         );
         break;
@@ -204,7 +204,7 @@ export class BranchingIncrementalPublisher {
               path: pathToArray(stream.path),
             },
             stream.label,
-            [ensureGraphQLError(event.error)],
+            getIncrementalErrors(event.error),
           ),
         );
         break;

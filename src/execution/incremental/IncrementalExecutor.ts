@@ -11,6 +11,7 @@ import { addPath, pathToArray } from '../../jsutils/Path.ts';
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 import type { SetMap } from '../../jsutils/SetMap.ts';
 
+import { ensureGraphQLError } from '../../error/ensureGraphQLError.ts';
 import type {
   GraphQLError,
   GraphQLFormattedError,
@@ -43,6 +44,7 @@ import { returnIteratorCatchingErrors } from '../returnIteratorCatchingErrors.ts
 import type { DeferUsageSet, ExecutionPlan } from './buildExecutionPlan.ts';
 import { buildExecutionPlan } from './buildExecutionPlan.ts';
 import { Computation } from './Computation.ts';
+import { IncrementalExecutionError } from './IncrementalExecutionError.ts';
 import { IncrementalPublisher } from './IncrementalPublisher.ts';
 import { Queue } from './Queue.ts';
 import type { Group, Stream, Task, Work } from './WorkQueue.ts';
@@ -657,8 +659,7 @@ export class IncrementalExecutor<
         deliveryGroupMap,
       );
     } catch (error) {
-      this.abort();
-      throw error;
+      this.failIncrementalExecution(error);
     }
 
     if (isPromise(result)) {
@@ -666,13 +667,19 @@ export class IncrementalExecutor<
         (resolved) =>
           this.buildExecutionGroupResult(deliveryGroups, path, resolved),
         (error: unknown) => {
-          this.abort();
-          throw error;
+          this.failIncrementalExecution(error);
         },
       );
     }
 
     return this.buildExecutionGroupResult(deliveryGroups, path, result);
+  }
+
+  failIncrementalExecution(error: unknown): never {
+    // Preserve errors already collected before a non-null failure escaped.
+    this.collectedErrors.add(ensureGraphQLError(error), undefined);
+    this.abort();
+    throw new IncrementalExecutionError(this.collectedErrors.errors);
   }
 
   buildExecutionGroupResult(
@@ -971,8 +978,7 @@ export class IncrementalExecutor<
           },
         )
         .then(undefined, (error: unknown) => {
-          this.abort();
-          throw error;
+          this.failIncrementalExecution(error);
         });
     }
 
@@ -992,8 +998,7 @@ export class IncrementalExecutor<
         return this.buildStreamItemResult(null);
       }
     } catch (error) {
-      this.abort();
-      throw error;
+      this.failIncrementalExecution(error);
     }
 
     if (isPromise(result)) {
@@ -1011,8 +1016,7 @@ export class IncrementalExecutor<
           },
         )
         .then(undefined, (error: unknown) => {
-          this.abort();
-          throw error;
+          this.failIncrementalExecution(error);
         });
     }
 
