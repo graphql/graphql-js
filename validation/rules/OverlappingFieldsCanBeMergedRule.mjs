@@ -18,7 +18,7 @@ export function OverlappingFieldsCanBeMergedRule(validationContext) {
     const ruleContext = {
         comparedFieldsAndFragmentPairs: new OrderedPairSet(),
         comparedFragmentPairs: new PairSet(),
-        cachedFieldsAndFragmentSpreads: new Map(),
+        cachedCollectFieldsResults: new Map(),
     };
     let fragmentVarMap;
     return {
@@ -43,7 +43,7 @@ export function OverlappingFieldsCanBeMergedRule(validationContext) {
 }
 function findConflictsWithinSelectionSet(validationContext, ruleContext, parentType, selectionSet, varMap) {
     const conflicts = [];
-    const [groupedFieldSet, fragmentSpreads] = getFieldsAndFragmentSpreads(validationContext, ruleContext, parentType, selectionSet, varMap);
+    const [groupedFieldSet, fragmentSpreads] = collectFields(validationContext, ruleContext, parentType, selectionSet, varMap);
     collectConflictsWithin(validationContext, ruleContext, conflicts, groupedFieldSet, varMap);
     if (fragmentSpreads.length !== 0) {
         for (let i = 0; i < fragmentSpreads.length; i++) {
@@ -68,7 +68,7 @@ function collectConflictsBetweenFieldsAndFragment(validationContext, ruleContext
     if (!fragment) {
         return;
     }
-    const [groupedFieldSet2, referencedFragmentSpreads] = getReferencedFieldsAndFragmentSpreads(validationContext, ruleContext, fragment, fragmentSpread.varMap);
+    const [groupedFieldSet2, referencedFragmentSpreads] = collectFragmentFields(validationContext, ruleContext, fragment, fragmentSpread.varMap);
     if (groupedFieldSet === groupedFieldSet2) {
         return;
     }
@@ -99,8 +99,8 @@ function collectConflictsBetweenFragments(validationContext, ruleContext, confli
     if (!fragment1 || !fragment2) {
         return;
     }
-    const [groupedFieldSet1, referencedFragmentSpreads1] = getReferencedFieldsAndFragmentSpreads(validationContext, ruleContext, fragment1, fragmentSpread1.varMap);
-    const [groupedFieldSet2, referencedFragmentSpreads2] = getReferencedFieldsAndFragmentSpreads(validationContext, ruleContext, fragment2, fragmentSpread2.varMap);
+    const [groupedFieldSet1, referencedFragmentSpreads1] = collectFragmentFields(validationContext, ruleContext, fragment1, fragmentSpread1.varMap);
+    const [groupedFieldSet2, referencedFragmentSpreads2] = collectFragmentFields(validationContext, ruleContext, fragment2, fragmentSpread2.varMap);
     collectConflictsBetween(validationContext, ruleContext, conflicts, areMutuallyExclusive, groupedFieldSet1, fragmentSpread1.varMap, groupedFieldSet2, fragmentSpread2.varMap);
     for (const referencedFragmentSpread2 of referencedFragmentSpreads2) {
         collectConflictsBetweenFragments(validationContext, ruleContext, conflicts, areMutuallyExclusive, fragmentSpread1, referencedFragmentSpread2);
@@ -111,8 +111,8 @@ function collectConflictsBetweenFragments(validationContext, ruleContext, confli
 }
 function findConflictsBetweenSubSelectionSets(validationContext, ruleContext, areMutuallyExclusive, parentType1, selectionSet1, varMap1, parentType2, selectionSet2, varMap2) {
     const conflicts = [];
-    const [groupedFieldSet1, fragmentSpreads1] = getFieldsAndFragmentSpreads(validationContext, ruleContext, parentType1, selectionSet1, varMap1);
-    const [groupedFieldSet2, fragmentSpreads2] = getFieldsAndFragmentSpreads(validationContext, ruleContext, parentType2, selectionSet2, varMap2);
+    const [groupedFieldSet1, fragmentSpreads1] = collectFields(validationContext, ruleContext, parentType1, selectionSet1, varMap1);
+    const [groupedFieldSet2, fragmentSpreads2] = collectFields(validationContext, ruleContext, parentType2, selectionSet2, varMap2);
     collectConflictsBetween(validationContext, ruleContext, conflicts, areMutuallyExclusive, groupedFieldSet1, varMap1, groupedFieldSet2, varMap2);
     for (const fragmentSpread2 of fragmentSpreads2) {
         collectConflictsBetweenFieldsAndFragment(validationContext, ruleContext, conflicts, areMutuallyExclusive, groupedFieldSet1, varMap1, fragmentSpread2);
@@ -299,12 +299,12 @@ function doTypesConflict(type1, type2) {
     }
     return false;
 }
-function getFieldsAndFragmentSpreads(validationContext, ruleContext, parentType, selectionSet, varMap) {
-    const { cachedFieldsAndFragmentSpreads } = ruleContext;
-    let cache = cachedFieldsAndFragmentSpreads.get(selectionSet);
+function collectFields(validationContext, ruleContext, parentType, selectionSet, varMap) {
+    const { cachedCollectFieldsResults } = ruleContext;
+    let cache = cachedCollectFieldsResults.get(selectionSet);
     if (!cache) {
         cache = new Map();
-        cachedFieldsAndFragmentSpreads.set(selectionSet, cache);
+        cachedCollectFieldsResults.set(selectionSet, cache);
     }
     const cached = cache.get(varMap);
     if (cached) {
@@ -312,26 +312,26 @@ function getFieldsAndFragmentSpreads(validationContext, ruleContext, parentType,
     }
     const groupedFieldSet = new Map();
     const fragmentSpreads = new Map();
-    _collectFieldsAndFragmentSpreads(validationContext, parentType, selectionSet, groupedFieldSet, fragmentSpreads, varMap);
-    const result = [
+    collectFieldsImpl(validationContext, parentType, selectionSet, groupedFieldSet, fragmentSpreads, varMap);
+    const collectFieldsResult = [
         groupedFieldSet,
         Array.from(fragmentSpreads.values()),
     ];
-    cache.set(varMap, result);
-    return result;
+    cache.set(varMap, collectFieldsResult);
+    return collectFieldsResult;
 }
-function getReferencedFieldsAndFragmentSpreads(validationContext, ruleContext, fragment, varMap) {
-    const { cachedFieldsAndFragmentSpreads } = ruleContext;
-    const cached = cachedFieldsAndFragmentSpreads
+function collectFragmentFields(validationContext, ruleContext, fragment, varMap) {
+    const { cachedCollectFieldsResults } = ruleContext;
+    const cached = cachedCollectFieldsResults
         .get(fragment.selectionSet)
         ?.get(varMap);
     if (cached) {
         return cached;
     }
     const fragmentType = typeFromAST(validationContext.getSchema(), fragment.typeCondition);
-    return getFieldsAndFragmentSpreads(validationContext, ruleContext, fragmentType, fragment.selectionSet, varMap);
+    return collectFields(validationContext, ruleContext, fragmentType, fragment.selectionSet, varMap);
 }
-function _collectFieldsAndFragmentSpreads(validationContext, parentType, selectionSet, groupedFieldSet, fragmentSpreads, varMap) {
+function collectFieldsImpl(validationContext, parentType, selectionSet, groupedFieldSet, fragmentSpreads, varMap) {
     for (const selection of selectionSet.selections) {
         switch (selection.kind) {
             case Kind.FIELD: {
@@ -361,7 +361,7 @@ function _collectFieldsAndFragmentSpreads(validationContext, parentType, selecti
                 const inlineFragmentType = typeCondition
                     ? typeFromAST(validationContext.getSchema(), typeCondition)
                     : parentType;
-                _collectFieldsAndFragmentSpreads(validationContext, inlineFragmentType, selection.selectionSet, groupedFieldSet, fragmentSpreads, varMap);
+                collectFieldsImpl(validationContext, inlineFragmentType, selection.selectionSet, groupedFieldSet, fragmentSpreads, varMap);
                 break;
             }
         }
