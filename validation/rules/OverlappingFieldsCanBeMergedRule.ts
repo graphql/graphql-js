@@ -148,8 +148,8 @@ type FieldDetails = [
   FieldNode,
   Maybe<GraphQLField<unknown, unknown>>,
 ];
-// Map of array of those.
-type NodeAndDefCollection = Map<string, Array<FieldDetails>>;
+type FieldDetailsList = Array<FieldDetails>;
+type NodeAndDefCollection = Map<string, FieldDetailsList>;
 // Variable-map identity distinguishes fragment scopes in the caches.
 type VariableMap = Map<string, ValueNode>;
 interface FragmentSpread {
@@ -559,21 +559,21 @@ function collectConflictsWithin(
   // name and the value at that key is a list of all fields which provide that
   // response name. For every response name, if there are multiple fields, they
   // must be compared to find a potential conflict.
-  for (const [responseName, fields] of fieldMap.entries()) {
+  for (const [responseName, fieldDetailsList] of fieldMap.entries()) {
     // This compares every field in the list to every other field in this list
     // (except to itself). If the list only has one item, nothing needs to
     // be compared.
-    if (fields.length > 1) {
-      for (let i = 0; i < fields.length; i++) {
-        for (let j = i + 1; j < fields.length; j++) {
+    if (fieldDetailsList.length > 1) {
+      for (let i = 0; i < fieldDetailsList.length; i++) {
+        for (let j = i + 1; j < fieldDetailsList.length; j++) {
           const conflict = findConflict(
             validationContext,
             ruleContext,
             false, // within one collection is never mutually exclusive
             responseName,
-            fields[i],
+            fieldDetailsList[i],
             varMap,
-            fields[j],
+            fieldDetailsList[j],
             varMap,
           );
           if (conflict) {
@@ -607,11 +607,11 @@ function collectConflictsBetween(
   // response name. For any response name which appears in both provided field
   // maps, each field from the first field map must be compared to every field
   // in the second field map to find potential conflicts.
-  for (const [responseName, fields1] of fieldMap1.entries()) {
-    const fields2 = fieldMap2.get(responseName);
-    if (fields2 != null) {
-      for (const fieldDetails1 of fields1) {
-        for (const fieldDetails2 of fields2) {
+  for (const [responseName, fieldDetailsList1] of fieldMap1.entries()) {
+    const fieldDetailsList2 = fieldMap2.get(responseName);
+    if (fieldDetailsList2 != null) {
+      for (const fieldDetails1 of fieldDetailsList1) {
+        for (const fieldDetails2 of fieldDetailsList2) {
           const conflict = findConflict(
             validationContext,
             ruleContext,
@@ -923,12 +923,12 @@ function _collectFieldsAndFragmentSpreads(
         const responseName = selection.alias
           ? selection.alias.value
           : fieldName;
-        let nodeAndDefsList = nodeAndDefs.get(responseName);
-        if (nodeAndDefsList == null) {
-          nodeAndDefsList = [];
-          nodeAndDefs.set(responseName, nodeAndDefsList);
+        let fieldDetailsList = nodeAndDefs.get(responseName);
+        if (fieldDetailsList == null) {
+          fieldDetailsList = [];
+          nodeAndDefs.set(responseName, fieldDetailsList);
         }
-        nodeAndDefsList.push([parentType, selection, fieldDef]);
+        fieldDetailsList.push([parentType, selection, fieldDef]);
         break;
       }
       case Kind.FRAGMENT_SPREAD: {
