@@ -369,10 +369,10 @@ function getMergedFields(
     return check.fields;
   }
   const groups: GroupedFieldSet = new Map();
-  // Expand each scoped source once at this response level. Keep a spread per
-  // definition as well: equal fields do not imply equal fragment bindings.
+  // Expand each scoped source once at this response level. Parameterized
+  // fragments also need a binding check, even when all their fields agree.
   const pending = new Set('sets' in check ? check.sets : [check]);
-  const fragments = new Map<FragmentDefinitionNode, FragmentSpread>();
+  let boundFragments: Map<FragmentDefinitionNode, FragmentSpread> | undefined;
   for (const collection of pending) {
     const { scope } = collection;
     for (const [name, fields] of collection.groupedFieldSet) {
@@ -403,19 +403,19 @@ function getMergedFields(
       if (definition === undefined) {
         continue;
       }
-      const previous = fragments.get(definition);
-      if (
-        previous !== undefined &&
-        getFragmentSpreadKey(previous) !== getFragmentSpreadKey(spread)
-      ) {
-        reportConflict(
-          validationContext,
-          previous.node,
-          spread.node,
-          `Spreads "${maybeAbbreviate(spread.node.name.value)}" conflict because ${getFragmentSpreadDescription(ruleContext, previous.node)} and ${getFragmentSpreadDescription(ruleContext, spread.node)} have different fragment arguments.`,
-        );
+      // Without parameters, the pending set already identifies each fragment.
+      if (spread.scope !== undefined) {
+        const previous = (boundFragments ??= new Map()).get(definition);
+        if (previous !== undefined && previous.scope !== spread.scope) {
+          reportConflict(
+            validationContext,
+            previous.node,
+            spread.node,
+            `Spreads "${maybeAbbreviate(spread.node.name.value)}" conflict because ${getFragmentSpreadDescription(ruleContext, previous.node)} and ${getFragmentSpreadDescription(ruleContext, spread.node)} have different fragment arguments.`,
+          );
+        }
+        boundFragments.set(definition, spread);
       }
-      fragments.set(definition, spread);
       pending.add(
         getScopedFields(
           collectFragmentFields(validationContext, ruleContext, definition),
