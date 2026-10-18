@@ -158,7 +158,10 @@ interface FragmentSpread {
   varMap: VariableMap | undefined;
 }
 type FragmentSpreads = ReadonlyArray<FragmentSpread>;
-type CollectFieldsResult = readonly [GroupedFieldSet, FragmentSpreads];
+interface CollectFieldsResult {
+  groupedFieldSet: GroupedFieldSet;
+  fragmentSpreads: FragmentSpreads;
+}
 interface RuleContext {
   comparedFieldsAndFragmentPairs: OrderedPairSet<GroupedFieldSet, string>;
   comparedFragmentPairs: PairSet<string>;
@@ -234,7 +237,7 @@ function findConflictsWithinSelectionSet(
   varMap: VariableMap | undefined,
 ): Array<Conflict> {
   const conflicts: Array<Conflict> = [];
-  const [groupedFieldSet, fragmentSpreads] = collectFields(
+  const { groupedFieldSet, fragmentSpreads } = collectFields(
     validationContext,
     ruleContext,
     parentType,
@@ -318,7 +321,10 @@ function collectConflictsBetweenFieldsAndFragment(
   if (!fragment) {
     return;
   }
-  const [groupedFieldSet2, referencedFragmentSpreads] = collectFragmentFields(
+  const {
+    groupedFieldSet: groupedFieldSet2,
+    fragmentSpreads: referencedFragmentSpreads,
+  } = collectFragmentFields(
     validationContext,
     ruleContext,
     fragment,
@@ -408,13 +414,19 @@ function collectConflictsBetweenFragments(
   if (!fragment1 || !fragment2) {
     return;
   }
-  const [groupedFieldSet1, referencedFragmentSpreads1] = collectFragmentFields(
+  const {
+    groupedFieldSet: groupedFieldSet1,
+    fragmentSpreads: referencedFragmentSpreads1,
+  } = collectFragmentFields(
     validationContext,
     ruleContext,
     fragment1,
     fragmentSpread1.varMap,
   );
-  const [groupedFieldSet2, referencedFragmentSpreads2] = collectFragmentFields(
+  const {
+    groupedFieldSet: groupedFieldSet2,
+    fragmentSpreads: referencedFragmentSpreads2,
+  } = collectFragmentFields(
     validationContext,
     ruleContext,
     fragment2,
@@ -472,14 +484,20 @@ function findConflictsBetweenSubSelectionSets(
   varMap2: VariableMap | undefined,
 ): Array<Conflict> {
   const conflicts: Array<Conflict> = [];
-  const [groupedFieldSet1, fragmentSpreads1] = collectFields(
+  const {
+    groupedFieldSet: groupedFieldSet1,
+    fragmentSpreads: fragmentSpreads1,
+  } = collectFields(
     validationContext,
     ruleContext,
     parentType1,
     selectionSet1,
     varMap1,
   );
-  const [groupedFieldSet2, fragmentSpreads2] = collectFields(
+  const {
+    groupedFieldSet: groupedFieldSet2,
+    fragmentSpreads: fragmentSpreads2,
+  } = collectFields(
     validationContext,
     ruleContext,
     parentType2,
@@ -870,10 +888,10 @@ function collectFields(
     fragmentSpreads,
     varMap,
   );
-  const collectFieldsResult: CollectFieldsResult = [
+  const collectFieldsResult: CollectFieldsResult = {
     groupedFieldSet,
-    Array.from(fragmentSpreads.values()),
-  ];
+    fragmentSpreads: Array.from(fragmentSpreads.values()),
+  };
   cache.set(varMap, collectFieldsResult);
   return collectFieldsResult;
 }
