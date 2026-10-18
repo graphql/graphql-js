@@ -298,55 +298,63 @@ function checkResponseShape(
     if (fields.length === 1) {
       continue;
     }
-    let knownField: FieldDetails | undefined;
-    for (const field of fields) {
-      // Fields can participate in several distinct merged groups.
-      spendComplexityBudget(ruleContext, 1);
-      const info = getFieldInfo(ruleContext, field);
-      if (info.hasStream) {
-        const other = field === fields[0] ? fields[1] : fields[0];
-        const otherInfo = getFieldInfo(ruleContext, other);
-        let reason = 'they have overlapping stream directives';
-        if (
-          otherInfo.hasStream &&
-          sameArguments(
-            ruleContext,
-            compareArguments(
-              ruleContext,
-              info.streamArguments,
-              otherInfo.streamArguments,
-            ),
-            field.scope,
-            other.scope,
-          )
-        ) {
-          reason +=
-            '. See https://github.com/graphql/defer-stream-wg/discussions/100';
-        }
-        reportFieldConflict(
-          validationContext,
-          fields[0],
-          field === fields[0] ? other : field,
-          reason,
-        );
-      }
-      const type = field.definition?.type;
-      if (type !== undefined) {
-        const knownType = knownField?.definition?.type;
-        if (knownType !== undefined && doTypesConflict(knownType, type)) {
-          reportFieldConflict(
-            validationContext,
-            knownField as FieldDetails,
-            field,
-            `they return conflicting types "${inspect(knownType)}" and "${inspect(type)}"`,
-          );
-        }
-        knownField = field;
-      }
-    }
+    checkFieldResponseShapes(validationContext, ruleContext, fields);
     const children = getMergedChildren(validationContext, ruleContext, fields);
     if (children) {
       checkResponseShape(validationContext, ruleContext, children);
+    }
+  }
+}
+
+function checkFieldResponseShapes(
+  validationContext: ValidationContext,
+  ruleContext: RuleContext,
+  fields: ReadonlyArray<FieldDetails>,
+): void {
+  let knownField: FieldDetails | undefined;
+  for (const field of fields) {
+    // Fields can participate in several distinct merged groups.
+    spendComplexityBudget(ruleContext, 1);
+    const info = getFieldInfo(ruleContext, field);
+    if (info.hasStream) {
+      const other = field === fields[0] ? fields[1] : fields[0];
+      const otherInfo = getFieldInfo(ruleContext, other);
+      let reason = 'they have overlapping stream directives';
+      if (
+        otherInfo.hasStream &&
+        sameArguments(
+          ruleContext,
+          compareArguments(
+            ruleContext,
+            info.streamArguments,
+            otherInfo.streamArguments,
+          ),
+          field.scope,
+          other.scope,
+        )
+      ) {
+        reason +=
+          '. See https://github.com/graphql/defer-stream-wg/discussions/100';
+      }
+      reportFieldConflict(
+        validationContext,
+        fields[0],
+        field === fields[0] ? other : field,
+        reason,
+      );
+    }
+    const type = field.definition?.type;
+    if (type !== undefined) {
+      const knownType = knownField?.definition?.type;
+      if (knownType !== undefined && doTypesConflict(knownType, type)) {
+        reportFieldConflict(
+          validationContext,
+          knownField as FieldDetails,
+          field,
+          `they return conflicting types "${inspect(knownType)}" and "${inspect(type)}"`,
+        );
+      }
+      knownField = field;
     }
   }
 }
