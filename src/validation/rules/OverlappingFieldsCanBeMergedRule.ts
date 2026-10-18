@@ -114,7 +114,7 @@ export function OverlappingFieldsCanBeMergedRule(
     // selection set.
     cachedCollectFieldsResults: new Map(),
   };
-  let fragmentVarMap: VariableMap | undefined;
+  let fragmentScope: VariableScope | undefined;
 
   return {
     FragmentDefinition: {
@@ -122,10 +122,10 @@ export function OverlappingFieldsCanBeMergedRule(
         const fragmentName = node.name.value;
         const fragmentSignature =
           validationContext.getFragmentSignatureByName()(fragmentName);
-        fragmentVarMap = getVarMap(fragmentSignature, fragmentName);
+        fragmentScope = getVariableScope(fragmentSignature, fragmentName);
       },
       leave() {
-        fragmentVarMap = undefined;
+        fragmentScope = undefined;
       },
     },
     SelectionSet(selectionSet) {
@@ -134,7 +134,7 @@ export function OverlappingFieldsCanBeMergedRule(
         ruleContext,
         validationContext.getParentType(),
         selectionSet,
-        fragmentVarMap,
+        fragmentScope,
       );
       for (const { responseName, reason, fields1, fields2 } of conflicts) {
         const reasonMsg = reasonMessage(reason);
@@ -168,12 +168,12 @@ interface FieldDetails {
 }
 type FieldDetailsList = Array<FieldDetails>;
 type GroupedFieldSet = Map<string, FieldDetailsList>;
-// Variable-map identity distinguishes fragment scopes in the caches.
-type VariableMap = Map<string, ValueNode>;
+// Scope identity distinguishes fragment uses in the caches.
+type VariableScope = Map<string, ValueNode>;
 interface FragmentSpread {
   key: string;
   node: FragmentSpreadNode;
-  varMap: VariableMap | undefined;
+  scope: VariableScope | undefined;
 }
 type FragmentSpreads = ReadonlyArray<FragmentSpread>;
 interface CollectFieldsResult {
@@ -185,7 +185,7 @@ interface RuleContext {
   comparedFragmentPairs: PairSet<string>;
   cachedCollectFieldsResults: Map<
     Maybe<GraphQLNamedType>,
-    Map<SelectionSetNode, Map<VariableMap | undefined, CollectFieldsResult>>
+    Map<SelectionSetNode, Map<VariableScope | undefined, CollectFieldsResult>>
   >;
 }
 
@@ -253,7 +253,7 @@ function findConflictsWithinSelectionSet(
   ruleContext: RuleContext,
   parentType: Maybe<GraphQLNamedType>,
   selectionSet: SelectionSetNode,
-  varMap: VariableMap | undefined,
+  scope: VariableScope | undefined,
 ): Array<Conflict> {
   const conflicts: Array<Conflict> = [];
 
@@ -262,7 +262,7 @@ function findConflictsWithinSelectionSet(
     ruleContext,
     parentType,
     selectionSet,
-    varMap,
+    scope,
   );
 
   // (A) Find find all conflicts "within" the fields and f of this selection set.
@@ -272,7 +272,7 @@ function findConflictsWithinSelectionSet(
     ruleContext,
     conflicts,
     groupedFieldSet,
-    varMap,
+    scope,
   );
 
   if (fragmentSpreads.length !== 0) {
@@ -285,7 +285,7 @@ function findConflictsWithinSelectionSet(
         conflicts,
         false,
         groupedFieldSet,
-        varMap,
+        scope,
         fragmentSpreads[i],
       );
       // (C) Then compare this fragment with all other fragments found in this
@@ -315,7 +315,7 @@ function collectConflictsBetweenFieldsAndFragment(
   conflicts: Array<Conflict>,
   areMutuallyExclusive: boolean,
   groupedFieldSet: GroupedFieldSet,
-  varMap: VariableMap | undefined,
+  scope: VariableScope | undefined,
   fragmentSpread: FragmentSpread,
 ): void {
   if (groupedFieldSet.size === 0) {
@@ -354,7 +354,7 @@ function collectConflictsBetweenFieldsAndFragment(
     validationContext,
     ruleContext,
     fragment,
-    fragmentSpread.varMap,
+    fragmentSpread.scope,
   );
 
   // Do not compare a fragment's groupedFieldSet to itself.
@@ -370,9 +370,9 @@ function collectConflictsBetweenFieldsAndFragment(
     conflicts,
     areMutuallyExclusive,
     groupedFieldSet,
-    varMap,
+    scope,
     groupedFieldSet2,
-    fragmentSpread.varMap,
+    fragmentSpread.scope,
   );
 
   // (E) Then collect any conflicts between the provided collection of fields
@@ -384,7 +384,7 @@ function collectConflictsBetweenFieldsAndFragment(
       conflicts,
       areMutuallyExclusive,
       groupedFieldSet,
-      varMap,
+      scope,
       referencedFragmentSpread,
     );
   }
@@ -455,7 +455,7 @@ function collectConflictsBetweenFragments(
     validationContext,
     ruleContext,
     fragment1,
-    fragmentSpread1.varMap,
+    fragmentSpread1.scope,
   );
   const {
     groupedFieldSet: groupedFieldSet2,
@@ -464,7 +464,7 @@ function collectConflictsBetweenFragments(
     validationContext,
     ruleContext,
     fragment2,
-    fragmentSpread2.varMap,
+    fragmentSpread2.scope,
   );
 
   // (F) First, collect all conflicts between these two collections of fields
@@ -475,9 +475,9 @@ function collectConflictsBetweenFragments(
     conflicts,
     areMutuallyExclusive,
     groupedFieldSet1,
-    fragmentSpread1.varMap,
+    fragmentSpread1.scope,
     groupedFieldSet2,
-    fragmentSpread2.varMap,
+    fragmentSpread2.scope,
   );
 
   // (G) Then collect conflicts between the first fragment and any nested
@@ -516,10 +516,10 @@ function findConflictsBetweenSubSelectionSets(
   areMutuallyExclusive: boolean,
   parentType1: Maybe<GraphQLNamedType>,
   selectionSet1: SelectionSetNode,
-  varMap1: VariableMap | undefined,
+  scope1: VariableScope | undefined,
   parentType2: Maybe<GraphQLNamedType>,
   selectionSet2: SelectionSetNode,
-  varMap2: VariableMap | undefined,
+  scope2: VariableScope | undefined,
 ): Array<Conflict> {
   const conflicts: Array<Conflict> = [];
 
@@ -531,7 +531,7 @@ function findConflictsBetweenSubSelectionSets(
     ruleContext,
     parentType1,
     selectionSet1,
-    varMap1,
+    scope1,
   );
   const {
     groupedFieldSet: groupedFieldSet2,
@@ -541,7 +541,7 @@ function findConflictsBetweenSubSelectionSets(
     ruleContext,
     parentType2,
     selectionSet2,
-    varMap2,
+    scope2,
   );
 
   // (H) First, collect all conflicts between these two collections of field.
@@ -551,9 +551,9 @@ function findConflictsBetweenSubSelectionSets(
     conflicts,
     areMutuallyExclusive,
     groupedFieldSet1,
-    varMap1,
+    scope1,
     groupedFieldSet2,
-    varMap2,
+    scope2,
   );
 
   // (I) Then collect conflicts between the first collection of fields and
@@ -565,7 +565,7 @@ function findConflictsBetweenSubSelectionSets(
       conflicts,
       areMutuallyExclusive,
       groupedFieldSet1,
-      varMap1,
+      scope1,
       fragmentSpread2,
     );
   }
@@ -579,7 +579,7 @@ function findConflictsBetweenSubSelectionSets(
       conflicts,
       areMutuallyExclusive,
       groupedFieldSet2,
-      varMap2,
+      scope2,
       fragmentSpread1,
     );
   }
@@ -608,7 +608,7 @@ function collectConflictsWithin(
   ruleContext: RuleContext,
   conflicts: Array<Conflict>,
   groupedFieldSet: GroupedFieldSet,
-  varMap: VariableMap | undefined,
+  scope: VariableScope | undefined,
 ): void {
   // A field map is a keyed collection, where each key represents a response
   // name and the value at that key is a list of all fields which provide that
@@ -627,9 +627,9 @@ function collectConflictsWithin(
             false, // within one collection is never mutually exclusive
             responseName,
             fieldDetailsList[i],
-            varMap,
+            scope,
             fieldDetailsList[j],
-            varMap,
+            scope,
           );
           if (conflict) {
             conflicts.push(conflict);
@@ -651,9 +651,9 @@ function collectConflictsBetween(
   conflicts: Array<Conflict>,
   parentFieldsAreMutuallyExclusive: boolean,
   groupedFieldSet1: GroupedFieldSet,
-  varMap1: VariableMap | undefined,
+  scope1: VariableScope | undefined,
   groupedFieldSet2: GroupedFieldSet,
-  varMap2: VariableMap | undefined,
+  scope2: VariableScope | undefined,
 ): void {
   if (groupedFieldSet1.size === 0 || groupedFieldSet2.size === 0) {
     return;
@@ -674,9 +674,9 @@ function collectConflictsBetween(
             parentFieldsAreMutuallyExclusive,
             responseName,
             fieldDetails1,
-            varMap1,
+            scope1,
             fieldDetails2,
-            varMap2,
+            scope2,
           );
           if (conflict) {
             conflicts.push(conflict);
@@ -695,9 +695,9 @@ function findConflict(
   parentFieldsAreMutuallyExclusive: boolean,
   responseName: string,
   fieldDetails1: FieldDetails,
-  varMap1: VariableMap | undefined,
+  scope1: VariableScope | undefined,
   fieldDetails2: FieldDetails,
-  varMap2: VariableMap | undefined,
+  scope2: VariableScope | undefined,
 ): Maybe<Conflict> {
   const {
     parentType: parentType1,
@@ -738,7 +738,7 @@ function findConflict(
     }
 
     // Two field calls must have the same arguments.
-    if (!sameArguments(node1.arguments, varMap1, node2.arguments, varMap2)) {
+    if (!sameArguments(node1.arguments, scope1, node2.arguments, scope2)) {
       return {
         responseName,
         reason: 'they have differing arguments',
@@ -752,9 +752,9 @@ function findConflict(
   const directives2 = node2.directives;
   const overlappingStreamReason = hasNoOverlappingStreams(
     directives1,
-    varMap1,
+    scope1,
     directives2,
-    varMap2,
+    scope2,
   );
   if (overlappingStreamReason !== undefined) {
     return {
@@ -792,10 +792,10 @@ function findConflict(
       areMutuallyExclusive,
       getNamedType(type1),
       selectionSet1,
-      varMap1,
+      scope1,
       getNamedType(type2),
       selectionSet2,
-      varMap2,
+      scope2,
     );
     return subfieldConflicts(conflicts, responseName, node1, node2);
   }
@@ -803,9 +803,9 @@ function findConflict(
 
 function sameArguments<T extends ArgumentNode | FragmentArgumentNode>(
   args1: ReadonlyArray<T> | undefined,
-  varMap1: VariableMap | undefined,
+  scope1: VariableScope | undefined,
   args2: ReadonlyArray<T> | undefined,
-  varMap2: VariableMap | undefined,
+  scope2: VariableScope | undefined,
 ): boolean {
   if (args1 === undefined || args1.length === 0) {
     return args2 === undefined || args2.length === 0;
@@ -821,13 +821,13 @@ function sameArguments<T extends ArgumentNode | FragmentArgumentNode>(
   const values2 = new Map(
     args2.map(({ name, value }) => [
       name.value,
-      varMap2 === undefined ? value : replaceFragmentVariables(value, varMap2),
+      scope2 === undefined ? value : replaceFragmentVariables(value, scope2),
     ]),
   );
   return args1.every((arg1) => {
     let value1 = arg1.value;
-    if (varMap1) {
-      value1 = replaceFragmentVariables(value1, varMap1);
+    if (scope1) {
+      value1 = replaceFragmentVariables(value1, scope1);
     }
     const value2 = values2.get(arg1.name.value);
     if (value2 === undefined) {
@@ -840,16 +840,16 @@ function sameArguments<T extends ArgumentNode | FragmentArgumentNode>(
 
 function replaceFragmentVariables(
   valueNode: ValueNode,
-  varMap: VariableMap,
+  scope: VariableScope,
 ): ValueNode {
   switch (valueNode.kind) {
     case Kind.VARIABLE:
-      return varMap.get(valueNode.name.value) ?? valueNode;
+      return scope.get(valueNode.name.value) ?? valueNode;
     case Kind.LIST:
       return {
         ...valueNode,
         values: valueNode.values.map((node) =>
-          replaceFragmentVariables(node, varMap),
+          replaceFragmentVariables(node, scope),
         ),
       };
     case Kind.OBJECT:
@@ -857,7 +857,7 @@ function replaceFragmentVariables(
         ...valueNode,
         fields: valueNode.fields.map((field) => ({
           ...field,
-          value: replaceFragmentVariables(field.value, varMap),
+          value: replaceFragmentVariables(field.value, scope),
         })),
       };
     default: {
@@ -878,9 +878,9 @@ function getStreamDirective(
 
 function hasNoOverlappingStreams(
   directives1: ReadonlyArray<DirectiveNode> | undefined,
-  varMap1: VariableMap | undefined,
+  scope1: VariableScope | undefined,
   directives2: ReadonlyArray<DirectiveNode> | undefined,
-  varMap2: VariableMap | undefined,
+  scope2: VariableScope | undefined,
 ): string | undefined {
   const stream1 = getStreamDirective(directives1);
   const stream2 = getStreamDirective(directives2);
@@ -889,7 +889,7 @@ function hasNoOverlappingStreams(
     return;
   } else if (stream1 && stream2) {
     // check if both fields have equivalent streams
-    if (sameArguments(stream1.arguments, varMap1, stream2.arguments, varMap2)) {
+    if (sameArguments(stream1.arguments, scope1, stream2.arguments, scope2)) {
       // This was allowed in previous alpha versions of `graphql-js`.
       return 'they have overlapping stream directives. See https://github.com/graphql/defer-stream-wg/discussions/100';
     }
@@ -936,7 +936,7 @@ function collectFields(
   ruleContext: RuleContext,
   parentType: Maybe<GraphQLNamedType>,
   selectionSet: SelectionSetNode,
-  varMap: VariableMap | undefined,
+  scope: VariableScope | undefined,
 ): CollectFieldsResult {
   const { cachedCollectFieldsResults } = ruleContext;
   // A programmatically built document can share a selection-set object between
@@ -951,7 +951,7 @@ function collectFields(
     cache = new Map();
     bySelectionSet.set(selectionSet, cache);
   }
-  const cached = cache.get(varMap);
+  const cached = cache.get(scope);
   if (cached) {
     return cached;
   }
@@ -963,13 +963,13 @@ function collectFields(
     selectionSet,
     groupedFieldSet,
     fragmentSpreads,
-    varMap,
+    scope,
   );
   const collectFieldsResult: CollectFieldsResult = {
     groupedFieldSet,
     fragmentSpreads: Array.from(fragmentSpreads.values()),
   };
-  cache.set(varMap, collectFieldsResult);
+  cache.set(scope, collectFieldsResult);
   return collectFieldsResult;
 }
 
@@ -979,7 +979,7 @@ function collectFragmentFields(
   validationContext: ValidationContext,
   ruleContext: RuleContext,
   fragment: FragmentDefinitionNode,
-  varMap: VariableMap | undefined,
+  scope: VariableScope | undefined,
 ) {
   const fragmentType = typeFromAST(
     validationContext.getSchema(),
@@ -990,7 +990,7 @@ function collectFragmentFields(
     ruleContext,
     fragmentType,
     fragment.selectionSet,
-    varMap,
+    scope,
   );
 }
 
@@ -1000,7 +1000,7 @@ function collectFieldsImpl(
   selectionSet: SelectionSetNode,
   groupedFieldSet: GroupedFieldSet,
   fragmentSpreads: Map<string, FragmentSpread>,
-  varMap: VariableMap | undefined,
+  scope: VariableScope | undefined,
 ): void {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
@@ -1030,7 +1030,7 @@ function collectFieldsImpl(
         const fragmentSpread = getFragmentSpread(
           validationContext,
           selection,
-          varMap,
+          scope,
         );
         fragmentSpreads.set(fragmentSpread.key, fragmentSpread);
         break;
@@ -1046,7 +1046,7 @@ function collectFieldsImpl(
           selection.selectionSet,
           groupedFieldSet,
           fragmentSpreads,
-          varMap,
+          scope,
         );
         break;
       }
@@ -1057,7 +1057,7 @@ function collectFieldsImpl(
 function getFragmentSpread(
   validationContext: ValidationContext,
   fragmentSpreadNode: FragmentSpreadNode,
-  varMap: VariableMap | undefined,
+  scope: VariableScope | undefined,
 ): FragmentSpread {
   let key = '';
   const fragmentSignature = validationContext.getFragmentSignatureByName()(
@@ -1074,8 +1074,8 @@ function getFragmentSpread(
     for (const varName of fragmentSignature.variableDefinitions.keys()) {
       const value = argMap.get(varName);
       if (value) {
-        const scopedValue = varMap
-          ? replaceFragmentVariables(value, varMap)
+        const scopedValue = scope
+          ? replaceFragmentVariables(value, scope)
           : value;
         key += varName + ': ' + stringifyValue(scopedValue);
       }
@@ -1085,25 +1085,25 @@ function getFragmentSpread(
   return {
     key,
     node: fragmentSpreadNode,
-    varMap: getVarMap(fragmentSignature, key),
+    scope: getVariableScope(fragmentSignature, key),
   };
 }
 
-function getVarMap(
+function getVariableScope(
   fragmentSignature: ReturnType<ValidationContext['getFragmentSignature']>,
   key = '',
-): VariableMap | undefined {
+): VariableScope | undefined {
   if (!fragmentSignature || fragmentSignature.variableDefinitions.size === 0) {
     return;
   }
-  const varMap = new Map<string, ValueNode>();
+  const scope = new Map<string, ValueNode>();
   for (const variableName of fragmentSignature.variableDefinitions.keys()) {
-    varMap.set(variableName, {
+    scope.set(variableName, {
       kind: Kind.VARIABLE,
       name: { kind: Kind.NAME, value: JSON.stringify([key, variableName]) },
     });
   }
-  return varMap;
+  return scope;
 }
 
 function getFragmentSpreadDescription(node: FragmentSpreadNode): string {
