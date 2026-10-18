@@ -38,7 +38,7 @@ function reasonMessage(reason: ConflictReasonMessage): string {
   if (Array.isArray(reason)) {
     return reason
       .map(
-        ([responseName, subReason]) =>
+        ({ responseName, reason: subReason }) =>
           `subfields "${responseName}" conflict because ` +
           reasonMessage(subReason),
       )
@@ -125,7 +125,7 @@ export function OverlappingFieldsCanBeMergedRule(
         selectionSet,
         fragmentVarMap,
       );
-      for (const [[responseName, reason], fields1, fields2] of conflicts) {
+      for (const { responseName, reason, fields1, fields2 } of conflicts) {
         const reasonMsg = reasonMessage(reason);
         validationContext.reportError(
           new GraphQLError(
@@ -137,9 +137,15 @@ export function OverlappingFieldsCanBeMergedRule(
     },
   };
 }
-type Conflict = [ConflictReason, Array<FieldNode>, Array<FieldNode>];
+interface Conflict extends ConflictReason {
+  fields1: Array<FieldNode>;
+  fields2: Array<FieldNode>;
+}
 // Field name and reason.
-type ConflictReason = [string, ConflictReasonMessage];
+interface ConflictReason {
+  responseName: string;
+  reason: ConflictReasonMessage;
+}
 // Reason is a string, or a nested list of conflicts.
 type ConflictReasonMessage = string | Array<ConflictReason>;
 // A field node and its definition in the parent-type context.
@@ -681,19 +687,21 @@ function findConflict(
     const name1 = node1.name.value;
     const name2 = node2.name.value;
     if (name1 !== name2) {
-      return [
-        [responseName, `"${name1}" and "${name2}" are different fields`],
-        [node1],
-        [node2],
-      ];
+      return {
+        responseName,
+        reason: `"${name1}" and "${name2}" are different fields`,
+        fields1: [node1],
+        fields2: [node2],
+      };
     }
     // Two field calls must have the same arguments.
     if (!sameArguments(node1.arguments, varMap1, node2.arguments, varMap2)) {
-      return [
-        [responseName, 'they have differing arguments'],
-        [node1],
-        [node2],
-      ];
+      return {
+        responseName,
+        reason: 'they have differing arguments',
+        fields1: [node1],
+        fields2: [node2],
+      };
     }
   }
   const directives1 = node1.directives;
@@ -705,20 +713,23 @@ function findConflict(
     varMap2,
   );
   if (overlappingStreamReason !== undefined) {
-    return [[responseName, overlappingStreamReason], [node1], [node2]];
+    return {
+      responseName,
+      reason: overlappingStreamReason,
+      fields1: [node1],
+      fields2: [node2],
+    };
   }
   // The return type for each field.
   const type1 = def1?.type;
   const type2 = def2?.type;
   if (type1 && type2 && doTypesConflict(type1, type2)) {
-    return [
-      [
-        responseName,
-        `they return conflicting types "${inspect(type1)}" and "${inspect(type2)}"`,
-      ],
-      [node1],
-      [node2],
-    ];
+    return {
+      responseName,
+      reason: `they return conflicting types "${inspect(type1)}" and "${inspect(type2)}"`,
+      fields1: [node1],
+      fields2: [node2],
+    };
   }
   // Collect and compare sub-fields. Use the same "visited fragment spreads" list
   // for both collections so fields in a fragment reference are never
@@ -1043,11 +1054,15 @@ function subfieldConflicts(
   node2: FieldNode,
 ): Maybe<Conflict> {
   if (conflicts.length > 0) {
-    return [
-      [responseName, conflicts.map(([reason]) => reason)],
-      [node1, ...conflicts.map(([, fields1]) => fields1).flat()],
-      [node2, ...conflicts.map(([, , fields2]) => fields2).flat()],
-    ];
+    return {
+      responseName,
+      reason: conflicts.map(({ responseName: name, reason }) => ({
+        responseName: name,
+        reason,
+      })),
+      fields1: [node1, ...conflicts.map(({ fields1 }) => fields1).flat()],
+      fields2: [node2, ...conflicts.map(({ fields2 }) => fields2).flat()],
+    };
   }
 }
 /**
