@@ -134,23 +134,14 @@ export class ValidationContext extends ASTValidationContext {
                         const fragmentSignature = typeInfo.getFragmentSignatureByName()(fragmentDefinition.name.value);
                         fragmentVariableDefinition =
                             fragmentSignature?.variableDefinitions.get(variable.name.value);
-                        newUsages.push({
-                            node: variable,
-                            type: typeInfo.getInputType(),
-                            parentType: typeInfo.getParentInputType(),
-                            defaultValue: undefined,
-                            fragmentVariableDefinition,
-                        });
                     }
-                    else {
-                        newUsages.push({
-                            node: variable,
-                            type: typeInfo.getInputType(),
-                            parentType: typeInfo.getParentInputType(),
-                            defaultValue: typeInfo.getDefaultValue(),
-                            fragmentVariableDefinition: undefined,
-                        });
-                    }
+                    newUsages.push({
+                        node: variable,
+                        type: typeInfo.getInputType(),
+                        parentType: typeInfo.getParentInputType(),
+                        defaultValue: typeInfo.getDefaultValue(),
+                        fragmentVariableDefinition,
+                    });
                 },
             }));
             usages = newUsages;
