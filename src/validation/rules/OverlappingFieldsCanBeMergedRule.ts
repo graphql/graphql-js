@@ -162,6 +162,7 @@ interface FieldDetails {
   node: FieldNode;
   definition: Maybe<GraphQLField<unknown, unknown>>;
   scope?: VariableScope;
+  info?: FieldInfo;
 }
 interface FieldInfo {
   comparisons?: Map<FieldInfo, FieldComparison>;
@@ -612,6 +613,9 @@ function getFieldInfo(
   ruleContext: RuleContext,
   fieldDetails: FieldDetails,
 ): FieldInfo {
+  if (fieldDetails.info !== undefined) {
+    return fieldDetails.info;
+  }
   const node = fieldDetails.node;
   const byNode = (ruleContext.fieldInfoByNode ??= new Map());
   let info = byNode.get(node);
@@ -626,7 +630,7 @@ function getFieldInfo(
     };
     byNode.set(node, info);
   }
-  return info;
+  return (fieldDetails.info = info);
 }
 
 function getArgumentInfo(
