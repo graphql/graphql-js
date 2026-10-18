@@ -455,12 +455,10 @@ function getMergedChildren(
   if (sets.size === 1) {
     return sets.values().next().value;
   }
-  for (const _set of sets) {
-    // Distinct merges can repeatedly index the same source collections.
-    spendComplexityBudget(ruleContext, 1);
-  }
+  // Charge one unit per collection, including repeated merge-cache lookups.
+  spendComplexityBudget(ruleContext, sets.size);
   const checks = (ruleContext.mergeChecks ??= new SetMap());
-  return checks.getOrInsertComputed(sets, () => ({ sets }));
+  return checks.getOrInsert(sets, { sets });
 }
 
 function checkCommonParents(
