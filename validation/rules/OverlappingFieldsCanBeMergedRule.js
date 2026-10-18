@@ -151,9 +151,9 @@ function collectConflictsBetween(validationContext, ruleContext, conflicts, pare
     for (const [responseName, fields1] of fieldMap1.entries()) {
         const fields2 = fieldMap2.get(responseName);
         if (fields2 != null) {
-            for (const field1 of fields1) {
-                for (const field2 of fields2) {
-                    const conflict = findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExclusive, responseName, field1, varMap1, field2, varMap2);
+            for (const fieldDetails1 of fields1) {
+                for (const fieldDetails2 of fields2) {
+                    const conflict = findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExclusive, responseName, fieldDetails1, varMap1, fieldDetails2, varMap2);
                     if (conflict) {
                         conflicts.push(conflict);
                     }
@@ -162,9 +162,9 @@ function collectConflictsBetween(validationContext, ruleContext, conflicts, pare
         }
     }
 }
-function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExclusive, responseName, field1, varMap1, field2, varMap2) {
-    const [parentType1, node1, def1] = field1;
-    const [parentType2, node2, def2] = field2;
+function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExclusive, responseName, fieldDetails1, varMap1, fieldDetails2, varMap2) {
+    const [parentType1, node1, def1] = fieldDetails1;
+    const [parentType2, node2, def2] = fieldDetails2;
     const areMutuallyExclusive = parentFieldsAreMutuallyExclusive ||
         (parentType1 !== parentType2 &&
             (0, definition_ts_1.isObjectType)(parentType1) &&
