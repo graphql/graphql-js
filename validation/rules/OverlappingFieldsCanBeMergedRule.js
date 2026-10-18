@@ -46,7 +46,7 @@ function OverlappingFieldsCanBeMergedRule(validationContext) {
 }
 function findConflictsWithinSelectionSet(validationContext, ruleContext, parentType, selectionSet, varMap) {
     const conflicts = [];
-    const [groupedFieldSet, fragmentSpreads] = collectFields(validationContext, ruleContext, parentType, selectionSet, varMap);
+    const { groupedFieldSet, fragmentSpreads } = collectFields(validationContext, ruleContext, parentType, selectionSet, varMap);
     collectConflictsWithin(validationContext, ruleContext, conflicts, groupedFieldSet, varMap);
     if (fragmentSpreads.length !== 0) {
         for (let i = 0; i < fragmentSpreads.length; i++) {
@@ -71,7 +71,7 @@ function collectConflictsBetweenFieldsAndFragment(validationContext, ruleContext
     if (!fragment) {
         return;
     }
-    const [groupedFieldSet2, referencedFragmentSpreads] = collectFragmentFields(validationContext, ruleContext, fragment, fragmentSpread.varMap);
+    const { groupedFieldSet: groupedFieldSet2, fragmentSpreads: referencedFragmentSpreads, } = collectFragmentFields(validationContext, ruleContext, fragment, fragmentSpread.varMap);
     if (groupedFieldSet === groupedFieldSet2) {
         return;
     }
@@ -102,8 +102,8 @@ function collectConflictsBetweenFragments(validationContext, ruleContext, confli
     if (!fragment1 || !fragment2) {
         return;
     }
-    const [groupedFieldSet1, referencedFragmentSpreads1] = collectFragmentFields(validationContext, ruleContext, fragment1, fragmentSpread1.varMap);
-    const [groupedFieldSet2, referencedFragmentSpreads2] = collectFragmentFields(validationContext, ruleContext, fragment2, fragmentSpread2.varMap);
+    const { groupedFieldSet: groupedFieldSet1, fragmentSpreads: referencedFragmentSpreads1, } = collectFragmentFields(validationContext, ruleContext, fragment1, fragmentSpread1.varMap);
+    const { groupedFieldSet: groupedFieldSet2, fragmentSpreads: referencedFragmentSpreads2, } = collectFragmentFields(validationContext, ruleContext, fragment2, fragmentSpread2.varMap);
     collectConflictsBetween(validationContext, ruleContext, conflicts, areMutuallyExclusive, groupedFieldSet1, fragmentSpread1.varMap, groupedFieldSet2, fragmentSpread2.varMap);
     for (const referencedFragmentSpread2 of referencedFragmentSpreads2) {
         collectConflictsBetweenFragments(validationContext, ruleContext, conflicts, areMutuallyExclusive, fragmentSpread1, referencedFragmentSpread2);
@@ -114,8 +114,8 @@ function collectConflictsBetweenFragments(validationContext, ruleContext, confli
 }
 function findConflictsBetweenSubSelectionSets(validationContext, ruleContext, areMutuallyExclusive, parentType1, selectionSet1, varMap1, parentType2, selectionSet2, varMap2) {
     const conflicts = [];
-    const [groupedFieldSet1, fragmentSpreads1] = collectFields(validationContext, ruleContext, parentType1, selectionSet1, varMap1);
-    const [groupedFieldSet2, fragmentSpreads2] = collectFields(validationContext, ruleContext, parentType2, selectionSet2, varMap2);
+    const { groupedFieldSet: groupedFieldSet1, fragmentSpreads: fragmentSpreads1, } = collectFields(validationContext, ruleContext, parentType1, selectionSet1, varMap1);
+    const { groupedFieldSet: groupedFieldSet2, fragmentSpreads: fragmentSpreads2, } = collectFields(validationContext, ruleContext, parentType2, selectionSet2, varMap2);
     collectConflictsBetween(validationContext, ruleContext, conflicts, areMutuallyExclusive, groupedFieldSet1, varMap1, groupedFieldSet2, varMap2);
     for (const fragmentSpread2 of fragmentSpreads2) {
         collectConflictsBetweenFieldsAndFragment(validationContext, ruleContext, conflicts, areMutuallyExclusive, groupedFieldSet1, varMap1, fragmentSpread2);
@@ -316,10 +316,10 @@ function collectFields(validationContext, ruleContext, parentType, selectionSet,
     const groupedFieldSet = new Map();
     const fragmentSpreads = new Map();
     collectFieldsImpl(validationContext, parentType, selectionSet, groupedFieldSet, fragmentSpreads, varMap);
-    const collectFieldsResult = [
+    const collectFieldsResult = {
         groupedFieldSet,
-        Array.from(fragmentSpreads.values()),
-    ];
+        fragmentSpreads: Array.from(fragmentSpreads.values()),
+    };
     cache.set(varMap, collectFieldsResult);
     return collectFieldsResult;
 }
