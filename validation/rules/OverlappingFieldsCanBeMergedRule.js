@@ -163,8 +163,8 @@ function collectConflictsBetween(validationContext, ruleContext, conflicts, pare
     }
 }
 function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExclusive, responseName, fieldDetails1, varMap1, fieldDetails2, varMap2) {
-    const [parentType1, node1, def1] = fieldDetails1;
-    const [parentType2, node2, def2] = fieldDetails2;
+    const { parentType: parentType1, node: node1, definition: def1, } = fieldDetails1;
+    const { parentType: parentType2, node: node2, definition: def2, } = fieldDetails2;
     const areMutuallyExclusive = parentFieldsAreMutuallyExclusive ||
         (parentType1 !== parentType2 &&
             (0, definition_ts_1.isObjectType)(parentType1) &&
@@ -351,7 +351,11 @@ function collectFieldsImpl(validationContext, parentType, selectionSet, groupedF
                     fieldDetailsList = [];
                     groupedFieldSet.set(responseName, fieldDetailsList);
                 }
-                fieldDetailsList.push([parentType, selection, fieldDef]);
+                fieldDetailsList.push({
+                    parentType,
+                    node: selection,
+                    definition: fieldDef,
+                });
                 break;
             }
             case kinds_ts_1.Kind.FRAGMENT_SPREAD: {
