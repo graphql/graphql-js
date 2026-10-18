@@ -149,7 +149,7 @@ type FieldDetails = [
   Maybe<GraphQLField<unknown, unknown>>,
 ];
 type FieldDetailsList = Array<FieldDetails>;
-type NodeAndDefCollection = Map<string, FieldDetailsList>;
+type GroupedFieldSet = Map<string, FieldDetailsList>;
 // Variable-map identity distinguishes fragment scopes in the caches.
 type VariableMap = Map<string, ValueNode>;
 interface FragmentSpread {
@@ -158,16 +158,13 @@ interface FragmentSpread {
   varMap: VariableMap | undefined;
 }
 type FragmentSpreads = ReadonlyArray<FragmentSpread>;
-type FieldsAndFragmentSpreads = readonly [
-  NodeAndDefCollection,
-  FragmentSpreads,
-];
+type FieldsAndFragmentSpreads = readonly [GroupedFieldSet, FragmentSpreads];
 type FieldsAndFragmentSpreadsCache = Map<
   SelectionSetNode,
   Map<VariableMap | undefined, FieldsAndFragmentSpreads>
 >;
 interface RuleContext {
-  comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>;
+  comparedFieldsAndFragmentPairs: OrderedPairSet<GroupedFieldSet, string>;
   comparedFragmentPairs: PairSet<string>;
   cachedFieldsAndFragmentSpreads: FieldsAndFragmentSpreadsCache;
 }
@@ -238,7 +235,7 @@ function findConflictsWithinSelectionSet(
   varMap: VariableMap | undefined,
 ): Array<Conflict> {
   const conflicts: Array<Conflict> = [];
-  const [fieldMap, fragmentSpreads] = getFieldsAndFragmentSpreads(
+  const [groupedFieldSet, fragmentSpreads] = getFieldsAndFragmentSpreads(
     validationContext,
     ruleContext,
     parentType,
@@ -251,7 +248,7 @@ function findConflictsWithinSelectionSet(
     validationContext,
     ruleContext,
     conflicts,
-    fieldMap,
+    groupedFieldSet,
     varMap,
   );
   if (fragmentSpreads.length !== 0) {
@@ -263,7 +260,7 @@ function findConflictsWithinSelectionSet(
         ruleContext,
         conflicts,
         false,
-        fieldMap,
+        groupedFieldSet,
         varMap,
         fragmentSpreads[i],
       );
@@ -292,11 +289,11 @@ function collectConflictsBetweenFieldsAndFragment(
   ruleContext: RuleContext,
   conflicts: Array<Conflict>,
   areMutuallyExclusive: boolean,
-  fieldMap: NodeAndDefCollection,
+  groupedFieldSet: GroupedFieldSet,
   varMap: VariableMap | undefined,
   fragmentSpread: FragmentSpread,
 ): void {
-  if (fieldMap.size === 0) {
+  if (groupedFieldSet.size === 0) {
     return;
   }
   const { comparedFieldsAndFragmentPairs } = ruleContext;
@@ -304,7 +301,7 @@ function collectConflictsBetweenFieldsAndFragment(
   // than once.
   if (
     comparedFieldsAndFragmentPairs.has(
-      fieldMap,
+      groupedFieldSet,
       fragmentSpread.key,
       areMutuallyExclusive,
     )
@@ -312,7 +309,7 @@ function collectConflictsBetweenFieldsAndFragment(
     return;
   }
   comparedFieldsAndFragmentPairs.add(
-    fieldMap,
+    groupedFieldSet,
     fragmentSpread.key,
     areMutuallyExclusive,
   );
@@ -322,15 +319,15 @@ function collectConflictsBetweenFieldsAndFragment(
   if (!fragment) {
     return;
   }
-  const [fieldMap2, referencedFragmentSpreads] =
+  const [groupedFieldSet2, referencedFragmentSpreads] =
     getReferencedFieldsAndFragmentSpreads(
       validationContext,
       ruleContext,
       fragment,
       fragmentSpread.varMap,
     );
-  // Do not compare a fragment's fieldMap to itself.
-  if (fieldMap === fieldMap2) {
+  // Do not compare a fragment's groupedFieldSet to itself.
+  if (groupedFieldSet === groupedFieldSet2) {
     return;
   }
   // (D) First collect any conflicts between the provided collection of fields
@@ -340,9 +337,9 @@ function collectConflictsBetweenFieldsAndFragment(
     ruleContext,
     conflicts,
     areMutuallyExclusive,
-    fieldMap,
+    groupedFieldSet,
     varMap,
-    fieldMap2,
+    groupedFieldSet2,
     fragmentSpread.varMap,
   );
   // (E) Then collect any conflicts between the provided collection of fields
@@ -353,7 +350,7 @@ function collectConflictsBetweenFieldsAndFragment(
       ruleContext,
       conflicts,
       areMutuallyExclusive,
-      fieldMap,
+      groupedFieldSet,
       varMap,
       referencedFragmentSpread,
     );
@@ -413,14 +410,14 @@ function collectConflictsBetweenFragments(
   if (!fragment1 || !fragment2) {
     return;
   }
-  const [fieldMap1, referencedFragmentSpreads1] =
+  const [groupedFieldSet1, referencedFragmentSpreads1] =
     getReferencedFieldsAndFragmentSpreads(
       validationContext,
       ruleContext,
       fragment1,
       fragmentSpread1.varMap,
     );
-  const [fieldMap2, referencedFragmentSpreads2] =
+  const [groupedFieldSet2, referencedFragmentSpreads2] =
     getReferencedFieldsAndFragmentSpreads(
       validationContext,
       ruleContext,
@@ -434,9 +431,9 @@ function collectConflictsBetweenFragments(
     ruleContext,
     conflicts,
     areMutuallyExclusive,
-    fieldMap1,
+    groupedFieldSet1,
     fragmentSpread1.varMap,
-    fieldMap2,
+    groupedFieldSet2,
     fragmentSpread2.varMap,
   );
   // (G) Then collect conflicts between the first fragment and any nested
@@ -479,14 +476,14 @@ function findConflictsBetweenSubSelectionSets(
   varMap2: VariableMap | undefined,
 ): Array<Conflict> {
   const conflicts: Array<Conflict> = [];
-  const [fieldMap1, fragmentSpreads1] = getFieldsAndFragmentSpreads(
+  const [groupedFieldSet1, fragmentSpreads1] = getFieldsAndFragmentSpreads(
     validationContext,
     ruleContext,
     parentType1,
     selectionSet1,
     varMap1,
   );
-  const [fieldMap2, fragmentSpreads2] = getFieldsAndFragmentSpreads(
+  const [groupedFieldSet2, fragmentSpreads2] = getFieldsAndFragmentSpreads(
     validationContext,
     ruleContext,
     parentType2,
@@ -499,9 +496,9 @@ function findConflictsBetweenSubSelectionSets(
     ruleContext,
     conflicts,
     areMutuallyExclusive,
-    fieldMap1,
+    groupedFieldSet1,
     varMap1,
-    fieldMap2,
+    groupedFieldSet2,
     varMap2,
   );
   // (I) Then collect conflicts between the first collection of fields and
@@ -512,7 +509,7 @@ function findConflictsBetweenSubSelectionSets(
       ruleContext,
       conflicts,
       areMutuallyExclusive,
-      fieldMap1,
+      groupedFieldSet1,
       varMap1,
       fragmentSpread2,
     );
@@ -525,7 +522,7 @@ function findConflictsBetweenSubSelectionSets(
       ruleContext,
       conflicts,
       areMutuallyExclusive,
-      fieldMap2,
+      groupedFieldSet2,
       varMap2,
       fragmentSpread1,
     );
@@ -552,14 +549,14 @@ function collectConflictsWithin(
   validationContext: ValidationContext,
   ruleContext: RuleContext,
   conflicts: Array<Conflict>,
-  fieldMap: NodeAndDefCollection,
+  groupedFieldSet: GroupedFieldSet,
   varMap: VariableMap | undefined,
 ): void {
   // A field map is a keyed collection, where each key represents a response
   // name and the value at that key is a list of all fields which provide that
   // response name. For every response name, if there are multiple fields, they
   // must be compared to find a potential conflict.
-  for (const [responseName, fieldDetailsList] of fieldMap.entries()) {
+  for (const [responseName, fieldDetailsList] of groupedFieldSet.entries()) {
     // This compares every field in the list to every other field in this list
     // (except to itself). If the list only has one item, nothing needs to
     // be compared.
@@ -594,12 +591,12 @@ function collectConflictsBetween(
   ruleContext: RuleContext,
   conflicts: Array<Conflict>,
   parentFieldsAreMutuallyExclusive: boolean,
-  fieldMap1: NodeAndDefCollection,
+  groupedFieldSet1: GroupedFieldSet,
   varMap1: VariableMap | undefined,
-  fieldMap2: NodeAndDefCollection,
+  groupedFieldSet2: GroupedFieldSet,
   varMap2: VariableMap | undefined,
 ): void {
-  if (fieldMap1.size === 0 || fieldMap2.size === 0) {
+  if (groupedFieldSet1.size === 0 || groupedFieldSet2.size === 0) {
     return;
   }
   // A field map is a keyed collection, where each key represents a response
@@ -607,8 +604,8 @@ function collectConflictsBetween(
   // response name. For any response name which appears in both provided field
   // maps, each field from the first field map must be compared to every field
   // in the second field map to find potential conflicts.
-  for (const [responseName, fieldDetailsList1] of fieldMap1.entries()) {
-    const fieldDetailsList2 = fieldMap2.get(responseName);
+  for (const [responseName, fieldDetailsList1] of groupedFieldSet1.entries()) {
+    const fieldDetailsList2 = groupedFieldSet2.get(responseName);
     if (fieldDetailsList2 != null) {
       for (const fieldDetails1 of fieldDetailsList1) {
         for (const fieldDetails2 of fieldDetailsList2) {
@@ -859,18 +856,18 @@ function getFieldsAndFragmentSpreads(
   if (cached) {
     return cached;
   }
-  const nodeAndDefs: NodeAndDefCollection = new Map();
+  const groupedFieldSet: GroupedFieldSet = new Map();
   const fragmentSpreads = new Map<string, FragmentSpread>();
   _collectFieldsAndFragmentSpreads(
     validationContext,
     parentType,
     selectionSet,
-    nodeAndDefs,
+    groupedFieldSet,
     fragmentSpreads,
     varMap,
   );
   const result: FieldsAndFragmentSpreads = [
-    nodeAndDefs,
+    groupedFieldSet,
     Array.from(fragmentSpreads.values()),
   ];
   cache.set(varMap, result);
@@ -908,7 +905,7 @@ function _collectFieldsAndFragmentSpreads(
   validationContext: ValidationContext,
   parentType: Maybe<GraphQLNamedType>,
   selectionSet: SelectionSetNode,
-  nodeAndDefs: NodeAndDefCollection,
+  groupedFieldSet: GroupedFieldSet,
   fragmentSpreads: Map<string, FragmentSpread>,
   varMap: VariableMap | undefined,
 ): void {
@@ -923,10 +920,10 @@ function _collectFieldsAndFragmentSpreads(
         const responseName = selection.alias
           ? selection.alias.value
           : fieldName;
-        let fieldDetailsList = nodeAndDefs.get(responseName);
+        let fieldDetailsList = groupedFieldSet.get(responseName);
         if (fieldDetailsList == null) {
           fieldDetailsList = [];
-          nodeAndDefs.set(responseName, fieldDetailsList);
+          groupedFieldSet.set(responseName, fieldDetailsList);
         }
         fieldDetailsList.push([parentType, selection, fieldDef]);
         break;
@@ -949,7 +946,7 @@ function _collectFieldsAndFragmentSpreads(
           validationContext,
           inlineFragmentType,
           selection.selectionSet,
-          nodeAndDefs,
+          groupedFieldSet,
           fragmentSpreads,
           varMap,
         );
