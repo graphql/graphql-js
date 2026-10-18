@@ -198,16 +198,17 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
             };
         }
     }
-    const directives1 = node1.directives;
-    const directives2 = node2.directives;
-    const overlappingStreamReason = hasNoOverlappingStreams(directives1, scope1, directives2, scope2);
-    if (overlappingStreamReason !== undefined) {
-        return {
-            responseName,
-            reason: overlappingStreamReason,
-            fields1: [node1],
-            fields2: [node2],
-        };
+    const stream1 = getStreamDirective(node1.directives);
+    const stream2 = getStreamDirective(node2.directives);
+    if (stream1 || stream2) {
+        let reason = 'they have overlapping stream directives';
+        if (stream1 && stream2) {
+            if (sameArguments(stream1.arguments, scope1, stream2.arguments, scope2)) {
+                reason +=
+                    '. See https://github.com/graphql/defer-stream-wg/discussions/100';
+            }
+        }
+        return { responseName, reason, fields1: [node1], fields2: [node2] };
     }
     const type1 = def1?.type;
     const type2 = def2?.type;
@@ -279,20 +280,6 @@ function stringifyValue(value) {
 }
 function getStreamDirective(directives) {
     return directives?.find((directive) => directive.name.value === 'stream');
-}
-function hasNoOverlappingStreams(directives1, scope1, directives2, scope2) {
-    const stream1 = getStreamDirective(directives1);
-    const stream2 = getStreamDirective(directives2);
-    if (!stream1 && !stream2) {
-        return;
-    }
-    else if (stream1 && stream2) {
-        if (sameArguments(stream1.arguments, scope1, stream2.arguments, scope2)) {
-            return 'they have overlapping stream directives. See https://github.com/graphql/defer-stream-wg/discussions/100';
-        }
-        return 'they have overlapping stream directives';
-    }
-    return 'they have overlapping stream directives';
 }
 function doTypesConflict(type1, type2) {
     if (isListType(type1)) {
