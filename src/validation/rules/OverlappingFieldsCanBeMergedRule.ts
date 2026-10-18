@@ -155,13 +155,13 @@ type ConflictReason = [string, ConflictReasonMessage];
 // Reason is a string, or a nested list of conflicts.
 type ConflictReasonMessage = string | Array<ConflictReason>;
 // Tuple defining a field node in a context.
-type NodeAndDef = [
+type FieldDetails = [
   Maybe<GraphQLNamedType>,
   FieldNode,
   Maybe<GraphQLField<unknown, unknown>>,
 ];
 // Map of array of those.
-type NodeAndDefCollection = Map<string, Array<NodeAndDef>>;
+type NodeAndDefCollection = Map<string, Array<FieldDetails>>;
 // Variable-map identity distinguishes fragment scopes in the caches.
 type VariableMap = Map<string, ValueNode>;
 interface FragmentSpread {
@@ -649,16 +649,16 @@ function collectConflictsBetween(
   for (const [responseName, fields1] of fieldMap1.entries()) {
     const fields2 = fieldMap2.get(responseName);
     if (fields2 != null) {
-      for (const field1 of fields1) {
-        for (const field2 of fields2) {
+      for (const fieldDetails1 of fields1) {
+        for (const fieldDetails2 of fields2) {
           const conflict = findConflict(
             validationContext,
             ruleContext,
             parentFieldsAreMutuallyExclusive,
             responseName,
-            field1,
+            fieldDetails1,
             varMap1,
-            field2,
+            fieldDetails2,
             varMap2,
           );
           if (conflict) {
@@ -677,13 +677,13 @@ function findConflict(
   ruleContext: RuleContext,
   parentFieldsAreMutuallyExclusive: boolean,
   responseName: string,
-  field1: NodeAndDef,
+  fieldDetails1: FieldDetails,
   varMap1: VariableMap | undefined,
-  field2: NodeAndDef,
+  fieldDetails2: FieldDetails,
   varMap2: VariableMap | undefined,
 ): Maybe<Conflict> {
-  const [parentType1, node1, def1] = field1;
-  const [parentType2, node2, def2] = field2;
+  const [parentType1, node1, def1] = fieldDetails1;
+  const [parentType2, node2, def2] = fieldDetails2;
 
   // If it is known that two fields could not possibly apply at the same
   // time, due to the parent types, then it is safe to permit them to diverge
