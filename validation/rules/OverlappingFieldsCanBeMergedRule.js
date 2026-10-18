@@ -131,11 +131,11 @@ function findConflictsBetweenSubSelectionSets(validationContext, ruleContext, ar
     return conflicts;
 }
 function collectConflictsWithin(validationContext, ruleContext, conflicts, fieldMap, varMap) {
-    for (const [responseName, fields] of fieldMap.entries()) {
-        if (fields.length > 1) {
-            for (let i = 0; i < fields.length; i++) {
-                for (let j = i + 1; j < fields.length; j++) {
-                    const conflict = findConflict(validationContext, ruleContext, false, responseName, fields[i], varMap, fields[j], varMap);
+    for (const [responseName, fieldDetailsList] of fieldMap.entries()) {
+        if (fieldDetailsList.length > 1) {
+            for (let i = 0; i < fieldDetailsList.length; i++) {
+                for (let j = i + 1; j < fieldDetailsList.length; j++) {
+                    const conflict = findConflict(validationContext, ruleContext, false, responseName, fieldDetailsList[i], varMap, fieldDetailsList[j], varMap);
                     if (conflict) {
                         conflicts.push(conflict);
                     }
@@ -148,11 +148,11 @@ function collectConflictsBetween(validationContext, ruleContext, conflicts, pare
     if (fieldMap1.size === 0 || fieldMap2.size === 0) {
         return;
     }
-    for (const [responseName, fields1] of fieldMap1.entries()) {
-        const fields2 = fieldMap2.get(responseName);
-        if (fields2 != null) {
-            for (const fieldDetails1 of fields1) {
-                for (const fieldDetails2 of fields2) {
+    for (const [responseName, fieldDetailsList1] of fieldMap1.entries()) {
+        const fieldDetailsList2 = fieldMap2.get(responseName);
+        if (fieldDetailsList2 != null) {
+            for (const fieldDetails1 of fieldDetailsList1) {
+                for (const fieldDetails2 of fieldDetailsList2) {
                     const conflict = findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExclusive, responseName, fieldDetails1, varMap1, fieldDetails2, varMap2);
                     if (conflict) {
                         conflicts.push(conflict);
@@ -346,12 +346,12 @@ function _collectFieldsAndFragmentSpreads(validationContext, parentType, selecti
                 const responseName = selection.alias
                     ? selection.alias.value
                     : fieldName;
-                let nodeAndDefsList = nodeAndDefs.get(responseName);
-                if (nodeAndDefsList == null) {
-                    nodeAndDefsList = [];
-                    nodeAndDefs.set(responseName, nodeAndDefsList);
+                let fieldDetailsList = nodeAndDefs.get(responseName);
+                if (fieldDetailsList == null) {
+                    fieldDetailsList = [];
+                    nodeAndDefs.set(responseName, fieldDetailsList);
                 }
-                nodeAndDefsList.push([parentType, selection, fieldDef]);
+                fieldDetailsList.push([parentType, selection, fieldDef]);
                 break;
             }
             case kinds_ts_1.Kind.FRAGMENT_SPREAD: {
