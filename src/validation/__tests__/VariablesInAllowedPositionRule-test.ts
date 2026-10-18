@@ -345,9 +345,23 @@ describe('Validate: Variables are in allowed positions', () => {
       expectValid(`
         query Query($intVar: Int) {
           complicatedArgs {
-            nonNullFieldWithDefault(nonNullIntArg: $intVar)
+            nonNullFieldWithDefault(arg: $intVar)
           }
         }`);
+    });
+
+    it('Int => Int! when an argument default is inside a fragment', () => {
+      expectValid(`
+        fragment defaultArgFrag on ComplicatedArgs {
+          nonNullFieldWithDefault(arg: $intVar)
+        }
+
+        query Query($intVar: Int) {
+          complicatedArgs {
+            ...defaultArgFrag
+          }
+        }
+      `);
     });
 
     it('Boolean => Boolean! in directive with default value with option', () => {
@@ -397,6 +411,19 @@ describe('Validate: Variables are in allowed positions', () => {
   });
 
   describe('Fragment arguments are validated', () => {
+    it('Int => Int! when the field argument provides a default value', () => {
+      expectValid(`
+        query Query {
+          complicatedArgs {
+            ...A
+          }
+        }
+        fragment A($intVar: Int) on ComplicatedArgs {
+          nonNullFieldWithDefault(arg: $intVar)
+        }
+      `);
+    });
+
     it('validates fragment variables defined before the operation', () => {
       expectErrors(`
         fragment A($intVar: Int) on ComplicatedArgs {
