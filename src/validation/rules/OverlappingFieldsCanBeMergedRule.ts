@@ -143,8 +143,7 @@ export function OverlappingFieldsCanBeMergedRule(
       }
       const scoped = getScopedFields(collection, fragmentScope);
       try {
-        checkCommonParents(validationContext, ruleContext, scoped);
-        checkResponseShape(validationContext, ruleContext, scoped);
+        checkFieldsCanMerge(validationContext, ruleContext, scoped);
       } catch (error) {
         if (error !== conflictReported) {
           throw error;
@@ -207,7 +206,7 @@ interface MergedFieldSet extends FieldSetState {
 interface FieldSetState {
   fields?: GroupedFieldSet;
   responseShape?: boolean;
-  commonParent?: boolean;
+  checked?: boolean;
 }
 type ArgumentNodes =
   | ReadonlyArray<ArgumentNode>
@@ -244,13 +243,13 @@ interface RuleContext {
 // type. When a comparison needs named fragments, expand their scoped collections
 // at this response level and group the resulting fields by response name.
 //
-// Two separate walks apply different requirements to each group:
-// - checkCommonParents compares names and arguments among parents that can
-//   overlap. Separate child groups preserve exclusivity inherited from ancestors.
-// - checkResponseShape compares return shapes across all parents, including
-//   mutually exclusive ones, and checks overlapping stream directives.
-// Each walk merges all child selections in its group before descending. Equality
-// checks need only one representative, but child selections need every member.
+// Check names and arguments among parents that can overlap, and response shapes
+// across every parent. Merge each common-parent group's children before checking
+// them. If there are several concrete parent groups, also check their combined
+// children for response shape alone: names and arguments may differ across those
+// mutually exclusive parents. Otherwise the common-parent recursion already
+// checks the entire child set, including its response shape.
+// Equality checks need only one representative; child selections need every member.
 //
 // Cache the walks by their sets of scoped source collections. The complexity
 // budget still bounds distinct merged states and repeated expansion: caching
@@ -470,15 +469,17 @@ function getMergedChildren(
   return checks.getOrInsert(sets, { sets });
 }
 
-function checkCommonParents(
+function checkFieldsCanMerge(
   validationContext: ValidationContext,
   ruleContext: RuleContext,
   check: FieldSet,
 ): void {
-  if (check.commonParent) {
+  if (check.checked) {
     return;
   }
-  check.commonParent = true;
+  check.checked = true;
+  const shapeAlreadyChecked = check.responseShape;
+  check.responseShape = true;
   for (const fields of getMergedFields(
     validationContext,
     ruleContext,
@@ -514,6 +515,19 @@ function checkCommonParents(
         concreteGroup,
         concrete.size === 0 ? [] : abstract,
       );
+    }
+    if (!shapeAlreadyChecked) {
+      checkFieldResponseShapes(validationContext, ruleContext, fields);
+      if (concrete.size > 1) {
+        const children = getMergedChildren(
+          validationContext,
+          ruleContext,
+          fields,
+        );
+        if (children) {
+          checkResponseShape(validationContext, ruleContext, children);
+        }
+      }
     }
   }
 }
@@ -583,7 +597,7 @@ function checkCommonParentFields(
     shared.length === 0 ? group : group.concat(shared),
   );
   if (children) {
-    checkCommonParents(validationContext, ruleContext, children);
+    checkFieldsCanMerge(validationContext, ruleContext, children);
   }
 }
 

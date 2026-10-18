@@ -147,6 +147,58 @@ describe('Validate: Overlapping fields can be merged', () => {
     ).to.deep.equal([]);
   });
 
+  it('checks field names after reusing a response-shape comparison', () => {
+    const schema = buildSchema(`
+      type Query { node: Node, other: Child }
+      union Node = First | Second
+      type First { child: Child }
+      type Second { child: Child }
+      type Child { value: Value }
+      type Value { first: Int, second: Int }
+    `);
+    const exclusive = `
+      node {
+        ... on First { child { ...Left } }
+        ... on Second { child { ...Right } }
+      }
+    `;
+    const fragments = `
+      fragment Left on Child { value { field: first } }
+      fragment Right on Child { value { field: second } }
+    `;
+    expectValidWithSchema(schema, `{ ${exclusive} } ${fragments}`);
+    const document = parse(`
+      { ${exclusive} other { ...Left ...Right } }
+      ${fragments}
+    `);
+    expect(
+      validate(schema, document).map((error) => error.message),
+    ).to.deep.equal([
+      'Fields "field" conflict because "first" and "second" are different fields. Use different aliases on the fields or their ancestors to fetch both if this was intentional.',
+    ]);
+  });
+
+  it('reuses response-shape checks across exclusive fragment uses', () => {
+    const schema = buildSchema(`
+      type Query { node: Node }
+      union Node = First | Second
+      type First { child: Child }
+      type Second { child: Child }
+      type Child { first: Int, second: Int }
+    `);
+    expectValidWithSchema(
+      schema,
+      `
+        {
+          a: node { ...Left ...Right }
+          b: node { ...Left ...Right }
+        }
+        fragment Left on First { child { field: first } }
+        fragment Right on Second { child { field: second } }
+      `,
+    );
+  });
+
   it('merges matching list and non-null shapes across object parents', () => {
     const schema = buildSchema(`
       union Node = First | Second
