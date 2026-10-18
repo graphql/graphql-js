@@ -142,12 +142,12 @@ type Conflict = [ConflictReason, Array<FieldNode>, Array<FieldNode>];
 type ConflictReason = [string, ConflictReasonMessage];
 // Reason is a string, or a nested list of conflicts.
 type ConflictReasonMessage = string | Array<ConflictReason>;
-// Tuple defining a field node in a context.
-type FieldDetails = [
-  Maybe<GraphQLNamedType>,
-  FieldNode,
-  Maybe<GraphQLField<unknown, unknown>>,
-];
+// A field node and its definition in the parent-type context.
+interface FieldDetails {
+  parentType: Maybe<GraphQLNamedType>;
+  node: FieldNode;
+  definition: Maybe<GraphQLField<unknown, unknown>>;
+}
 type FieldDetailsList = Array<FieldDetails>;
 type GroupedFieldSet = Map<string, FieldDetailsList>;
 // Variable-map identity distinguishes fragment scopes in the caches.
@@ -635,8 +635,16 @@ function findConflict(
   fieldDetails2: FieldDetails,
   varMap2: VariableMap | undefined,
 ): Maybe<Conflict> {
-  const [parentType1, node1, def1] = fieldDetails1;
-  const [parentType2, node2, def2] = fieldDetails2;
+  const {
+    parentType: parentType1,
+    node: node1,
+    definition: def1,
+  } = fieldDetails1;
+  const {
+    parentType: parentType2,
+    node: node2,
+    definition: def2,
+  } = fieldDetails2;
   // If it is known that two fields could not possibly apply at the same
   // time, due to the parent types, then it is safe to permit them to diverge
   // in aliased field or arguments used as they will not present any ambiguity
@@ -921,7 +929,11 @@ function collectFieldsImpl(
           fieldDetailsList = [];
           groupedFieldSet.set(responseName, fieldDetailsList);
         }
-        fieldDetailsList.push([parentType, selection, fieldDef]);
+        fieldDetailsList.push({
+          parentType,
+          node: selection,
+          definition: fieldDef,
+        });
         break;
       }
       case Kind.FRAGMENT_SPREAD: {
