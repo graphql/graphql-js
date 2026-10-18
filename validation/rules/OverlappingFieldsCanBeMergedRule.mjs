@@ -459,17 +459,11 @@ class PairSet {
         this._orderedPairSet = new OrderedPairSet();
     }
     has(a, b, weaklyPresent) {
-        return a < b
-            ? this._orderedPairSet.has(a, b, weaklyPresent)
-            : this._orderedPairSet.has(b, a, weaklyPresent);
+        return (this._orderedPairSet.has(a, b, weaklyPresent) ||
+            this._orderedPairSet.has(b, a, weaklyPresent));
     }
     add(a, b, weaklyPresent) {
-        if (a < b) {
-            this._orderedPairSet.add(a, b, weaklyPresent);
-        }
-        else {
-            this._orderedPairSet.add(b, a, weaklyPresent);
-        }
+        this._orderedPairSet.add(a, b, weaklyPresent);
     }
 }
 //# sourceMappingURL=OverlappingFieldsCanBeMergedRule.js.map
