@@ -11,7 +11,7 @@ const typeFromAST_ts_1 = require("../../utilities/typeFromAST.js");
 function reasonMessage(reason) {
     if (Array.isArray(reason)) {
         return reason
-            .map(([responseName, subReason]) => `subfields "${responseName}" conflict because ` +
+            .map(({ responseName, reason: subReason }) => `subfields "${responseName}" conflict because ` +
             reasonMessage(subReason))
             .join(' and ');
     }
@@ -37,7 +37,7 @@ function OverlappingFieldsCanBeMergedRule(validationContext) {
         },
         SelectionSet(selectionSet) {
             const conflicts = findConflictsWithinSelectionSet(validationContext, ruleContext, validationContext.getParentType(), selectionSet, fragmentVarMap);
-            for (const [[responseName, reason], fields1, fields2] of conflicts) {
+            for (const { responseName, reason, fields1, fields2 } of conflicts) {
                 const reasonMsg = reasonMessage(reason);
                 validationContext.reportError(new GraphQLError_ts_1.GraphQLError(`Fields "${responseName}" conflict because ${reasonMsg}. Use different aliases on the fields to fetch both if this was intentional.`, { nodes: fields1.concat(fields2) }));
             }
@@ -173,37 +173,42 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
         const name1 = node1.name.value;
         const name2 = node2.name.value;
         if (name1 !== name2) {
-            return [
-                [responseName, `"${name1}" and "${name2}" are different fields`],
-                [node1],
-                [node2],
-            ];
+            return {
+                responseName,
+                reason: `"${name1}" and "${name2}" are different fields`,
+                fields1: [node1],
+                fields2: [node2],
+            };
         }
         if (!sameArguments(node1.arguments, varMap1, node2.arguments, varMap2)) {
-            return [
-                [responseName, 'they have differing arguments'],
-                [node1],
-                [node2],
-            ];
+            return {
+                responseName,
+                reason: 'they have differing arguments',
+                fields1: [node1],
+                fields2: [node2],
+            };
         }
     }
     const directives1 = node1.directives;
     const directives2 = node2.directives;
     const overlappingStreamReason = hasNoOverlappingStreams(directives1, varMap1, directives2, varMap2);
     if (overlappingStreamReason !== undefined) {
-        return [[responseName, overlappingStreamReason], [node1], [node2]];
+        return {
+            responseName,
+            reason: overlappingStreamReason,
+            fields1: [node1],
+            fields2: [node2],
+        };
     }
     const type1 = def1?.type;
     const type2 = def2?.type;
     if (type1 && type2 && doTypesConflict(type1, type2)) {
-        return [
-            [
-                responseName,
-                `they return conflicting types "${(0, inspect_ts_1.inspect)(type1)}" and "${(0, inspect_ts_1.inspect)(type2)}"`,
-            ],
-            [node1],
-            [node2],
-        ];
+        return {
+            responseName,
+            reason: `they return conflicting types "${(0, inspect_ts_1.inspect)(type1)}" and "${(0, inspect_ts_1.inspect)(type2)}"`,
+            fields1: [node1],
+            fields2: [node2],
+        };
     }
     const selectionSet1 = node1.selectionSet;
     const selectionSet2 = node2.selectionSet;
@@ -420,11 +425,15 @@ function getFragmentSpreadDescription(node) {
 }
 function subfieldConflicts(conflicts, responseName, node1, node2) {
     if (conflicts.length > 0) {
-        return [
-            [responseName, conflicts.map(([reason]) => reason)],
-            [node1, ...conflicts.map(([, fields1]) => fields1).flat()],
-            [node2, ...conflicts.map(([, , fields2]) => fields2).flat()],
-        ];
+        return {
+            responseName,
+            reason: conflicts.map(({ responseName: name, reason }) => ({
+                responseName: name,
+                reason,
+            })),
+            fields1: [node1, ...conflicts.map(({ fields1 }) => fields1).flat()],
+            fields2: [node2, ...conflicts.map(({ fields2 }) => fields2).flat()],
+        };
     }
 }
 class OrderedPairSet {
