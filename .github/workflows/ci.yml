@@ -181,10 +181,13 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
-          languages: 'javascript, typescript'
+          languages: javascript-typescript
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v4
+        with:
+          # Use the same category for push and pull-request scans.
+          category: /language:javascript-typescript
 
   build-npm-dist:
     name: Build 'npmDist' artifact
