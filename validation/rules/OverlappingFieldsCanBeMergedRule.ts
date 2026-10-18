@@ -172,8 +172,8 @@ interface RuleContext {
   comparedFieldsAndFragmentPairs: OrderedPairSet<GroupedFieldSet, string>;
   comparedFragmentPairs: PairSet<string>;
   cachedCollectFieldsResults: Map<
-    SelectionSetNode,
-    Map<VariableMap | undefined, CollectFieldsResult>
+    Maybe<GraphQLNamedType>,
+    Map<SelectionSetNode, Map<VariableMap | undefined, CollectFieldsResult>>
   >;
 }
 /**
@@ -880,10 +880,17 @@ function collectFields(
   varMap: VariableMap | undefined,
 ): CollectFieldsResult {
   const { cachedCollectFieldsResults } = ruleContext;
-  let cache = cachedCollectFieldsResults.get(selectionSet);
+  // A programmatically built document can share a selection-set object between
+  // different parent types; their field definitions must not share a cache entry.
+  let bySelectionSet = cachedCollectFieldsResults.get(parentType);
+  if (!bySelectionSet) {
+    bySelectionSet = new Map();
+    cachedCollectFieldsResults.set(parentType, bySelectionSet);
+  }
+  let cache = bySelectionSet.get(selectionSet);
   if (!cache) {
     cache = new Map();
-    cachedCollectFieldsResults.set(selectionSet, cache);
+    bySelectionSet.set(selectionSet, cache);
   }
   const cached = cache.get(varMap);
   if (cached) {
@@ -914,14 +921,6 @@ function collectFragmentFields(
   fragment: FragmentDefinitionNode,
   varMap: VariableMap | undefined,
 ) {
-  const { cachedCollectFieldsResults } = ruleContext;
-  // Short-circuit building a type from the node if possible.
-  const cached = cachedCollectFieldsResults
-    .get(fragment.selectionSet)
-    ?.get(varMap);
-  if (cached) {
-    return cached;
-  }
   const fragmentType = typeFromAST(
     validationContext.getSchema(),
     fragment.typeCondition,
