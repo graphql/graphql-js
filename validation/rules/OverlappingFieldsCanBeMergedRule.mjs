@@ -306,10 +306,15 @@ function doTypesConflict(type1, type2) {
 }
 function collectFields(validationContext, ruleContext, parentType, selectionSet, varMap) {
     const { cachedCollectFieldsResults } = ruleContext;
-    let cache = cachedCollectFieldsResults.get(selectionSet);
+    let bySelectionSet = cachedCollectFieldsResults.get(parentType);
+    if (!bySelectionSet) {
+        bySelectionSet = new Map();
+        cachedCollectFieldsResults.set(parentType, bySelectionSet);
+    }
+    let cache = bySelectionSet.get(selectionSet);
     if (!cache) {
         cache = new Map();
-        cachedCollectFieldsResults.set(selectionSet, cache);
+        bySelectionSet.set(selectionSet, cache);
     }
     const cached = cache.get(varMap);
     if (cached) {
@@ -326,13 +331,6 @@ function collectFields(validationContext, ruleContext, parentType, selectionSet,
     return collectFieldsResult;
 }
 function collectFragmentFields(validationContext, ruleContext, fragment, varMap) {
-    const { cachedCollectFieldsResults } = ruleContext;
-    const cached = cachedCollectFieldsResults
-        .get(fragment.selectionSet)
-        ?.get(varMap);
-    if (cached) {
-        return cached;
-    }
     const fragmentType = typeFromAST(validationContext.getSchema(), fragment.typeCondition);
     return collectFields(validationContext, ruleContext, fragmentType, fragment.selectionSet, varMap);
 }
