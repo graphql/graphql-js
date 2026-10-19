@@ -42,18 +42,9 @@ import type { ValidationContext } from '../ValidationContext.ts';
 // This file contains a lot of such errors but we plan to refactor it anyway
 // so just disable it for entire file.
 
-function reasonMessage(reason: ConflictReasonMessage): string {
-  if (Array.isArray(reason)) {
-    return reason
-      .map(
-        ({ responseName, reason: subReason }) =>
-          `subfields "${responseName}" conflict because ` +
-          reasonMessage(subReason),
-      )
-      .join(' and ');
-  }
-  return reason;
-}
+// Keep diagnostic detail bounded independently of document size.
+const MAX_CONFLICT_DETAIL_LENGTH = 1000;
+const MAX_FRAGMENT_ARGUMENT_SIZE = 256;
 
 /**
  * Overlapping fields can be merged
@@ -145,10 +136,9 @@ export function OverlappingFieldsCanBeMergedRule(
         fragmentScope,
       );
       for (const { responseName, reason, fields1, fields2 } of conflicts) {
-        const reasonMsg = reasonMessage(reason);
         validationContext.reportError(
           new GraphQLError(
-            `Fields "${responseName}" conflict because ${reasonMsg}. Use different aliases on the fields to fetch both if this was intentional.`,
+            `Fields "${maybeAbbreviate(responseName)}" conflict because ${reason}. Use different aliases on the fields to fetch both if this was intentional.`,
             { nodes: fields1.concat(fields2) },
           ),
         );
@@ -157,17 +147,12 @@ export function OverlappingFieldsCanBeMergedRule(
   };
 }
 
-interface Conflict extends ConflictReason {
+interface Conflict {
+  responseName: string;
+  reason: string;
   fields1: Array<FieldNode>;
   fields2: Array<FieldNode>;
 }
-// Field name and reason.
-interface ConflictReason {
-  responseName: string;
-  reason: ConflictReasonMessage;
-}
-// Reason is a string, or a nested list of conflicts.
-type ConflictReasonMessage = string | Array<ConflictReason>;
 // A field node and its definition in the parent-type context.
 interface FieldDetails {
   parentType: Maybe<GraphQLNamedType>;
@@ -514,7 +499,7 @@ function collectConflictsBetweenFragments(
     comparedFragmentPairs.add(fragment1, fragment2, false);
     validationContext.reportError(
       new GraphQLError(
-        `Spreads "${fragmentSpread1.node.name.value}" conflict because ${getFragmentSpreadDescription(fragmentSpread1.node)} and ${getFragmentSpreadDescription(fragmentSpread2.node)} have different fragment arguments.`,
+        `Spreads "${maybeAbbreviate(fragmentSpread1.node.name.value)}" conflict because ${getFragmentSpreadDescription(ruleContext, fragmentSpread1.node)} and ${getFragmentSpreadDescription(ruleContext, fragmentSpread2.node)} have different fragment arguments.`,
         { nodes: [fragmentSpread1.node, fragmentSpread2.node] },
       ),
     );
@@ -870,7 +855,7 @@ function findConflict(
     if (!sameName) {
       return {
         responseName,
-        reason: `"${name1}" and "${name2}" are different fields`,
+        reason: `"${maybeAbbreviate(name1)}" and "${maybeAbbreviate(name2)}" are different fields`,
         fields1: [node1],
         fields2: [node2],
       };
@@ -1370,8 +1355,27 @@ function getVariableScope(
   return { signature: fragmentSignature };
 }
 
-function getFragmentSpreadDescription(node: FragmentSpreadNode): string {
-  return print({ ...node, directives: [] }).slice(3);
+function getFragmentSpreadDescription(
+  ruleContext: RuleContext,
+  node: FragmentSpreadNode,
+): string {
+  const description = {
+    ...node,
+    name: { ...node.name, value: maybeAbbreviate(node.name.value) },
+    directives: [],
+  };
+  // Use the cached representation's length to print only small arguments.
+  let size = 1;
+  for (const argument of node.arguments ?? []) {
+    size +=
+      2 +
+      argument.name.value.length +
+      getValueInfo(ruleContext, argument.value).comparisonKey.length;
+    if (size > MAX_FRAGMENT_ARGUMENT_SIZE) {
+      return description.name.value + '(...)';
+    }
+  }
+  return print(description).slice(3);
 }
 
 // Given a series of Conflicts which occurred between two sub-fields, generate
@@ -1383,16 +1387,30 @@ function subfieldConflicts(
   node2: FieldNode,
 ): Maybe<Conflict> {
   if (conflicts.length > 0) {
+    // Abbreviate while combining child reasons, not after expanding a whole
+    // tree of conflicts.
+    let message = '';
+    for (const { responseName: name, reason } of conflicts) {
+      message +=
+        (message === '' ? '' : ' and ') +
+        `subfields "${maybeAbbreviate(name)}" conflict because ${reason}`;
+      if (message.length > MAX_CONFLICT_DETAIL_LENGTH) {
+        break;
+      }
+    }
     return {
       responseName,
-      reason: conflicts.map(({ responseName: name, reason }) => ({
-        responseName: name,
-        reason,
-      })),
+      reason: maybeAbbreviate(message),
       fields1: [node1, ...conflicts.map(({ fields1 }) => fields1).flat()],
       fields2: [node2, ...conflicts.map(({ fields2 }) => fields2).flat()],
     };
   }
+}
+
+function maybeAbbreviate(text: string): string {
+  return text.length > MAX_CONFLICT_DETAIL_LENGTH
+    ? text.slice(0, MAX_CONFLICT_DETAIL_LENGTH) + '...'
+    : text;
 }
 
 /**
