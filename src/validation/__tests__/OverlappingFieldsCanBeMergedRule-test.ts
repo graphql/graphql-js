@@ -568,6 +568,14 @@ second line"""
     expect(print(document)).to.equal(before);
   });
 
+  it('accepts several overlapping fields with identical values', () => {
+    const schema = buildSchema('type Query { field(value: Int): String }');
+    expectValidWithSchema(
+      schema,
+      '{ field(value: 1) field(value: 1) field(value: 1) }',
+    );
+  });
+
   it('distinguishes local references after operation references', () => {
     const schema = buildSchema(
       'scalar Input type Query { field(value: Input): String }',
@@ -609,6 +617,31 @@ second line"""
         fragment Inner($value: Input) on Query { field(value: $value) }
       `,
     );
+  });
+
+  it('reuses value comparisons while checking each variable scope', () => {
+    const schema = buildSchema(
+      'type Query { child: Query, value(arg: Int): Int }',
+    );
+    const document = parse(
+      `
+        {
+          same: child { ...F(x: 1) child { ...F(x: 1) } }
+          different: child { ...F(x: 1) child { ...F(x: 2) } }
+        }
+        fragment F($x: Int) on Query {
+          value(arg: $x)
+          child { value(arg: $x) }
+        }
+      `,
+      { experimentalFragmentArguments: true },
+    );
+    const errors = validate(schema, document, [
+      OverlappingFieldsCanBeMergedRule,
+    ]);
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0].message).to.include('they have differing arguments');
+    expect(errors[0].locations?.[0].line).to.equal(4);
   });
 
   it('keeps variable scopes separate when fields share their argument nodes', () => {
