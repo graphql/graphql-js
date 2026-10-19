@@ -131,7 +131,12 @@ export function OverlappingFieldsCanBeMergedRule(
         fragmentScope = undefined;
       },
     },
-    SelectionSet(selectionSet) {
+    SelectionSet(selectionSet, _key, parent) {
+      // Inline fragments are flattened into their enclosing response level.
+      // Their fields' own selection sets are still visited independently.
+      if (parent && 'kind' in parent && parent.kind === Kind.INLINE_FRAGMENT) {
+        return;
+      }
       const conflicts = findConflictsWithinSelectionSet(
         validationContext,
         ruleContext,
@@ -248,8 +253,8 @@ interface RuleContext {
 
 /**
  * Find all conflicts found "within" a selection set, including those found
- * via spreading in fragments. Called when visiting each SelectionSet in the
- * GraphQL Document.
+ * via spreading in fragments. Inline-fragment selection sets are included in
+ * their enclosing collection.
  *
  * Algorithm:
  *
