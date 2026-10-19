@@ -180,19 +180,37 @@ function collectConflictsBetween(validationContext, ruleContext, conflicts, pare
         collectFieldsResult2.groupedFieldSet.size === 0) {
         return;
     }
-    for (const [responseName, fieldDetailsList1,] of collectFieldsResult1.groupedFieldSet.entries()) {
-        const fieldDetailsList2 = collectFieldsResult2.groupedFieldSet.get(responseName);
-        if (fieldDetailsList2 != null) {
-            for (const fieldDetails1 of fieldDetailsList1) {
-                for (const fieldDetails2 of fieldDetailsList2) {
-                    const conflict = findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExclusive, responseName, fieldDetails1, scope1, fieldDetails2, scope2);
-                    if (conflict) {
-                        conflicts.push(conflict);
-                    }
+    for (const { responseName, fieldDetailsList1, fieldDetailsList2, } of getOverlappingFields(collectFieldsResult1, collectFieldsResult2)) {
+        for (const fieldDetails1 of fieldDetailsList1) {
+            for (const fieldDetails2 of fieldDetailsList2) {
+                const conflict = findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExclusive, responseName, fieldDetails1, scope1, fieldDetails2, scope2);
+                if (conflict) {
+                    conflicts.push(conflict);
                 }
             }
         }
     }
+}
+function getOverlappingFields(collectFieldsResult1, collectFieldsResult2) {
+    const byCollectFieldsResult = (collectFieldsResult1.overlappingFields ??=
+        new Map());
+    const cached = byCollectFieldsResult.get(collectFieldsResult2);
+    if (cached !== undefined) {
+        return cached;
+    }
+    const overlappingFields = [];
+    for (const [responseName, fieldDetailsList1,] of collectFieldsResult1.groupedFieldSet.entries()) {
+        const fieldDetailsList2 = collectFieldsResult2.groupedFieldSet.get(responseName);
+        if (fieldDetailsList2 != null) {
+            overlappingFields.push({
+                responseName,
+                fieldDetailsList1,
+                fieldDetailsList2,
+            });
+        }
+    }
+    byCollectFieldsResult.set(collectFieldsResult2, overlappingFields);
+    return overlappingFields;
 }
 function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExclusive, responseName, fieldDetails1, scope1, fieldDetails2, scope2) {
     const { parentType: parentType1, node: node1, definition: def1, } = fieldDetails1;
