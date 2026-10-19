@@ -104,7 +104,8 @@ export function OverlappingFieldsCanBeMergedRule(
     // selection set.
     cachedCollectFieldsResults: new Map(),
     valueInfoByNode: new Map(),
-    fragmentScopes: new Map(),
+    fragmentSpreadInfoByNode: new Map(),
+    fragmentSpreadInfoByKey: new Map(),
   };
   let fragmentScope: VariableScope | undefined;
   return {
@@ -197,6 +198,14 @@ interface ArgumentInfo {
   nodes: ArgumentNodes;
   values: Map<string, ValueNode>;
 }
+interface FragmentSpreadInfo {
+  signature: Maybe<FragmentSignature>;
+  values: ReadonlyArray<ValueInfo>;
+  // Cache the resulting fragment scope by the arguments' enclosing scope.
+  // An undefined key means no local references; an undefined value means
+  // the target fragment declares no variables.
+  byScope: Map<VariableScope | undefined, VariableScope | undefined>;
+}
 interface RuleContext {
   comparedFieldsAndFragmentPairs: Map<
     VariableScope | undefined,
@@ -214,13 +223,8 @@ interface RuleContext {
     Map<SelectionSetNode, CollectFieldsResult>
   >;
   valueInfoByNode: Map<ValueNode, ValueInfo>;
-  fragmentScopes: Map<
-    string,
-    // Cache the resulting fragment scope by the arguments' enclosing scope.
-    // An undefined key means no local references; an undefined value means
-    // the target fragment declares no variables.
-    Map<VariableScope | undefined, VariableScope | undefined>
-  >;
+  fragmentSpreadInfoByNode: Map<FragmentSpreadNode, FragmentSpreadInfo>;
+  fragmentSpreadInfoByKey: Map<string, FragmentSpreadInfo>;
 }
 /**
  * Find all conflicts found "within" a selection set, including those found
@@ -1178,45 +1182,74 @@ function getFragmentSpread(
   fragmentSpreadNode: FragmentSpreadNode,
   scope: VariableScope | undefined,
 ): FragmentSpread {
-  const signature = validationContext.getFragmentSignatureByName()(
-    fragmentSpreadNode.name.value,
-  );
-  const argumentInfo = getArgumentInfo(fragmentSpreadNode.arguments);
-  const parts: Array<string> = [];
-  const values: Array<ValueInfo> = [];
-  if (signature && argumentInfo !== undefined) {
-    const argMap = argumentInfo.values;
-    for (const name of signature.variableDefinitions.keys()) {
-      const value = argMap.get(name);
-      if (value !== undefined) {
-        const argument = getValueInfo(ruleContext, value);
+  let fragmentSpreadInfo =
+    ruleContext.fragmentSpreadInfoByNode.get(fragmentSpreadNode);
+  if (fragmentSpreadInfo === undefined) {
+    const signature = validationContext.getFragmentSignatureByName()(
+      fragmentSpreadNode.name.value,
+    );
+    const argumentInfo = getArgumentInfo(fragmentSpreadNode.arguments);
+    const parts: Array<string> = [];
+    const values: Array<ValueInfo> = [];
+    if (signature && argumentInfo !== undefined) {
+      const argMap = argumentInfo.values;
+      // Order only supplied, declared arguments, once per source spread.
+      const names: Array<string> = [];
+      for (const name of argMap.keys()) {
+        if (signature.variableDefinitions.has(name)) {
+          names.push(name);
+        }
+      }
+      for (const name of names.sort()) {
+        const argument = getValueInfo(
+          ruleContext,
+          argMap.get(name) as ValueNode,
+        );
         parts.push(name, argument.comparisonKey);
         if (argument.variables.length !== 0) {
           values.push(argument);
         }
       }
     }
-  }
-  const sourceKey = JSON.stringify([signature?.definition.name.value, parts]);
-  let byScope = ruleContext.fragmentScopes.get(sourceKey);
-  if (byScope === undefined) {
-    byScope = new Map();
-    ruleContext.fragmentScopes.set(sourceKey, byScope);
+    const fragmentSpreadInfoKey = JSON.stringify([
+      signature?.definition.name.value,
+      parts,
+    ]);
+    fragmentSpreadInfo = ruleContext.fragmentSpreadInfoByKey.get(
+      fragmentSpreadInfoKey,
+    );
+    if (fragmentSpreadInfo === undefined) {
+      fragmentSpreadInfo = {
+        signature,
+        values,
+        byScope: new Map(),
+      };
+      ruleContext.fragmentSpreadInfoByKey.set(
+        fragmentSpreadInfoKey,
+        fragmentSpreadInfo,
+      );
+    }
+    ruleContext.fragmentSpreadInfoByNode.set(
+      fragmentSpreadNode,
+      fragmentSpreadInfo,
+    );
   }
   // The source key fixes the variable names. Any local reference identifies
   // the enclosing scope; otherwise all references are operation variables.
-  const variableScope = values.some((value) => usesLocalVariables(value, scope))
+  const variableScope = fragmentSpreadInfo.values.some((value) =>
+    usesLocalVariables(value, scope),
+  )
     ? scope
     : undefined;
-  let fragmentScope = byScope.get(variableScope);
-  if (!byScope.has(variableScope)) {
-    fragmentScope = getVariableScope(signature);
-    byScope.set(variableScope, fragmentScope);
+  let fragmentScope = fragmentSpreadInfo.byScope.get(variableScope);
+  if (!fragmentSpreadInfo.byScope.has(variableScope)) {
+    fragmentScope = getVariableScope(fragmentSpreadInfo.signature);
+    fragmentSpreadInfo.byScope.set(variableScope, fragmentScope);
   }
   return {
     node: fragmentSpreadNode,
     scope: fragmentScope,
-    definition: signature?.definition,
+    definition: fragmentSpreadInfo.signature?.definition,
   };
 }
 function getVariableScope(
