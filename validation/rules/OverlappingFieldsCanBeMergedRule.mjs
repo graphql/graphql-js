@@ -17,8 +17,9 @@ function reasonMessage(reason) {
 export function OverlappingFieldsCanBeMergedRule(validationContext) {
     const ruleContext = {
         comparedFieldsAndFragmentPairs: new Map(),
-        comparedFragmentPairs: new PairSet(),
+        comparedFragmentPairs: new Map(),
         cachedCollectFieldsResults: new Map(),
+        fragmentScopes: new Map(),
     };
     let fragmentScope;
     return {
@@ -46,7 +47,7 @@ function findConflictsWithinSelectionSet(validationContext, ruleContext, parentT
     const collectFieldsResult = collectFields(validationContext, ruleContext, parentType, selectionSet);
     collectConflictsWithin(validationContext, ruleContext, conflicts, collectFieldsResult, scope);
     if (collectFieldsResult.spreads.length !== 0) {
-        const fragmentSpreads = getFragmentSpreads(validationContext, collectFieldsResult, scope);
+        const fragmentSpreads = getFragmentSpreads(validationContext, ruleContext, collectFieldsResult, scope);
         for (let i = 0; i < fragmentSpreads.length; i++) {
             collectConflictsBetweenFieldsAndFragment(validationContext, ruleContext, conflicts, false, collectFieldsResult, scope, fragmentSpreads[i]);
             for (let j = i + 1; j < fragmentSpreads.length; j++) {
@@ -60,21 +61,26 @@ function collectConflictsBetweenFieldsAndFragment(validationContext, ruleContext
     if (collectFieldsResult.groupedFieldSet.size === 0) {
         return;
     }
-    let comparedFieldsAndFragmentPairs = ruleContext.comparedFieldsAndFragmentPairs.get(scope);
+    const fragment = fragmentSpread.definition;
+    let byFragmentScope = ruleContext.comparedFieldsAndFragmentPairs.get(scope);
+    if (byFragmentScope === undefined) {
+        byFragmentScope = new Map();
+        ruleContext.comparedFieldsAndFragmentPairs.set(scope, byFragmentScope);
+    }
+    let comparedFieldsAndFragmentPairs = byFragmentScope.get(fragmentSpread.scope);
     if (comparedFieldsAndFragmentPairs === undefined) {
         comparedFieldsAndFragmentPairs = new OrderedPairSet();
-        ruleContext.comparedFieldsAndFragmentPairs.set(scope, comparedFieldsAndFragmentPairs);
+        byFragmentScope.set(fragmentSpread.scope, comparedFieldsAndFragmentPairs);
     }
-    if (comparedFieldsAndFragmentPairs.has(collectFieldsResult, fragmentSpread.key, areMutuallyExclusive)) {
+    if (comparedFieldsAndFragmentPairs.has(collectFieldsResult, fragment, areMutuallyExclusive)) {
         return;
     }
-    comparedFieldsAndFragmentPairs.add(collectFieldsResult, fragmentSpread.key, areMutuallyExclusive);
-    const fragment = validationContext.getFragment(fragmentSpread.node.name.value);
+    comparedFieldsAndFragmentPairs.add(collectFieldsResult, fragment, areMutuallyExclusive);
     if (!fragment) {
         return;
     }
     const collectFieldsResult2 = collectFragmentFields(validationContext, ruleContext, fragment);
-    const referencedFragmentSpreads = getFragmentSpreads(validationContext, collectFieldsResult2, fragmentSpread.scope);
+    const referencedFragmentSpreads = getFragmentSpreads(validationContext, ruleContext, collectFieldsResult2, fragmentSpread.scope);
     if (collectFieldsResult === collectFieldsResult2 &&
         scope === fragmentSpread.scope) {
         return;
@@ -85,31 +91,43 @@ function collectConflictsBetweenFieldsAndFragment(validationContext, ruleContext
     }
 }
 function collectConflictsBetweenFragments(validationContext, ruleContext, conflicts, areMutuallyExclusive, fragmentSpread1, fragmentSpread2) {
-    const { comparedFragmentPairs } = ruleContext;
-    if (fragmentSpread1.key === fragmentSpread2.key) {
+    const fragment1 = fragmentSpread1.definition;
+    const fragment2 = fragmentSpread2.definition;
+    const scope1 = fragmentSpread1.scope;
+    const scope2 = fragmentSpread2.scope;
+    if (fragment1 === fragment2 && scope1 === scope2) {
         return;
     }
-    if (fragmentSpread1.node.name.value === fragmentSpread2.node.name.value) {
-        if (comparedFragmentPairs.has(fragmentSpread1.key, fragmentSpread2.key, false)) {
+    let byScope = ruleContext.comparedFragmentPairs.get(scope1);
+    let comparedFragmentPairs = byScope?.get(scope2) ??
+        ruleContext.comparedFragmentPairs.get(scope2)?.get(scope1);
+    if (comparedFragmentPairs === undefined) {
+        if (byScope === undefined) {
+            byScope = new Map();
+            ruleContext.comparedFragmentPairs.set(scope1, byScope);
+        }
+        comparedFragmentPairs = new PairSet();
+        byScope.set(scope2, comparedFragmentPairs);
+    }
+    if (fragment1 === fragment2) {
+        if (comparedFragmentPairs.has(fragment1, fragment2, false)) {
             return;
         }
-        comparedFragmentPairs.add(fragmentSpread1.key, fragmentSpread2.key, false);
+        comparedFragmentPairs.add(fragment1, fragment2, false);
         validationContext.reportError(new GraphQLError(`Spreads "${fragmentSpread1.node.name.value}" conflict because ${getFragmentSpreadDescription(fragmentSpread1.node)} and ${getFragmentSpreadDescription(fragmentSpread2.node)} have different fragment arguments.`, { nodes: [fragmentSpread1.node, fragmentSpread2.node] }));
         return;
     }
-    if (comparedFragmentPairs.has(fragmentSpread1.key, fragmentSpread2.key, areMutuallyExclusive)) {
+    if (comparedFragmentPairs.has(fragment1, fragment2, areMutuallyExclusive)) {
         return;
     }
-    comparedFragmentPairs.add(fragmentSpread1.key, fragmentSpread2.key, areMutuallyExclusive);
-    const fragment1 = validationContext.getFragment(fragmentSpread1.node.name.value);
-    const fragment2 = validationContext.getFragment(fragmentSpread2.node.name.value);
+    comparedFragmentPairs.add(fragment1, fragment2, areMutuallyExclusive);
     if (!fragment1 || !fragment2) {
         return;
     }
     const collectFieldsResult1 = collectFragmentFields(validationContext, ruleContext, fragment1);
-    const referencedFragmentSpreads1 = getFragmentSpreads(validationContext, collectFieldsResult1, fragmentSpread1.scope);
+    const referencedFragmentSpreads1 = getFragmentSpreads(validationContext, ruleContext, collectFieldsResult1, fragmentSpread1.scope);
     const collectFieldsResult2 = collectFragmentFields(validationContext, ruleContext, fragment2);
-    const referencedFragmentSpreads2 = getFragmentSpreads(validationContext, collectFieldsResult2, fragmentSpread2.scope);
+    const referencedFragmentSpreads2 = getFragmentSpreads(validationContext, ruleContext, collectFieldsResult2, fragmentSpread2.scope);
     collectConflictsBetween(validationContext, ruleContext, conflicts, areMutuallyExclusive, collectFieldsResult1, fragmentSpread1.scope, collectFieldsResult2, fragmentSpread2.scope);
     for (const referencedFragmentSpread2 of referencedFragmentSpreads2) {
         collectConflictsBetweenFragments(validationContext, ruleContext, conflicts, areMutuallyExclusive, fragmentSpread1, referencedFragmentSpread2);
@@ -121,9 +139,9 @@ function collectConflictsBetweenFragments(validationContext, ruleContext, confli
 function findConflictsBetweenSubSelectionSets(validationContext, ruleContext, areMutuallyExclusive, parentType1, selectionSet1, scope1, parentType2, selectionSet2, scope2) {
     const conflicts = [];
     const collectFieldsResult1 = collectFields(validationContext, ruleContext, parentType1, selectionSet1);
-    const fragmentSpreads1 = getFragmentSpreads(validationContext, collectFieldsResult1, scope1);
+    const fragmentSpreads1 = getFragmentSpreads(validationContext, ruleContext, collectFieldsResult1, scope1);
     const collectFieldsResult2 = collectFields(validationContext, ruleContext, parentType2, selectionSet2);
-    const fragmentSpreads2 = getFragmentSpreads(validationContext, collectFieldsResult2, scope2);
+    const fragmentSpreads2 = getFragmentSpreads(validationContext, ruleContext, collectFieldsResult2, scope2);
     collectConflictsBetween(validationContext, ruleContext, conflicts, areMutuallyExclusive, collectFieldsResult1, scope1, collectFieldsResult2, scope2);
     for (const fragmentSpread2 of fragmentSpreads2) {
         collectConflictsBetweenFieldsAndFragment(validationContext, ruleContext, conflicts, areMutuallyExclusive, collectFieldsResult1, scope1, fragmentSpread2);
@@ -382,22 +400,34 @@ function collectFieldsImpl(validationContext, parentType, selectionSet, groupedF
         }
     }
 }
-function getFragmentSpreads(validationContext, collectFieldsResult, scope) {
+function getFragmentSpreads(validationContext, ruleContext, collectFieldsResult, scope) {
     const byScope = (collectFieldsResult.byScope ??= new Map());
     const cached = byScope.get(scope);
     if (cached) {
         return cached;
     }
-    const fragmentSpreads = new Map();
+    const spreadsByScope = new Map();
+    const result = [];
     for (const spreadNode of collectFieldsResult.spreads) {
-        const spread = getFragmentSpread(validationContext, spreadNode, scope);
-        fragmentSpreads.set(spread.key, spread);
+        const spread = getFragmentSpread(validationContext, ruleContext, spreadNode, scope);
+        let byDefinition = spreadsByScope.get(spread.scope);
+        if (byDefinition === undefined) {
+            byDefinition = new Map();
+            spreadsByScope.set(spread.scope, byDefinition);
+        }
+        const previous = byDefinition.get(spread.definition);
+        if (previous === undefined) {
+            byDefinition.set(spread.definition, spread);
+            result.push(spread);
+        }
+        else {
+            previous.node = spread.node;
+        }
     }
-    const result = Array.from(fragmentSpreads.values());
     byScope.set(scope, result);
     return result;
 }
-function getFragmentSpread(validationContext, fragmentSpreadNode, scope) {
+function getFragmentSpread(validationContext, ruleContext, fragmentSpreadNode, scope) {
     let key = '';
     const fragmentSignature = validationContext.getFragmentSignatureByName()(fragmentSpreadNode.name.value);
     const argMap = new Map();
@@ -419,10 +449,15 @@ function getFragmentSpread(validationContext, fragmentSpreadNode, scope) {
         }
         key += ')';
     }
+    let fragmentScope = ruleContext.fragmentScopes.get(key);
+    if (!ruleContext.fragmentScopes.has(key)) {
+        fragmentScope = getVariableScope(fragmentSignature, key);
+        ruleContext.fragmentScopes.set(key, fragmentScope);
+    }
     return {
-        key,
         node: fragmentSpreadNode,
-        scope: getVariableScope(fragmentSignature, key),
+        scope: fragmentScope,
+        definition: fragmentSignature?.definition,
     };
 }
 function getVariableScope(fragmentSignature, key = '') {
