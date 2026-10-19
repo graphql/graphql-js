@@ -201,10 +201,16 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
             (0, definition_ts_1.isObjectType)(parentType2));
     const fieldInfo1 = getFieldInfo(fieldDetails1);
     const fieldInfo2 = getFieldInfo(fieldDetails2);
+    let comparison = fieldInfo1.comparisons.get(fieldInfo2);
+    if (comparison === undefined) {
+        comparison = {};
+        fieldInfo1.comparisons.set(fieldInfo2, comparison);
+    }
     if (!areMutuallyExclusive) {
         const name1 = node1.name.value;
         const name2 = node2.name.value;
-        if (name1 !== name2) {
+        const sameName = (comparison.sameName ??= name1 === name2);
+        if (!sameName) {
             return {
                 responseName,
                 reason: `"${name1}" and "${name2}" are different fields`,
@@ -212,7 +218,8 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
                 fields2: [node2],
             };
         }
-        if (!sameArguments(fieldInfo1.arguments, scope1, fieldInfo2.arguments, scope2)) {
+        const comparedArguments = (comparison.arguments ??= compareArguments(fieldInfo1.arguments, fieldInfo2.arguments));
+        if (!sameArguments(comparedArguments, scope1, scope2)) {
             return {
                 responseName,
                 reason: 'they have differing arguments',
@@ -224,7 +231,9 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
     if (fieldInfo1.hasStream || fieldInfo2.hasStream) {
         let reason = 'they have overlapping stream directives';
         if (fieldInfo1.hasStream && fieldInfo2.hasStream) {
-            if (sameArguments(fieldInfo1.streamArguments, scope1, fieldInfo2.streamArguments, scope2)) {
+            const comparedArguments = (comparison.streamArguments ??=
+                compareArguments(fieldInfo1.streamArguments, fieldInfo2.streamArguments));
+            if (sameArguments(comparedArguments, scope1, scope2)) {
                 reason +=
                     '. See https://github.com/graphql/defer-stream-wg/discussions/100';
             }
@@ -253,6 +262,7 @@ function getFieldInfo(fieldDetails) {
         const node = fieldDetails.node;
         const stream = node.directives?.find((directive) => directive.name.value === 'stream');
         fieldDetails.info = {
+            comparisons: new Map(),
             arguments: getArgumentInfo(node.arguments),
             hasStream: stream !== undefined,
             streamArguments: getArgumentInfo(stream?.arguments),
@@ -273,25 +283,39 @@ function getArgumentInfo(args) {
         values,
     };
 }
-function sameArguments(argumentInfo1, scope1, argumentInfo2, scope2) {
+function compareArguments(argumentInfo1, argumentInfo2) {
+    const valuesWithVariables = [];
     if (argumentInfo1 === undefined) {
-        return argumentInfo2 === undefined;
+        return {
+            sameStructure: argumentInfo2 === undefined,
+            valuesWithVariables,
+        };
     }
     if (argumentInfo1.nodes.length !== argumentInfo2?.nodes.length) {
-        return false;
+        return { sameStructure: false, valuesWithVariables };
     }
-    const values2 = argumentInfo2.values;
-    return argumentInfo1.nodes.every((arg1) => {
-        const value2 = values2.get(arg1.name.value);
+    for (const arg1 of argumentInfo1.nodes) {
+        const value2 = argumentInfo2.values.get(arg1.name.value);
         if (value2 === undefined) {
-            return false;
+            return { sameStructure: false, valuesWithVariables };
         }
         const valueInfo1 = getValueInfo(arg1.value);
-        return (valueInfo1.comparisonKey === getValueInfo(value2).comparisonKey &&
-            (scope1 === scope2 ||
-                (!usesLocalVariables(valueInfo1, scope1) &&
-                    !usesLocalVariables(valueInfo1, scope2))));
-    });
+        if (valueInfo1.comparisonKey !== getValueInfo(value2).comparisonKey) {
+            return { sameStructure: false, valuesWithVariables };
+        }
+        if (valueInfo1.variables.length !== 0) {
+            valuesWithVariables.push(valueInfo1);
+        }
+    }
+    return { sameStructure: true, valuesWithVariables };
+}
+function sameArguments(comparison, scope1, scope2) {
+    if (!comparison.sameStructure) {
+        return false;
+    }
+    return (scope1 === scope2 ||
+        comparison.valuesWithVariables.every((value) => !usesLocalVariables(value, scope1) &&
+            !usesLocalVariables(value, scope2)));
 }
 function usesLocalVariables(value, scope) {
     if (scope === undefined) {
