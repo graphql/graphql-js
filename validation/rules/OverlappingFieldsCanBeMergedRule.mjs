@@ -27,7 +27,7 @@ export function OverlappingFieldsCanBeMergedRule(validationContext) {
             enter(node) {
                 const fragmentName = node.name.value;
                 const fragmentSignature = validationContext.getFragmentSignatureByName()(fragmentName);
-                fragmentScope = getVariableScope(fragmentSignature, fragmentName);
+                fragmentScope = getVariableScope(fragmentSignature);
             },
             leave() {
                 fragmentScope = undefined;
@@ -279,49 +279,32 @@ function sameArguments(argumentInfo1, scope1, argumentInfo2, scope2) {
     }
     const values2 = argumentInfo2.values;
     return argumentInfo1.nodes.every((arg1) => {
-        let value1 = arg1.value;
-        if (scope1) {
-            value1 = replaceFragmentVariables(value1, scope1);
-        }
-        let value2 = values2.get(arg1.name.value);
+        const value2 = values2.get(arg1.name.value);
         if (value2 === undefined) {
             return false;
         }
-        if (scope2) {
-            value2 = replaceFragmentVariables(value2, scope2);
-        }
-        return stringifyValue(value1) === stringifyValue(value2);
+        const valueInfo1 = getValueInfo(arg1.value);
+        return (valueInfo1.comparisonKey === getValueInfo(value2).comparisonKey &&
+            (scope1 === scope2 ||
+                (!usesLocalVariables(valueInfo1, scope1) &&
+                    !usesLocalVariables(valueInfo1, scope2))));
     });
 }
-function replaceFragmentVariables(valueNode, scope) {
-    switch (valueNode.kind) {
-        case Kind.VARIABLE:
-            return scope.get(valueNode.name.value) ?? valueNode;
-        case Kind.LIST:
-            return {
-                ...valueNode,
-                values: valueNode.values.map((node) => replaceFragmentVariables(node, scope)),
-            };
-        case Kind.OBJECT:
-            return {
-                ...valueNode,
-                fields: valueNode.fields.map((field) => ({
-                    ...field,
-                    value: replaceFragmentVariables(field.value, scope),
-                })),
-            };
-        default: {
-            return valueNode;
-        }
+function usesLocalVariables(value, scope) {
+    if (scope === undefined) {
+        return false;
     }
+    return value.variables.some((variable) => scope.signature.variableDefinitions.has(variable));
 }
-function stringifyValue(value) {
-    return JSON.stringify(value, (_key, node) => {
+function getValueInfo(value) {
+    const variables = [];
+    const comparisonKey = JSON.stringify(value, (_key, node) => {
         if (!isNode(node)) {
             return node;
         }
         switch (node.kind) {
             case Kind.VARIABLE:
+                variables.push(node.name.value);
                 return [node.kind, node.name.value];
             case Kind.OBJECT:
                 return [
@@ -344,6 +327,7 @@ function stringifyValue(value) {
                 return [node.kind, 'value' in node ? node.value : null];
         }
     });
+    return { comparisonKey, variables };
 }
 function doTypesConflict(type1, type2) {
     if (isListType(type1)) {
@@ -455,50 +439,48 @@ function getFragmentSpreads(validationContext, ruleContext, collectFieldsResult,
     return result;
 }
 function getFragmentSpread(validationContext, ruleContext, fragmentSpreadNode, scope) {
-    let key = '';
-    const fragmentSignature = validationContext.getFragmentSignatureByName()(fragmentSpreadNode.name.value);
-    const argMap = new Map();
-    if (fragmentSpreadNode.arguments) {
-        for (const arg of fragmentSpreadNode.arguments) {
-            argMap.set(arg.name.value, arg.value);
-        }
-    }
-    if (fragmentSignature?.variableDefinitions) {
-        key += fragmentSpreadNode.name.value + '(';
-        for (const varName of fragmentSignature.variableDefinitions.keys()) {
-            const value = argMap.get(varName);
-            if (value) {
-                const scopedValue = scope
-                    ? replaceFragmentVariables(value, scope)
-                    : value;
-                key += varName + ': ' + stringifyValue(scopedValue);
+    const signature = validationContext.getFragmentSignatureByName()(fragmentSpreadNode.name.value);
+    const argumentInfo = getArgumentInfo(fragmentSpreadNode.arguments);
+    const parts = [];
+    const values = [];
+    if (signature && argumentInfo !== undefined) {
+        const argMap = argumentInfo.values;
+        for (const name of signature.variableDefinitions.keys()) {
+            const value = argMap.get(name);
+            if (value !== undefined) {
+                const argument = getValueInfo(value);
+                parts.push(name, argument.comparisonKey);
+                if (argument.variables.length !== 0) {
+                    values.push(argument);
+                }
             }
         }
-        key += ')';
     }
-    let fragmentScope = ruleContext.fragmentScopes.get(key);
-    if (!ruleContext.fragmentScopes.has(key)) {
-        fragmentScope = getVariableScope(fragmentSignature, key);
-        ruleContext.fragmentScopes.set(key, fragmentScope);
+    const sourceKey = JSON.stringify([signature?.definition.name.value, parts]);
+    let byScope = ruleContext.fragmentScopes.get(sourceKey);
+    if (byScope === undefined) {
+        byScope = new Map();
+        ruleContext.fragmentScopes.set(sourceKey, byScope);
+    }
+    const variableScope = values.some((value) => usesLocalVariables(value, scope))
+        ? scope
+        : undefined;
+    let fragmentScope = byScope.get(variableScope);
+    if (!byScope.has(variableScope)) {
+        fragmentScope = getVariableScope(signature);
+        byScope.set(variableScope, fragmentScope);
     }
     return {
         node: fragmentSpreadNode,
         scope: fragmentScope,
-        definition: fragmentSignature?.definition,
+        definition: signature?.definition,
     };
 }
-function getVariableScope(fragmentSignature, key = '') {
+function getVariableScope(fragmentSignature) {
     if (!fragmentSignature || fragmentSignature.variableDefinitions.size === 0) {
         return;
     }
-    const scope = new Map();
-    for (const variableName of fragmentSignature.variableDefinitions.keys()) {
-        scope.set(variableName, {
-            kind: Kind.VARIABLE,
-            name: { kind: Kind.NAME, value: JSON.stringify([key, variableName]) },
-        });
-    }
-    return scope;
+    return { signature: fragmentSignature };
 }
 function getFragmentSpreadDescription(node) {
     return print({ ...node, directives: [] }).slice(3);
