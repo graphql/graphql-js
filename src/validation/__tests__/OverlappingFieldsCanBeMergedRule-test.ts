@@ -1760,6 +1760,19 @@ second line"""
   });
 
   describe('fragment arguments must produce fields that can be merged', () => {
+    it('ignores argument order and undeclared fragment arguments', () => {
+      expectValid(`
+        query Query($x: Int, $y: Int) {
+          ...WithArgs(y: $y, x: $x, ignored: true)
+          ...WithArgs(x: $x, y: $y)
+        }
+        fragment WithArgs($y: Int, $x: Int) on Type {
+          a(x: $x)
+          b(y: $y)
+        }
+      `);
+    });
+
     it('allows conflicting spreads at different depths', () => {
       expectValid(`
         query ValidDifferingFragmentArgs($command1: DogCommand, $command2: DogCommand) {
