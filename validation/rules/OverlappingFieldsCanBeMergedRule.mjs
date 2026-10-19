@@ -5,15 +5,9 @@ import { Kind } from "../../language/kinds.mjs";
 import { print } from "../../language/printer.mjs";
 import { getNamedType, isInterfaceType, isLeafType, isListType, isNonNullType, isObjectType, } from "../../type/definition.mjs";
 import { typeFromAST } from "../../utilities/typeFromAST.mjs";
-function reasonMessage(reason) {
-    if (Array.isArray(reason)) {
-        return reason
-            .map(({ responseName, reason: subReason }) => `subfields "${responseName}" conflict because ` +
-            reasonMessage(subReason))
-            .join(' and ');
-    }
-    return reason;
-}
+const MAX_CONFLICT_DETAIL_LENGTH = 1000;
+const MAX_CONFLICT_NODES = 20;
+const MAX_FRAGMENT_ARGUMENT_SIZE = 256;
 export function OverlappingFieldsCanBeMergedRule(validationContext) {
     const ruleContext = {
         comparedFieldsAndFragmentPairs: new Map(),
@@ -41,8 +35,7 @@ export function OverlappingFieldsCanBeMergedRule(validationContext) {
             }
             const conflicts = findConflictsWithinSelectionSet(validationContext, ruleContext, validationContext.getParentType(), selectionSet, fragmentScope);
             for (const { responseName, reason, fields1, fields2 } of conflicts) {
-                const reasonMsg = reasonMessage(reason);
-                validationContext.reportError(new GraphQLError(`Fields "${responseName}" conflict because ${reasonMsg}. Use different aliases on the fields to fetch both if this was intentional.`, { nodes: fields1.concat(fields2) }));
+                validationContext.reportError(new GraphQLError(`Fields "${maybeAbbreviate(responseName)}" conflict because ${reason}. Use different aliases on the fields to fetch both if this was intentional.`, { nodes: fields1.concat(fields2) }));
             }
         },
     };
@@ -119,7 +112,7 @@ function collectConflictsBetweenFragments(validationContext, ruleContext, confli
             return;
         }
         comparedFragmentPairs.add(fragment1, fragment2, false);
-        validationContext.reportError(new GraphQLError(`Spreads "${fragmentSpread1.node.name.value}" conflict because ${getFragmentSpreadDescription(fragmentSpread1.node)} and ${getFragmentSpreadDescription(fragmentSpread2.node)} have different fragment arguments.`, { nodes: [fragmentSpread1.node, fragmentSpread2.node] }));
+        validationContext.reportError(new GraphQLError(`Spreads "${maybeAbbreviate(fragmentSpread1.node.name.value)}" conflict because ${getFragmentSpreadDescription(ruleContext, fragmentSpread1.node)} and ${getFragmentSpreadDescription(ruleContext, fragmentSpread2.node)} have different fragment arguments.`, { nodes: [fragmentSpread1.node, fragmentSpread2.node] }));
         return;
     }
     if (comparedFragmentPairs.has(fragment1, fragment2, areMutuallyExclusive)) {
@@ -233,7 +226,7 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
         if (!sameName) {
             return {
                 responseName,
-                reason: `"${name1}" and "${name2}" are different fields`,
+                reason: `"${maybeAbbreviate(name1)}" and "${maybeAbbreviate(name2)}" are different fields`,
                 fields1: [node1],
                 fields2: [node2],
             };
@@ -557,21 +550,59 @@ function getVariableScope(fragmentSignature) {
     }
     return { signature: fragmentSignature };
 }
-function getFragmentSpreadDescription(node) {
-    return print({ ...node, directives: [] }).slice(3);
+function getFragmentSpreadDescription(ruleContext, node) {
+    const description = {
+        ...node,
+        name: { ...node.name, value: maybeAbbreviate(node.name.value) },
+        directives: [],
+    };
+    let size = 1;
+    for (const argument of node.arguments ?? []) {
+        size +=
+            2 +
+                argument.name.value.length +
+                getValueInfo(ruleContext, argument.value).comparisonKey.length;
+        if (size > MAX_FRAGMENT_ARGUMENT_SIZE) {
+            return description.name.value + '(...)';
+        }
+    }
+    return print(description).slice(3);
 }
 function subfieldConflicts(conflicts, responseName, node1, node2) {
     if (conflicts.length > 0) {
+        let message = '';
+        for (const { responseName: name, reason } of conflicts) {
+            message +=
+                (message === '' ? '' : ' and ') +
+                    `subfields "${maybeAbbreviate(name)}" conflict because ${reason}`;
+            if (message.length > MAX_CONFLICT_DETAIL_LENGTH) {
+                break;
+            }
+        }
         return {
             responseName,
-            reason: conflicts.map(({ responseName: name, reason }) => ({
-                responseName: name,
-                reason,
-            })),
-            fields1: [node1, ...conflicts.map(({ fields1 }) => fields1).flat()],
-            fields2: [node2, ...conflicts.map(({ fields2 }) => fields2).flat()],
+            reason: maybeAbbreviate(message),
+            fields1: collectConflictNodes(node1, conflicts, 'fields1'),
+            fields2: collectConflictNodes(node2, conflicts, 'fields2'),
         };
     }
+}
+function collectConflictNodes(node, conflicts, side) {
+    const nodes = [node];
+    for (const conflict of conflicts) {
+        const remaining = MAX_CONFLICT_NODES - nodes.length;
+        const retainedNodes = conflict[side].slice(-remaining);
+        nodes.push(...retainedNodes);
+        if (nodes.length === MAX_CONFLICT_NODES) {
+            break;
+        }
+    }
+    return nodes;
+}
+function maybeAbbreviate(text) {
+    return text.length > MAX_CONFLICT_DETAIL_LENGTH
+        ? text.slice(0, MAX_CONFLICT_DETAIL_LENGTH) + '...'
+        : text;
 }
 class OrderedPairSet {
     constructor() {
