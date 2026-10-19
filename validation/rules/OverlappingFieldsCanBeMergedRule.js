@@ -3,10 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.OverlappingFieldsCanBeMergedRule = OverlappingFieldsCanBeMergedRule;
 const inspect_ts_1 = require("../../jsutils/inspect.js");
 const GraphQLError_ts_1 = require("../../error/GraphQLError.js");
+const ast_ts_1 = require("../../language/ast.js");
 const kinds_ts_1 = require("../../language/kinds.js");
 const printer_ts_1 = require("../../language/printer.js");
 const definition_ts_1 = require("../../type/definition.js");
-const sortValueNode_ts_1 = require("../../utilities/sortValueNode.js");
 const typeFromAST_ts_1 = require("../../utilities/typeFromAST.js");
 function reasonMessage(reason) {
     if (Array.isArray(reason)) {
@@ -319,7 +319,34 @@ function replaceFragmentVariables(valueNode, scope) {
     }
 }
 function stringifyValue(value) {
-    return (0, printer_ts_1.print)((0, sortValueNode_ts_1.sortValueNode)(value));
+    return JSON.stringify(value, (_key, node) => {
+        if (!(0, ast_ts_1.isNode)(node)) {
+            return node;
+        }
+        switch (node.kind) {
+            case kinds_ts_1.Kind.VARIABLE:
+                return [node.kind, node.name.value];
+            case kinds_ts_1.Kind.OBJECT:
+                return [
+                    node.kind,
+                    node.fields
+                        .slice()
+                        .sort((first, second) => first.name.value < second.name.value
+                        ? -1
+                        : first.name.value > second.name.value
+                            ? 1
+                            : 0),
+                ];
+            case kinds_ts_1.Kind.OBJECT_FIELD:
+                return [node.name.value, node.value];
+            case kinds_ts_1.Kind.LIST:
+                return [node.kind, node.values];
+            case kinds_ts_1.Kind.STRING:
+                return [node.kind, node.value, node.block === true];
+            default:
+                return [node.kind, 'value' in node ? node.value : null];
+        }
+    });
 }
 function doTypesConflict(type1, type2) {
     if ((0, definition_ts_1.isListType)(type1)) {

@@ -1,9 +1,9 @@
 import { inspect } from "../../jsutils/inspect.mjs";
 import { GraphQLError } from "../../error/GraphQLError.mjs";
+import { isNode } from "../../language/ast.mjs";
 import { Kind } from "../../language/kinds.mjs";
 import { print } from "../../language/printer.mjs";
 import { getNamedType, isInterfaceType, isLeafType, isListType, isNonNullType, isObjectType, } from "../../type/definition.mjs";
-import { sortValueNode } from "../../utilities/sortValueNode.mjs";
 import { typeFromAST } from "../../utilities/typeFromAST.mjs";
 function reasonMessage(reason) {
     if (Array.isArray(reason)) {
@@ -316,7 +316,34 @@ function replaceFragmentVariables(valueNode, scope) {
     }
 }
 function stringifyValue(value) {
-    return print(sortValueNode(value));
+    return JSON.stringify(value, (_key, node) => {
+        if (!isNode(node)) {
+            return node;
+        }
+        switch (node.kind) {
+            case Kind.VARIABLE:
+                return [node.kind, node.name.value];
+            case Kind.OBJECT:
+                return [
+                    node.kind,
+                    node.fields
+                        .slice()
+                        .sort((first, second) => first.name.value < second.name.value
+                        ? -1
+                        : first.name.value > second.name.value
+                            ? 1
+                            : 0),
+                ];
+            case Kind.OBJECT_FIELD:
+                return [node.name.value, node.value];
+            case Kind.LIST:
+                return [node.kind, node.values];
+            case Kind.STRING:
+                return [node.kind, node.value, node.block === true];
+            default:
+                return [node.kind, 'value' in node ? node.value : null];
+        }
+    });
 }
 function doTypesConflict(type1, type2) {
     if (isListType(type1)) {
