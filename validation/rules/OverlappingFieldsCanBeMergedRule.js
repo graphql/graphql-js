@@ -22,6 +22,7 @@ function OverlappingFieldsCanBeMergedRule(validationContext) {
         comparedFieldsAndFragmentPairs: new Map(),
         comparedFragmentPairs: new Map(),
         cachedCollectFieldsResults: new Map(),
+        valueInfoByNode: new Map(),
         fragmentScopes: new Map(),
     };
     let fragmentScope;
@@ -218,7 +219,7 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
                 fields2: [node2],
             };
         }
-        const comparedArguments = (comparison.arguments ??= compareArguments(fieldInfo1.arguments, fieldInfo2.arguments));
+        const comparedArguments = (comparison.arguments ??= compareArguments(ruleContext, fieldInfo1.arguments, fieldInfo2.arguments));
         if (!sameArguments(comparedArguments, scope1, scope2)) {
             return {
                 responseName,
@@ -232,7 +233,7 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
         let reason = 'they have overlapping stream directives';
         if (fieldInfo1.hasStream && fieldInfo2.hasStream) {
             const comparedArguments = (comparison.streamArguments ??=
-                compareArguments(fieldInfo1.streamArguments, fieldInfo2.streamArguments));
+                compareArguments(ruleContext, fieldInfo1.streamArguments, fieldInfo2.streamArguments));
             if (sameArguments(comparedArguments, scope1, scope2)) {
                 reason +=
                     '. See https://github.com/graphql/defer-stream-wg/discussions/100';
@@ -283,7 +284,7 @@ function getArgumentInfo(args) {
         values,
     };
 }
-function compareArguments(argumentInfo1, argumentInfo2) {
+function compareArguments(ruleContext, argumentInfo1, argumentInfo2) {
     const valuesWithVariables = [];
     if (argumentInfo1 === undefined) {
         return {
@@ -299,8 +300,9 @@ function compareArguments(argumentInfo1, argumentInfo2) {
         if (value2 === undefined) {
             return { sameStructure: false, valuesWithVariables };
         }
-        const valueInfo1 = getValueInfo(arg1.value);
-        if (valueInfo1.comparisonKey !== getValueInfo(value2).comparisonKey) {
+        const valueInfo1 = getValueInfo(ruleContext, arg1.value);
+        if (valueInfo1.comparisonKey !==
+            getValueInfo(ruleContext, value2).comparisonKey) {
             return { sameStructure: false, valuesWithVariables };
         }
         if (valueInfo1.variables.length !== 0) {
@@ -323,7 +325,11 @@ function usesLocalVariables(value, scope) {
     }
     return value.variables.some((variable) => scope.signature.variableDefinitions.has(variable));
 }
-function getValueInfo(value) {
+function getValueInfo(ruleContext, value) {
+    const cached = ruleContext.valueInfoByNode.get(value);
+    if (cached !== undefined) {
+        return cached;
+    }
     const variables = [];
     const comparisonKey = JSON.stringify(value, (_key, node) => {
         if (!(0, ast_ts_1.isNode)(node)) {
@@ -354,7 +360,9 @@ function getValueInfo(value) {
                 return [node.kind, 'value' in node ? node.value : null];
         }
     });
-    return { comparisonKey, variables };
+    const valueInfo = { comparisonKey, variables };
+    ruleContext.valueInfoByNode.set(value, valueInfo);
+    return valueInfo;
 }
 function doTypesConflict(type1, type2) {
     if ((0, definition_ts_1.isListType)(type1)) {
@@ -475,7 +483,7 @@ function getFragmentSpread(validationContext, ruleContext, fragmentSpreadNode, s
         for (const name of signature.variableDefinitions.keys()) {
             const value = argMap.get(name);
             if (value !== undefined) {
-                const argument = getValueInfo(value);
+                const argument = getValueInfo(ruleContext, value);
                 parts.push(name, argument.comparisonKey);
                 if (argument.variables.length !== 0) {
                     values.push(argument);
