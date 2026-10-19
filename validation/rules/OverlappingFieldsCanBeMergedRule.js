@@ -38,7 +38,10 @@ function OverlappingFieldsCanBeMergedRule(validationContext) {
                 fragmentScope = undefined;
             },
         },
-        SelectionSet(selectionSet) {
+        SelectionSet(selectionSet, _key, parent) {
+            if (parent && 'kind' in parent && parent.kind === kinds_ts_1.Kind.INLINE_FRAGMENT) {
+                return;
+            }
             const conflicts = findConflictsWithinSelectionSet(validationContext, ruleContext, validationContext.getParentType(), selectionSet, fragmentScope);
             for (const { responseName, reason, fields1, fields2 } of conflicts) {
                 const reasonMsg = reasonMessage(reason);
