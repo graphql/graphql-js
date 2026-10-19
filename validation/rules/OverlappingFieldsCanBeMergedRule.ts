@@ -29,6 +29,7 @@ import {
   isObjectType,
 } from '../../type/definition.ts';
 import { typeFromAST } from '../../utilities/typeFromAST.ts';
+import type { FragmentSignature } from '../../utilities/TypeInfo.ts';
 import type { ValidationContext } from '../ValidationContext.ts';
 /* eslint-disable max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway
@@ -111,7 +112,7 @@ export function OverlappingFieldsCanBeMergedRule(
         const fragmentName = node.name.value;
         const fragmentSignature =
           validationContext.getFragmentSignatureByName()(fragmentName);
-        fragmentScope = getVariableScope(fragmentSignature, fragmentName);
+        fragmentScope = getVariableScope(fragmentSignature);
       },
       leave() {
         fragmentScope = undefined;
@@ -162,8 +163,11 @@ interface FieldInfo {
 }
 type FieldDetailsList = Array<FieldDetails>;
 type GroupedFieldSet = Map<string, FieldDetailsList>;
-// Scope identity distinguishes fragment uses in the caches.
-type VariableScope = Map<string, ValueNode>;
+// Equivalent spreads share a scope. The signature identifies declarations;
+// object identity distinguishes scopes with different fragment arguments.
+interface VariableScope {
+  signature: FragmentSignature;
+}
 interface FragmentSpread {
   node: FragmentSpreadNode;
   scope: VariableScope | undefined;
@@ -198,7 +202,13 @@ interface RuleContext {
     Maybe<GraphQLNamedType>,
     Map<SelectionSetNode, CollectFieldsResult>
   >;
-  fragmentScopes: Map<string, VariableScope | undefined>;
+  fragmentScopes: Map<
+    string,
+    // Cache the resulting fragment scope by the arguments' enclosing scope.
+    // An undefined key means no local references; an undefined value means
+    // the target fragment declares no variables.
+    Map<VariableScope | undefined, VariableScope | undefined>
+  >;
 }
 /**
  * Find all conflicts found "within" a selection set, including those found
@@ -862,54 +872,44 @@ function sameArguments(
   }
   const values2 = argumentInfo2.values;
   return argumentInfo1.nodes.every((arg1) => {
-    let value1 = arg1.value;
-    if (scope1) {
-      value1 = replaceFragmentVariables(value1, scope1);
-    }
-    let value2 = values2.get(arg1.name.value);
+    const value2 = values2.get(arg1.name.value);
     if (value2 === undefined) {
       return false;
     }
-    if (scope2) {
-      value2 = replaceFragmentVariables(value2, scope2);
-    }
-    return stringifyValue(value1) === stringifyValue(value2);
+    const valueInfo1 = getValueInfo(arg1.value);
+    return (
+      valueInfo1.comparisonKey === getValueInfo(value2).comparisonKey &&
+      (scope1 === scope2 ||
+        (!usesLocalVariables(valueInfo1, scope1) &&
+          !usesLocalVariables(valueInfo1, scope2)))
+    );
   });
 }
-function replaceFragmentVariables(
-  valueNode: ValueNode,
-  scope: VariableScope,
-): ValueNode {
-  switch (valueNode.kind) {
-    case Kind.VARIABLE:
-      return scope.get(valueNode.name.value) ?? valueNode;
-    case Kind.LIST:
-      return {
-        ...valueNode,
-        values: valueNode.values.map((node) =>
-          replaceFragmentVariables(node, scope),
-        ),
-      };
-    case Kind.OBJECT:
-      return {
-        ...valueNode,
-        fields: valueNode.fields.map((field) => ({
-          ...field,
-          value: replaceFragmentVariables(field.value, scope),
-        })),
-      };
-    default: {
-      return valueNode;
-    }
-  }
+interface ValueInfo {
+  comparisonKey: string;
+  variables: ReadonlyArray<string>;
 }
-function stringifyValue(value: ValueNode): string {
-  return JSON.stringify(value, (_key, node: unknown) => {
+function usesLocalVariables(
+  value: ValueInfo,
+  scope: VariableScope | undefined,
+): boolean {
+  if (scope === undefined) {
+    return false;
+  }
+  return value.variables.some((variable) =>
+    scope.signature.variableDefinitions.has(variable),
+  );
+}
+// Keep variable names in the representation and compare their scopes separately.
+function getValueInfo(value: ValueNode): ValueInfo {
+  const variables: Array<string> = [];
+  const comparisonKey = JSON.stringify(value, (_key, node: unknown) => {
     if (!isNode(node)) {
       return node;
     }
     switch (node.kind) {
       case Kind.VARIABLE:
+        variables.push(node.name.value);
         return [node.kind, node.name.value];
       case Kind.OBJECT:
         return [
@@ -934,6 +934,7 @@ function stringifyValue(value: ValueNode): string {
         return [node.kind, 'value' in node ? node.value : null];
     }
   });
+  return { comparisonKey, variables };
 }
 // Two types conflict if both types could not apply to a value simultaneously.
 // Composite types are ignored as their individual field types will be compared
@@ -1113,55 +1114,54 @@ function getFragmentSpread(
   fragmentSpreadNode: FragmentSpreadNode,
   scope: VariableScope | undefined,
 ): FragmentSpread {
-  let key = '';
-  const fragmentSignature = validationContext.getFragmentSignatureByName()(
+  const signature = validationContext.getFragmentSignatureByName()(
     fragmentSpreadNode.name.value,
   );
-  const argMap = new Map<string, ValueNode>();
-  if (fragmentSpreadNode.arguments) {
-    for (const arg of fragmentSpreadNode.arguments) {
-      argMap.set(arg.name.value, arg.value);
-    }
-  }
-  if (fragmentSignature?.variableDefinitions) {
-    key += fragmentSpreadNode.name.value + '(';
-    for (const varName of fragmentSignature.variableDefinitions.keys()) {
-      const value = argMap.get(varName);
-      if (value) {
-        const scopedValue = scope
-          ? replaceFragmentVariables(value, scope)
-          : value;
-        key += varName + ': ' + stringifyValue(scopedValue);
+  const argumentInfo = getArgumentInfo(fragmentSpreadNode.arguments);
+  const parts: Array<string> = [];
+  const values: Array<ValueInfo> = [];
+  if (signature && argumentInfo !== undefined) {
+    const argMap = argumentInfo.values;
+    for (const name of signature.variableDefinitions.keys()) {
+      const value = argMap.get(name);
+      if (value !== undefined) {
+        const argument = getValueInfo(value);
+        parts.push(name, argument.comparisonKey);
+        if (argument.variables.length !== 0) {
+          values.push(argument);
+        }
       }
     }
-    key += ')';
   }
-  let fragmentScope = ruleContext.fragmentScopes.get(key);
-  if (!ruleContext.fragmentScopes.has(key)) {
-    fragmentScope = getVariableScope(fragmentSignature, key);
-    ruleContext.fragmentScopes.set(key, fragmentScope);
+  const sourceKey = JSON.stringify([signature?.definition.name.value, parts]);
+  let byScope = ruleContext.fragmentScopes.get(sourceKey);
+  if (byScope === undefined) {
+    byScope = new Map();
+    ruleContext.fragmentScopes.set(sourceKey, byScope);
+  }
+  // The source key fixes the variable names. Any local reference identifies
+  // the enclosing scope; otherwise all references are operation variables.
+  const variableScope = values.some((value) => usesLocalVariables(value, scope))
+    ? scope
+    : undefined;
+  let fragmentScope = byScope.get(variableScope);
+  if (!byScope.has(variableScope)) {
+    fragmentScope = getVariableScope(signature);
+    byScope.set(variableScope, fragmentScope);
   }
   return {
     node: fragmentSpreadNode,
     scope: fragmentScope,
-    definition: fragmentSignature?.definition,
+    definition: signature?.definition,
   };
 }
 function getVariableScope(
-  fragmentSignature: ReturnType<ValidationContext['getFragmentSignature']>,
-  key = '',
+  fragmentSignature: Maybe<FragmentSignature>,
 ): VariableScope | undefined {
   if (!fragmentSignature || fragmentSignature.variableDefinitions.size === 0) {
     return;
   }
-  const scope = new Map<string, ValueNode>();
-  for (const variableName of fragmentSignature.variableDefinitions.keys()) {
-    scope.set(variableName, {
-      kind: Kind.VARIABLE,
-      name: { kind: Kind.NAME, value: JSON.stringify([key, variableName]) },
-    });
-  }
-  return scope;
+  return { signature: fragmentSignature };
 }
 function getFragmentSpreadDescription(node: FragmentSpreadNode): string {
   return print({ ...node, directives: [] }).slice(3);
