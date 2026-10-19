@@ -14,6 +14,7 @@ import type {
   SelectionSetNode,
   ValueNode,
 } from '../../language/ast.ts';
+import { isNode } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
 import { print } from '../../language/printer.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
@@ -32,7 +33,6 @@ import {
   isObjectType,
 } from '../../type/definition.ts';
 
-import { sortValueNode } from '../../utilities/sortValueNode.ts';
 import { typeFromAST } from '../../utilities/typeFromAST.ts';
 
 import type { ValidationContext } from '../ValidationContext.ts';
@@ -964,8 +964,37 @@ function replaceFragmentVariables(
   }
 }
 
-function stringifyValue(value: ValueNode): string | null {
-  return print(sortValueNode(value));
+function stringifyValue(value: ValueNode): string {
+  return JSON.stringify(value, (_key, node: unknown) => {
+    if (!isNode(node)) {
+      return node;
+    }
+    switch (node.kind) {
+      case Kind.VARIABLE:
+        return [node.kind, node.name.value];
+      case Kind.OBJECT:
+        return [
+          node.kind,
+          node.fields
+            .slice()
+            .sort((first, second) =>
+              first.name.value < second.name.value
+                ? -1
+                : first.name.value > second.name.value
+                  ? 1
+                  : 0,
+            ),
+        ];
+      case Kind.OBJECT_FIELD:
+        return [node.name.value, node.value];
+      case Kind.LIST:
+        return [node.kind, node.values];
+      case Kind.STRING:
+        return [node.kind, node.value, node.block === true];
+      default:
+        return [node.kind, 'value' in node ? node.value : null];
+    }
+  });
 }
 
 // Two types conflict if both types could not apply to a value simultaneously.
