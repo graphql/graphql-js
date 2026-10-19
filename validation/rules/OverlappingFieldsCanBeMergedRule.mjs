@@ -178,6 +178,8 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
         (parentType1 !== parentType2 &&
             isObjectType(parentType1) &&
             isObjectType(parentType2));
+    const fieldInfo1 = getFieldInfo(fieldDetails1);
+    const fieldInfo2 = getFieldInfo(fieldDetails2);
     if (!areMutuallyExclusive) {
         const name1 = node1.name.value;
         const name2 = node2.name.value;
@@ -189,7 +191,7 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
                 fields2: [node2],
             };
         }
-        if (!sameArguments(node1.arguments, scope1, node2.arguments, scope2)) {
+        if (!sameArguments(fieldInfo1.arguments, scope1, fieldInfo2.arguments, scope2)) {
             return {
                 responseName,
                 reason: 'they have differing arguments',
@@ -198,12 +200,10 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
             };
         }
     }
-    const stream1 = getStreamDirective(node1.directives);
-    const stream2 = getStreamDirective(node2.directives);
-    if (stream1 || stream2) {
+    if (fieldInfo1.hasStream || fieldInfo2.hasStream) {
         let reason = 'they have overlapping stream directives';
-        if (stream1 && stream2) {
-            if (sameArguments(stream1.arguments, scope1, stream2.arguments, scope2)) {
+        if (fieldInfo1.hasStream && fieldInfo2.hasStream) {
+            if (sameArguments(fieldInfo1.streamArguments, scope1, fieldInfo2.streamArguments, scope2)) {
                 reason +=
                     '. See https://github.com/graphql/defer-stream-wg/discussions/100';
             }
@@ -227,28 +227,50 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
         return subfieldConflicts(conflicts, responseName, node1, node2);
     }
 }
-function sameArguments(args1, scope1, args2, scope2) {
-    if (args1 === undefined || args1.length === 0) {
-        return args2 === undefined || args2.length === 0;
+function getFieldInfo(fieldDetails) {
+    if (fieldDetails.info === undefined) {
+        const node = fieldDetails.node;
+        const stream = node.directives?.find((directive) => directive.name.value === 'stream');
+        fieldDetails.info = {
+            arguments: getArgumentInfo(node.arguments),
+            hasStream: stream !== undefined,
+            streamArguments: getArgumentInfo(stream?.arguments),
+        };
     }
-    if (args2 === undefined || args2.length === 0) {
+    return fieldDetails.info;
+}
+function getArgumentInfo(args) {
+    if (args === undefined || args.length === 0) {
+        return;
+    }
+    const values = new Map();
+    for (const { name, value } of args) {
+        values.set(name.value, value);
+    }
+    return {
+        nodes: args,
+        values,
+    };
+}
+function sameArguments(argumentInfo1, scope1, argumentInfo2, scope2) {
+    if (argumentInfo1 === undefined) {
+        return argumentInfo2 === undefined;
+    }
+    if (argumentInfo1.nodes.length !== argumentInfo2?.nodes.length) {
         return false;
     }
-    if (args1.length !== args2.length) {
-        return false;
-    }
-    const values2 = new Map(args2.map(({ name, value }) => [
-        name.value,
-        scope2 === undefined ? value : replaceFragmentVariables(value, scope2),
-    ]));
-    return args1.every((arg1) => {
+    const values2 = argumentInfo2.values;
+    return argumentInfo1.nodes.every((arg1) => {
         let value1 = arg1.value;
         if (scope1) {
             value1 = replaceFragmentVariables(value1, scope1);
         }
-        const value2 = values2.get(arg1.name.value);
+        let value2 = values2.get(arg1.name.value);
         if (value2 === undefined) {
             return false;
+        }
+        if (scope2) {
+            value2 = replaceFragmentVariables(value2, scope2);
         }
         return stringifyValue(value1) === stringifyValue(value2);
     });
@@ -277,9 +299,6 @@ function replaceFragmentVariables(valueNode, scope) {
 }
 function stringifyValue(value) {
     return print(sortValueNode(value));
-}
-function getStreamDirective(directives) {
-    return directives?.find((directive) => directive.name.value === 'stream');
 }
 function doTypesConflict(type1, type2) {
     if (isListType(type1)) {
