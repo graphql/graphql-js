@@ -157,9 +157,19 @@ interface FieldDetails {
   info?: FieldInfo;
 }
 interface FieldInfo {
+  comparisons: Map<FieldInfo, FieldComparison>;
   arguments: ArgumentInfo | undefined;
   hasStream: boolean;
   streamArguments: ArgumentInfo | undefined;
+}
+interface FieldComparison {
+  sameName?: boolean;
+  arguments?: ArgumentComparison;
+  streamArguments?: ArgumentComparison;
+}
+interface ArgumentComparison {
+  sameStructure: boolean;
+  valuesWithVariables: ReadonlyArray<ValueInfo>;
 }
 type FieldDetailsList = Array<FieldDetails>;
 type GroupedFieldSet = Map<string, FieldDetailsList>;
@@ -755,11 +765,18 @@ function findConflict(
       isObjectType(parentType2));
   const fieldInfo1 = getFieldInfo(fieldDetails1);
   const fieldInfo2 = getFieldInfo(fieldDetails2);
+  let comparison = fieldInfo1.comparisons.get(fieldInfo2);
+  if (comparison === undefined) {
+    comparison = {};
+    fieldInfo1.comparisons.set(fieldInfo2, comparison);
+  }
   if (!areMutuallyExclusive) {
     // Two aliases must refer to the same field.
     const name1 = node1.name.value;
     const name2 = node2.name.value;
-    if (name1 !== name2) {
+    // Field names do not depend on the fragment scope.
+    const sameName = (comparison.sameName ??= name1 === name2);
+    if (!sameName) {
       return {
         responseName,
         reason: `"${name1}" and "${name2}" are different fields`,
@@ -768,9 +785,11 @@ function findConflict(
       };
     }
     // Two field calls must have the same arguments.
-    if (
-      !sameArguments(fieldInfo1.arguments, scope1, fieldInfo2.arguments, scope2)
-    ) {
+    const comparedArguments = (comparison.arguments ??= compareArguments(
+      fieldInfo1.arguments,
+      fieldInfo2.arguments,
+    ));
+    if (!sameArguments(comparedArguments, scope1, scope2)) {
       return {
         responseName,
         reason: 'they have differing arguments',
@@ -782,14 +801,12 @@ function findConflict(
   if (fieldInfo1.hasStream || fieldInfo2.hasStream) {
     let reason = 'they have overlapping stream directives';
     if (fieldInfo1.hasStream && fieldInfo2.hasStream) {
-      if (
-        sameArguments(
+      const comparedArguments = (comparison.streamArguments ??=
+        compareArguments(
           fieldInfo1.streamArguments,
-          scope1,
           fieldInfo2.streamArguments,
-          scope2,
-        )
-      ) {
+        ));
+      if (sameArguments(comparedArguments, scope1, scope2)) {
         // This was allowed in previous alpha versions of `graphql-js`.
         reason +=
           '. See https://github.com/graphql/defer-stream-wg/discussions/100';
@@ -836,6 +853,7 @@ function getFieldInfo(fieldDetails: FieldDetails): FieldInfo {
       (directive) => directive.name.value === 'stream',
     );
     fieldDetails.info = {
+      comparisons: new Map(),
       arguments: getArgumentInfo(node.arguments),
       hasStream: stream !== undefined,
       streamArguments: getArgumentInfo(stream?.arguments),
@@ -858,32 +876,55 @@ function getArgumentInfo(
     values,
   };
 }
-function sameArguments(
+// Compare names and source values once per field pair. Retain only values
+// containing variables, whose meaning can differ between fragment scopes.
+function compareArguments(
   argumentInfo1: ArgumentInfo | undefined,
-  scope1: VariableScope | undefined,
   argumentInfo2: ArgumentInfo | undefined,
-  scope2: VariableScope | undefined,
-): boolean {
+): ArgumentComparison {
+  const valuesWithVariables: Array<ValueInfo> = [];
   if (argumentInfo1 === undefined) {
-    return argumentInfo2 === undefined;
+    return {
+      sameStructure: argumentInfo2 === undefined,
+      valuesWithVariables,
+    };
   }
   if (argumentInfo1.nodes.length !== argumentInfo2?.nodes.length) {
-    return false;
+    return { sameStructure: false, valuesWithVariables };
   }
-  const values2 = argumentInfo2.values;
-  return argumentInfo1.nodes.every((arg1) => {
-    const value2 = values2.get(arg1.name.value);
+  for (const arg1 of argumentInfo1.nodes) {
+    const value2 = argumentInfo2.values.get(arg1.name.value);
     if (value2 === undefined) {
-      return false;
+      return { sameStructure: false, valuesWithVariables };
     }
     const valueInfo1 = getValueInfo(arg1.value);
-    return (
-      valueInfo1.comparisonKey === getValueInfo(value2).comparisonKey &&
-      (scope1 === scope2 ||
-        (!usesLocalVariables(valueInfo1, scope1) &&
-          !usesLocalVariables(valueInfo1, scope2)))
-    );
-  });
+    if (valueInfo1.comparisonKey !== getValueInfo(value2).comparisonKey) {
+      return { sameStructure: false, valuesWithVariables };
+    }
+    if (valueInfo1.variables.length !== 0) {
+      valuesWithVariables.push(valueInfo1);
+    }
+  }
+  return { sameStructure: true, valuesWithVariables };
+}
+function sameArguments(
+  comparison: ArgumentComparison,
+  scope1: VariableScope | undefined,
+  scope2: VariableScope | undefined,
+): boolean {
+  if (!comparison.sameStructure) {
+    return false;
+  }
+  // Equal expressions refer to the same variables within a scope. Across scopes,
+  // they agree only when every reference is an operation variable.
+  return (
+    scope1 === scope2 ||
+    comparison.valuesWithVariables.every(
+      (value) =>
+        !usesLocalVariables(value, scope1) &&
+        !usesLocalVariables(value, scope2),
+    )
+  );
 }
 interface ValueInfo {
   comparisonKey: string;
