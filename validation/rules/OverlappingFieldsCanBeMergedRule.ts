@@ -4,7 +4,6 @@ import type { Maybe } from '../../jsutils/Maybe.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
 import type {
   ArgumentNode,
-  DirectiveNode,
   FieldNode,
   FragmentArgumentNode,
   FragmentDefinitionNode,
@@ -153,6 +152,12 @@ interface FieldDetails {
   parentType: Maybe<GraphQLNamedType>;
   node: FieldNode;
   definition: Maybe<GraphQLField<unknown, unknown>>;
+  info?: FieldInfo;
+}
+interface FieldInfo {
+  arguments: ArgumentInfo | undefined;
+  hasStream: boolean;
+  streamArguments: ArgumentInfo | undefined;
 }
 type FieldDetailsList = Array<FieldDetails>;
 type GroupedFieldSet = Map<string, FieldDetailsList>;
@@ -168,6 +173,13 @@ interface CollectFieldsResult {
   groupedFieldSet: GroupedFieldSet;
   spreads: ReadonlyArray<FragmentSpreadNode>;
   byScope?: Map<VariableScope | undefined, FragmentSpreads>;
+}
+type ArgumentNodes =
+  | ReadonlyArray<ArgumentNode>
+  | ReadonlyArray<FragmentArgumentNode>;
+interface ArgumentInfo {
+  nodes: ArgumentNodes;
+  values: Map<string, ValueNode>;
 }
 interface RuleContext {
   comparedFieldsAndFragmentPairs: Map<
@@ -718,6 +730,8 @@ function findConflict(
     (parentType1 !== parentType2 &&
       isObjectType(parentType1) &&
       isObjectType(parentType2));
+  const fieldInfo1 = getFieldInfo(fieldDetails1);
+  const fieldInfo2 = getFieldInfo(fieldDetails2);
   if (!areMutuallyExclusive) {
     // Two aliases must refer to the same field.
     const name1 = node1.name.value;
@@ -731,7 +745,9 @@ function findConflict(
       };
     }
     // Two field calls must have the same arguments.
-    if (!sameArguments(node1.arguments, scope1, node2.arguments, scope2)) {
+    if (
+      !sameArguments(fieldInfo1.arguments, scope1, fieldInfo2.arguments, scope2)
+    ) {
       return {
         responseName,
         reason: 'they have differing arguments',
@@ -740,12 +756,17 @@ function findConflict(
       };
     }
   }
-  const stream1 = getStreamDirective(node1.directives);
-  const stream2 = getStreamDirective(node2.directives);
-  if (stream1 || stream2) {
+  if (fieldInfo1.hasStream || fieldInfo2.hasStream) {
     let reason = 'they have overlapping stream directives';
-    if (stream1 && stream2) {
-      if (sameArguments(stream1.arguments, scope1, stream2.arguments, scope2)) {
+    if (fieldInfo1.hasStream && fieldInfo2.hasStream) {
+      if (
+        sameArguments(
+          fieldInfo1.streamArguments,
+          scope1,
+          fieldInfo2.streamArguments,
+          scope2,
+        )
+      ) {
         // This was allowed in previous alpha versions of `graphql-js`.
         reason +=
           '. See https://github.com/graphql/defer-stream-wg/discussions/100';
@@ -784,35 +805,60 @@ function findConflict(
     return subfieldConflicts(conflicts, responseName, node1, node2);
   }
 }
-function sameArguments<T extends ArgumentNode | FragmentArgumentNode>(
-  args1: ReadonlyArray<T> | undefined,
+// Prepare argument and directive lookups only when a field overlaps.
+function getFieldInfo(fieldDetails: FieldDetails): FieldInfo {
+  if (fieldDetails.info === undefined) {
+    const node = fieldDetails.node;
+    const stream = node.directives?.find(
+      (directive) => directive.name.value === 'stream',
+    );
+    fieldDetails.info = {
+      arguments: getArgumentInfo(node.arguments),
+      hasStream: stream !== undefined,
+      streamArguments: getArgumentInfo(stream?.arguments),
+    };
+  }
+  return fieldDetails.info;
+}
+function getArgumentInfo(
+  args: ArgumentNodes | undefined,
+): ArgumentInfo | undefined {
+  if (args === undefined || args.length === 0) {
+    return;
+  }
+  const values = new Map<string, ValueNode>();
+  for (const { name, value } of args) {
+    values.set(name.value, value);
+  }
+  return {
+    nodes: args,
+    values,
+  };
+}
+function sameArguments(
+  argumentInfo1: ArgumentInfo | undefined,
   scope1: VariableScope | undefined,
-  args2: ReadonlyArray<T> | undefined,
+  argumentInfo2: ArgumentInfo | undefined,
   scope2: VariableScope | undefined,
 ): boolean {
-  if (args1 === undefined || args1.length === 0) {
-    return args2 === undefined || args2.length === 0;
+  if (argumentInfo1 === undefined) {
+    return argumentInfo2 === undefined;
   }
-  if (args2 === undefined || args2.length === 0) {
+  if (argumentInfo1.nodes.length !== argumentInfo2?.nodes.length) {
     return false;
   }
-  if (args1.length !== args2.length) {
-    return false;
-  }
-  const values2 = new Map(
-    args2.map(({ name, value }) => [
-      name.value,
-      scope2 === undefined ? value : replaceFragmentVariables(value, scope2),
-    ]),
-  );
-  return args1.every((arg1) => {
+  const values2 = argumentInfo2.values;
+  return argumentInfo1.nodes.every((arg1) => {
     let value1 = arg1.value;
     if (scope1) {
       value1 = replaceFragmentVariables(value1, scope1);
     }
-    const value2 = values2.get(arg1.name.value);
+    let value2 = values2.get(arg1.name.value);
     if (value2 === undefined) {
       return false;
+    }
+    if (scope2) {
+      value2 = replaceFragmentVariables(value2, scope2);
     }
     return stringifyValue(value1) === stringifyValue(value2);
   });
@@ -846,11 +892,6 @@ function replaceFragmentVariables(
 }
 function stringifyValue(value: ValueNode): string | null {
   return print(sortValueNode(value));
-}
-function getStreamDirective(
-  directives: ReadonlyArray<DirectiveNode> | undefined,
-): DirectiveNode | undefined {
-  return directives?.find((directive) => directive.name.value === 'stream');
 }
 // Two types conflict if both types could not apply to a value simultaneously.
 // Composite types are ignored as their individual field types will be compared
