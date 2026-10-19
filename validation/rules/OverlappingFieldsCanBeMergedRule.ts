@@ -937,6 +937,7 @@ function sameArguments(
 interface ValueInfo {
   comparisonKey: string;
   variables: ReadonlyArray<string>;
+  scopeDependencies?: Map<FragmentSignature, boolean>;
 }
 function usesLocalVariables(
   value: ValueInfo,
@@ -945,9 +946,17 @@ function usesLocalVariables(
   if (scope === undefined) {
     return false;
   }
-  return value.variables.some((variable) =>
+  // Declaration membership does not depend on the fragment arguments.
+  const dependencies = (value.scopeDependencies ??= new Map());
+  const cached = dependencies.get(scope.signature);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const dependsOnScope = value.variables.some((variable) =>
     scope.signature.variableDefinitions.has(variable),
   );
+  dependencies.set(scope.signature, dependsOnScope);
+  return dependsOnScope;
 }
 // Keep variable names in the representation and compare their scopes separately.
 function getValueInfo(ruleContext: RuleContext, value: ValueNode): ValueInfo {
