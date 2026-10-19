@@ -450,6 +450,69 @@ describe('Validate: Overlapping fields can be merged', () => {
     );
   });
 
+  it('keeps variable scopes separate when fields share their argument nodes', () => {
+    const schema = buildSchema('type Query { value(arg: Int): Int }');
+    const document = parse(
+      `
+        { ...First(x: 1) ...Second(x: 1) }
+        fragment First($x: Int) on Query { value(arg: $x) }
+        fragment Second($x: Int) on Query { value(arg: $x) }
+      `,
+      { experimentalFragmentArguments: true },
+    );
+    const [first, second] = document.definitions.filter(
+      (definition) => definition.kind === Kind.FRAGMENT_DEFINITION,
+    );
+    const sharedDocument = {
+      ...document,
+      definitions: document.definitions.map((definition) =>
+        definition === second
+          ? {
+              ...second,
+              selectionSet: {
+                ...second.selectionSet,
+                selections: first.selectionSet.selections.map((node) => ({
+                  ...node,
+                })),
+              },
+            }
+          : definition,
+      ),
+    };
+    const errors = validate(schema, sharedDocument, [
+      OverlappingFieldsCanBeMergedRule,
+    ]);
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0].message).to.include('they have differing arguments');
+  });
+
+  it('compares unknown field names consistently across fragment uses', () => {
+    const schema = buildSchema('type Query { child: Query }');
+    const document = parse(
+      `
+        {
+          a: child { ...A(x: 1) ...B(x: 1) }
+          b: child { ...A(x: 2) ...B(x: 2) }
+          c: child { ...A(x: 1) ...C(x: 1) }
+          d: child { ...A(x: 2) ...C(x: 2) }
+        }
+        fragment A($x: Int) on Query { alias: missing }
+        fragment B($x: Int) on Query { alias: missing }
+        fragment C($x: Int) on Query { alias: other }
+      `,
+      { experimentalFragmentArguments: true },
+    );
+    const errors = validate(schema, document, [
+      OverlappingFieldsCanBeMergedRule,
+    ]);
+    expect(errors).to.have.lengthOf(2);
+    for (const error of errors) {
+      expect(error.message).to.include(
+        '"missing" and "other" are different fields',
+      );
+    }
+  });
+
   it('keeps field definitions separate when a selection set is shared between types', () => {
     const schema = buildSchema(`
       type Query { node: Union }
