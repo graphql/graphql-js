@@ -113,6 +113,7 @@ export function OverlappingFieldsCanBeMergedRule(
     // A cache for the "field map" and list of fragment spreads found in any given
     // selection set.
     cachedCollectFieldsResults: new Map(),
+    valueInfoByNode: new Map(),
     fragmentScopes: new Map(),
   };
   let fragmentScope: VariableScope | undefined;
@@ -225,6 +226,7 @@ interface RuleContext {
     Maybe<GraphQLNamedType>,
     Map<SelectionSetNode, CollectFieldsResult>
   >;
+  valueInfoByNode: Map<ValueNode, ValueInfo>;
   fragmentScopes: Map<
     string,
     // Cache the resulting fragment scope by the arguments' enclosing scope.
@@ -833,6 +835,7 @@ function findConflict(
 
     // Two field calls must have the same arguments.
     const comparedArguments = (comparison.arguments ??= compareArguments(
+      ruleContext,
       fieldInfo1.arguments,
       fieldInfo2.arguments,
     ));
@@ -851,6 +854,7 @@ function findConflict(
     if (fieldInfo1.hasStream && fieldInfo2.hasStream) {
       const comparedArguments = (comparison.streamArguments ??=
         compareArguments(
+          ruleContext,
           fieldInfo1.streamArguments,
           fieldInfo2.streamArguments,
         ));
@@ -935,6 +939,7 @@ function getArgumentInfo(
 // Compare names and source values once per field pair. Retain only values
 // containing variables, whose meaning can differ between fragment scopes.
 function compareArguments(
+  ruleContext: RuleContext,
   argumentInfo1: ArgumentInfo | undefined,
   argumentInfo2: ArgumentInfo | undefined,
 ): ArgumentComparison {
@@ -953,8 +958,11 @@ function compareArguments(
     if (value2 === undefined) {
       return { sameStructure: false, valuesWithVariables };
     }
-    const valueInfo1 = getValueInfo(arg1.value);
-    if (valueInfo1.comparisonKey !== getValueInfo(value2).comparisonKey) {
+    const valueInfo1 = getValueInfo(ruleContext, arg1.value);
+    if (
+      valueInfo1.comparisonKey !==
+      getValueInfo(ruleContext, value2).comparisonKey
+    ) {
       return { sameStructure: false, valuesWithVariables };
     }
     if (valueInfo1.variables.length !== 0) {
@@ -1002,7 +1010,11 @@ function usesLocalVariables(
 }
 
 // Keep variable names in the representation and compare their scopes separately.
-function getValueInfo(value: ValueNode): ValueInfo {
+function getValueInfo(ruleContext: RuleContext, value: ValueNode): ValueInfo {
+  const cached = ruleContext.valueInfoByNode.get(value);
+  if (cached !== undefined) {
+    return cached;
+  }
   const variables: Array<string> = [];
   const comparisonKey = JSON.stringify(value, (_key, node: unknown) => {
     if (!isNode(node)) {
@@ -1035,7 +1047,9 @@ function getValueInfo(value: ValueNode): ValueInfo {
         return [node.kind, 'value' in node ? node.value : null];
     }
   });
-  return { comparisonKey, variables };
+  const valueInfo = { comparisonKey, variables };
+  ruleContext.valueInfoByNode.set(value, valueInfo);
+  return valueInfo;
 }
 
 // Two types conflict if both types could not apply to a value simultaneously.
@@ -1234,7 +1248,7 @@ function getFragmentSpread(
     for (const name of signature.variableDefinitions.keys()) {
       const value = argMap.get(name);
       if (value !== undefined) {
-        const argument = getValueInfo(value);
+        const argument = getValueInfo(ruleContext, value);
         parts.push(name, argument.comparisonKey);
         if (argument.variables.length !== 0) {
           values.push(argument);
