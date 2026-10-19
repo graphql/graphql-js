@@ -323,7 +323,14 @@ function usesLocalVariables(value, scope) {
     if (scope === undefined) {
         return false;
     }
-    return value.variables.some((variable) => scope.signature.variableDefinitions.has(variable));
+    const dependencies = (value.scopeDependencies ??= new Map());
+    const cached = dependencies.get(scope.signature);
+    if (cached !== undefined) {
+        return cached;
+    }
+    const dependsOnScope = value.variables.some((variable) => scope.signature.variableDefinitions.has(variable));
+    dependencies.set(scope.signature, dependsOnScope);
+    return dependsOnScope;
 }
 function getValueInfo(ruleContext, value) {
     const cached = ruleContext.valueInfoByNode.get(value);
