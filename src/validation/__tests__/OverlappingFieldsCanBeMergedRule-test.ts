@@ -40,6 +40,41 @@ function expectValidWithSchema(schema: GraphQLSchema, queryStr: string) {
 }
 
 describe('Validate: Overlapping fields can be merged', () => {
+  it('reports fragment argument conflicts when one spread omits arguments', () => {
+    const schema = buildSchema('type Query { field(value: Int): String }');
+    const document = parse(
+      `
+        { ...Local ...Local(x: 1) }
+        fragment Local($x: Int) on Query { field(value: $x) }
+      `,
+      { experimentalFragmentArguments: true },
+    );
+    expect(
+      validate(schema, document).map((error) => error.message),
+    ).to.deep.equal([
+      'Spreads "Local" conflict because Local and Local(x: 1) have different fragment arguments.',
+    ]);
+  });
+
+  it('keeps similarly named variables from different scopes distinct', () => {
+    const schema = buildSchema('type Query { field(value: Int): String }');
+    const document = parse(
+      `
+        query ($__1_x: Int) {
+          ...Local(x: 1)
+          field(value: $__1_x)
+        }
+        fragment Local($x: Int) on Query { field(value: $x) }
+      `,
+      { experimentalFragmentArguments: true },
+    );
+    expect(
+      validate(schema, document).map((error) => error.message),
+    ).to.deep.equal([
+      'Fields "field" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
+    ]);
+  });
+
   it('unique fields', () => {
     expectValid(`
       fragment uniqueFields on Dog {
@@ -531,6 +566,49 @@ second line"""
       validate(schema, document, [OverlappingFieldsCanBeMergedRule]),
     ).to.deep.equal([]);
     expect(print(document)).to.equal(before);
+  });
+
+  it('distinguishes local references after operation references', () => {
+    const schema = buildSchema(
+      'scalar Input type Query { field(value: Input): String }',
+    );
+    for (const [value, errorCount] of [
+      ['[$outside, $outside]', 0],
+      ['[$outside, $x]', 1],
+    ] as const) {
+      const document = parse(
+        `query ($outside: Input) { ...Left(x: 1) ...Right(x: 1) }
+        fragment Left($x: Input) on Query { ...Shared(value: ${value}) }
+        fragment Right($x: Input) on Query { ...Shared(value: ${value}) }
+        fragment Shared($value: Input) on Query { field(value: $value) }`,
+        { experimentalFragmentArguments: true },
+      );
+      const errors = validate(schema, document, [
+        OverlappingFieldsCanBeMergedRule,
+      ]);
+      expect(errors).to.have.lengthOf(errorCount);
+      if (errorCount !== 0) {
+        expect(errors[0].message).to.include('different fragment arguments');
+      }
+    }
+  });
+
+  it('compares nested fragment arguments in their enclosing variable scope', () => {
+    const schema = buildSchema(
+      'scalar Input type Query { field(value: Input): String }',
+    );
+    expectValidWithSchema(
+      schema,
+      `
+        query First($outside: Input) { ...Outer(x: 1) }
+        query Second($outside: Input) { ...Outer(x: 2) }
+        fragment Outer($x: Input) on Query {
+          ...Inner(value: { values: [$x, $outside, 1], other: true })
+          ...Inner(value: { other: true, values: [$x, $outside, 1] })
+        }
+        fragment Inner($value: Input) on Query { field(value: $value) }
+      `,
+    );
   });
 
   it('keeps variable scopes separate when fields share their argument nodes', () => {
