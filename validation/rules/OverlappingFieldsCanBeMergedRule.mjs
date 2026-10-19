@@ -20,7 +20,8 @@ export function OverlappingFieldsCanBeMergedRule(validationContext) {
         comparedFragmentPairs: new Map(),
         cachedCollectFieldsResults: new Map(),
         valueInfoByNode: new Map(),
-        fragmentScopes: new Map(),
+        fragmentSpreadInfoByNode: new Map(),
+        fragmentSpreadInfoByKey: new Map(),
     };
     let fragmentScope;
     return {
@@ -478,41 +479,55 @@ function getFragmentSpreads(validationContext, ruleContext, collectFieldsResult,
     return result;
 }
 function getFragmentSpread(validationContext, ruleContext, fragmentSpreadNode, scope) {
-    const signature = validationContext.getFragmentSignatureByName()(fragmentSpreadNode.name.value);
-    const argumentInfo = getArgumentInfo(fragmentSpreadNode.arguments);
-    const parts = [];
-    const values = [];
-    if (signature && argumentInfo !== undefined) {
-        const argMap = argumentInfo.values;
-        for (const name of signature.variableDefinitions.keys()) {
-            const value = argMap.get(name);
-            if (value !== undefined) {
-                const argument = getValueInfo(ruleContext, value);
+    let fragmentSpreadInfo = ruleContext.fragmentSpreadInfoByNode.get(fragmentSpreadNode);
+    if (fragmentSpreadInfo === undefined) {
+        const signature = validationContext.getFragmentSignatureByName()(fragmentSpreadNode.name.value);
+        const argumentInfo = getArgumentInfo(fragmentSpreadNode.arguments);
+        const parts = [];
+        const values = [];
+        if (signature && argumentInfo !== undefined) {
+            const argMap = argumentInfo.values;
+            const names = [];
+            for (const name of argMap.keys()) {
+                if (signature.variableDefinitions.has(name)) {
+                    names.push(name);
+                }
+            }
+            for (const name of names.sort()) {
+                const argument = getValueInfo(ruleContext, argMap.get(name));
                 parts.push(name, argument.comparisonKey);
                 if (argument.variables.length !== 0) {
                     values.push(argument);
                 }
             }
         }
+        const fragmentSpreadInfoKey = JSON.stringify([
+            signature?.definition.name.value,
+            parts,
+        ]);
+        fragmentSpreadInfo = ruleContext.fragmentSpreadInfoByKey.get(fragmentSpreadInfoKey);
+        if (fragmentSpreadInfo === undefined) {
+            fragmentSpreadInfo = {
+                signature,
+                values,
+                byScope: new Map(),
+            };
+            ruleContext.fragmentSpreadInfoByKey.set(fragmentSpreadInfoKey, fragmentSpreadInfo);
+        }
+        ruleContext.fragmentSpreadInfoByNode.set(fragmentSpreadNode, fragmentSpreadInfo);
     }
-    const sourceKey = JSON.stringify([signature?.definition.name.value, parts]);
-    let byScope = ruleContext.fragmentScopes.get(sourceKey);
-    if (byScope === undefined) {
-        byScope = new Map();
-        ruleContext.fragmentScopes.set(sourceKey, byScope);
-    }
-    const variableScope = values.some((value) => usesLocalVariables(value, scope))
+    const variableScope = fragmentSpreadInfo.values.some((value) => usesLocalVariables(value, scope))
         ? scope
         : undefined;
-    let fragmentScope = byScope.get(variableScope);
-    if (!byScope.has(variableScope)) {
-        fragmentScope = getVariableScope(signature);
-        byScope.set(variableScope, fragmentScope);
+    let fragmentScope = fragmentSpreadInfo.byScope.get(variableScope);
+    if (!fragmentSpreadInfo.byScope.has(variableScope)) {
+        fragmentScope = getVariableScope(fragmentSpreadInfo.signature);
+        fragmentSpreadInfo.byScope.set(variableScope, fragmentScope);
     }
     return {
         node: fragmentSpreadNode,
         scope: fragmentScope,
-        definition: signature?.definition,
+        definition: fragmentSpreadInfo.signature?.definition,
     };
 }
 function getVariableScope(fragmentSignature) {
