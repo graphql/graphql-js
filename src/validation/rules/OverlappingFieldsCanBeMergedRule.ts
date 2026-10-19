@@ -107,11 +107,12 @@ export function OverlappingFieldsCanBeMergedRule(
     // "between" each other for conflicts. Comparisons may be made many times,
     // so memoizing this can dramatically improve the performance of this validator.
     comparedFieldsAndFragmentPairs: new Map(),
-    comparedFragmentPairs: new PairSet(),
+    comparedFragmentPairs: new Map(),
 
     // A cache for the "field map" and list of fragment spreads found in any given
     // selection set.
     cachedCollectFieldsResults: new Map(),
+    fragmentScopes: new Map(),
   };
   let fragmentScope: VariableScope | undefined;
 
@@ -176,9 +177,9 @@ type GroupedFieldSet = Map<string, FieldDetailsList>;
 // Scope identity distinguishes fragment uses in the caches.
 type VariableScope = Map<string, ValueNode>;
 interface FragmentSpread {
-  key: string;
   node: FragmentSpreadNode;
   scope: VariableScope | undefined;
+  definition: FragmentDefinitionNode | undefined;
 }
 type FragmentSpreads = ReadonlyArray<FragmentSpread>;
 
@@ -197,13 +198,20 @@ interface ArgumentInfo {
 interface RuleContext {
   comparedFieldsAndFragmentPairs: Map<
     VariableScope | undefined,
-    OrderedPairSet<CollectFieldsResult, string>
+    Map<
+      VariableScope | undefined,
+      OrderedPairSet<CollectFieldsResult, FragmentDefinitionNode | undefined>
+    >
   >;
-  comparedFragmentPairs: PairSet<string>;
+  comparedFragmentPairs: Map<
+    VariableScope | undefined,
+    Map<VariableScope | undefined, PairSet<FragmentDefinitionNode | undefined>>
+  >;
   cachedCollectFieldsResults: Map<
     Maybe<GraphQLNamedType>,
     Map<SelectionSetNode, CollectFieldsResult>
   >;
+  fragmentScopes: Map<string, VariableScope | undefined>;
 }
 
 /**
@@ -294,6 +302,7 @@ function findConflictsWithinSelectionSet(
   if (collectFieldsResult.spreads.length !== 0) {
     const fragmentSpreads = getFragmentSpreads(
       validationContext,
+      ruleContext,
       collectFieldsResult,
       scope,
     );
@@ -343,16 +352,20 @@ function collectConflictsBetweenFieldsAndFragment(
     return;
   }
 
-  // Shared field collections can be compared in different variable scopes.
-  // Keep a separate pair history for each scope of the fields being compared.
-  let comparedFieldsAndFragmentPairs =
-    ruleContext.comparedFieldsAndFragmentPairs.get(scope);
+  // Fields and fragments can each be compared in different variable scopes.
+  // Keep a separate pair history for each pair of scopes.
+  const fragment = fragmentSpread.definition;
+  let byFragmentScope = ruleContext.comparedFieldsAndFragmentPairs.get(scope);
+  if (byFragmentScope === undefined) {
+    byFragmentScope = new Map();
+    ruleContext.comparedFieldsAndFragmentPairs.set(scope, byFragmentScope);
+  }
+  let comparedFieldsAndFragmentPairs = byFragmentScope.get(
+    fragmentSpread.scope,
+  );
   if (comparedFieldsAndFragmentPairs === undefined) {
     comparedFieldsAndFragmentPairs = new OrderedPairSet();
-    ruleContext.comparedFieldsAndFragmentPairs.set(
-      scope,
-      comparedFieldsAndFragmentPairs,
-    );
+    byFragmentScope.set(fragmentSpread.scope, comparedFieldsAndFragmentPairs);
   }
 
   // Memoize so the fields and fragments are not compared for conflicts more
@@ -360,7 +373,7 @@ function collectConflictsBetweenFieldsAndFragment(
   if (
     comparedFieldsAndFragmentPairs.has(
       collectFieldsResult,
-      fragmentSpread.key,
+      fragment,
       areMutuallyExclusive,
     )
   ) {
@@ -368,13 +381,10 @@ function collectConflictsBetweenFieldsAndFragment(
   }
   comparedFieldsAndFragmentPairs.add(
     collectFieldsResult,
-    fragmentSpread.key,
+    fragment,
     areMutuallyExclusive,
   );
 
-  const fragment = validationContext.getFragment(
-    fragmentSpread.node.name.value,
-  );
   if (!fragment) {
     return;
   }
@@ -386,6 +396,7 @@ function collectConflictsBetweenFieldsAndFragment(
   );
   const referencedFragmentSpreads = getFragmentSpreads(
     validationContext,
+    ruleContext,
     collectFieldsResult2,
     fragmentSpread.scope,
   );
@@ -436,19 +447,34 @@ function collectConflictsBetweenFragments(
   fragmentSpread1: FragmentSpread,
   fragmentSpread2: FragmentSpread,
 ): void {
-  const { comparedFragmentPairs } = ruleContext;
+  const fragment1 = fragmentSpread1.definition;
+  const fragment2 = fragmentSpread2.definition;
+  const scope1 = fragmentSpread1.scope;
+  const scope2 = fragmentSpread2.scope;
   // No need to compare a fragment to itself.
-  if (fragmentSpread1.key === fragmentSpread2.key) {
+  if (fragment1 === fragment2 && scope1 === scope2) {
     return;
   }
 
-  if (fragmentSpread1.node.name.value === fragmentSpread2.node.name.value) {
-    if (
-      comparedFragmentPairs.has(fragmentSpread1.key, fragmentSpread2.key, false)
-    ) {
+  // Scope pairs share a comparison history indexed by fragment definitions.
+  let byScope = ruleContext.comparedFragmentPairs.get(scope1);
+  let comparedFragmentPairs =
+    byScope?.get(scope2) ??
+    ruleContext.comparedFragmentPairs.get(scope2)?.get(scope1);
+  if (comparedFragmentPairs === undefined) {
+    if (byScope === undefined) {
+      byScope = new Map();
+      ruleContext.comparedFragmentPairs.set(scope1, byScope);
+    }
+    comparedFragmentPairs = new PairSet();
+    byScope.set(scope2, comparedFragmentPairs);
+  }
+
+  if (fragment1 === fragment2) {
+    if (comparedFragmentPairs.has(fragment1, fragment2, false)) {
       return;
     }
-    comparedFragmentPairs.add(fragmentSpread1.key, fragmentSpread2.key, false);
+    comparedFragmentPairs.add(fragment1, fragment2, false);
     validationContext.reportError(
       new GraphQLError(
         `Spreads "${fragmentSpread1.node.name.value}" conflict because ${getFragmentSpreadDescription(fragmentSpread1.node)} and ${getFragmentSpreadDescription(fragmentSpread2.node)} have different fragment arguments.`,
@@ -459,27 +485,11 @@ function collectConflictsBetweenFragments(
   }
 
   // Memoize so two fragments are not compared for conflicts more than once.
-  if (
-    comparedFragmentPairs.has(
-      fragmentSpread1.key,
-      fragmentSpread2.key,
-      areMutuallyExclusive,
-    )
-  ) {
+  if (comparedFragmentPairs.has(fragment1, fragment2, areMutuallyExclusive)) {
     return;
   }
-  comparedFragmentPairs.add(
-    fragmentSpread1.key,
-    fragmentSpread2.key,
-    areMutuallyExclusive,
-  );
+  comparedFragmentPairs.add(fragment1, fragment2, areMutuallyExclusive);
 
-  const fragment1 = validationContext.getFragment(
-    fragmentSpread1.node.name.value,
-  );
-  const fragment2 = validationContext.getFragment(
-    fragmentSpread2.node.name.value,
-  );
   if (!fragment1 || !fragment2) {
     return;
   }
@@ -491,6 +501,7 @@ function collectConflictsBetweenFragments(
   );
   const referencedFragmentSpreads1 = getFragmentSpreads(
     validationContext,
+    ruleContext,
     collectFieldsResult1,
     fragmentSpread1.scope,
   );
@@ -501,6 +512,7 @@ function collectConflictsBetweenFragments(
   );
   const referencedFragmentSpreads2 = getFragmentSpreads(
     validationContext,
+    ruleContext,
     collectFieldsResult2,
     fragmentSpread2.scope,
   );
@@ -569,6 +581,7 @@ function findConflictsBetweenSubSelectionSets(
   );
   const fragmentSpreads1 = getFragmentSpreads(
     validationContext,
+    ruleContext,
     collectFieldsResult1,
     scope1,
   );
@@ -580,6 +593,7 @@ function findConflictsBetweenSubSelectionSets(
   );
   const fragmentSpreads2 = getFragmentSpreads(
     validationContext,
+    ruleContext,
     collectFieldsResult2,
     scope2,
   );
@@ -1093,6 +1107,7 @@ function collectFieldsImpl(
 // Resolve a source collection's spreads in the enclosing variable scope.
 function getFragmentSpreads(
   validationContext: ValidationContext,
+  ruleContext: RuleContext,
   collectFieldsResult: CollectFieldsResult,
   scope: VariableScope | undefined,
 ): FragmentSpreads {
@@ -1102,18 +1117,39 @@ function getFragmentSpreads(
     return cached;
   }
 
-  const fragmentSpreads = new Map<string, FragmentSpread>();
+  const spreadsByScope = new Map<
+    VariableScope | undefined,
+    Map<FragmentDefinitionNode | undefined, FragmentSpread>
+  >();
+  const result: Array<FragmentSpread> = [];
   for (const spreadNode of collectFieldsResult.spreads) {
-    const spread = getFragmentSpread(validationContext, spreadNode, scope);
-    fragmentSpreads.set(spread.key, spread);
+    const spread = getFragmentSpread(
+      validationContext,
+      ruleContext,
+      spreadNode,
+      scope,
+    );
+    let byDefinition = spreadsByScope.get(spread.scope);
+    if (byDefinition === undefined) {
+      byDefinition = new Map();
+      spreadsByScope.set(spread.scope, byDefinition);
+    }
+    const previous = byDefinition.get(spread.definition);
+    if (previous === undefined) {
+      byDefinition.set(spread.definition, spread);
+      result.push(spread);
+    } else {
+      // Keep first-occurrence order and the last occurrence's error location.
+      previous.node = spread.node;
+    }
   }
-  const result = Array.from(fragmentSpreads.values());
   byScope.set(scope, result);
   return result;
 }
 
 function getFragmentSpread(
   validationContext: ValidationContext,
+  ruleContext: RuleContext,
   fragmentSpreadNode: FragmentSpreadNode,
   scope: VariableScope | undefined,
 ): FragmentSpread {
@@ -1140,10 +1176,15 @@ function getFragmentSpread(
     }
     key += ')';
   }
+  let fragmentScope = ruleContext.fragmentScopes.get(key);
+  if (!ruleContext.fragmentScopes.has(key)) {
+    fragmentScope = getVariableScope(fragmentSignature, key);
+    ruleContext.fragmentScopes.set(key, fragmentScope);
+  }
   return {
-    key,
     node: fragmentSpreadNode,
-    scope: getVariableScope(fragmentSignature, key),
+    scope: fragmentScope,
+    definition: fragmentSignature?.definition,
   };
 }
 
