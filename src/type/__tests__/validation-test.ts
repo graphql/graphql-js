@@ -664,7 +664,7 @@ describe('Type System: Objects must have fields', () => {
     ]);
   });
 
-  it('accepts an Interface type with no fields when experimentalAllowEmptyInterfaceTypes is enabled', () => {
+  it('accepts an Interface type with no fields when experimentalAllowEmptyAbstractTypes is enabled', () => {
     const schema = buildSchema(
       `
       type Query {
@@ -680,9 +680,9 @@ describe('Type System: Objects must have fields', () => {
         field: String
       }
     `,
-      { experimentalAllowEmptyInterfaceTypes: true },
+      { experimentalAllowEmptyAbstractTypes: true },
     );
-    expect(schema.experimentalAllowEmptyInterfaceTypes).to.equal(true);
+    expect(schema.experimentalAllowEmptyAbstractTypes).to.equal(true);
     expectJSON(validateSchema(schema)).toDeepEqual([]);
 
     const manualSchema = schemaWithFieldType(
@@ -693,7 +693,7 @@ describe('Type System: Objects must have fields', () => {
     ]);
     const manualSchemaWithFlag = new GraphQLSchema({
       ...manualSchema.toConfig(),
-      experimentalAllowEmptyInterfaceTypes: true,
+      experimentalAllowEmptyAbstractTypes: true,
     });
     expectJSON(validateSchema(manualSchemaWithFlag)).toDeepEqual([]);
 
@@ -701,11 +701,11 @@ describe('Type System: Objects must have fields', () => {
       schema,
       parse('interface AnotherEmptyInterface'),
     );
-    expect(extendedSchema.experimentalAllowEmptyInterfaceTypes).to.equal(true);
+    expect(extendedSchema.experimentalAllowEmptyAbstractTypes).to.equal(true);
     expectJSON(validateSchema(extendedSchema)).toDeepEqual([]);
   });
 
-  it('accepts an Interface implementing an empty Interface when experimentalAllowEmptyInterfaceTypes is enabled', () => {
+  it('accepts an Interface implementing an empty Interface when experimentalAllowEmptyAbstractTypes is enabled', () => {
     const schema = buildSchema(
       `
       type Query {
@@ -720,12 +720,12 @@ describe('Type System: Objects must have fields', () => {
         field: String
       }
     `,
-      { experimentalAllowEmptyInterfaceTypes: true },
+      { experimentalAllowEmptyAbstractTypes: true },
     );
     expectJSON(validateSchema(schema)).toDeepEqual([]);
   });
 
-  it('rejects an Object type with no fields when only experimentalAllowEmptyInterfaceTypes is enabled', () => {
+  it('rejects an Object type with no fields when only experimentalAllowEmptyAbstractTypes is enabled', () => {
     const schema = buildSchema(
       `
       type Query {
@@ -734,7 +734,7 @@ describe('Type System: Objects must have fields', () => {
 
       type EmptyObject {}
     `,
-      { experimentalAllowEmptyInterfaceTypes: true },
+      { experimentalAllowEmptyAbstractTypes: true },
     );
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
@@ -742,6 +742,34 @@ describe('Type System: Objects must have fields', () => {
         locations: [{ line: 6, column: 7 }],
       },
     ]);
+  });
+
+  it('accepts a Union type with no members when experimentalAllowEmptyAbstractTypes is enabled', () => {
+    const schema = buildSchema(
+      `
+      type Query {
+        test: EmptyUnion
+      }
+
+      union EmptyUnion
+    `,
+      { experimentalAllowEmptyAbstractTypes: true },
+    );
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+
+    const manualSchema = schemaWithFieldType(
+      new GraphQLUnionType({ name: 'EmptyUnion', types: [] }),
+    );
+    expectJSON(validateSchema(manualSchema)).toDeepEqual([
+      {
+        message: 'Union type EmptyUnion must define one or more member types.',
+      },
+    ]);
+    const manualSchemaWithFlag = new GraphQLSchema({
+      ...manualSchema.toConfig(),
+      experimentalAllowEmptyAbstractTypes: true,
+    });
+    expectJSON(validateSchema(manualSchemaWithFlag)).toDeepEqual([]);
   });
 
   it('rejects an Object type with incorrectly named fields', () => {

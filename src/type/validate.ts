@@ -482,7 +482,7 @@ function validateFields(
   // object or interface types are explicitly allowed.
   const allowEmpty = isObjectType(type)
     ? context.schema.experimentalAllowEmptyObjectTypes
-    : context.schema.experimentalAllowEmptyInterfaceTypes;
+    : context.schema.experimentalAllowEmptyAbstractTypes;
   if (fields.length === 0 && !allowEmpty) {
     context.reportError(`Type ${type} must define one or more fields.`, [
       type.astNode,
@@ -681,7 +681,10 @@ function validateUnionMembers(
 ): void {
   const memberTypes = union.getTypes();
 
-  if (memberTypes.length === 0) {
+  if (
+    memberTypes.length === 0 &&
+    !context.schema.experimentalAllowEmptyAbstractTypes
+  ) {
     context.reportError(
       `Union type ${union} must define one or more member types.`,
       [union.astNode, ...union.extensionASTNodes],
