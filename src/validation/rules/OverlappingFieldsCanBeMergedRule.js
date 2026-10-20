@@ -16,7 +16,6 @@ import { print } from '../../language/printer';
 import type { ASTVisitor } from '../../language/visitor';
 
 import type {
-  GraphQLCompositeType,
   GraphQLField,
   GraphQLNamedType,
   GraphQLOutputType,
@@ -65,7 +64,7 @@ export function OverlappingFieldsCanBeMergedRule(
     NodeAndDefCollection,
     string,
   > = new OrderedPairSet();
-  const comparedFragmentPairs = new PairSet();
+  const comparedFragmentPairs: PairSet = new PairSet();
 
   // A cache for the "field map" and list of fragment names found in any given
   // selection set. Selection sets may be asked for this information multiple
@@ -101,13 +100,11 @@ type ConflictReason = [string, ConflictReasonMessage];
 // Reason is a string, or a nested list of conflicts.
 type ConflictReasonMessage = string | Array<ConflictReason>;
 // Tuple defining a field node in a context.
-type NodeAndDef = [
-  GraphQLCompositeType,
-  FieldNode,
-  ?GraphQLField<mixed, mixed>,
-];
+type NodeAndDef = [?GraphQLNamedType, FieldNode, ?GraphQLField<mixed, mixed>];
 // Map of array of those.
 type NodeAndDefCollection = ObjMap<Array<NodeAndDef>>;
+type FragmentNames = Array<string>;
+type FieldsAndFragmentNames = [NodeAndDefCollection, FragmentNames];
 
 /**
  * Algorithm:
@@ -169,13 +166,13 @@ type NodeAndDefCollection = ObjMap<Array<NodeAndDef>>;
 // GraphQL Document.
 function findConflictsWithinSelectionSet(
   context: ValidationContext,
-  cachedFieldsAndFragmentNames,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
   comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
   comparedFragmentPairs: PairSet,
   parentType: ?GraphQLNamedType,
   selectionSet: SelectionSetNode,
 ): Array<Conflict> {
-  const conflicts = [];
+  const conflicts: Array<Conflict> = [];
 
   const [fieldMap, fragmentNames] = getFieldsAndFragmentNames(
     context,
@@ -235,7 +232,7 @@ function findConflictsWithinSelectionSet(
 function collectConflictsBetweenFieldsAndFragment(
   context: ValidationContext,
   conflicts: Array<Conflict>,
-  cachedFieldsAndFragmentNames,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
   comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
   comparedFragmentPairs: PairSet,
   areMutuallyExclusive: boolean,
@@ -311,7 +308,7 @@ function collectConflictsBetweenFieldsAndFragment(
 function collectConflictsBetweenFragments(
   context: ValidationContext,
   conflicts: Array<Conflict>,
-  cachedFieldsAndFragmentNames,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
   comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
   comparedFragmentPairs: PairSet,
   areMutuallyExclusive: boolean,
@@ -401,7 +398,7 @@ function collectConflictsBetweenFragments(
 // between the sub-fields of two overlapping fields.
 function findConflictsBetweenSubSelectionSets(
   context: ValidationContext,
-  cachedFieldsAndFragmentNames,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
   comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
   comparedFragmentPairs: PairSet,
   areMutuallyExclusive: boolean,
@@ -410,7 +407,7 @@ function findConflictsBetweenSubSelectionSets(
   parentType2: ?GraphQLNamedType,
   selectionSet2: SelectionSetNode,
 ): Array<Conflict> {
-  const conflicts = [];
+  const conflicts: Array<Conflict> = [];
 
   const [fieldMap1, fragmentNames1] = getFieldsAndFragmentNames(
     context,
@@ -495,7 +492,7 @@ function findConflictsBetweenSubSelectionSets(
 function collectConflictsWithin(
   context: ValidationContext,
   conflicts: Array<Conflict>,
-  cachedFieldsAndFragmentNames,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
   comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
   comparedFragmentPairs: PairSet,
   fieldMap: NodeAndDefCollection,
@@ -538,7 +535,7 @@ function collectConflictsWithin(
 function collectConflictsBetween(
   context: ValidationContext,
   conflicts: Array<Conflict>,
-  cachedFieldsAndFragmentNames,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
   comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
   comparedFragmentPairs: PairSet,
   parentFieldsAreMutuallyExclusive: boolean,
@@ -579,7 +576,7 @@ function collectConflictsBetween(
 // comparing their sub-fields.
 function findConflict(
   context: ValidationContext,
-  cachedFieldsAndFragmentNames,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
   comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
   comparedFragmentPairs: PairSet,
   parentFieldsAreMutuallyExclusive: boolean,
@@ -729,14 +726,14 @@ function doTypesConflict(
 // referenced via fragment spreads.
 function getFieldsAndFragmentNames(
   context: ValidationContext,
-  cachedFieldsAndFragmentNames,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
   parentType: ?GraphQLNamedType,
   selectionSet: SelectionSetNode,
-): [NodeAndDefCollection, Array<string>] {
+): FieldsAndFragmentNames {
   let cached = cachedFieldsAndFragmentNames.get(selectionSet);
   if (!cached) {
-    const nodeAndDefs = Object.create(null);
-    const fragmentNames = Object.create(null);
+    const nodeAndDefs: NodeAndDefCollection = Object.create(null);
+    const fragmentNames: ObjMap<boolean> = Object.create(null);
     _collectFieldsAndFragmentNames(
       context,
       parentType,
@@ -754,7 +751,7 @@ function getFieldsAndFragmentNames(
 // as well as a list of nested fragment names referenced via fragment spreads.
 function getReferencedFieldsAndFragmentNames(
   context: ValidationContext,
-  cachedFieldsAndFragmentNames,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
   fragment: FragmentDefinitionNode,
 ) {
   // Short-circuit building a type from the node if possible.
@@ -776,8 +773,8 @@ function _collectFieldsAndFragmentNames(
   context: ValidationContext,
   parentType: ?GraphQLNamedType,
   selectionSet: SelectionSetNode,
-  nodeAndDefs,
-  fragmentNames,
+  nodeAndDefs: NodeAndDefCollection,
+  fragmentNames: ObjMap<boolean>,
 ): void {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
@@ -828,11 +825,12 @@ function subfieldConflicts(
   if (conflicts.length > 0) {
     return [
       [responseName, conflicts.map(([reason]) => reason)],
-      conflicts.reduce((allFields, [, fields1]) => allFields.concat(fields1), [
-        node1,
-      ]),
       conflicts.reduce(
-        (allFields, [, , fields2]) => allFields.concat(fields2),
+        (fields: Array<FieldNode>, [, fields1]) => fields.concat(fields1),
+        [node1],
+      ),
+      conflicts.reduce(
+        (fields: Array<FieldNode>, [, , fields2]) => fields.concat(fields2),
         [node2],
       ),
     ];
