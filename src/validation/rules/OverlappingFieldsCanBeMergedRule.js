@@ -32,6 +32,7 @@ import {
   isInterfaceType,
 } from '../../type/definition';
 
+import { sortValueNode } from '../../utilities/sortValueNode';
 import { typeFromAST } from '../../utilities/typeFromAST';
 
 import type { ValidationContext } from '../ValidationContext';
@@ -661,7 +662,7 @@ function sameArguments(
 }
 
 function sameValue(value1: ValueNode, value2: ValueNode): boolean {
-  return print(value1) === print(value2);
+  return print(sortValueNode(value1)) === print(sortValueNode(value2));
 }
 
 // Two types conflict if both types could not apply to a value simultaneously.
@@ -825,6 +826,7 @@ class PairSet {
     if (result === undefined) {
       return false;
     }
+
     // areMutuallyExclusive being false is a superset of being true,
     // hence if we want to know if this PairSet "has" these two with no
     // exclusivity, we have to ensure it was added as such.
