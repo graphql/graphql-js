@@ -124,6 +124,12 @@ interface CollectFieldsResult {
   responseNames: Array<string>;
   fragmentNames: FragmentNames;
   comparedFragments?: Map<string, boolean>;
+  overlappingFields?: Map<CollectFieldsResult, Array<OverlappingFields>>;
+}
+interface OverlappingFields {
+  responseName: string;
+  fields1: FieldDetailsList;
+  fields2: FieldDetailsList;
 }
 interface RuleContext {
   stringifiedValues: Map<ValueNode, string>;
@@ -544,27 +550,50 @@ function collectConflictsBetween(
   // response name. For any response name which appears in both provided field
   // maps, each field from the first field map must be compared to every field
   // in the second field map to find potential conflicts.
-  for (const responseName of collectFieldsResult1.responseNames) {
-    const fields2 = collectFieldsResult2.groupedFieldSet[responseName];
-    if (fields2) {
-      const fields1 = collectFieldsResult1.groupedFieldSet[responseName];
-      for (let i = 0; i < fields1.length; i++) {
-        for (let j = 0; j < fields2.length; j++) {
-          const conflict = findConflict(
-            validationContext,
-            ruleContext,
-            parentFieldsAreMutuallyExclusive,
-            responseName,
-            fields1[i],
-            fields2[j],
-          );
-          if (conflict) {
-            conflicts.push(conflict);
-          }
+  for (const { responseName, fields1, fields2 } of getOverlappingFields(
+    collectFieldsResult1,
+    collectFieldsResult2,
+  )) {
+    for (let i = 0; i < fields1.length; i++) {
+      for (let j = 0; j < fields2.length; j++) {
+        const conflict = findConflict(
+          validationContext,
+          ruleContext,
+          parentFieldsAreMutuallyExclusive,
+          responseName,
+          fields1[i],
+          fields2[j],
+        );
+        if (conflict) {
+          conflicts.push(conflict);
         }
       }
     }
   }
+}
+
+function getOverlappingFields(
+  collectFieldsResult1: CollectFieldsResult,
+  collectFieldsResult2: CollectFieldsResult,
+): Array<OverlappingFields> {
+  // Reuse matching response groups when these collections are compared again.
+  const byCollectFieldsResult =
+    collectFieldsResult1.overlappingFields ??
+    (collectFieldsResult1.overlappingFields = new Map());
+  const cached = byCollectFieldsResult.get(collectFieldsResult2);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const overlappingFields: Array<OverlappingFields> = [];
+  for (const responseName of collectFieldsResult1.responseNames) {
+    const fields2 = collectFieldsResult2.groupedFieldSet[responseName];
+    if (fields2 !== undefined) {
+      const fields1 = collectFieldsResult1.groupedFieldSet[responseName];
+      overlappingFields.push({ responseName, fields1, fields2 });
+    }
+  }
+  byCollectFieldsResult.set(collectFieldsResult2, overlappingFields);
+  return overlappingFields;
 }
 
 // Determines if there is a conflict between two particular fields, including
