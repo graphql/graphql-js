@@ -137,7 +137,8 @@ type FieldDetails = [
   Maybe<GraphQLField<unknown, unknown>>,
 ];
 // Map of array of those.
-type NodeAndDefCollection = Map<string, Array<FieldDetails>>;
+type FieldDetailsList = Array<FieldDetails>;
+type NodeAndDefCollection = Map<string, FieldDetailsList>;
 type FragmentNames = ReadonlyArray<string>;
 type FieldsAndFragmentNames = readonly [NodeAndDefCollection, FragmentNames];
 interface RuleContext {
