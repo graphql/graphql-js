@@ -37,6 +37,23 @@ function expectValidWithSchema(schema: GraphQLSchema, queryStr: string) {
 }
 
 describe('Validate: Overlapping fields can be merged', () => {
+  it('different args, first has two, second missing one', () => {
+    expectErrors(`
+      fragment conflictingArgs on Dog {
+        doesKnowCommand(dogCommand: SIT, atExpertLevel: true)
+        doesKnowCommand(dogCommand: SIT)
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Fields "doesKnowCommand" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
+      },
+    ]);
+  });
   it('keeps field definitions separate when a selection set is shared between types', () => {
     const schema = buildSchema(`
       type Query { node: Union }
