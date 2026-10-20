@@ -68,7 +68,12 @@ export function OverlappingFieldsCanBeMergedRule(
   };
 
   return {
-    SelectionSet(selectionSet) {
+    SelectionSet(selectionSet, _key, parent) {
+      // Inline fragments are flattened into their enclosing response level.
+      // Their fields' own selection sets are still visited independently.
+      if (parent && 'kind' in parent && parent.kind === Kind.INLINE_FRAGMENT) {
+        return;
+      }
       const conflicts = findConflictsWithinSelectionSet(
         validationContext,
         ruleContext,
