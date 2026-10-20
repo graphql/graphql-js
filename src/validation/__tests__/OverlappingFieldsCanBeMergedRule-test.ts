@@ -1323,4 +1323,37 @@ describe('Validate: Overlapping fields can be merged', () => {
       }
     `);
   });
+
+  it('rechecks field-to-fragment comparisons when parents can overlap', () => {
+    const schema = buildSchema(`
+      type Query { item: Item }
+      interface Item { child: Leaf }
+      type A implements Item { child: Leaf }
+      type B implements Item { child: Leaf }
+      type Leaf { first: Int second: Int }
+    `);
+    const errors = validate(
+      schema,
+      parse(`
+        {
+          item {
+            ...Left
+            ... on B { child { ...Right ...RightAgain } }
+          }
+          other: item {
+            ...Left
+            ... on A { child { ...Right } }
+          }
+        }
+        fragment Left on A { child { value: first } }
+        fragment Right on Leaf { value: second }
+        fragment RightAgain on Leaf { ...Right }
+      `),
+      [OverlappingFieldsCanBeMergedRule],
+    );
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0].message).to.equal(
+      'Fields "child" conflict because subfields "value" conflict because "first" and "second" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+    );
+  });
 });
