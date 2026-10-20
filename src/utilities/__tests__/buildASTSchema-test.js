@@ -69,6 +69,15 @@ function printAllASTNodes(obj: GraphQLNamedType): string {
 }
 
 describe('Schema Builder', () => {
+  it('forwards the maximum comment limit', () => {
+    const source = '# comment\ntype Query { field: Int }';
+
+    expect(() => buildSchema(source, { maxComments: 1 })).to.not.throw();
+    expect(() => buildSchema(source, { maxComments: 0 })).to.throw(
+      'Syntax Error: Document contains more than 0 comments. Parsing aborted.',
+    );
+  });
+
   it('forwards the maximum lexical token limit', () => {
     const source = 'type Query { field: String }';
 

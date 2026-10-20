@@ -37,6 +37,12 @@ export class Lexer {
    */
   lineStart: number;
 
+  /** @internal */
+  _maxComments: number | void;
+
+  /** @internal */
+  _commentCount: number;
+
   constructor(source: Source) {
     const startOfFileToken = new Token(TokenKind.SOF, 0, 0, 0, 0, null);
 
@@ -45,6 +51,8 @@ export class Lexer {
     this.token = startOfFileToken;
     this.line = 1;
     this.lineStart = 0;
+    this._maxComments = undefined;
+    this._commentCount = 0;
   }
 
   /**
@@ -151,7 +159,7 @@ function readToken(lexer: Lexer, prev: Token): Token {
       case 33: //  !
         return new Token(TokenKind.BANG, pos, pos + 1, line, col, prev);
       case 35: //  #
-        return readComment(source, pos, line, col, prev);
+        return readComment(lexer, pos, line, col, prev);
       case 36: //  $
         return new Token(TokenKind.DOLLAR, pos, pos + 1, line, col, prev);
       case 38: //  &
@@ -290,12 +298,26 @@ function unexpectedCharacterMessage(code: number): string {
  * #[\u0009\u0020-\uFFFF]*
  */
 function readComment(
-  source: Source,
+  lexer: Lexer,
   start: number,
   line: number,
   col: number,
   prev: Token | null,
 ): Token {
+  const maxComments = lexer._maxComments;
+  if (maxComments !== undefined) {
+    const nextCommentCount = lexer._commentCount + 1;
+    if (nextCommentCount > maxComments) {
+      throw syntaxError(
+        lexer.source,
+        start,
+        `Document contains more than ${maxComments} comments. Parsing aborted.`,
+      );
+    }
+    lexer._commentCount = nextCommentCount;
+  }
+
+  const source = lexer.source;
   const body = source.body;
   let code;
   let position = start;
