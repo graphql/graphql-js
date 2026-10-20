@@ -6,7 +6,7 @@ import type { Maybe } from '../../jsutils/Maybe';
 import { GraphQLError } from '../../error/GraphQLError';
 
 import type {
-  DirectiveNode,
+  ArgumentNode,
   FieldNode,
   FragmentDefinitionNode,
   SelectionSetNode,
@@ -140,6 +140,14 @@ interface FieldDetails {
   parentType: Maybe<GraphQLNamedType>;
   node: FieldNode;
   definition: Maybe<GraphQLField<unknown, unknown>>;
+  info?: FieldInfo;
+}
+interface FieldInfo {
+  arguments: ArgumentInfo | undefined;
+}
+interface ArgumentInfo {
+  nodes: ReadonlyArray<ArgumentNode>;
+  values: Map<string, ValueNode>;
 }
 // Map of array of those.
 type FieldDetailsList = Array<FieldDetails>;
@@ -620,6 +628,8 @@ function findConflict(
       isObjectType(parentType2));
 
   if (!areMutuallyExclusive) {
+    const fieldInfo1 = getFieldInfo(fieldDetails1);
+    const fieldInfo2 = getFieldInfo(fieldDetails2);
     // Two aliases must refer to the same field.
     const name1 = node1.name.value;
     const name2 = node2.name.value;
@@ -633,7 +643,7 @@ function findConflict(
     }
 
     // Two field calls must have the same arguments.
-    if (!sameArguments(node1, node2)) {
+    if (!sameArguments(fieldInfo1.arguments, fieldInfo2.arguments)) {
       return {
         responseName,
         reason: 'they have differing arguments',
@@ -677,36 +687,46 @@ function findConflict(
   }
 }
 
+// Prepare argument lookups only when a field overlaps.
+function getFieldInfo(fieldDetails: FieldDetails): FieldInfo {
+  if (fieldDetails.info === undefined) {
+    fieldDetails.info = {
+      arguments: getArgumentInfo(fieldDetails.node.arguments),
+    };
+  }
+  return fieldDetails.info;
+}
+
+function getArgumentInfo(
+  args: ReadonlyArray<ArgumentNode> | undefined,
+): ArgumentInfo | undefined {
+  if (args === undefined || args.length === 0) {
+    return;
+  }
+  const values = new Map<string, ValueNode>();
+  for (const { name, value } of args) {
+    values.set(name.value, value);
+  }
+  return { nodes: args, values };
+}
+
 function sameArguments(
-  node1: FieldNode | DirectiveNode,
-  node2: FieldNode | DirectiveNode,
+  argumentInfo1: ArgumentInfo | undefined,
+  argumentInfo2: ArgumentInfo | undefined,
 ): boolean {
-  const args1 = node1.arguments;
-  const args2 = node2.arguments;
-
-  if (args1 === undefined || args1.length === 0) {
-    return args2 === undefined || args2.length === 0;
+  if (argumentInfo1 === undefined) {
+    return argumentInfo2 === undefined;
   }
-  if (args2 === undefined || args2.length === 0) {
+  if (argumentInfo1.nodes.length !== argumentInfo2?.nodes.length) {
     return false;
   }
-
-  /* c8 ignore next */
-  if (args1.length !== args2.length) {
-    /* c8 ignore next */
-    return false;
-    /* c8 ignore next */
-  }
-
-  const values2 = new Map(args2.map(({ name, value }) => [name.value, value]));
-  return args1.every((arg1) => {
-    const value1 = arg1.value;
+  const values2 = argumentInfo2.values;
+  return argumentInfo1.nodes.every((arg1) => {
     const value2 = values2.get(arg1.name.value);
     if (value2 === undefined) {
       return false;
     }
-
-    return stringifyValue(value1) === stringifyValue(value2);
+    return stringifyValue(arg1.value) === stringifyValue(value2);
   });
 }
 
