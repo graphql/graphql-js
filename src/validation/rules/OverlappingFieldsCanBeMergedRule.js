@@ -730,21 +730,25 @@ function getFieldsAndFragmentNames(
   parentType: ?GraphQLNamedType,
   selectionSet: SelectionSetNode,
 ): FieldsAndFragmentNames {
-  let cached = cachedFieldsAndFragmentNames.get(selectionSet);
-  if (!cached) {
-    const nodeAndDefs: NodeAndDefCollection = Object.create(null);
-    const fragmentNames: ObjMap<boolean> = Object.create(null);
-    _collectFieldsAndFragmentNames(
-      context,
-      parentType,
-      selectionSet,
-      nodeAndDefs,
-      fragmentNames,
-    );
-    cached = [nodeAndDefs, Object.keys(fragmentNames)];
-    cachedFieldsAndFragmentNames.set(selectionSet, cached);
+  const cached = cachedFieldsAndFragmentNames.get(selectionSet);
+  if (cached) {
+    return cached;
   }
-  return cached;
+  const nodeAndDefs: NodeAndDefCollection = Object.create(null);
+  const fragmentNames: ObjMap<boolean> = Object.create(null);
+  _collectFieldsAndFragmentNames(
+    context,
+    parentType,
+    selectionSet,
+    nodeAndDefs,
+    fragmentNames,
+  );
+  const result: FieldsAndFragmentNames = [
+    nodeAndDefs,
+    Object.keys(fragmentNames),
+  ];
+  cachedFieldsAndFragmentNames.set(selectionSet, result);
+  return result;
 }
 
 // Given a reference to a fragment, return the represented collection of fields
