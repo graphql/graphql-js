@@ -44,7 +44,9 @@ function findConflictsWithinSelectionSet(validationContext, ruleContext, parentT
     const conflicts = [];
     const collectFieldsResult = collectFields(validationContext, ruleContext, parentType, selectionSet);
     collectConflictsWithin(validationContext, ruleContext, conflicts, collectFieldsResult, scope);
-    if (collectFieldsResult.spreads.length !== 0) {
+    if (collectFieldsResult.spreads.length !== 0 &&
+        (collectFieldsResult.groupedFieldSet.size !== 0 ||
+            collectFieldsResult.spreads.length > 1)) {
         const fragmentSpreads = getFragmentSpreads(validationContext, ruleContext, collectFieldsResult, scope);
         for (let i = 0; i < fragmentSpreads.length; i++) {
             collectConflictsBetweenFieldsAndFragment(validationContext, ruleContext, conflicts, false, collectFieldsResult, scope, fragmentSpreads[i]);
