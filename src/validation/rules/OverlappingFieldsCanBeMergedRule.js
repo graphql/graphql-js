@@ -106,6 +106,8 @@ interface FieldDetails {
   info?: FieldInfo;
 }
 interface FieldInfo {
+  // A null reason means the field names and arguments match.
+  comparisons: Map<FieldInfo, string | null>;
   arguments: ArgumentInfo | void;
 }
 interface ArgumentInfo {
@@ -601,23 +603,23 @@ function findConflict(
   if (!areMutuallyExclusive) {
     const fieldInfo1 = getFieldInfo(fieldDetails1);
     const fieldInfo2 = getFieldInfo(fieldDetails2);
-    // Two aliases must refer to the same field.
-    const name1 = node1.name.value;
-    const name2 = node2.name.value;
-    if (name1 !== name2) {
-      return {
-        responseName,
-        reason: `"${name1}" and "${name2}" are different fields`,
-        fields1: [node1],
-        fields2: [node2],
-      };
+    let reason = fieldInfo1.comparisons.get(fieldInfo2);
+    if (reason === undefined) {
+      // Two aliases must refer to the same field with the same arguments.
+      const name1 = node1.name.value;
+      const name2 = node2.name.value;
+      reason =
+        name1 !== name2
+          ? `"${name1}" and "${name2}" are different fields`
+          : sameArguments(fieldInfo1.arguments, fieldInfo2.arguments)
+          ? null
+          : 'they have differing arguments';
+      fieldInfo1.comparisons.set(fieldInfo2, reason);
     }
-
-    // Two field calls must have the same arguments.
-    if (!sameArguments(fieldInfo1.arguments, fieldInfo2.arguments)) {
+    if (reason !== null) {
       return {
         responseName,
-        reason: 'they have differing arguments',
+        reason,
         fields1: [node1],
         fields2: [node2],
       };
@@ -662,6 +664,7 @@ function findConflict(
 function getFieldInfo(fieldDetails: FieldDetails): FieldInfo {
   if (fieldDetails.info === undefined) {
     fieldDetails.info = {
+      comparisons: new Map(),
       arguments: getArgumentInfo(fieldDetails.node.arguments),
     };
   }
