@@ -106,14 +106,14 @@ describe('Type System: build schema from introspection', () => {
       }
     `;
     const serverSchema = buildSchema(sdl, {
-      experimentalAllowEmptyInterfaceTypes: true,
+      experimentalAllowEmptyAbstractTypes: true,
     });
     const introspection = introspectionFromSchema(serverSchema);
     const clientSchema = buildClientSchema(introspection, {
-      experimentalAllowEmptyInterfaceTypes: true,
+      experimentalAllowEmptyAbstractTypes: true,
     });
 
-    expect(clientSchema.experimentalAllowEmptyInterfaceTypes).to.equal(true);
+    expect(clientSchema.experimentalAllowEmptyAbstractTypes).to.equal(true);
     expect(printSchema(clientSchema)).to.equal(sdl);
     expect(
       graphqlSync({
