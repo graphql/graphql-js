@@ -1,5 +1,3 @@
-import objectEntries from '../../polyfills/objectEntries';
-
 import inspect from '../../jsutils/inspect';
 import type { ObjMap } from '../../jsutils/ObjMap';
 
@@ -112,6 +110,7 @@ type GroupedFieldSet = ObjMap<FieldDetailsList>;
 type FragmentNames = Array<string>;
 interface CollectFieldsResult {
   groupedFieldSet: GroupedFieldSet;
+  responseNames: Array<string>;
   fragmentNames: FragmentNames;
   comparedFragments?: Map<string, boolean>;
 }
@@ -201,7 +200,7 @@ function findConflictsWithinSelectionSet(
     validationContext,
     conflicts,
     ruleContext,
-    collectFieldsResult.groupedFieldSet,
+    collectFieldsResult,
   );
 
   if (collectFieldsResult.fragmentNames.length !== 0) {
@@ -245,6 +244,10 @@ function collectConflictsBetweenFieldsAndFragment(
   collectFieldsResult: CollectFieldsResult,
   fragmentName: string,
 ): void {
+  if (collectFieldsResult.responseNames.length === 0) {
+    return;
+  }
+
   const comparedFragments =
     collectFieldsResult.comparedFragments ??
     (collectFieldsResult.comparedFragments = new Map());
@@ -473,13 +476,14 @@ function collectConflictsWithin(
   validationContext: ValidationContext,
   conflicts: Array<Conflict>,
   ruleContext: RuleContext,
-  groupedFieldSet: GroupedFieldSet,
+  collectFieldsResult: CollectFieldsResult,
 ): void {
   // A field map is a keyed collection, where each key represents a response
   // name and the value at that key is a list of all fields which provide that
   // response name. For every response name, if there are multiple fields, they
   // must be compared to find a potential conflict.
-  for (const [responseName, fields] of objectEntries(groupedFieldSet)) {
+  for (const responseName of collectFieldsResult.responseNames) {
+    const fields = collectFieldsResult.groupedFieldSet[responseName];
     // This compares every field in the list to every other field in this list
     // (except to itself). If the list only has one item, nothing needs to
     // be compared.
@@ -516,14 +520,19 @@ function collectConflictsBetween(
   collectFieldsResult1: CollectFieldsResult,
   collectFieldsResult2: CollectFieldsResult,
 ): void {
+  if (
+    collectFieldsResult1.responseNames.length === 0 ||
+    collectFieldsResult2.responseNames.length === 0
+  ) {
+    return;
+  }
+
   // A field map is a keyed collection, where each key represents a response
   // name and the value at that key is a list of all fields which provide that
   // response name. For any response name which appears in both provided field
   // maps, each field from the first field map must be compared to every field
   // in the second field map to find potential conflicts.
-  for (const responseName of Object.keys(
-    collectFieldsResult1.groupedFieldSet,
-  )) {
+  for (const responseName of collectFieldsResult1.responseNames) {
     const fields2 = collectFieldsResult2.groupedFieldSet[responseName];
     if (fields2) {
       const fields1 = collectFieldsResult1.groupedFieldSet[responseName];
@@ -729,8 +738,9 @@ function collectFields(
     fieldDetails,
     fragmentNames,
   );
-  const result = {
+  const result: CollectFieldsResult = {
     groupedFieldSet: fieldDetails,
+    responseNames: Object.keys(fieldDetails),
     fragmentNames: Object.keys(fragmentNames),
   };
   bySelectionSet.set(selectionSet, result);
