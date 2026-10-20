@@ -10,6 +10,7 @@ import { assertValidSchema } from '../type/validate.ts';
 import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo.ts';
 import { shouldTrace, validateChannel } from '../diagnostics.ts';
 import { specifiedRules, specifiedSDLRules } from './specifiedRules.ts';
+import { validationAbortedError } from './validationAbortedError.ts';
 import type { SDLValidationRule, ValidationRule } from './ValidationContext.ts';
 import {
   SDLValidationContext,
@@ -163,8 +164,8 @@ function validateImpl(
       QueryDocumentKeysToValidate,
     );
   } catch (e: unknown) {
-    if (e === tooManyValidationErrorsError) {
-      errors.push(tooManyValidationErrorsError);
+    if (e === tooManyValidationErrorsError || e === validationAbortedError) {
+      errors.push(e as GraphQLError);
     } else {
       throw e;
     }

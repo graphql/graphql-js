@@ -174,6 +174,7 @@
     "./dev/validation/rules/VariablesInAllowedPositionRule.ts": "./__dev__/validation/rules/VariablesInAllowedPositionRule.ts",
     "./dev/validation/specifiedRules.ts": "./__dev__/validation/specifiedRules.ts",
     "./dev/validation/validate.ts": "./__dev__/validation/validate.ts",
+    "./dev/validation/validationAbortedError.ts": "./__dev__/validation/validationAbortedError.ts",
     "./dev/validation/ValidationContext.ts": "./__dev__/validation/ValidationContext.ts",
     "./dev/version.ts": "./__dev__/version.ts",
     "./devMode.ts": "./devMode.ts",
@@ -350,6 +351,7 @@
     "./validation/rules/VariablesInAllowedPositionRule.ts": "./validation/rules/VariablesInAllowedPositionRule.ts",
     "./validation/specifiedRules.ts": "./validation/specifiedRules.ts",
     "./validation/validate.ts": "./validation/validate.ts",
+    "./validation/validationAbortedError.ts": "./validation/validationAbortedError.ts",
     "./validation/ValidationContext.ts": "./validation/ValidationContext.ts",
     "./version.ts": "./version.ts"
   },
