@@ -72,6 +72,9 @@ export type ParseOptions = {|
   /** Maximum number of comments. */
   maxComments?: number,
 
+  /** Maximum source length in UTF-16 code units. */
+  maxSourceLength?: number,
+
   /**
    * If enabled, the parser will parse empty fields sets in the Schema
    * Definition Language. Otherwise, the parser will follow the current
@@ -190,6 +193,18 @@ export class Parser {
 
     this._lexer._maxComments = options?.maxComments;
     this._lexer._commentCount = 0;
+
+    const maxSourceLength = options?.maxSourceLength;
+    if (
+      maxSourceLength !== undefined &&
+      this._lexer.source.body.length > maxSourceLength
+    ) {
+      throw syntaxError(
+        this._lexer.source,
+        maxSourceLength,
+        `Source contains more than ${maxSourceLength} UTF-16 code units. Parsing aborted.`,
+      );
+    }
   }
 
   /**
