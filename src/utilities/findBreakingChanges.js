@@ -3,10 +3,8 @@ import objectValues from '../polyfills/objectValues';
 import keyMap from '../jsutils/keyMap';
 import inspect from '../jsutils/inspect';
 import invariant from '../jsutils/invariant';
-import naturalCompare from '../jsutils/naturalCompare';
 
 import { print } from '../language/printer';
-import { visit } from '../language/visitor';
 
 import type { GraphQLSchema } from '../type/schema';
 import type {
@@ -36,6 +34,7 @@ import {
 } from '../type/definition';
 
 import { astFromValue } from './astFromValue';
+import { sortValueNode } from './sortValueNode';
 
 export const BreakingChangeType = Object.freeze({
   TYPE_REMOVED: 'TYPE_REMOVED',
@@ -540,19 +539,7 @@ function stringifyValue(value: mixed, type: GraphQLInputType): string {
   const ast = astFromValue(value, type);
   invariant(ast != null);
 
-  const sortedAST = visit(ast, {
-    ObjectValue(objectNode) {
-      // Make a copy since sort mutates array
-      const fields = [...objectNode.fields];
-
-      fields.sort((fieldA, fieldB) =>
-        naturalCompare(fieldA.name.value, fieldB.name.value),
-      );
-      return { ...objectNode, fields };
-    },
-  });
-
-  return print(sortedAST);
+  return print(sortValueNode(ast));
 }
 
 function diff<T: { name: string, ... }>(

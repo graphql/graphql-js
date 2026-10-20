@@ -236,6 +236,51 @@ describe('Validate: Overlapping fields can be merged', () => {
     `);
   });
 
+  it('allows different order of args', () => {
+    const schema = buildSchema(`
+      type Query {
+        someField(a: String, b: String): String
+      }
+    `);
+
+    // This is valid since arguments are unordered, see:
+    // https://spec.graphql.org/draft/#sec-Language.Arguments.Arguments-are-unordered
+    expectValidWithSchema(
+      schema,
+      `
+        {
+          someField(a: null, b: null)
+          someField(b: null, a: null)
+        }
+      `,
+    );
+  });
+
+  it('allows different order of input object fields in arg values', () => {
+    const schema = buildSchema(`
+      input SomeInput {
+        a: String
+        b: String
+      }
+
+      type Query {
+        someField(arg: SomeInput): String
+      }
+    `);
+
+    // This is valid since input object fields are unordered, see:
+    // https://spec.graphql.org/draft/#sec-Input-Object-Values.Input-object-fields-are-unordered
+    expectValidWithSchema(
+      schema,
+      `
+        {
+          someField(arg: { a: null, b: null })
+          someField(arg: { b: null, a: null })
+        }
+      `,
+    );
+  });
+
   it('encounters conflict in fragments', () => {
     expectErrors(`
       {
