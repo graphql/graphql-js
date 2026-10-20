@@ -3,6 +3,7 @@ import { describe, it } from 'mocha';
 
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
+import { print } from '../../language/printer';
 
 import type { GraphQLSchema } from '../../type/schema';
 
@@ -37,6 +38,87 @@ function expectValidWithSchema(schema: GraphQLSchema, queryStr: string) {
 }
 
 describe('Validate: Overlapping fields can be merged', () => {
+  it('compares nested input values with empty collections and block strings', () => {
+    const schema = buildSchema(`
+      input SomeInput {
+        text: String
+        children: [SomeInput]
+      }
+      type Query {
+        someField(arg: SomeInput): String
+      }
+    `);
+
+    expectValidWithSchema(
+      schema,
+      `
+        {
+          someField(arg: {
+            text: """first line
+second line"""
+            children: [{ text: "value", children: [] }, {}]
+          })
+          someField(arg: {
+            children: [{ children: [], text: "value" }, {}]
+            text: """first line
+second line"""
+          })
+        }
+      `,
+    );
+  });
+
+  it('distinguishes value kinds, string forms, and collection order', () => {
+    const schema = buildSchema(
+      'scalar Input type Query { field(value: Input): String }',
+    );
+    const values = [
+      '1',
+      '1.0',
+      '"1"',
+      '"""1"""',
+      'true',
+      'false',
+      'null',
+      'VALUE',
+      '$value',
+      '[]',
+      '{}',
+      '[1, 2]',
+      '[2, 1]',
+      '{ a: 1 }',
+      '{ b: 1 }',
+      '{ a: 2 }',
+      '{ a: 1, a: 2 }',
+      '{ a: 2, a: 1 }',
+    ];
+    for (const first of values) {
+      for (const second of values) {
+        const document = parse(
+          `{ field(value: ${first}) field(value: ${second}) }`,
+        );
+        const errors = validate(schema, document, [
+          OverlappingFieldsCanBeMergedRule,
+        ]);
+        expect(errors).to.have.lengthOf(first === second ? 0 : 1);
+      }
+    }
+  });
+
+  it('compares object fields without changing the source AST', () => {
+    const schema = buildSchema(
+      'scalar Input type Query { field(value: Input): String }',
+    );
+    const document = parse(`{
+      field(value: { z: [{ b: 2, a: 1 }], a: true, a: false })
+      field(value: { a: true, z: [{ a: 1, b: 2 }], a: false })
+    }`);
+    const before = print(document);
+    expect(
+      validate(schema, document, [OverlappingFieldsCanBeMergedRule]),
+    ).to.deep.equal([]);
+    expect(print(document)).to.equal(before);
+  });
   it('different args, first has two, second missing one', () => {
     expectErrors(`
       fragment conflictingArgs on Dog {
