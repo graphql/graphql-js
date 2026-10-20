@@ -185,6 +185,24 @@ second line"""
       'Fields "value" conflict because they return conflicting types "Int" and "String". Use different aliases on the fields to fetch both if this was intentional.',
     ]);
   });
+  it('reuses field comparisons when operations share a selection set', () => {
+    const schema = buildSchema('type Query { field(arg: Int): String }');
+    const document = parse(`
+      query First { field(arg: 1) field(arg: 1) }
+      query Second { field }
+    `);
+    const first = document.definitions[0];
+    const second = document.definitions[1];
+    invariant(first.kind === Kind.OPERATION_DEFINITION);
+    invariant(second.kind === Kind.OPERATION_DEFINITION);
+    expect(
+      validate(schema, {
+        ...document,
+        definitions: [first, { ...second, selectionSet: first.selectionSet }],
+      }),
+    ).to.deep.equal([]);
+  });
+
   it('unique fields', () => {
     expectValid(`
       fragment uniqueFields on Dog {
