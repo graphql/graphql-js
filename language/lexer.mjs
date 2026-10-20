@@ -11,6 +11,8 @@ export class Lexer {
         this.token = startOfFileToken;
         this.line = 1;
         this.lineStart = 0;
+        this._maxComments = undefined;
+        this._commentCount = 0;
     }
     get [Symbol.toStringTag]() {
         return 'Lexer';
@@ -176,6 +178,14 @@ function readNextToken(lexer, start) {
     return createToken(lexer, TokenKind.EOF, bodyLength, bodyLength);
 }
 function readComment(lexer, start) {
+    const maxComments = lexer._maxComments;
+    if (maxComments !== undefined) {
+        const nextCommentCount = lexer._commentCount + 1;
+        if (nextCommentCount > maxComments) {
+            throw syntaxError(lexer.source, start, `Document contains more than ${maxComments} comments. Parsing aborted.`);
+        }
+        lexer._commentCount = nextCommentCount;
+    }
     const body = lexer.source.body;
     const bodyLength = body.length;
     let position = start + 1;

@@ -63,6 +63,8 @@ export class Parser {
         }
         this._options = _options;
         this._tokenCounter = 0;
+        this._lexer._maxComments = _options.maxComments;
+        this._lexer._commentCount = 0;
     }
     get tokenCount() {
         return this._tokenCounter;

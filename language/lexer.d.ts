@@ -14,6 +14,8 @@ export interface LexerInterface {
     token: Token;
     line: number;
     lineStart: number;
+    _maxComments?: number | undefined;
+    _commentCount?: number | undefined;
     advance: () => Token;
     lookahead: () => Token;
 }
@@ -36,6 +38,10 @@ export declare class Lexer implements LexerInterface {
     line: number;
     /** Character offset where the current line starts. */
     lineStart: number;
+    /** @internal */
+    _maxComments: number | undefined;
+    /** @internal */
+    _commentCount: number;
     /**
      * Creates a Lexer instance.
      * @param source - Source document used to derive error locations.
