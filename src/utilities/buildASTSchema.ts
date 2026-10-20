@@ -159,12 +159,7 @@ export function buildSchema(
   source: string | Source,
   options?: BuildSchemaOptions & ParseOptions,
 ): GraphQLSchema {
-  const document = parse(source, {
-    noLocation: options?.noLocation,
-    allowLegacyFragmentVariables: options?.allowLegacyFragmentVariables,
-    experimentalDirectivesOnDirectiveDefinitions:
-      options?.experimentalDirectivesOnDirectiveDefinitions,
-  });
+  const document = parse(source, options);
 
   return buildASTSchema(document, {
     assumeValidSDL: options?.assumeValidSDL,

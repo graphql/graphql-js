@@ -64,6 +64,50 @@ function expectExtensionASTNodes(obj: {
 }
 
 describe('Schema Builder', () => {
+  it('forwards the maximum lexical token limit', () => {
+    const source = 'type Query { field: String }';
+
+    expect(() => buildSchema(source, { maxLexicalTokens: 7 })).to.not.throw();
+    expect(() => buildSchema(source, { maxLexicalTokens: 6 })).to.throw(
+      'Syntax Error: Document contains more that 6 tokens. Parsing aborted.',
+    );
+    expect(() => buildSchema(source, { maxTokens: 6 })).to.throw(
+      'Syntax Error: Document contains more that 6 tokens. Parsing aborted.',
+    );
+  });
+
+  it('forwards the deprecated maxTokens alias', () => {
+    const source = 'type Query { field: Int }';
+    expect(() => buildSchema(source, { maxTokens: 7 })).not.to.throw();
+    expect(() => buildSchema(source, { maxTokens: 6 })).to.throw(
+      'Document contains more that 6 tokens. Parsing aborted.',
+    );
+    expect(() => buildSchema(source, { maxTokens: 0 })).to.throw(
+      'Document contains more that 0 tokens. Parsing aborted.',
+    );
+  });
+
+  it('forwards the maximum source length to the parser', () => {
+    const source = 'type Query { field: Int }';
+    expect(() =>
+      buildSchema(source, { maxSourceLength: source.length }),
+    ).to.not.throw();
+
+    const maxSourceLength = source.length - 1;
+    expect(() => buildSchema(source, { maxSourceLength })).to.throw(
+      `Syntax Error: Source contains more than ${maxSourceLength} UTF-16 code units. Parsing aborted.`,
+    );
+  });
+
+  it('forwards the maximum comment limit', () => {
+    const source = '# comment\ntype Query { field: Int }';
+
+    expect(() => buildSchema(source, { maxComments: 1 })).to.not.throw();
+    expect(() => buildSchema(source, { maxComments: 0 })).to.throw(
+      'Syntax Error: Document contains more than 0 comments. Parsing aborted.',
+    );
+  });
+
   it('can use built schema for limited execution', () => {
     const schema = buildASTSchema(
       parse(`
