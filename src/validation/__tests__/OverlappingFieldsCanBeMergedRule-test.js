@@ -42,6 +42,13 @@ function expectValidWithSchema(schema: GraphQLSchema, queryStr: string) {
 }
 
 describe('Validate: Overlapping fields can be merged', () => {
+  it('accepts several overlapping fields with identical values', () => {
+    const schema = buildSchema('type Query { field(value: Int): String }');
+    expectValidWithSchema(
+      schema,
+      '{ field(value: 1) field(value: 1) field(value: 1) }',
+    );
+  });
   it('compares nested input values with empty collections and block strings', () => {
     const schema = buildSchema(`
       input SomeInput {
