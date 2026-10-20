@@ -66,6 +66,9 @@ export type ParseOptions = {|
    */
   noLocation?: boolean,
 
+  /** Maximum number of non-comment tokens allowed in a document. */
+  maxLexicalTokens?: number,
+
   /**
    * If enabled, the parser will parse empty fields sets in the Schema
    * Definition Language. Otherwise, the parser will follow the current
@@ -173,12 +176,14 @@ export function parseType(
 export class Parser {
   _options: ?ParseOptions;
   _lexer: Lexer;
+  _tokenCounter: number;
 
   constructor(source: string | Source, options?: ParseOptions) {
     const sourceObj = isSource(source) ? source : new Source(source);
 
     this._lexer = new Lexer(sourceObj);
     this._options = options;
+    this._tokenCounter = 0;
   }
 
   /**
@@ -540,14 +545,14 @@ export class Parser {
       case TokenKind.BRACE_L:
         return this.parseObject(isConst);
       case TokenKind.INT:
-        this._lexer.advance();
+        this.advanceLexer();
         return {
           kind: Kind.INT,
           value: ((token.value: any): string),
           loc: this.loc(token),
         };
       case TokenKind.FLOAT:
-        this._lexer.advance();
+        this.advanceLexer();
         return {
           kind: Kind.FLOAT,
           value: ((token.value: any): string),
@@ -557,7 +562,7 @@ export class Parser {
       case TokenKind.BLOCK_STRING:
         return this.parseStringLiteral();
       case TokenKind.NAME:
-        this._lexer.advance();
+        this.advanceLexer();
         switch (token.value) {
           case 'true':
             return { kind: Kind.BOOLEAN, value: true, loc: this.loc(token) };
@@ -583,7 +588,7 @@ export class Parser {
 
   parseStringLiteral(): StringValueNode {
     const token = this._lexer.token;
-    this._lexer.advance();
+    this.advanceLexer();
     return {
       kind: Kind.STRING,
       value: ((token.value: any): string),
@@ -885,8 +890,8 @@ export class Parser {
       this.peek(TokenKind.BRACE_L) &&
       this._lexer.lookahead().kind === TokenKind.BRACE_R
     ) {
-      this._lexer.advance();
-      this._lexer.advance();
+      this.advanceLexer();
+      this.advanceLexer();
       return [];
     }
     return this.optionalMany(
@@ -1412,7 +1417,7 @@ export class Parser {
   expectToken(kind: TokenKindEnum): Token {
     const token = this._lexer.token;
     if (token.kind === kind) {
-      this._lexer.advance();
+      this.advanceLexer();
       return token;
     }
 
@@ -1430,7 +1435,7 @@ export class Parser {
   expectOptionalToken(kind: TokenKindEnum): ?Token {
     const token = this._lexer.token;
     if (token.kind === kind) {
-      this._lexer.advance();
+      this.advanceLexer();
       return token;
     }
     return undefined;
@@ -1443,7 +1448,7 @@ export class Parser {
   expectKeyword(value: string) {
     const token = this._lexer.token;
     if (token.kind === TokenKind.NAME && token.value === value) {
-      this._lexer.advance();
+      this.advanceLexer();
     } else {
       throw syntaxError(
         this._lexer.source,
@@ -1460,7 +1465,7 @@ export class Parser {
   expectOptionalKeyword(value: string): boolean {
     const token = this._lexer.token;
     if (token.kind === TokenKind.NAME && token.value === value) {
-      this._lexer.advance();
+      this.advanceLexer();
       return true;
     }
     return false;
@@ -1548,6 +1553,24 @@ export class Parser {
       nodes.push(parseFn.call(this));
     } while (this.expectOptionalToken(delimiterKind));
     return nodes;
+  }
+
+  advanceLexer(): void {
+    const maxLexicalTokens = this._options?.maxLexicalTokens;
+    const token = this._lexer.advance();
+    if (token.kind !== TokenKind.EOF) {
+      ++this._tokenCounter;
+      if (
+        maxLexicalTokens !== undefined &&
+        this._tokenCounter > maxLexicalTokens
+      ) {
+        throw syntaxError(
+          this._lexer.source,
+          token.start,
+          `Document contains more than ${maxLexicalTokens} tokens. Parsing aborted.`,
+        );
+      }
+    }
   }
 }
 

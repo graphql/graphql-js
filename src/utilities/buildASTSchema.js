@@ -114,6 +114,7 @@ export function buildSchema(
 ): GraphQLSchema {
   const document = parse(source, {
     noLocation: options?.noLocation,
+    maxLexicalTokens: options?.maxLexicalTokens,
     allowLegacySDLEmptyFields: options?.allowLegacySDLEmptyFields,
     allowLegacySDLImplementsInterfaces:
       options?.allowLegacySDLImplementsInterfaces,

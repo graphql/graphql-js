@@ -21,6 +21,23 @@ function expectSyntaxError(text: string) {
 }
 
 describe('Parser', () => {
+  it('limits by a maximum number of lexical tokens', () => {
+    expect(() => parse('{ foo }', { maxLexicalTokens: 3 })).to.not.throw();
+    expect(() => parse('{ foo }', { maxLexicalTokens: 2 })).to.throw(
+      'Syntax Error: Document contains more than 2 tokens. Parsing aborted.',
+    );
+
+    expect(() =>
+      parse('{ foo(bar: "baz") }', { maxLexicalTokens: 8 }),
+    ).to.not.throw();
+
+    expect(() =>
+      parse('{ foo(bar: "baz") }', { maxLexicalTokens: 7 }),
+    ).to.throw(
+      'Syntax Error: Document contains more than 7 tokens. Parsing aborted.',
+    );
+  });
+
   it('parse provides useful errors', () => {
     let caughtError;
     try {
