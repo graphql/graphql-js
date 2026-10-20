@@ -16,6 +16,7 @@ import { assertValidSchema } from '../type/validate';
 import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
 
 import { specifiedRules, specifiedSDLRules } from './specifiedRules';
+import { validationAbortedError } from './validationAbortedError';
 import type { SDLValidationRule, ValidationRule } from './ValidationContext';
 import { SDLValidationContext, ValidationContext } from './ValidationContext';
 
@@ -158,7 +159,9 @@ export function validate(
       QueryDocumentKeysToValidate,
     );
   } catch (e) {
-    if (e !== abortObj) {
+    if (e === validationAbortedError) {
+      errors.push(validationAbortedError);
+    } else if (e !== abortObj) {
       throw e;
     }
   }
