@@ -188,7 +188,7 @@ export interface ParseOptions {
    *
    * This is equivalent to omitting the braces entirely (`interface Empty`).
    */
-  experimentalAllowEmptyInterfaceTypes?: boolean | undefined;
+  experimentalAllowEmptyAbstractTypes?: boolean | undefined;
 }
 
 /**
@@ -1233,7 +1233,7 @@ export class Parser {
    * ```
    *
    * With `experimentalAllowEmptyObjectTypes` or
-   * `experimentalAllowEmptyInterfaceTypes`:
+   * `experimentalAllowEmptyAbstractTypes`:
    *
    * ```
    * FieldsDefinition : { FieldDefinition* }
@@ -1244,7 +1244,7 @@ export class Parser {
   parseFieldsDefinition(): Array<FieldDefinitionNode> | undefined {
     if (
       (this._options.experimentalAllowEmptyObjectTypes === true ||
-        this._options.experimentalAllowEmptyInterfaceTypes === true) &&
+        this._options.experimentalAllowEmptyAbstractTypes === true) &&
       this.peek(TokenKind.BRACE_L)
     ) {
       return this.any(

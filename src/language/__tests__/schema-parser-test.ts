@@ -155,9 +155,9 @@ describe('Schema Parser', () => {
     });
   });
 
-  it('parses empty fields definition with experimentalAllowEmptyInterfaceTypes', () => {
+  it('parses empty fields definition with experimentalAllowEmptyAbstractTypes', () => {
     const doc = parse('interface Hello {}', {
-      experimentalAllowEmptyInterfaceTypes: true,
+      experimentalAllowEmptyAbstractTypes: true,
     });
 
     expectJSON(doc).toDeepEqual({
