@@ -17,6 +17,8 @@ export interface LexerInterface {
   token: Token;
   line: number;
   lineStart: number;
+  _maxComments?: number | undefined;
+  _commentCount?: number | undefined;
   advance: () => Token;
   lookahead: () => Token;
 }
@@ -39,6 +41,10 @@ export class Lexer implements LexerInterface {
   line: number;
   /** Character offset where the current line starts. */
   lineStart: number;
+  /** @internal */
+  _maxComments: number | undefined;
+  /** @internal */
+  _commentCount: number;
   /**
    * Creates a Lexer instance.
    * @param source - Source document used to derive error locations.
@@ -61,6 +67,8 @@ export class Lexer implements LexerInterface {
     this.token = startOfFileToken;
     this.line = 1;
     this.lineStart = 0;
+    this._maxComments = undefined;
+    this._commentCount = 0;
   }
   /**
    * Returns the value used by `Object.prototype.toString`.
@@ -377,6 +385,18 @@ function readNextToken(lexer: Lexer, start: number): Token {
  * @internal
  */
 function readComment(lexer: Lexer, start: number): Token {
+  const maxComments = lexer._maxComments;
+  if (maxComments !== undefined) {
+    const nextCommentCount = lexer._commentCount + 1;
+    if (nextCommentCount > maxComments) {
+      throw syntaxError(
+        lexer.source,
+        start,
+        `Document contains more than ${maxComments} comments. Parsing aborted.`,
+      );
+    }
+    lexer._commentCount = nextCommentCount;
+  }
   const body = lexer.source.body;
   const bodyLength = body.length;
   let position = start + 1;
