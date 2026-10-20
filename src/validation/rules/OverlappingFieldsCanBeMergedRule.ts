@@ -265,6 +265,10 @@ function collectConflictsBetweenFieldsAndFragment(
   fieldMap: NodeAndDefCollection,
   fragmentName: string,
 ): void {
+  if (fieldMap.size === 0) {
+    return;
+  }
+
   const { comparedFieldsAndFragmentPairs } = ruleContext;
   // Memoize so the fields and fragments are not compared for conflicts more
   // than once.
@@ -539,6 +543,10 @@ function collectConflictsBetween(
   fieldMap1: NodeAndDefCollection,
   fieldMap2: NodeAndDefCollection,
 ): void {
+  if (fieldMap1.size === 0 || fieldMap2.size === 0) {
+    return;
+  }
+
   // A field map is a keyed collection, where each key represents a response
   // name and the value at that key is a list of all fields which provide that
   // response name. For any response name which appears in both provided field
