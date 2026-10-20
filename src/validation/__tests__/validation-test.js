@@ -9,11 +9,27 @@ import { TypeInfo } from '../../utilities/TypeInfo';
 import { buildSchema } from '../../utilities/buildASTSchema';
 
 import type { ValidationContext } from '../ValidationContext';
+import { validationAbortedError } from '../validationAbortedError';
 import { validate } from '../validate';
 
 import { testSchema } from './harness';
 
 describe('Validate: Supports full validation', () => {
+  it('handles a rule abort without discarding previous errors', () => {
+    const errors = validate(testSchema, parse('{ human { name } }'), [
+      (context) => ({
+        Document() {
+          context.reportError(new GraphQLError('Earlier error.'));
+          throw validationAbortedError;
+        },
+      }),
+    ]);
+    expect(errors.map((error) => error.message)).to.deep.equal([
+      'Earlier error.',
+      'Validation aborted.',
+    ]);
+  });
+
   it('rejects invalid documents', () => {
     // $FlowExpectedError[incompatible-call]
     expect(() => validate(testSchema, null)).to.throw('Must provide document.');
