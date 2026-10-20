@@ -6,6 +6,7 @@ import { assertValidSchema } from "../type/validate.mjs";
 import { TypeInfo, visitWithTypeInfo } from "../utilities/TypeInfo.mjs";
 import { shouldTrace, validateChannel } from "../diagnostics.mjs";
 import { specifiedRules, specifiedSDLRules } from "./specifiedRules.mjs";
+import { validationAbortedError } from "./validationAbortedError.mjs";
 import { SDLValidationContext, ValidationContext, } from "./ValidationContext.mjs";
 const QueryDocumentKeysToValidate = mapValue(QueryDocumentKeys, (keys) => keys.filter((key) => key !== 'description'));
 const tooManyValidationErrorsError = new GraphQLError('Too many validation errors, error limit reached. Validation aborted.');
@@ -32,8 +33,8 @@ function validateImpl(schema, documentAST, rules, options) {
         visit(documentAST, visitWithTypeInfo(typeInfo, visitor), QueryDocumentKeysToValidate);
     }
     catch (e) {
-        if (e === tooManyValidationErrorsError) {
-            errors.push(tooManyValidationErrorsError);
+        if (e === tooManyValidationErrorsError || e === validationAbortedError) {
+            errors.push(e);
         }
         else {
             throw e;

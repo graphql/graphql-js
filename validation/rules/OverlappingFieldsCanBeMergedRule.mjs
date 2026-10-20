@@ -5,9 +5,11 @@ import { Kind } from "../../language/kinds.mjs";
 import { print } from "../../language/printer.mjs";
 import { getNamedType, isInterfaceType, isLeafType, isListType, isNonNullType, isObjectType, } from "../../type/definition.mjs";
 import { typeFromAST } from "../../utilities/typeFromAST.mjs";
+import { validationAbortedError } from "../validationAbortedError.mjs";
 const MAX_CONFLICT_DETAIL_LENGTH = 1000;
 const MAX_CONFLICT_NODES = 20;
 const MAX_FRAGMENT_ARGUMENT_SIZE = 256;
+const MAX_COMPLEXITY_BUDGET = 500_000;
 export function OverlappingFieldsCanBeMergedRule(validationContext) {
     const ruleContext = {
         comparedFieldsAndFragmentPairs: new Map(),
@@ -16,6 +18,7 @@ export function OverlappingFieldsCanBeMergedRule(validationContext) {
         valueInfoByNode: new Map(),
         fragmentSpreadInfoByNode: new Map(),
         fragmentSpreadInfoByKey: new Map(),
+        remainingComplexityBudget: MAX_COMPLEXITY_BUDGET,
     };
     let fragmentScope;
     return {
@@ -58,6 +61,7 @@ function findConflictsWithinSelectionSet(validationContext, ruleContext, parentT
     return conflicts;
 }
 function collectConflictsBetweenFieldsAndFragment(validationContext, ruleContext, conflicts, areMutuallyExclusive, collectFieldsResult, scope, fragmentSpread) {
+    spendComplexityBudget(ruleContext, 1);
     if (collectFieldsResult.groupedFieldSet.size === 0) {
         return;
     }
@@ -95,6 +99,7 @@ function collectConflictsBetweenFragments(validationContext, ruleContext, confli
     const fragment2 = fragmentSpread2.definition;
     const scope1 = fragmentSpread1.scope;
     const scope2 = fragmentSpread2.scope;
+    spendComplexityBudget(ruleContext, 2);
     if (fragment1 === fragment2 && scope1 === scope2) {
         return;
     }
@@ -175,7 +180,7 @@ function collectConflictsBetween(validationContext, ruleContext, conflicts, pare
         collectFieldsResult2.groupedFieldSet.size === 0) {
         return;
     }
-    for (const { responseName, fieldDetailsList1, fieldDetailsList2, } of getOverlappingFields(collectFieldsResult1, collectFieldsResult2)) {
+    for (const { responseName, fieldDetailsList1, fieldDetailsList2, } of getOverlappingFields(ruleContext, collectFieldsResult1, collectFieldsResult2)) {
         for (const fieldDetails1 of fieldDetailsList1) {
             for (const fieldDetails2 of fieldDetailsList2) {
                 const conflict = findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExclusive, responseName, fieldDetails1, scope1, fieldDetails2, scope2);
@@ -186,7 +191,7 @@ function collectConflictsBetween(validationContext, ruleContext, conflicts, pare
         }
     }
 }
-function getOverlappingFields(collectFieldsResult1, collectFieldsResult2) {
+function getOverlappingFields(ruleContext, collectFieldsResult1, collectFieldsResult2) {
     const byCollectFieldsResult = (collectFieldsResult1.overlappingFields ??=
         new Map());
     const cached = byCollectFieldsResult.get(collectFieldsResult2);
@@ -195,6 +200,7 @@ function getOverlappingFields(collectFieldsResult1, collectFieldsResult2) {
     }
     const overlappingFields = [];
     for (const [responseName, fieldDetailsList1,] of collectFieldsResult1.groupedFieldSet.entries()) {
+        spendComplexityBudget(ruleContext, 1);
         const fieldDetailsList2 = collectFieldsResult2.groupedFieldSet.get(responseName);
         if (fieldDetailsList2 != null) {
             overlappingFields.push({
@@ -214,6 +220,7 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
         (parentType1 !== parentType2 &&
             isObjectType(parentType1) &&
             isObjectType(parentType2));
+    spendComplexityBudget(ruleContext, 2);
     const fieldInfo1 = getFieldInfo(fieldDetails1);
     const fieldInfo2 = getFieldInfo(fieldDetails2);
     let comparison = fieldInfo1.comparisons.get(fieldInfo2);
@@ -234,7 +241,7 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
             };
         }
         const comparedArguments = (comparison.arguments ??= compareArguments(ruleContext, fieldInfo1.arguments, fieldInfo2.arguments));
-        if (!sameArguments(comparedArguments, scope1, scope2)) {
+        if (!sameArguments(ruleContext, comparedArguments, scope1, scope2)) {
             return {
                 responseName,
                 reason: 'they have differing arguments',
@@ -248,7 +255,7 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
         if (fieldInfo1.hasStream && fieldInfo2.hasStream) {
             const comparedArguments = (comparison.streamArguments ??=
                 compareArguments(ruleContext, fieldInfo1.streamArguments, fieldInfo2.streamArguments));
-            if (sameArguments(comparedArguments, scope1, scope2)) {
+            if (sameArguments(ruleContext, comparedArguments, scope1, scope2)) {
                 reason +=
                     '. See https://github.com/graphql/defer-stream-wg/discussions/100';
             }
@@ -310,6 +317,7 @@ function compareArguments(ruleContext, argumentInfo1, argumentInfo2) {
         return { sameStructure: false, valuesWithVariables };
     }
     for (const arg1 of argumentInfo1.nodes) {
+        spendComplexityBudget(ruleContext, 1);
         const value2 = argumentInfo2.values.get(arg1.name.value);
         if (value2 === undefined) {
             return { sameStructure: false, valuesWithVariables };
@@ -325,15 +333,18 @@ function compareArguments(ruleContext, argumentInfo1, argumentInfo2) {
     }
     return { sameStructure: true, valuesWithVariables };
 }
-function sameArguments(comparison, scope1, scope2) {
+function sameArguments(ruleContext, comparison, scope1, scope2) {
     if (!comparison.sameStructure) {
         return false;
     }
     return (scope1 === scope2 ||
-        comparison.valuesWithVariables.every((value) => !usesLocalVariables(value, scope1) &&
-            !usesLocalVariables(value, scope2)));
+        comparison.valuesWithVariables.every((value) => {
+            spendComplexityBudget(ruleContext, 1);
+            return (!usesLocalVariables(ruleContext, value, scope1) &&
+                !usesLocalVariables(ruleContext, value, scope2));
+        }));
 }
-function usesLocalVariables(value, scope) {
+function usesLocalVariables(ruleContext, value, scope) {
     if (scope === undefined) {
         return false;
     }
@@ -342,7 +353,10 @@ function usesLocalVariables(value, scope) {
     if (cached !== undefined) {
         return cached;
     }
-    const dependsOnScope = value.variables.some((variable) => scope.signature.variableDefinitions.has(variable));
+    const dependsOnScope = value.variables.some((variable) => {
+        spendComplexityBudget(ruleContext, 1);
+        return scope.signature.variableDefinitions.has(variable);
+    });
     dependencies.set(scope.signature, dependsOnScope);
     return dependsOnScope;
 }
@@ -495,6 +509,7 @@ function getFragmentSpreads(validationContext, ruleContext, collectFieldsResult,
     return result;
 }
 function getFragmentSpread(validationContext, ruleContext, fragmentSpreadNode, scope) {
+    spendComplexityBudget(ruleContext, 1);
     let fragmentSpreadInfo = ruleContext.fragmentSpreadInfoByNode.get(fragmentSpreadNode);
     if (fragmentSpreadInfo === undefined) {
         const signature = validationContext.getFragmentSignatureByName()(fragmentSpreadNode.name.value);
@@ -532,7 +547,10 @@ function getFragmentSpread(validationContext, ruleContext, fragmentSpreadNode, s
         }
         ruleContext.fragmentSpreadInfoByNode.set(fragmentSpreadNode, fragmentSpreadInfo);
     }
-    const variableScope = fragmentSpreadInfo.values.some((value) => usesLocalVariables(value, scope))
+    const variableScope = fragmentSpreadInfo.values.some((value) => {
+        spendComplexityBudget(ruleContext, 1);
+        return usesLocalVariables(ruleContext, value, scope);
+    })
         ? scope
         : undefined;
     let fragmentScope = fragmentSpreadInfo.byScope.get(variableScope);
@@ -605,6 +623,12 @@ function maybeAbbreviate(text) {
     return text.length > MAX_CONFLICT_DETAIL_LENGTH
         ? text.slice(0, MAX_CONFLICT_DETAIL_LENGTH) + '...'
         : text;
+}
+function spendComplexityBudget(ruleContext, cost) {
+    ruleContext.remainingComplexityBudget -= cost;
+    if (ruleContext.remainingComplexityBudget < 0) {
+        throw validationAbortedError;
+    }
 }
 class OrderedPairSet {
     constructor() {
