@@ -305,7 +305,12 @@ function findConflictsWithinSelectionSet(
     collectFieldsResult,
     scope,
   );
-  if (collectFieldsResult.spreads.length !== 0) {
+  // Prepare fragment uses only for comparisons with fields or another spread.
+  if (
+    collectFieldsResult.spreads.length !== 0 &&
+    (collectFieldsResult.groupedFieldSet.size !== 0 ||
+      collectFieldsResult.spreads.length > 1)
+  ) {
     const fragmentSpreads = getFragmentSpreads(
       validationContext,
       ruleContext,
