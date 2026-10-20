@@ -46,6 +46,54 @@ describe('Parser', () => {
     expect(() => other.parseDocument()).to.not.throw();
   });
 
+  it('limits by a maximum source length before lexing', () => {
+    const source = '{ foo }';
+    expect(() =>
+      parse(source, { maxSourceLength: source.length }),
+    ).to.not.throw();
+
+    let caughtError;
+    try {
+      parse(new Source(`${source} `, 'MyQuery.graphql'), {
+        maxSourceLength: source.length,
+      });
+    } catch (error) {
+      caughtError = error;
+    }
+    expect(caughtError).to.deep.contain({
+      message:
+        'Syntax Error: Source contains more than 7 UTF-16 code units. Parsing aborted.',
+      positions: [7],
+      locations: [{ line: 1, column: 8 }],
+    });
+
+    expect(() => parse('~', { maxSourceLength: 0 })).to.throw(
+      'Syntax Error: Source contains more than 0 UTF-16 code units. Parsing aborted.',
+    );
+
+    const unicodeSource = '"\u{1F600}"';
+    expect(unicodeSource).to.have.length(4);
+    expect(() =>
+      parseValue(unicodeSource, { maxSourceLength: 4 }),
+    ).to.not.throw();
+    expect(() => parseValue(unicodeSource, { maxSourceLength: 3 })).to.throw(
+      'Syntax Error: Source contains more than 3 UTF-16 code units. Parsing aborted.',
+    );
+  });
+
+  it('limits the actual source used by a custom lexer', () => {
+    const lexerSource = new Source('{ foo } ');
+
+    expect(() =>
+      parse('', {
+        lexer: new Lexer(lexerSource),
+        maxSourceLength: 7,
+      }),
+    ).to.throw(
+      'Syntax Error: Source contains more than 7 UTF-16 code units. Parsing aborted.',
+    );
+  });
+
   it('limits by a maximum number of comments', () => {
     const source = '# first\n# second\n{ foo }';
 

@@ -101,6 +101,9 @@ export interface ParseOptions {
   /** Maximum number of comments. */
   maxComments?: number | undefined;
 
+  /** Maximum source length in UTF-16 code units. */
+  maxSourceLength?: number | undefined;
+
   /**
    * Deprecated alias for `maxLexicalTokens`.
    * @deprecated Use `maxLexicalTokens` instead. Will be removed in v18.
@@ -352,6 +355,18 @@ export class Parser {
 
     this._lexer._maxComments = options?.maxComments;
     this._lexer._commentCount = 0;
+
+    const maxSourceLength = options?.maxSourceLength;
+    if (
+      maxSourceLength !== undefined &&
+      this._lexer.source.body.length > maxSourceLength
+    ) {
+      throw syntaxError(
+        this._lexer.source,
+        maxSourceLength,
+        `Source contains more than ${maxSourceLength} UTF-16 code units. Parsing aborted.`,
+      );
+    }
   }
 
   get tokenCount(): number {
