@@ -151,7 +151,7 @@ interface CollectFieldsResult {
   fragmentNames: FragmentNames;
 }
 interface RuleContext {
-  comparedFieldsAndFragmentPairs: OrderedPairSet<GroupedFieldSet, string>;
+  comparedFieldsAndFragmentPairs: OrderedPairSet<CollectFieldsResult, string>;
   comparedFragmentPairs: PairSet<string>;
   cachedCollectFieldsResults: Map<
     Maybe<GraphQLNamedType>,
@@ -226,7 +226,7 @@ function findConflictsWithinSelectionSet(
 ): Array<Conflict> {
   const conflicts: Array<Conflict> = [];
 
-  const { groupedFieldSet, fragmentNames } = collectFields(
+  const collectFieldsResult = collectFields(
     validationContext,
     ruleContext,
     parentType,
@@ -239,33 +239,33 @@ function findConflictsWithinSelectionSet(
     validationContext,
     conflicts,
     ruleContext,
-    groupedFieldSet,
+    collectFieldsResult.groupedFieldSet,
   );
 
-  if (fragmentNames.length !== 0) {
+  if (collectFieldsResult.fragmentNames.length !== 0) {
     // (B) Then collect conflicts between these fields and those represented by
     // each spread fragment name found.
-    for (let i = 0; i < fragmentNames.length; i++) {
+    for (let i = 0; i < collectFieldsResult.fragmentNames.length; i++) {
       collectConflictsBetweenFieldsAndFragment(
         validationContext,
         conflicts,
         ruleContext,
         false,
-        groupedFieldSet,
-        fragmentNames[i],
+        collectFieldsResult,
+        collectFieldsResult.fragmentNames[i],
       );
       // (C) Then compare this fragment with all other fragments found in this
       // selection set to collect conflicts between fragments spread together.
       // This compares each item in the list of fragment names to every other
       // item in that same list (except for itself).
-      for (let j = i + 1; j < fragmentNames.length; j++) {
+      for (let j = i + 1; j < collectFieldsResult.fragmentNames.length; j++) {
         collectConflictsBetweenFragments(
           validationContext,
           conflicts,
           ruleContext,
           false,
-          fragmentNames[i],
-          fragmentNames[j],
+          collectFieldsResult.fragmentNames[i],
+          collectFieldsResult.fragmentNames[j],
         );
       }
     }
@@ -280,10 +280,10 @@ function collectConflictsBetweenFieldsAndFragment(
   conflicts: Array<Conflict>,
   ruleContext: RuleContext,
   areMutuallyExclusive: boolean,
-  groupedFieldSet: GroupedFieldSet,
+  collectFieldsResult: CollectFieldsResult,
   fragmentName: string,
 ): void {
-  if (groupedFieldSet.size === 0) {
+  if (collectFieldsResult.groupedFieldSet.size === 0) {
     return;
   }
 
@@ -292,7 +292,7 @@ function collectConflictsBetweenFieldsAndFragment(
   // than once.
   if (
     comparedFieldsAndFragmentPairs.has(
-      groupedFieldSet,
+      collectFieldsResult,
       fragmentName,
       areMutuallyExclusive,
     )
@@ -300,7 +300,7 @@ function collectConflictsBetweenFieldsAndFragment(
     return;
   }
   comparedFieldsAndFragmentPairs.add(
-    groupedFieldSet,
+    collectFieldsResult,
     fragmentName,
     areMutuallyExclusive,
   );
@@ -310,13 +310,14 @@ function collectConflictsBetweenFieldsAndFragment(
     return;
   }
 
-  const {
-    groupedFieldSet: groupedFieldSet2,
-    fragmentNames: referencedFragmentNames,
-  } = collectFragmentFields(validationContext, ruleContext, fragment);
+  const collectFieldsResult2 = collectFragmentFields(
+    validationContext,
+    ruleContext,
+    fragment,
+  );
 
-  // Do not compare a fragment's groupedFieldSet to itself.
-  if (groupedFieldSet === groupedFieldSet2) {
+  // Do not compare a fragment's collectFieldsResult to itself.
+  if (collectFieldsResult === collectFieldsResult2) {
     return;
   }
 
@@ -327,19 +328,19 @@ function collectConflictsBetweenFieldsAndFragment(
     conflicts,
     ruleContext,
     areMutuallyExclusive,
-    groupedFieldSet,
-    groupedFieldSet2,
+    collectFieldsResult,
+    collectFieldsResult2,
   );
 
   // (E) Then collect any conflicts between the provided collection of fields
   // and any fragment names found in the given fragment.
-  for (const referencedFragmentName of referencedFragmentNames) {
+  for (const referencedFragmentName of collectFieldsResult2.fragmentNames) {
     collectConflictsBetweenFieldsAndFragment(
       validationContext,
       conflicts,
       ruleContext,
       areMutuallyExclusive,
-      groupedFieldSet,
+      collectFieldsResult,
       referencedFragmentName,
     );
   }
@@ -379,14 +380,16 @@ function collectConflictsBetweenFragments(
     return;
   }
 
-  const {
-    groupedFieldSet: groupedFieldSet1,
-    fragmentNames: referencedFragmentNames1,
-  } = collectFragmentFields(validationContext, ruleContext, fragment1);
-  const {
-    groupedFieldSet: groupedFieldSet2,
-    fragmentNames: referencedFragmentNames2,
-  } = collectFragmentFields(validationContext, ruleContext, fragment2);
+  const collectFieldsResult1 = collectFragmentFields(
+    validationContext,
+    ruleContext,
+    fragment1,
+  );
+  const collectFieldsResult2 = collectFragmentFields(
+    validationContext,
+    ruleContext,
+    fragment2,
+  );
 
   // (F) First, collect all conflicts between these two collections of fields
   // (not including any nested fragments).
@@ -395,13 +398,13 @@ function collectConflictsBetweenFragments(
     conflicts,
     ruleContext,
     areMutuallyExclusive,
-    groupedFieldSet1,
-    groupedFieldSet2,
+    collectFieldsResult1,
+    collectFieldsResult2,
   );
 
   // (G) Then collect conflicts between the first fragment and any nested
   // fragments spread in the second fragment.
-  for (const referencedFragmentName2 of referencedFragmentNames2) {
+  for (const referencedFragmentName2 of collectFieldsResult2.fragmentNames) {
     collectConflictsBetweenFragments(
       validationContext,
       conflicts,
@@ -414,7 +417,7 @@ function collectConflictsBetweenFragments(
 
   // (G) Then collect conflicts between the second fragment and any nested
   // fragments spread in the first fragment.
-  for (const referencedFragmentName1 of referencedFragmentNames1) {
+  for (const referencedFragmentName1 of collectFieldsResult1.fragmentNames) {
     collectConflictsBetweenFragments(
       validationContext,
       conflicts,
@@ -440,10 +443,18 @@ function findConflictsBetweenSubSelectionSets(
 ): Array<Conflict> {
   const conflicts: Array<Conflict> = [];
 
-  const { groupedFieldSet: groupedFieldSet1, fragmentNames: fragmentNames1 } =
-    collectFields(validationContext, ruleContext, parentType1, selectionSet1);
-  const { groupedFieldSet: groupedFieldSet2, fragmentNames: fragmentNames2 } =
-    collectFields(validationContext, ruleContext, parentType2, selectionSet2);
+  const collectFieldsResult1 = collectFields(
+    validationContext,
+    ruleContext,
+    parentType1,
+    selectionSet1,
+  );
+  const collectFieldsResult2 = collectFields(
+    validationContext,
+    ruleContext,
+    parentType2,
+    selectionSet2,
+  );
 
   // (H) First, collect all conflicts between these two collections of field.
   collectConflictsBetween(
@@ -451,32 +462,32 @@ function findConflictsBetweenSubSelectionSets(
     conflicts,
     ruleContext,
     areMutuallyExclusive,
-    groupedFieldSet1,
-    groupedFieldSet2,
+    collectFieldsResult1,
+    collectFieldsResult2,
   );
 
   // (I) Then collect conflicts between the first collection of fields and
   // those referenced by each fragment name associated with the second.
-  for (const fragmentName2 of fragmentNames2) {
+  for (const fragmentName2 of collectFieldsResult2.fragmentNames) {
     collectConflictsBetweenFieldsAndFragment(
       validationContext,
       conflicts,
       ruleContext,
       areMutuallyExclusive,
-      groupedFieldSet1,
+      collectFieldsResult1,
       fragmentName2,
     );
   }
 
   // (I) Then collect conflicts between the second collection of fields and
   // those referenced by each fragment name associated with the first.
-  for (const fragmentName1 of fragmentNames1) {
+  for (const fragmentName1 of collectFieldsResult1.fragmentNames) {
     collectConflictsBetweenFieldsAndFragment(
       validationContext,
       conflicts,
       ruleContext,
       areMutuallyExclusive,
-      groupedFieldSet2,
+      collectFieldsResult2,
       fragmentName1,
     );
   }
@@ -484,8 +495,8 @@ function findConflictsBetweenSubSelectionSets(
   // (J) Also collect conflicts between any fragment names by the first and
   // fragment names by the second. This compares each item in the first set of
   // names to each item in the second set of names.
-  for (const fragmentName1 of fragmentNames1) {
-    for (const fragmentName2 of fragmentNames2) {
+  for (const fragmentName1 of collectFieldsResult1.fragmentNames) {
+    for (const fragmentName2 of collectFieldsResult2.fragmentNames) {
       collectConflictsBetweenFragments(
         validationContext,
         conflicts,
@@ -544,10 +555,13 @@ function collectConflictsBetween(
   conflicts: Array<Conflict>,
   ruleContext: RuleContext,
   parentFieldsAreMutuallyExclusive: boolean,
-  groupedFieldSet1: GroupedFieldSet,
-  groupedFieldSet2: GroupedFieldSet,
+  collectFieldsResult1: CollectFieldsResult,
+  collectFieldsResult2: CollectFieldsResult,
 ): void {
-  if (groupedFieldSet1.size === 0 || groupedFieldSet2.size === 0) {
+  if (
+    collectFieldsResult1.groupedFieldSet.size === 0 ||
+    collectFieldsResult2.groupedFieldSet.size === 0
+  ) {
     return;
   }
 
@@ -556,8 +570,8 @@ function collectConflictsBetween(
   // response name. For any response name which appears in both provided field
   // maps, each field from the first field map must be compared to every field
   // in the second field map to find potential conflicts.
-  for (const [responseName, fields1] of groupedFieldSet1) {
-    const fields2 = groupedFieldSet2.get(responseName);
+  for (const [responseName, fields1] of collectFieldsResult1.groupedFieldSet) {
+    const fields2 = collectFieldsResult2.groupedFieldSet.get(responseName);
     if (fields2) {
       for (const field1 of fields1) {
         for (const field2 of fields2) {
