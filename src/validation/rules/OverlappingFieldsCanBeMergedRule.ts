@@ -93,10 +93,9 @@ export function OverlappingFieldsCanBeMergedRule(
   validationContext: ValidationContext,
 ): ASTVisitor {
   const ruleContext: RuleContext = {
-    // A memoization for when fields and a fragment or two fragments are compared
-    // "between" each other for conflicts. Comparisons may be made many times,
-    // so memoizing this can dramatically improve the performance of this validator.
-    comparedFieldsAndFragmentPairs: new OrderedPairSet(),
+    // A memoization for when two fragments are compared for conflicts.
+    // Comparisons may be made many times, so memoizing this can dramatically
+    // improve the performance of this validator.
     comparedFragmentPairs: new PairSet(),
 
     // A cache for the "field map" and list of fragment names found in any given
@@ -149,9 +148,9 @@ type FragmentNames = ReadonlyArray<string>;
 interface CollectFieldsResult {
   groupedFieldSet: GroupedFieldSet;
   fragmentNames: FragmentNames;
+  comparedFragments?: Map<string, boolean>;
 }
 interface RuleContext {
-  comparedFieldsAndFragmentPairs: OrderedPairSet<CollectFieldsResult, string>;
   comparedFragmentPairs: PairSet<string>;
   cachedCollectFieldsResults: Map<
     Maybe<GraphQLNamedType>,
@@ -287,23 +286,16 @@ function collectConflictsBetweenFieldsAndFragment(
     return;
   }
 
-  const { comparedFieldsAndFragmentPairs } = ruleContext;
+  const comparedFragments = (collectFieldsResult.comparedFragments ??=
+    new Map());
   // Memoize so the fields and fragments are not compared for conflicts more
   // than once.
-  if (
-    comparedFieldsAndFragmentPairs.has(
-      collectFieldsResult,
-      fragmentName,
-      areMutuallyExclusive,
-    )
-  ) {
+  const compared = comparedFragments.get(fragmentName);
+  // Only a non-exclusive comparison can be reused for overlapping parents.
+  if (compared === false || (areMutuallyExclusive && compared === true)) {
     return;
   }
-  comparedFieldsAndFragmentPairs.add(
-    collectFieldsResult,
-    fragmentName,
-    areMutuallyExclusive,
-  );
+  comparedFragments.set(fragmentName, areMutuallyExclusive);
 
   const fragment = validationContext.getFragment(fragmentName);
   if (!fragment) {
@@ -881,22 +873,26 @@ function subfieldConflicts(
 }
 
 /**
- * A way to keep track of pairs of things where the ordering of the pair
- * matters.
+ * A way to keep track of pairs of similar things when the ordering of the pair
+ * does not matter.
  *
- * Provides a third argument for has/set to allow flagging the pair as
+ * Provides a third argument for has/add to allow flagging the pair as
  * weakly or strongly present within the collection.
  *
  * @internal
  */
-class OrderedPairSet<T, U> {
-  _data: Map<T, Map<U, boolean>>;
+class PairSet<T> {
+  _data: Map<T, Map<T, boolean>>;
 
   constructor() {
     this._data = new Map();
   }
 
-  has(a: T, b: U, weaklyPresent: boolean): boolean {
+  has(a: T, b: T, weaklyPresent: boolean): boolean {
+    return this._has(a, b, weaklyPresent) || this._has(b, a, weaklyPresent);
+  }
+
+  _has(a: T, b: T, weaklyPresent: boolean): boolean {
     const result = this._data.get(a)?.get(b);
     if (result === undefined) {
       return false;
@@ -905,37 +901,12 @@ class OrderedPairSet<T, U> {
     return weaklyPresent ? true : weaklyPresent === result;
   }
 
-  add(a: T, b: U, weaklyPresent: boolean): void {
+  add(a: T, b: T, weaklyPresent: boolean): void {
     const map = this._data.get(a);
     if (map === undefined) {
       this._data.set(a, new Map([[b, weaklyPresent]]));
     } else {
       map.set(b, weaklyPresent);
     }
-  }
-}
-
-/**
- * A way to keep track of pairs of similar things when the ordering of the pair
- * does not matter.
- *
- * @internal
- */
-class PairSet<T> {
-  _orderedPairSet: OrderedPairSet<T, T>;
-
-  constructor() {
-    this._orderedPairSet = new OrderedPairSet();
-  }
-
-  has(a: T, b: T, weaklyPresent: boolean): boolean {
-    return (
-      this._orderedPairSet.has(a, b, weaklyPresent) ||
-      this._orderedPairSet.has(b, a, weaklyPresent)
-    );
-  }
-
-  add(a: T, b: T, weaklyPresent: boolean): void {
-    this._orderedPairSet.add(a, b, weaklyPresent);
   }
 }
