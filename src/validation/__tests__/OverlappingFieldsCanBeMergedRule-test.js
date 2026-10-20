@@ -32,6 +32,31 @@ function expectValidWithSchema(schema: GraphQLSchema, queryStr: string) {
 }
 
 describe('Validate: Overlapping fields can be merged', () => {
+  it('reuses field and fragment comparisons across exclusive parents', () => {
+    const schema = buildSchema(`
+      type Query { pet: Pet }
+      union Pet = Dog | Cat
+      type Dog { box: Box }
+      type Cat { box: Box }
+      type Box { name: String }
+    `);
+    expectValidWithSchema(
+      schema,
+      `
+      {
+        pet {
+          ... on Dog { box { name ...Details } }
+          ... on Cat {
+            box { name ...Details }
+            box { name ...Details }
+          }
+        }
+      }
+      fragment Details on Box { name }
+    `,
+    );
+  });
+
   it('unique fields', () => {
     expectValid(`
       fragment uniqueFields on Dog {
@@ -201,6 +226,75 @@ describe('Validate: Overlapping fields can be merged', () => {
         ],
       },
     ]);
+  });
+
+  it('reports deep conflict after nested fragments', () => {
+    expectErrors(`
+      fragment F on T {
+        ...G
+      }
+      fragment G on T {
+        ...H
+      }
+      fragment H on T {
+        x: a
+      }
+      {
+        x: b
+        ...F
+      }
+    `).to.deep.equal([
+      {
+        message:
+          'Fields "x" conflict because "b" and "a" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 12, column: 9 },
+          { line: 9, column: 9 },
+        ],
+      },
+    ]);
+  });
+
+  it('ignores unknown fragments', () => {
+    expectValid(`
+      {
+        field
+        ...Unknown
+        ...Known
+      }
+
+      fragment Known on T {
+        field
+        ...OtherUnknown
+      }
+    `);
+  });
+
+  it('does not infinite loop on recursive fragments separated by fields', () => {
+    expectValid(`
+      {
+        ...fragA
+        ...fragB
+      }
+
+      fragment fragA on T {
+        x {
+          ...fragA
+          x {
+            ...fragA
+          }
+        }
+      }
+
+      fragment fragB on T {
+        x {
+          ...fragB
+          x {
+            ...fragB
+          }
+        }
+      }
+    `);
   });
 
   it('conflicting arg values', () => {
