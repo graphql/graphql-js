@@ -105,7 +105,10 @@ interface FieldDetails {
 type FieldDetailsList = Array<FieldDetails>;
 type GroupedFieldSet = ObjMap<FieldDetailsList>;
 type FragmentNames = Array<string>;
-type CollectFieldsResult = [GroupedFieldSet, FragmentNames];
+interface CollectFieldsResult {
+  groupedFieldSet: GroupedFieldSet;
+  fragmentNames: FragmentNames;
+}
 interface RuleContext {
   comparedFieldsAndFragmentPairs: OrderedPairSet<GroupedFieldSet, string>;
   comparedFragmentPairs: PairSet;
@@ -177,7 +180,7 @@ function findConflictsWithinSelectionSet(
 ): Array<Conflict> {
   const conflicts: Array<Conflict> = [];
 
-  const [groupedFieldSet, fragmentNames] = collectFields(
+  const { groupedFieldSet, fragmentNames } = collectFields(
     validationContext,
     ruleContext,
     parentType,
@@ -257,11 +260,10 @@ function collectConflictsBetweenFieldsAndFragment(
     return;
   }
 
-  const [groupedFieldSet2, fragmentNames2] = collectFragmentFields(
-    validationContext,
-    ruleContext,
-    fragment,
-  );
+  const {
+    groupedFieldSet: groupedFieldSet2,
+    fragmentNames: fragmentNames2,
+  } = collectFragmentFields(validationContext, ruleContext, fragment);
 
   // Do not compare a fragment's groupedFieldSet to itself.
   if (groupedFieldSet === groupedFieldSet2) {
@@ -329,16 +331,14 @@ function collectConflictsBetweenFragments(
     return;
   }
 
-  const [groupedFieldSet1, fragmentNames1] = collectFragmentFields(
-    validationContext,
-    ruleContext,
-    fragment1,
-  );
-  const [groupedFieldSet2, fragmentNames2] = collectFragmentFields(
-    validationContext,
-    ruleContext,
-    fragment2,
-  );
+  const {
+    groupedFieldSet: groupedFieldSet1,
+    fragmentNames: fragmentNames1,
+  } = collectFragmentFields(validationContext, ruleContext, fragment1);
+  const {
+    groupedFieldSet: groupedFieldSet2,
+    fragmentNames: fragmentNames2,
+  } = collectFragmentFields(validationContext, ruleContext, fragment2);
 
   // (F) First, collect all conflicts between these two collections of fields
   // (not including any nested fragments).
@@ -392,18 +392,14 @@ function findConflictsBetweenSubSelectionSets(
 ): Array<Conflict> {
   const conflicts: Array<Conflict> = [];
 
-  const [groupedFieldSet1, fragmentNames1] = collectFields(
-    validationContext,
-    ruleContext,
-    parentType1,
-    selectionSet1,
-  );
-  const [groupedFieldSet2, fragmentNames2] = collectFields(
-    validationContext,
-    ruleContext,
-    parentType2,
-    selectionSet2,
-  );
+  const {
+    groupedFieldSet: groupedFieldSet1,
+    fragmentNames: fragmentNames1,
+  } = collectFields(validationContext, ruleContext, parentType1, selectionSet1);
+  const {
+    groupedFieldSet: groupedFieldSet2,
+    fragmentNames: fragmentNames2,
+  } = collectFields(validationContext, ruleContext, parentType2, selectionSet2);
 
   // (H) First, collect all conflicts between these two collections of field.
   collectConflictsBetween(
@@ -715,10 +711,10 @@ function collectFields(
     fieldDetails,
     fragmentNames,
   );
-  const result: CollectFieldsResult = [
-    fieldDetails,
-    Object.keys(fragmentNames),
-  ];
+  const result = {
+    groupedFieldSet: fieldDetails,
+    fragmentNames: Object.keys(fragmentNames),
+  };
   cachedCollectFieldsResults.set(selectionSet, result);
   return result;
 }
