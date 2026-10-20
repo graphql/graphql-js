@@ -213,7 +213,12 @@ function findConflictsWithinSelectionSet(
     collectFieldsResult,
   );
 
-  if (collectFieldsResult.fragmentNames.length !== 0) {
+  // Compare fragment uses only with fields or another spread.
+  if (
+    collectFieldsResult.fragmentNames.length !== 0 &&
+    (collectFieldsResult.responseNames.length !== 0 ||
+      collectFieldsResult.fragmentNames.length > 1)
+  ) {
     // (B) Then collect conflicts between these fields and those represented by
     // each spread fragment name found.
     for (let i = 0; i < collectFieldsResult.fragmentNames.length; i++) {
