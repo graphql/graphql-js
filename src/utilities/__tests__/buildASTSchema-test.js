@@ -69,6 +69,15 @@ function printAllASTNodes(obj: GraphQLNamedType): string {
 }
 
 describe('Schema Builder', () => {
+  it('forwards the maximum lexical token limit', () => {
+    const source = 'type Query { field: String }';
+
+    expect(() => buildSchema(source, { maxLexicalTokens: 7 })).to.not.throw();
+    expect(() => buildSchema(source, { maxLexicalTokens: 6 })).to.throw(
+      'Syntax Error: Document contains more than 6 tokens. Parsing aborted.',
+    );
+  });
+
   it('can use built schema for limited execution', () => {
     const schema = buildASTSchema(
       parse(`
