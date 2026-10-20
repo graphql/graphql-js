@@ -100,6 +100,7 @@ export function OverlappingFieldsCanBeMergedRule(
     // A cache for the "field map" and list of fragment names found in any given
     // selection set.
     cachedCollectFieldsResults: new Map(),
+    stringifiedValues: new Map(),
   };
 
   return {
@@ -160,6 +161,7 @@ interface CollectFieldsResult {
   comparedFragments?: Map<string, boolean>;
 }
 interface RuleContext {
+  stringifiedValues: Map<ValueNode, string>;
   comparedFragmentPairs: PairSet<string>;
   cachedCollectFieldsResults: Map<
     Maybe<GraphQLNamedType>,
@@ -639,7 +641,11 @@ function findConflict(
       reason =
         name1 !== name2
           ? `"${name1}" and "${name2}" are different fields`
-          : sameArguments(fieldInfo1.arguments, fieldInfo2.arguments)
+          : sameArguments(
+              ruleContext,
+              fieldInfo1.arguments,
+              fieldInfo2.arguments,
+            )
           ? null
           : 'they have differing arguments';
       fieldInfo1.comparisons.set(fieldInfo2, reason);
@@ -713,6 +719,7 @@ function getArgumentInfo(
 }
 
 function sameArguments(
+  ruleContext: RuleContext,
   argumentInfo1: ArgumentInfo | undefined,
   argumentInfo2: ArgumentInfo | undefined,
 ): boolean {
@@ -728,12 +735,19 @@ function sameArguments(
     if (value2 === undefined) {
       return false;
     }
-    return stringifyValue(arg1.value) === stringifyValue(value2);
+    return (
+      stringifyValue(ruleContext, arg1.value) ===
+      stringifyValue(ruleContext, value2)
+    );
   });
 }
 
-function stringifyValue(value: ValueNode): string {
-  return JSON.stringify(value, (_key, node: unknown) => {
+function stringifyValue(ruleContext: RuleContext, value: ValueNode): string {
+  const cached = ruleContext.stringifiedValues.get(value);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const result = JSON.stringify(value, (_key, node: unknown) => {
     if (!isNode(node)) {
       return node;
     }
@@ -763,6 +777,8 @@ function stringifyValue(value: ValueNode): string {
         return [node.kind, 'value' in node ? node.value : null];
     }
   });
+  ruleContext.stringifiedValues.set(value, result);
+  return result;
 }
 
 // Two types conflict if both types could not apply to a value simultaneously.
