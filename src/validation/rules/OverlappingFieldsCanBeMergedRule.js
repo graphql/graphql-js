@@ -32,18 +32,8 @@ import { typeFromAST } from '../../utilities/typeFromAST';
 
 import type { ValidationContext } from '../ValidationContext';
 
-function reasonMessage(reason: ConflictReasonMessage): string {
-  if (Array.isArray(reason)) {
-    return reason
-      .map(
-        ({ responseName, reason: subReason }) =>
-          `subfields "${responseName}" conflict because ` +
-          reasonMessage(subReason),
-      )
-      .join(' and ');
-  }
-  return reason;
-}
+// Keep diagnostic detail bounded independently of document size.
+const MAX_CONFLICT_DETAIL_LENGTH = 1000;
 
 /**
  * Overlapping fields can be merged
@@ -81,10 +71,11 @@ export function OverlappingFieldsCanBeMergedRule(
         selectionSet,
       );
       for (const { responseName, reason, fields1, fields2 } of conflicts) {
-        const reasonMsg = reasonMessage(reason);
         validationContext.reportError(
           new GraphQLError(
-            `Fields "${responseName}" conflict because ${reasonMsg}. Use different aliases on the fields to fetch both if this was intentional.`,
+            `Fields "${maybeAbbreviate(
+              responseName,
+            )}" conflict because ${reason}. Use different aliases on the fields to fetch both if this was intentional.`,
             fields1.concat(fields2),
           ),
         );
@@ -93,17 +84,12 @@ export function OverlappingFieldsCanBeMergedRule(
   };
 }
 
-interface Conflict extends ConflictReason {
+interface Conflict {
+  responseName: string;
+  reason: string;
   fields1: Array<FieldNode>;
   fields2: Array<FieldNode>;
 }
-// Field name and reason.
-interface ConflictReason {
-  +responseName: string;
-  +reason: ConflictReasonMessage;
-}
-// Reason is a string, or a nested list of conflicts.
-type ConflictReasonMessage = string | Array<ConflictReason>;
 // A field node and its definition in the parent-type context.
 interface FieldDetails {
   parentType: ?GraphQLNamedType;
@@ -646,7 +632,9 @@ function findConflict(
       const name2 = node2.name.value;
       reason =
         name1 !== name2
-          ? `"${name1}" and "${name2}" are different fields`
+          ? `"${maybeAbbreviate(name1)}" and "${maybeAbbreviate(
+              name2,
+            )}" are different fields`
           : sameArguments(
               ruleContext,
               fieldInfo1.arguments,
@@ -935,12 +923,18 @@ function subfieldConflicts(
   node2: FieldNode,
 ): ?Conflict {
   if (conflicts.length > 0) {
+    let message = '';
+    for (const { responseName: name, reason } of conflicts) {
+      message +=
+        (message === '' ? '' : ' and ') +
+        `subfields "${maybeAbbreviate(name)}" conflict because ${reason}`;
+      if (message.length > MAX_CONFLICT_DETAIL_LENGTH) {
+        break;
+      }
+    }
     return {
       responseName,
-      reason: conflicts.map(({ responseName: name, reason }) => ({
-        responseName: name,
-        reason,
-      })),
+      reason: maybeAbbreviate(message),
       fields1: conflicts.reduce(
         (fields: Array<FieldNode>, { fields1 }) => fields.concat(fields1),
         [node1],
@@ -951,6 +945,12 @@ function subfieldConflicts(
       ),
     };
   }
+}
+
+function maybeAbbreviate(text: string): string {
+  return text.length > MAX_CONFLICT_DETAIL_LENGTH
+    ? text.slice(0, MAX_CONFLICT_DETAIL_LENGTH) + '...'
+    : text;
 }
 
 /**
