@@ -173,10 +173,8 @@ interface FieldComparison {
   sameName?: boolean;
   arguments?: ArgumentComparison;
 }
-interface ArgumentComparison {
-  sameStructure: boolean;
-  valuesWithVariables: ReadonlyArray<ValueInfo>;
-}
+// A boolean is a scope-independent result; otherwise check these values' bindings.
+type ArgumentComparison = ReadonlyArray<ValueInfo> | boolean;
 type FieldDetailsList = Array<FieldDetails>;
 type GroupedFieldSet = Map<string, FieldDetailsList>;
 // Equivalent fragment uses share a scope. The signature identifies declarations;
@@ -189,6 +187,7 @@ interface FragmentSpread {
   scope: VariableScope | undefined;
   definition: FragmentDefinitionNode | undefined;
 }
+type FragmentSpreadKey = VariableScope | FragmentDefinitionNode | undefined;
 type FragmentSpreads = ReadonlyArray<FragmentSpread>;
 
 interface CollectFieldsResult extends FieldSetState {
@@ -672,41 +671,38 @@ function getArgumentInfo(
 }
 
 // Compare names and source values once per field pair. Retain only values
-// containing variables, whose meaning can differ between fragment scopes.
+// containing variables, whose bindings can differ between fragment uses.
 function compareArguments(
   ruleContext: RuleContext,
   argumentInfo1: ArgumentInfo | undefined,
   argumentInfo2: ArgumentInfo | undefined,
 ): ArgumentComparison {
-  const valuesWithVariables: Array<ValueInfo> = [];
   if (argumentInfo1 === undefined) {
-    return {
-      sameStructure: argumentInfo2 === undefined,
-      valuesWithVariables,
-    };
+    return argumentInfo2 === undefined;
   }
   if (argumentInfo1.nodes.length !== argumentInfo2?.nodes.length) {
-    return { sameStructure: false, valuesWithVariables };
+    return false;
   }
+  const comparedValues: Array<ValueInfo> = [];
   for (const arg1 of argumentInfo1.nodes) {
     // A prepared argument list can participate in many field-pair comparisons.
     spendComplexityBudget(ruleContext, 1);
     const value2 = argumentInfo2.values.get(arg1.name.value);
     if (value2 === undefined) {
-      return { sameStructure: false, valuesWithVariables };
+      return false;
     }
     const valueInfo1 = getValueInfo(ruleContext, arg1.value);
     if (
       valueInfo1.comparisonKey !==
       getValueInfo(ruleContext, value2).comparisonKey
     ) {
-      return { sameStructure: false, valuesWithVariables };
+      return false;
     }
     if (valueInfo1.variables.length !== 0) {
-      valuesWithVariables.push(valueInfo1);
+      comparedValues.push(valueInfo1);
     }
   }
-  return { sameStructure: true, valuesWithVariables };
+  return comparedValues;
 }
 
 function sameArguments(
@@ -715,14 +711,14 @@ function sameArguments(
   scope1: VariableScope | undefined,
   scope2: VariableScope | undefined,
 ): boolean {
-  if (!comparison.sameStructure) {
-    return false;
+  if (typeof comparison === 'boolean') {
+    return comparison;
   }
-  // Equal expressions refer to the same variables within a scope. Across scopes,
+  // Equal expressions have equal bindings in the same scope. Across scopes,
   // they agree only when every reference is an operation variable.
   return (
     scope1 === scope2 ||
-    comparison.valuesWithVariables.every((value) => {
+    comparison.every((value) => {
       // Different scope pairs can revisit the same prepared values.
       spendComplexityBudget(ruleContext, 1);
       return (
@@ -747,18 +743,17 @@ function usesLocalVariables(
   if (scope === undefined) {
     return false;
   }
-  // Declaration membership does not depend on the fragment arguments.
+  // Only declaration membership matters; different bindings share this answer.
   const dependencies = (value.scopeDependencies ??= new Map());
-  const cached = dependencies.get(scope.signature);
-  if (cached !== undefined) {
-    return cached;
+  let dependsOnScope = dependencies.get(scope.signature);
+  if (dependsOnScope === undefined) {
+    dependsOnScope = value.variables.some((variable) => {
+      // A source value can be checked in several declaration contexts.
+      spendComplexityBudget(ruleContext, 1);
+      return scope.signature.variableDefinitions.has(variable);
+    });
+    dependencies.set(scope.signature, dependsOnScope);
   }
-  const dependsOnScope = value.variables.some((variable) => {
-    // A source value can be checked in several declaration contexts.
-    spendComplexityBudget(ruleContext, 1);
-    return scope.signature.variableDefinitions.has(variable);
-  });
-  dependencies.set(scope.signature, dependsOnScope);
   return dependsOnScope;
 }
 
@@ -961,11 +956,7 @@ function getFragmentSpreads(
     return cached;
   }
 
-  const spreadsByScope = new Map<
-    VariableScope | undefined,
-    Map<FragmentDefinitionNode | undefined, FragmentSpread>
-  >();
-  const result: Array<FragmentSpread> = [];
+  const fragmentSpreads = new Map<FragmentSpreadKey, FragmentSpread>();
   for (const spreadNode of collectFieldsResult.spreads) {
     const spread = getFragmentSpread(
       validationContext,
@@ -973,22 +964,17 @@ function getFragmentSpreads(
       spreadNode,
       collectFieldsResult.scope,
     );
-    let byDefinition = spreadsByScope.get(spread.scope);
-    if (byDefinition === undefined) {
-      byDefinition = new Map();
-      spreadsByScope.set(spread.scope, byDefinition);
-    }
-    const previous = byDefinition.get(spread.definition);
-    if (previous === undefined) {
-      byDefinition.set(spread.definition, spread);
-      result.push(spread);
-    } else {
-      // Keep first-occurrence order and the last occurrence's error location.
-      previous.node = spread.node;
-    }
+    fragmentSpreads.set(getFragmentSpreadKey(spread), spread);
   }
+  const result = Array.from(fragmentSpreads.values());
   collectFieldsResult.resolvedSpreads = result;
   return result;
+}
+
+// Bound scopes identify distinct argument bindings. Without local variables,
+// the definition itself identifies the fragment, independently of spread nodes.
+function getFragmentSpreadKey(spread: FragmentSpread): FragmentSpreadKey {
+  return spread.scope ?? spread.definition;
 }
 
 function getFragmentSpread(
