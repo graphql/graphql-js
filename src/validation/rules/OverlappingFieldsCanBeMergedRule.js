@@ -58,10 +58,9 @@ export function OverlappingFieldsCanBeMergedRule(
   validationContext: ValidationContext,
 ): ASTVisitor {
   const ruleContext: RuleContext = {
-    // A memoization for when fields and a fragment or two fragments are compared
-    // "between" each other for conflicts. Comparisons may be made many times,
-    // so memoizing this can dramatically improve the performance of this validator.
-    comparedFieldsAndFragmentPairs: new OrderedPairSet(),
+    // A memoization for when two fragments are compared for conflicts.
+    // Comparisons may be made many times, so memoizing this can dramatically
+    // improve the performance of this validator.
     comparedFragmentPairs: new PairSet(),
 
     // A cache for the "field map" and list of fragment names found in any given
@@ -114,9 +113,9 @@ type FragmentNames = Array<string>;
 interface CollectFieldsResult {
   groupedFieldSet: GroupedFieldSet;
   fragmentNames: FragmentNames;
+  comparedFragments?: Map<string, boolean>;
 }
 interface RuleContext {
-  comparedFieldsAndFragmentPairs: OrderedPairSet<CollectFieldsResult, string>;
   comparedFragmentPairs: PairSet;
   cachedCollectFieldsResults: Map<
     ?GraphQLNamedType,
@@ -246,23 +245,17 @@ function collectConflictsBetweenFieldsAndFragment(
   collectFieldsResult: CollectFieldsResult,
   fragmentName: string,
 ): void {
-  const { comparedFieldsAndFragmentPairs } = ruleContext;
+  const comparedFragments =
+    collectFieldsResult.comparedFragments ??
+    (collectFieldsResult.comparedFragments = new Map());
   // Memoize so the fields and fragments are not compared for conflicts more
   // than once.
-  if (
-    comparedFieldsAndFragmentPairs.has(
-      collectFieldsResult,
-      fragmentName,
-      areMutuallyExclusive,
-    )
-  ) {
+  const compared = comparedFragments.get(fragmentName);
+  // Only a non-exclusive comparison can be reused for overlapping parents.
+  if (compared === false || (areMutuallyExclusive && compared === true)) {
     return;
   }
-  comparedFieldsAndFragmentPairs.add(
-    collectFieldsResult,
-    fragmentName,
-    areMutuallyExclusive,
-  );
+  comparedFragments.set(fragmentName, areMutuallyExclusive);
 
   const fragment = validationContext.getFragment(fragmentName);
   if (!fragment) {
@@ -878,38 +871,5 @@ class PairSet {
       this._data[a] = map;
     }
     map[b] = areMutuallyExclusive;
-  }
-}
-
-/**
- * A way to keep track of pairs of things where the ordering of the pair
- * matters.
- *
- * Provides a third argument for has/set to allow flagging the pair as
- * weakly or strongly present within the collection.
- */
-class OrderedPairSet<T, U> {
-  _data: Map<T, Map<U, boolean>>;
-
-  constructor() {
-    this._data = new Map();
-  }
-
-  has(a: T, b: U, weaklyPresent: boolean): boolean {
-    const result = this._data.get(a)?.get(b);
-    if (result === undefined) {
-      return false;
-    }
-
-    return weaklyPresent ? true : weaklyPresent === result;
-  }
-
-  add(a: T, b: U, weaklyPresent: boolean): void {
-    const map = this._data.get(a);
-    if (map === undefined) {
-      this._data.set(a, new Map([[b, weaklyPresent]]));
-    } else {
-      map.set(b, weaklyPresent);
-    }
   }
 }
