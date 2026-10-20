@@ -69,6 +69,9 @@ export type ParseOptions = {|
   /** Maximum number of non-comment tokens allowed in a document. */
   maxLexicalTokens?: number,
 
+  /** Maximum number of comments. */
+  maxComments?: number,
+
   /**
    * If enabled, the parser will parse empty fields sets in the Schema
    * Definition Language. Otherwise, the parser will follow the current
@@ -184,6 +187,9 @@ export class Parser {
     this._lexer = new Lexer(sourceObj);
     this._options = options;
     this._tokenCounter = 0;
+
+    this._lexer._maxComments = options?.maxComments;
+    this._lexer._commentCount = 0;
   }
 
   /**

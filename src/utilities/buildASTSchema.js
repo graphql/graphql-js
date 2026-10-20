@@ -115,6 +115,7 @@ export function buildSchema(
   const document = parse(source, {
     noLocation: options?.noLocation,
     maxLexicalTokens: options?.maxLexicalTokens,
+    maxComments: options?.maxComments,
     allowLegacySDLEmptyFields: options?.allowLegacySDLEmptyFields,
     allowLegacySDLImplementsInterfaces:
       options?.allowLegacySDLImplementsInterfaces,

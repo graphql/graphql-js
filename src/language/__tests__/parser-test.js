@@ -12,7 +12,7 @@ import inspect from '../../jsutils/inspect';
 import { Kind } from '../kinds';
 import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
-import { parse, parseValue, parseType } from '../parser';
+import { parse, parseValue, parseType, Parser } from '../parser';
 
 import toJSONDeep from './toJSONDeep';
 
@@ -21,6 +21,47 @@ function expectSyntaxError(text: string) {
 }
 
 describe('Parser', () => {
+  it('counts comments once across lookahead and includes trailing comments', () => {
+    const source = '"description" # before\ntype Query { foo: Int } # after';
+
+    expect(() => parse(source, { maxComments: 2 })).to.not.throw();
+    expect(() => parse(source, { maxComments: 1 })).to.throw(
+      'Syntax Error: Document contains more than 1 comments. Parsing aborted.',
+    );
+  });
+
+  it('keeps comment limits and counts local to each lexer', () => {
+    const limited = new Parser('# first\n# second\n{ foo }', {
+      maxComments: 1,
+    });
+    const other = new Parser('# comment\n{ foo }', { maxComments: 1 });
+
+    expect(() => limited.parseDocument()).to.throw(
+      'Syntax Error: Document contains more than 1 comments. Parsing aborted.',
+    );
+    expect(() => other.parseDocument()).to.not.throw();
+  });
+
+  it('limits by a maximum number of comments', () => {
+    const source = '# first\n# second\n{ foo }';
+
+    expect(() => parse(source, { maxComments: 2 })).to.not.throw();
+    expect(() => parse(source, { maxComments: 1 })).to.throw(
+      'Syntax Error: Document contains more than 1 comments. Parsing aborted.',
+    );
+
+    expect(() => parse(' , , { foo }', { maxComments: 0 })).to.not.throw();
+  });
+
+  it('limits comments before reaching the next lexical token', () => {
+    const source = `${'# comment\n'.repeat(10)}{ foo }`;
+
+    expect(() => parse(source, { maxLexicalTokens: 3 })).to.not.throw();
+    expect(() => parse(source, { maxComments: 9 })).to.throw(
+      'Syntax Error: Document contains more than 9 comments. Parsing aborted.',
+    );
+  });
+
   it('limits by a maximum number of lexical tokens', () => {
     expect(() => parse('{ foo }', { maxLexicalTokens: 3 })).to.not.throw();
     expect(() => parse('{ foo }', { maxLexicalTokens: 2 })).to.throw(
