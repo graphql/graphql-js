@@ -131,13 +131,13 @@ type ConflictReason = [string, ConflictReasonMessage];
 // Reason is a string, or a nested list of conflicts.
 type ConflictReasonMessage = string | Array<ConflictReason>;
 // Tuple defining a field node in a context.
-type NodeAndDef = [
+type FieldDetails = [
   Maybe<GraphQLNamedType>,
   FieldNode,
   Maybe<GraphQLField<unknown, unknown>>,
 ];
 // Map of array of those.
-type NodeAndDefCollection = Map<string, Array<NodeAndDef>>;
+type NodeAndDefCollection = Map<string, Array<FieldDetails>>;
 type FragmentNames = ReadonlyArray<string>;
 type FieldsAndFragmentNames = readonly [NodeAndDefCollection, FragmentNames];
 interface RuleContext {
@@ -581,11 +581,11 @@ function findConflict(
   ruleContext: RuleContext,
   parentFieldsAreMutuallyExclusive: boolean,
   responseName: string,
-  field1: NodeAndDef,
-  field2: NodeAndDef,
+  fieldDetails1: FieldDetails,
+  fieldDetails2: FieldDetails,
 ): Maybe<Conflict> {
-  const [parentType1, node1, def1] = field1;
-  const [parentType2, node2, def2] = field2;
+  const [parentType1, node1, def1] = fieldDetails1;
+  const [parentType2, node2, def2] = fieldDetails2;
 
   // If it is known that two fields could not possibly apply at the same
   // time, due to the parent types, then it is safe to permit them to diverge
@@ -739,16 +739,16 @@ function getFieldsAndFragmentNames(
   if (cached) {
     return cached;
   }
-  const nodeAndDefs: NodeAndDefCollection = new Map();
+  const fieldDetails: NodeAndDefCollection = new Map();
   const fragmentNames = new Set<string>();
   _collectFieldsAndFragmentNames(
     validationContext,
     parentType,
     selectionSet,
-    nodeAndDefs,
+    fieldDetails,
     fragmentNames,
   );
-  const result = [nodeAndDefs, [...fragmentNames]] as const;
+  const result = [fieldDetails, [...fragmentNames]] as const;
   cachedFieldsAndFragmentNames.set(selectionSet, result);
   return result;
 }
@@ -783,7 +783,7 @@ function _collectFieldsAndFragmentNames(
   validationContext: ValidationContext,
   parentType: Maybe<GraphQLNamedType>,
   selectionSet: SelectionSetNode,
-  nodeAndDefs: NodeAndDefCollection,
+  fieldDetails: NodeAndDefCollection,
   fragmentNames: Set<string>,
 ): void {
   for (const selection of selectionSet.selections) {
@@ -797,12 +797,12 @@ function _collectFieldsAndFragmentNames(
         const responseName = selection.alias
           ? selection.alias.value
           : fieldName;
-        let nodeAndDefsList = nodeAndDefs.get(responseName);
-        if (nodeAndDefsList === undefined) {
-          nodeAndDefsList = [];
-          nodeAndDefs.set(responseName, nodeAndDefsList);
+        let fieldDetailsList = fieldDetails.get(responseName);
+        if (fieldDetailsList === undefined) {
+          fieldDetailsList = [];
+          fieldDetails.set(responseName, fieldDetailsList);
         }
-        nodeAndDefsList.push([parentType, selection, fieldDef]);
+        fieldDetailsList.push([parentType, selection, fieldDef]);
         break;
       }
       case Kind.FRAGMENT_SPREAD:
@@ -817,7 +817,7 @@ function _collectFieldsAndFragmentNames(
           validationContext,
           inlineFragmentType,
           selection.selectionSet,
-          nodeAndDefs,
+          fieldDetails,
           fragmentNames,
         );
         break;
