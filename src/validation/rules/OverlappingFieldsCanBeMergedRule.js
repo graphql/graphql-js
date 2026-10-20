@@ -96,9 +96,9 @@ type ConflictReason = [string, ConflictReasonMessage];
 // Reason is a string, or a nested list of conflicts.
 type ConflictReasonMessage = string | Array<ConflictReason>;
 // Tuple defining a field node in a context.
-type NodeAndDef = [?GraphQLNamedType, FieldNode, ?GraphQLField<mixed, mixed>];
+type FieldDetails = [?GraphQLNamedType, FieldNode, ?GraphQLField<mixed, mixed>];
 // Map of array of those.
-type NodeAndDefCollection = ObjMap<Array<NodeAndDef>>;
+type NodeAndDefCollection = ObjMap<Array<FieldDetails>>;
 type FragmentNames = Array<string>;
 type FieldsAndFragmentNames = [NodeAndDefCollection, FragmentNames];
 interface RuleContext {
@@ -536,11 +536,11 @@ function findConflict(
   ruleContext: RuleContext,
   parentFieldsAreMutuallyExclusive: boolean,
   responseName: string,
-  field1: NodeAndDef,
-  field2: NodeAndDef,
+  fieldDetails1: FieldDetails,
+  fieldDetails2: FieldDetails,
 ): ?Conflict {
-  const [parentType1, node1, def1] = field1;
-  const [parentType2, node2, def2] = field2;
+  const [parentType1, node1, def1] = fieldDetails1;
+  const [parentType2, node2, def2] = fieldDetails2;
 
   // If it is known that two fields could not possibly apply at the same
   // time, due to the parent types, then it is safe to permit them to diverge
@@ -688,17 +688,17 @@ function getFieldsAndFragmentNames(
   if (cached) {
     return cached;
   }
-  const nodeAndDefs: NodeAndDefCollection = Object.create(null);
+  const fieldDetails: NodeAndDefCollection = Object.create(null);
   const fragmentNames: ObjMap<boolean> = Object.create(null);
   _collectFieldsAndFragmentNames(
     validationContext,
     parentType,
     selectionSet,
-    nodeAndDefs,
+    fieldDetails,
     fragmentNames,
   );
   const result: FieldsAndFragmentNames = [
-    nodeAndDefs,
+    fieldDetails,
     Object.keys(fragmentNames),
   ];
   cachedFieldsAndFragmentNames.set(selectionSet, result);
@@ -735,7 +735,7 @@ function _collectFieldsAndFragmentNames(
   validationContext: ValidationContext,
   parentType: ?GraphQLNamedType,
   selectionSet: SelectionSetNode,
-  nodeAndDefs: NodeAndDefCollection,
+  fieldDetails: NodeAndDefCollection,
   fragmentNames: ObjMap<boolean>,
 ): void {
   for (const selection of selectionSet.selections) {
@@ -749,10 +749,10 @@ function _collectFieldsAndFragmentNames(
         const responseName = selection.alias
           ? selection.alias.value
           : fieldName;
-        if (!nodeAndDefs[responseName]) {
-          nodeAndDefs[responseName] = [];
+        if (!fieldDetails[responseName]) {
+          fieldDetails[responseName] = [];
         }
-        nodeAndDefs[responseName].push([parentType, selection, fieldDef]);
+        fieldDetails[responseName].push([parentType, selection, fieldDef]);
         break;
       }
       case Kind.FRAGMENT_SPREAD:
@@ -767,7 +767,7 @@ function _collectFieldsAndFragmentNames(
           validationContext,
           inlineFragmentType,
           selection.selectionSet,
-          nodeAndDefs,
+          fieldDetails,
           fragmentNames,
         );
         break;
