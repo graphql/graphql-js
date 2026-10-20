@@ -8,18 +8,19 @@ export class SetMap {
         return this._entries.size;
     }
     get(members) {
-        return this._find(members)?.value;
+        return this._entries.get(this._key(members))?.value;
     }
     getOrInsert(members, value) {
-        const entry = this._find(members);
+        const key = this._key(members);
+        const entry = this._entries.get(key);
         if (entry !== undefined) {
             return entry.value;
         }
-        this._create(members, value);
+        this._entries.set(key, { members, value });
         return value;
     }
     getOrInsertComputed(members, computeValue) {
-        const entry = this._find(members);
+        const entry = this._entries.get(this._key(members));
         if (entry !== undefined) {
             return entry.value;
         }
@@ -28,15 +29,16 @@ export class SetMap {
         return value;
     }
     has(members) {
-        return this._find(members) !== undefined;
+        return this._entries.has(this._key(members));
     }
     set(members, value) {
-        const entry = this._find(members);
+        const key = this._key(members);
+        const entry = this._entries.get(key);
         if (entry !== undefined) {
             entry.value = value;
             return this;
         }
-        this._create(members, value);
+        this._entries.set(key, { members, value });
         return this;
     }
     *keys() {
@@ -56,13 +58,6 @@ export class SetMap {
     }
     [Symbol.iterator]() {
         return this.entries();
-    }
-    _find(members) {
-        return this._entries.get(this._key(members));
-    }
-    _create(members, value) {
-        const entry = { members, value };
-        this._entries.set(this._key(members), entry);
     }
     _key(members) {
         const ids = [];

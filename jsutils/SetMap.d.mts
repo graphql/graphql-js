@@ -32,8 +32,6 @@ export declare class SetMap<T, V> {
     values(): IterableIterator<V>;
     entries(): IterableIterator<[ReadonlySet<T>, V]>;
     [Symbol.iterator](): IterableIterator<[ReadonlySet<T>, V]>;
-    _find(members: ReadonlySet<T>): SetMapEntry<T, V> | undefined;
-    _create(members: ReadonlySet<T>, value: V): void;
     _key(members: ReadonlySet<T>): string;
 }
 export {};
