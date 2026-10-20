@@ -98,7 +98,8 @@ type ConflictReasonMessage = string | Array<ConflictReason>;
 // Tuple defining a field node in a context.
 type FieldDetails = [?GraphQLNamedType, FieldNode, ?GraphQLField<mixed, mixed>];
 // Map of array of those.
-type NodeAndDefCollection = ObjMap<Array<FieldDetails>>;
+type FieldDetailsList = Array<FieldDetails>;
+type NodeAndDefCollection = ObjMap<FieldDetailsList>;
 type FragmentNames = Array<string>;
 type FieldsAndFragmentNames = [NodeAndDefCollection, FragmentNames];
 interface RuleContext {
