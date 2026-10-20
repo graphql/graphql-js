@@ -12,6 +12,7 @@ import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
 
 import type { SDLValidationRule, ValidationRule } from './ValidationContext';
 import { specifiedRules, specifiedSDLRules } from './specifiedRules';
+import { validationAbortedError } from './validationAbortedError';
 import { SDLValidationContext, ValidationContext } from './ValidationContext';
 
 /**
@@ -68,7 +69,9 @@ export function validate(
   try {
     visit(documentAST, visitWithTypeInfo(typeInfo, visitor));
   } catch (e) {
-    if (e !== abortObj) {
+    if (e === validationAbortedError) {
+      errors.push(validationAbortedError);
+    } else if (e !== abortObj) {
       throw e;
     }
   }

@@ -42,6 +42,22 @@ function expectValidWithSchema(schema: GraphQLSchema, queryStr: string) {
 }
 
 describe('Validate: Overlapping fields can be merged', () => {
+  it('limits reported conflicts across selection sets', () => {
+    const schema = buildSchema('type Query { first: String second: String }');
+    const document = parse(
+      Array.from(
+        { length: 101 },
+        (_, index) => `query Q${index} { value: first value: second }`,
+      ).join('\n'),
+    );
+    const errors = validate(schema, document, [
+      OverlappingFieldsCanBeMergedRule,
+    ]);
+    expect(errors).to.have.lengthOf(101);
+    expect(errors[99].message).to.include('are different fields');
+    expect(errors[100].message).to.equal('Validation aborted.');
+  });
+
   it('retains the first described conflict when abbreviating locations', () => {
     const schema = buildSchema(
       'type Query { child: Query, left: Int, right: Int }',

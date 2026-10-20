@@ -30,11 +30,14 @@ import {
 
 import { typeFromAST } from '../../utilities/typeFromAST';
 
+import { validationAbortedError } from '../validationAbortedError';
 import type { ValidationContext } from '../ValidationContext';
 
 // Keep diagnostic detail bounded independently of document size.
 const MAX_CONFLICT_DETAIL_LENGTH = 1000;
 const MAX_CONFLICT_NODES = 20;
+// v15 has no default validation error limit. Bound this rule's reporting locally.
+const MAX_REPORTED_CONFLICTS = 100;
 
 /**
  * Overlapping fields can be merged
@@ -58,6 +61,8 @@ export function OverlappingFieldsCanBeMergedRule(
     stringifiedValues: new Map(),
   };
 
+  let reportedConflicts = 0;
+
   return {
     SelectionSet(selectionSet, _key, parent) {
       // Inline fragments are flattened into their enclosing response level.
@@ -72,6 +77,10 @@ export function OverlappingFieldsCanBeMergedRule(
         selectionSet,
       );
       for (const { responseName, reason, fields1, fields2 } of conflicts) {
+        if (reportedConflicts >= MAX_REPORTED_CONFLICTS) {
+          throw validationAbortedError;
+        }
+        reportedConflicts++;
         validationContext.reportError(
           new GraphQLError(
             `Fields "${maybeAbbreviate(
