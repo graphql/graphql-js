@@ -88,11 +88,19 @@ export interface ParseOptions {
   noLocation?: boolean;
 
   /**
-   * Parser CPU and memory usage is linear to the number of tokens in a document
-   * however in extreme cases it becomes quadratic due to memory exhaustion.
-   * Parsing happens before validation so even invalid queries can burn lots of
-   * CPU time and memory.
-   * To prevent this you can set a maximum number of tokens allowed within a document.
+   * Parser CPU and memory usage is linear to the number of lexical tokens in a
+   * document; however, in extreme cases it becomes quadratic due to memory
+   * exhaustion. Parsing happens before validation, so even invalid queries can
+   * consume significant CPU time and memory.
+   *
+   * Use this option to limit the number of lexical tokens allowed in a document.
+   * This does not limit the length of the source text or of an individual token.
+   */
+  maxLexicalTokens?: number | undefined;
+
+  /**
+   * Deprecated alias for `maxLexicalTokens`.
+   * @deprecated Use `maxLexicalTokens` instead. Will be removed in v18.
    */
   maxTokens?: number | undefined;
 
@@ -160,7 +168,7 @@ export interface ParseOptions {
  *
  * const document = parse('fragment A($var: Boolean) on Query { field }', {
  *   allowLegacyFragmentVariables: true,
- *   maxTokens: 20,
+ *   maxLexicalTokens: 20,
  *   noLocation: true,
  * });
  * const directiveDocument = parse('directive @foo @bar on FIELD', {
@@ -1956,16 +1964,19 @@ export class Parser {
   }
 
   advanceLexer(): void {
-    const { maxTokens } = this._options;
+    const { maxLexicalTokens = this._options.maxTokens } = this._options;
     const token = this._lexer.advance();
 
     if (token.kind !== TokenKind.EOF) {
       ++this._tokenCounter;
-      if (maxTokens !== undefined && this._tokenCounter > maxTokens) {
+      if (
+        maxLexicalTokens !== undefined &&
+        this._tokenCounter > maxLexicalTokens
+      ) {
         throw syntaxError(
           this._lexer.source,
           token.start,
-          `Document contains more that ${maxTokens} tokens. Parsing aborted.`,
+          `Document contains more that ${maxLexicalTokens} tokens. Parsing aborted.`,
         );
       }
     }
