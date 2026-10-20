@@ -98,6 +98,9 @@ export interface ParseOptions {
    */
   maxLexicalTokens?: number | undefined;
 
+  /** Maximum number of comments. */
+  maxComments?: number | undefined;
+
   /**
    * Deprecated alias for `maxLexicalTokens`.
    * @deprecated Use `maxLexicalTokens` instead. Will be removed in v18.
@@ -346,6 +349,9 @@ export class Parser {
 
     this._options = _options;
     this._tokenCounter = 0;
+
+    this._lexer._maxComments = options?.maxComments;
+    this._lexer._commentCount = 0;
   }
 
   get tokenCount(): number {
