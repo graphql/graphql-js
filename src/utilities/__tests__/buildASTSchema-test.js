@@ -69,6 +69,18 @@ function printAllASTNodes(obj: GraphQLNamedType): string {
 }
 
 describe('Schema Builder', () => {
+  it('forwards the maximum source length to the parser', () => {
+    const source = 'type Query { field: Int }';
+    expect(() =>
+      buildSchema(source, { maxSourceLength: source.length }),
+    ).to.not.throw();
+
+    const maxSourceLength = source.length - 1;
+    expect(() => buildSchema(source, { maxSourceLength })).to.throw(
+      `Syntax Error: Source contains more than ${maxSourceLength} UTF-16 code units. Parsing aborted.`,
+    );
+  });
+
   it('forwards the maximum comment limit', () => {
     const source = '# comment\ntype Query { field: Int }';
 

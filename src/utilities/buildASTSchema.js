@@ -116,6 +116,7 @@ export function buildSchema(
     noLocation: options?.noLocation,
     maxLexicalTokens: options?.maxLexicalTokens,
     maxComments: options?.maxComments,
+    maxSourceLength: options?.maxSourceLength,
     allowLegacySDLEmptyFields: options?.allowLegacySDLEmptyFields,
     allowLegacySDLImplementsInterfaces:
       options?.allowLegacySDLImplementsInterfaces,
