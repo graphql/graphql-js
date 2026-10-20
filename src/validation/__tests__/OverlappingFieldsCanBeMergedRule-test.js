@@ -42,6 +42,59 @@ function expectValidWithSchema(schema: GraphQLSchema, queryStr: string) {
 }
 
 describe('Validate: Overlapping fields can be merged', () => {
+  it('retains the first described conflict when abbreviating locations', () => {
+    const schema = buildSchema(
+      'type Query { child: Query, left: Int, right: Int }',
+    );
+    const fields = (name: string) => `
+      early: child { cause: ${name} }
+      middle: ${'child { '.repeat(10)} leaf: ${name} ${' }'.repeat(10)}
+      late: ${'child { '.repeat(10)} leaf: ${name} ${' }'.repeat(10)}
+    `;
+    const errors = validate(
+      schema,
+      parse(`{ child { ${fields('left')} } child { ${fields('right')} } }`),
+      [OverlappingFieldsCanBeMergedRule],
+    );
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0].message).to.include('subfields "early" conflict');
+    expect(errors[0].locations).to.have.lengthOf(40);
+    expect(
+      errors[0].nodes?.filter(
+        (node) => node.kind === Kind.FIELD && node.alias?.value === 'cause',
+      ),
+    ).to.have.lengthOf(2);
+  });
+
+  it('retains leaf locations when abbreviating a long conflict path', () => {
+    const schema = buildSchema(
+      'type Query { child: Query, left: Int, right: Int }',
+    );
+    const first = 'child { '.repeat(21) + 'same: left' + ' }'.repeat(21);
+    const second = 'child { '.repeat(21) + 'same: right' + ' }'.repeat(21);
+    const errors = validate(schema, parse(`{ ${first} ${second} }`), [
+      OverlappingFieldsCanBeMergedRule,
+    ]);
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0].locations).to.have.lengthOf(40);
+    expect(
+      errors[0].nodes?.filter(
+        (node) => node.kind === Kind.FIELD && node.alias?.value === 'same',
+      ),
+    ).to.have.lengthOf(2);
+  });
+
+  it('reports conflicts without source locations', () => {
+    const schema = buildSchema('type Query { field(value: Int): String }');
+    const document = parse('{ field(value: 1) field(value: 2) }', {
+      noLocation: true,
+    });
+    const errors = validate(schema, document);
+    expect(errors.map((error) => error.message)).to.deep.equal([
+      'Fields "field" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
+    ]);
+    expect(errors[0].locations).to.equal(undefined);
+  });
   it('retains small nested descriptions and conflict locations', () => {
     const schema = buildSchema(
       'type Query { child: Query, left: Int, right: Int }',
