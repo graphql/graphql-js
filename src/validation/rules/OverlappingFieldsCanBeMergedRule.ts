@@ -36,6 +36,7 @@ import type { ValidationContext } from '../ValidationContext';
 
 // Keep diagnostic detail bounded independently of document size.
 const MAX_CONFLICT_DETAIL_LENGTH = 1000;
+const MAX_CONFLICT_NODES = 20;
 
 /**
  * Overlapping fields can be merged
@@ -960,10 +961,29 @@ function subfieldConflicts(
     return {
       responseName,
       reason: maybeAbbreviate(message),
-      fields1: [node1, ...conflicts.map(({ fields1 }) => fields1).flat()],
-      fields2: [node2, ...conflicts.map(({ fields2 }) => fields2).flat()],
+      fields1: collectConflictNodes(node1, conflicts, 'fields1'),
+      fields2: collectConflictNodes(node2, conflicts, 'fields2'),
     };
   }
+}
+
+function collectConflictNodes(
+  node: FieldNode,
+  conflicts: ReadonlyArray<Conflict>,
+  side: 'fields1' | 'fields2',
+): Array<FieldNode> {
+  const nodes = [node];
+  for (const conflict of conflicts) {
+    const remaining = MAX_CONFLICT_NODES - nodes.length;
+    // Locations start with the enclosing field. Take from the end so that
+    // truncation favors the deeper fields involved in the conflict.
+    const retainedNodes = conflict[side].slice(-remaining);
+    nodes.push(...retainedNodes);
+    if (nodes.length === MAX_CONFLICT_NODES) {
+      break;
+    }
+  }
+  return nodes;
 }
 
 function maybeAbbreviate(text: string): string {
