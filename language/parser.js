@@ -997,12 +997,13 @@ class Parser {
         return nodes;
     }
     advanceLexer() {
-        const { maxTokens } = this._options;
+        const { maxLexicalTokens = this._options.maxTokens } = this._options;
         const token = this._lexer.advance();
         if (token.kind !== tokenKind_ts_1.TokenKind.EOF) {
             ++this._tokenCounter;
-            if (maxTokens !== undefined && this._tokenCounter > maxTokens) {
-                throw (0, syntaxError_ts_1.syntaxError)(this._lexer.source, token.start, `Document contains more than ${maxTokens} tokens. Parsing aborted.`);
+            if (maxLexicalTokens !== undefined &&
+                this._tokenCounter > maxLexicalTokens) {
+                throw (0, syntaxError_ts_1.syntaxError)(this._lexer.source, token.start, `Document contains more than ${maxLexicalTokens} tokens. Parsing aborted.`);
             }
         }
     }

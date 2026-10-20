@@ -989,12 +989,13 @@ export class Parser {
         return nodes;
     }
     advanceLexer() {
-        const { maxTokens } = this._options;
+        const { maxLexicalTokens = this._options.maxTokens } = this._options;
         const token = this._lexer.advance();
         if (token.kind !== TokenKind.EOF) {
             ++this._tokenCounter;
-            if (maxTokens !== undefined && this._tokenCounter > maxTokens) {
-                throw syntaxError(this._lexer.source, token.start, `Document contains more than ${maxTokens} tokens. Parsing aborted.`);
+            if (maxLexicalTokens !== undefined &&
+                this._tokenCounter > maxLexicalTokens) {
+                throw syntaxError(this._lexer.source, token.start, `Document contains more than ${maxLexicalTokens} tokens. Parsing aborted.`);
             }
         }
     }
