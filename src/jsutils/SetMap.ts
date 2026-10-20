@@ -35,16 +35,17 @@ export class SetMap<T, V> {
   }
 
   get(members: ReadonlySet<T>): V | undefined {
-    return this._find(members)?.value;
+    return this._entries.get(this._key(members))?.value;
   }
 
   getOrInsert(members: ReadonlySet<T>, value: V): V {
-    const entry = this._find(members);
+    const key = this._key(members);
+    const entry = this._entries.get(key);
     if (entry !== undefined) {
       return entry.value;
     }
 
-    this._create(members, value);
+    this._entries.set(key, { members, value });
     return value;
   }
 
@@ -52,7 +53,7 @@ export class SetMap<T, V> {
     members: ReadonlySet<T>,
     computeValue: (members: ReadonlySet<T>) => V,
   ): V {
-    const entry = this._find(members);
+    const entry = this._entries.get(this._key(members));
     if (entry !== undefined) {
       return entry.value;
     }
@@ -63,17 +64,18 @@ export class SetMap<T, V> {
   }
 
   has(members: ReadonlySet<T>): boolean {
-    return this._find(members) !== undefined;
+    return this._entries.has(this._key(members));
   }
 
   set(members: ReadonlySet<T>, value: V): this {
-    const entry = this._find(members);
+    const key = this._key(members);
+    const entry = this._entries.get(key);
     if (entry !== undefined) {
       entry.value = value;
       return this;
     }
 
-    this._create(members, value);
+    this._entries.set(key, { members, value });
     return this;
   }
 
@@ -97,15 +99,6 @@ export class SetMap<T, V> {
 
   [Symbol.iterator](): IterableIterator<[ReadonlySet<T>, V]> {
     return this.entries();
-  }
-
-  _find(members: ReadonlySet<T>): SetMapEntry<T, V> | undefined {
-    return this._entries.get(this._key(members));
-  }
-
-  _create(members: ReadonlySet<T>, value: V): void {
-    const entry = { members, value };
-    this._entries.set(this._key(members), entry);
   }
 
   _key(members: ReadonlySet<T>): string {
