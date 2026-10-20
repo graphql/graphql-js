@@ -39,6 +39,10 @@ const MAX_CONFLICT_NODES = 20;
 // v15 has no default validation error limit. Bound this rule's reporting locally.
 const MAX_REPORTED_CONFLICTS = 100;
 
+// Meter work that can grow through repeated comparisons.
+// Collecting a selection set's fields is cached and is not charged.
+const MAX_COMPLEXITY_BUDGET = 500_000;
+
 /**
  * Overlapping fields can be merged
  *
@@ -59,6 +63,7 @@ export function OverlappingFieldsCanBeMergedRule(
     // selection set.
     cachedCollectFieldsResults: new Map(),
     stringifiedValues: new Map(),
+    remainingComplexityBudget: MAX_COMPLEXITY_BUDGET,
   };
 
   let reportedConflicts = 0;
@@ -133,6 +138,7 @@ interface OverlappingFields {
   fields2: FieldDetailsList;
 }
 interface RuleContext {
+  remainingComplexityBudget: number;
   stringifiedValues: Map<ValueNode, string>;
   comparedFragmentPairs: PairSet;
   cachedCollectFieldsResults: Map<
@@ -268,6 +274,10 @@ function collectConflictsBetweenFieldsAndFragment(
   collectFieldsResult: CollectFieldsResult,
   fragmentName: string,
 ): void {
+  // Callers can enumerate more field-map/fragment pairs than document nodes.
+  // Count attempts even when an empty collection or the pair cache skips them.
+  spendComplexityBudget(ruleContext, 1);
+
   if (collectFieldsResult.responseNames.length === 0) {
     return;
   }
@@ -337,6 +347,9 @@ function collectConflictsBetweenFragments(
   fragmentName1: string,
   fragmentName2: string,
 ): void {
+  // Count attempted fragment pairs, including identity and cache hits.
+  spendComplexityBudget(ruleContext, 2);
+
   const { comparedFragmentPairs } = ruleContext;
   // No need to compare a fragment to itself.
   if (fragmentName1 === fragmentName2) {
@@ -557,6 +570,7 @@ function collectConflictsBetween(
   // maps, each field from the first field map must be compared to every field
   // in the second field map to find potential conflicts.
   for (const { responseName, fields1, fields2 } of getOverlappingFields(
+    ruleContext,
     collectFieldsResult1,
     collectFieldsResult2,
   )) {
@@ -579,6 +593,7 @@ function collectConflictsBetween(
 }
 
 function getOverlappingFields(
+  ruleContext: RuleContext,
   collectFieldsResult1: CollectFieldsResult,
   collectFieldsResult2: CollectFieldsResult,
 ): Array<OverlappingFields> {
@@ -592,6 +607,8 @@ function getOverlappingFields(
   }
   const overlappingFields: Array<OverlappingFields> = [];
   for (const responseName of collectFieldsResult1.responseNames) {
+    // A field map can participate in many distinct comparisons.
+    spendComplexityBudget(ruleContext, 1);
     const fields2 = collectFieldsResult2.groupedFieldSet[responseName];
     if (fields2 !== undefined) {
       const fields1 = collectFieldsResult1.groupedFieldSet[responseName];
@@ -636,6 +653,9 @@ function findConflict(
     (parentType1 !== parentType2 &&
       isObjectType(parentType1) &&
       isObjectType(parentType2));
+
+  // Count attempted field pairs, including pairs skipped by type exclusivity.
+  spendComplexityBudget(ruleContext, 2);
 
   if (!areMutuallyExclusive) {
     const fieldInfo1 = getFieldInfo(fieldDetails1);
@@ -743,6 +763,8 @@ function sameArguments(
   }
   const values2 = argumentInfo2.values;
   return argumentInfo1.nodes.every((arg1) => {
+    // A prepared argument list can participate in many field-pair comparisons.
+    spendComplexityBudget(ruleContext, 1);
     const value2 = values2.get(arg1.name.value);
     if (value2 === undefined) {
       return false;
@@ -982,6 +1004,14 @@ function maybeAbbreviate(text: string): string {
   return text.length > MAX_CONFLICT_DETAIL_LENGTH
     ? text.slice(0, MAX_CONFLICT_DETAIL_LENGTH) + '...'
     : text;
+}
+
+function spendComplexityBudget(ruleContext: RuleContext, cost: number): void {
+  ruleContext.remainingComplexityBudget -= cost;
+  /* istanbul ignore if -- exercised by private complexity calibration */
+  if (ruleContext.remainingComplexityBudget < 0) {
+    throw validationAbortedError;
+  }
 }
 
 /**
