@@ -107,6 +107,10 @@ type FragmentNames = Array<string>;
 type FieldsAndFragmentNames = [NodeAndDefCollection, FragmentNames];
 
 /**
+ * Find all conflicts found "within" a selection set, including those found
+ * via spreading in fragments. Called when visiting each SelectionSet in the
+ * GraphQL Document.
+ *
  * Algorithm:
  *
  * Conflicts occur when two fields exist in a query which will produce the same
@@ -122,7 +126,7 @@ type FieldsAndFragmentNames = [NodeAndDefCollection, FragmentNames];
  * A) Each selection set represented in the document first compares "within" its
  * collected set of fields, finding any conflicts between every pair of
  * overlapping fields.
- * Note: This is the *only time* that a the fields "within" a set are compared
+ * Note: This is the *only time* that the fields "within" a set are compared
  * to each other. After this only fields "between" sets are compared.
  *
  * B) Also, if any fragment is referenced in a selection set, then a
@@ -134,14 +138,14 @@ type FieldsAndFragmentNames = [NodeAndDefCollection, FragmentNames];
  *
  * D) When comparing "between" a set of fields and a referenced fragment, first
  * a comparison is made between each field in the original set of fields and
- * each field in the the referenced set of fields.
+ * each field in the referenced set of fields.
  *
  * E) Also, if any fragment is referenced in the referenced selection set,
  * then a comparison is made "between" the original set of fields and the
  * referenced fragment (recursively referring to step D).
  *
  * F) When comparing "between" two fragments, first a comparison is made between
- * each field in the first referenced set of fields and each field in the the
+ * each field in the first referenced set of fields and each field in the
  * second referenced set of fields.
  *
  * G) Also, any fragments referenced by the first must be compared to the
@@ -158,12 +162,7 @@ type FieldsAndFragmentNames = [NodeAndDefCollection, FragmentNames];
  *
  * J) Also, if two fragments are referenced in both selection sets, then a
  * comparison is made "between" the two fragments.
- *
  */
-
-// Find all conflicts found "within" a selection set, including those found
-// via spreading in fragments. Called when visiting each SelectionSet in the
-// GraphQL Document.
 function findConflictsWithinSelectionSet(
   context: ValidationContext,
   cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
