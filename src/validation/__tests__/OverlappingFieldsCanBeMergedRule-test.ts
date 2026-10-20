@@ -408,6 +408,69 @@ describe('Validate: Overlapping fields can be merged', () => {
     ]);
   });
 
+  it('does not compare subfields of incompatible parent calls', () => {
+    expectErrors(`
+      fragment incompatibleParents on Dog {
+        parent: mother {
+          value: name
+        }
+        parent: father {
+          value: mother { name }
+        }
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Fields "parent" conflict because "mother" and "father" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 6, column: 9 },
+        ],
+      },
+    ]);
+  });
+
+  it('still compares subfields of each compatible parent-call group', () => {
+    expectErrors(`
+      fragment mixedParents on Dog {
+        parent: mother {
+          value: name
+        }
+        parent: mother {
+          value: mother { name }
+        }
+        parent: father { name }
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Fields "parent" conflict because subfields "value" conflict because "name" and "mother" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 11 },
+          { line: 6, column: 9 },
+          { line: 7, column: 11 },
+        ],
+      },
+      {
+        message:
+          'Fields "parent" conflict because "mother" and "father" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 9, column: 9 },
+        ],
+      },
+      {
+        message:
+          'Fields "parent" conflict because "mother" and "father" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 6, column: 9 },
+          { line: 9, column: 9 },
+        ],
+      },
+    ]);
+  });
+
   it('very deep conflict', () => {
     expectErrors(`
       {
@@ -512,10 +575,10 @@ describe('Validate: Overlapping fields can be merged', () => {
     expectErrors(`
       {
         field {
-          ...F
+          ...I
         }
         field {
-          ...I
+          ...F
         }
       }
       fragment F on T {
@@ -535,14 +598,14 @@ describe('Validate: Overlapping fields can be merged', () => {
     `).toDeepEqual([
       {
         message:
-          'Fields "field" conflict because subfields "x" conflict because "a" and "b" are different fields and subfields "y" conflict because "c" and "d" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+          'Fields "field" conflict because subfields "y" conflict because "d" and "c" are different fields and subfields "x" conflict because "b" and "a" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
         locations: [
           { line: 3, column: 9 },
-          { line: 11, column: 9 },
-          { line: 15, column: 9 },
-          { line: 6, column: 9 },
-          { line: 22, column: 9 },
           { line: 18, column: 9 },
+          { line: 22, column: 9 },
+          { line: 6, column: 9 },
+          { line: 15, column: 9 },
+          { line: 11, column: 9 },
         ],
       },
     ]);
@@ -601,6 +664,7 @@ describe('Validate: Overlapping fields can be merged', () => {
         scalar: String
         deepBox: StringBox
         unrelatedField: String
+        listNode: [Node]
         listStringBox: [StringBox]
         stringBox: StringBox
         intBox: IntBox
@@ -610,6 +674,7 @@ describe('Validate: Overlapping fields can be merged', () => {
         scalar: Int
         deepBox: IntBox
         unrelatedField: String
+        node: Node
         listStringBox: [StringBox]
         stringBox: StringBox
         intBox: IntBox
@@ -729,6 +794,33 @@ describe('Validate: Overlapping fields can be merged', () => {
         {
           message:
             'Fields "scalar" conflict because they return conflicting types "Int" and "String". Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 5, column: 17 },
+            { line: 8, column: 17 },
+          ],
+        },
+      ]);
+    });
+
+    it('does not compare subfields after a response-type conflict', () => {
+      expectErrorsWithSchema(
+        schema,
+        `
+          {
+            someBox {
+              ... on StringBox {
+                parent: listNode { value: name }
+              }
+              ... on IntBox {
+                parent: node { value: id }
+              }
+            }
+          }
+        `,
+      ).toDeepEqual([
+        {
+          message:
+            'Fields "parent" conflict because they return conflicting types "[Node]" and "Node". Use different aliases on the fields to fetch both if this was intentional.',
           locations: [
             { line: 5, column: 17 },
             { line: 8, column: 17 },
