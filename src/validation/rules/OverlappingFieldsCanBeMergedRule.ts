@@ -101,7 +101,7 @@ export function OverlappingFieldsCanBeMergedRule(
 
     // A cache for the "field map" and list of fragment names found in any given
     // selection set.
-    cachedFieldsAndFragmentNames: new Map(),
+    cachedCollectFieldsResults: new Map(),
   };
 
   return {
@@ -140,11 +140,11 @@ type FieldDetails = [
 type FieldDetailsList = Array<FieldDetails>;
 type GroupedFieldSet = Map<string, FieldDetailsList>;
 type FragmentNames = ReadonlyArray<string>;
-type FieldsAndFragmentNames = readonly [GroupedFieldSet, FragmentNames];
+type CollectFieldsResult = readonly [GroupedFieldSet, FragmentNames];
 interface RuleContext {
   comparedFieldsAndFragmentPairs: OrderedPairSet<GroupedFieldSet, string>;
   comparedFragmentPairs: PairSet<string>;
-  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>;
+  cachedCollectFieldsResults: Map<SelectionSetNode, CollectFieldsResult>;
 }
 
 /**
@@ -214,7 +214,7 @@ function findConflictsWithinSelectionSet(
 ): Array<Conflict> {
   const conflicts: Array<Conflict> = [];
 
-  const [groupedFieldSet, fragmentNames] = getFieldsAndFragmentNames(
+  const [groupedFieldSet, fragmentNames] = collectFields(
     validationContext,
     ruleContext,
     parentType,
@@ -298,12 +298,11 @@ function collectConflictsBetweenFieldsAndFragment(
     return;
   }
 
-  const [groupedFieldSet2, referencedFragmentNames] =
-    getReferencedFieldsAndFragmentNames(
-      validationContext,
-      ruleContext,
-      fragment,
-    );
+  const [groupedFieldSet2, referencedFragmentNames] = collectFragmentFields(
+    validationContext,
+    ruleContext,
+    fragment,
+  );
 
   // Do not compare a fragment's groupedFieldSet to itself.
   if (groupedFieldSet === groupedFieldSet2) {
@@ -369,18 +368,16 @@ function collectConflictsBetweenFragments(
     return;
   }
 
-  const [groupedFieldSet1, referencedFragmentNames1] =
-    getReferencedFieldsAndFragmentNames(
-      validationContext,
-      ruleContext,
-      fragment1,
-    );
-  const [groupedFieldSet2, referencedFragmentNames2] =
-    getReferencedFieldsAndFragmentNames(
-      validationContext,
-      ruleContext,
-      fragment2,
-    );
+  const [groupedFieldSet1, referencedFragmentNames1] = collectFragmentFields(
+    validationContext,
+    ruleContext,
+    fragment1,
+  );
+  const [groupedFieldSet2, referencedFragmentNames2] = collectFragmentFields(
+    validationContext,
+    ruleContext,
+    fragment2,
+  );
 
   // (F) First, collect all conflicts between these two collections of fields
   // (not including any nested fragments).
@@ -434,13 +431,13 @@ function findConflictsBetweenSubSelectionSets(
 ): Array<Conflict> {
   const conflicts: Array<Conflict> = [];
 
-  const [groupedFieldSet1, fragmentNames1] = getFieldsAndFragmentNames(
+  const [groupedFieldSet1, fragmentNames1] = collectFields(
     validationContext,
     ruleContext,
     parentType1,
     selectionSet1,
   );
-  const [groupedFieldSet2, fragmentNames2] = getFieldsAndFragmentNames(
+  const [groupedFieldSet2, fragmentNames2] = collectFields(
     validationContext,
     ruleContext,
     parentType2,
@@ -734,20 +731,20 @@ function doTypesConflict(
 // Given a selection set, return the collection of fields (a mapping of response
 // name to field nodes and definitions) as well as a list of fragment names
 // referenced via fragment spreads.
-function getFieldsAndFragmentNames(
+function collectFields(
   validationContext: ValidationContext,
   ruleContext: RuleContext,
   parentType: Maybe<GraphQLNamedType>,
   selectionSet: SelectionSetNode,
-): FieldsAndFragmentNames {
-  const { cachedFieldsAndFragmentNames } = ruleContext;
-  const cached = cachedFieldsAndFragmentNames.get(selectionSet);
+): CollectFieldsResult {
+  const { cachedCollectFieldsResults } = ruleContext;
+  const cached = cachedCollectFieldsResults.get(selectionSet);
   if (cached) {
     return cached;
   }
   const fieldDetails: GroupedFieldSet = new Map();
   const fragmentNames = new Set<string>();
-  _collectFieldsAndFragmentNames(
+  collectFieldsImpl(
     validationContext,
     parentType,
     selectionSet,
@@ -755,20 +752,20 @@ function getFieldsAndFragmentNames(
     fragmentNames,
   );
   const result = [fieldDetails, [...fragmentNames]] as const;
-  cachedFieldsAndFragmentNames.set(selectionSet, result);
+  cachedCollectFieldsResults.set(selectionSet, result);
   return result;
 }
 
 // Given a reference to a fragment, return the represented collection of fields
 // as well as a list of nested fragment names referenced via fragment spreads.
-function getReferencedFieldsAndFragmentNames(
+function collectFragmentFields(
   validationContext: ValidationContext,
   ruleContext: RuleContext,
   fragment: FragmentDefinitionNode,
 ) {
-  const { cachedFieldsAndFragmentNames } = ruleContext;
+  const { cachedCollectFieldsResults } = ruleContext;
   // Short-circuit building a type from the node if possible.
-  const cached = cachedFieldsAndFragmentNames.get(fragment.selectionSet);
+  const cached = cachedCollectFieldsResults.get(fragment.selectionSet);
   if (cached) {
     return cached;
   }
@@ -777,7 +774,7 @@ function getReferencedFieldsAndFragmentNames(
     validationContext.getSchema(),
     fragment.typeCondition,
   );
-  return getFieldsAndFragmentNames(
+  return collectFields(
     validationContext,
     ruleContext,
     fragmentType,
@@ -785,7 +782,7 @@ function getReferencedFieldsAndFragmentNames(
   );
 }
 
-function _collectFieldsAndFragmentNames(
+function collectFieldsImpl(
   validationContext: ValidationContext,
   parentType: Maybe<GraphQLNamedType>,
   selectionSet: SelectionSetNode,
@@ -819,7 +816,7 @@ function _collectFieldsAndFragmentNames(
         const inlineFragmentType = typeCondition
           ? typeFromAST(validationContext.getSchema(), typeCondition)
           : parentType;
-        _collectFieldsAndFragmentNames(
+        collectFieldsImpl(
           validationContext,
           inlineFragmentType,
           selection.selectionSet,
