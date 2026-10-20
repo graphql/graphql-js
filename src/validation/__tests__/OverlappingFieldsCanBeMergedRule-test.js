@@ -1,10 +1,18 @@
+import { expect } from 'chai';
+
 import { describe, it } from 'mocha';
+
+import invariant from '../../jsutils/invariant';
+
+import { Kind } from '../../language/kinds';
+import { parse } from '../../language/parser';
 
 import type { GraphQLSchema } from '../../type/schema';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
 import { OverlappingFieldsCanBeMergedRule } from '../rules/OverlappingFieldsCanBeMergedRule';
+import { validate } from '../validate';
 
 import {
   expectValidationErrors,
@@ -57,6 +65,36 @@ describe('Validate: Overlapping fields can be merged', () => {
     );
   });
 
+  it('keeps field definitions separate when a selection set is shared between types', () => {
+    const schema = buildSchema(`
+      type Query { node: Union }
+      union Union = First | Second
+      type First { value: Int }
+      type Second { value: String }
+    `);
+    const document = parse(`
+      { node { ...First ...Second } }
+      fragment First on First { value }
+      fragment Second on Second { value }
+    `);
+    const first = document.definitions[1];
+    const second = document.definitions[2];
+    invariant(first.kind === Kind.FRAGMENT_DEFINITION);
+    invariant(second.kind === Kind.FRAGMENT_DEFINITION);
+    const sharedDocument = {
+      ...document,
+      definitions: document.definitions.map((definition) =>
+        definition === second
+          ? { ...second, selectionSet: first.selectionSet }
+          : definition,
+      ),
+    };
+    expect(
+      validate(schema, sharedDocument).map((error) => error.message),
+    ).to.deep.equal([
+      'Fields "value" conflict because they return conflicting types "Int" and "String". Use different aliases on the fields to fetch both if this was intentional.',
+    ]);
+  });
   it('unique fields', () => {
     expectValid(`
       fragment uniqueFields on Dog {
