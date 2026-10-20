@@ -5,29 +5,29 @@ import inspect from '../../jsutils/inspect';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
-import type { ASTVisitor } from '../../language/visitor';
 import type {
-  SelectionSetNode,
-  ValueNode,
   FieldNode,
   FragmentDefinitionNode,
+  SelectionSetNode,
+  ValueNode,
 } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
+import type { ASTVisitor } from '../../language/visitor';
 
 import type {
-  GraphQLNamedType,
-  GraphQLOutputType,
   GraphQLCompositeType,
   GraphQLField,
+  GraphQLNamedType,
+  GraphQLOutputType,
 } from '../../type/definition';
 import {
   getNamedType,
-  isNonNullType,
-  isLeafType,
-  isObjectType,
-  isListType,
   isInterfaceType,
+  isLeafType,
+  isListType,
+  isNonNullType,
+  isObjectType,
 } from '../../type/definition';
 
 import { sortValueNode } from '../../utilities/sortValueNode';
