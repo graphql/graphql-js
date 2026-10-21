@@ -54,9 +54,7 @@ import type { ValidationContext } from '../ValidationContext.ts';
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   VariablesInAllowedPositionRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export function VariablesInAllowedPositionRule(

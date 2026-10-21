@@ -183,8 +183,7 @@ export function legacyExecuteIncrementally(
  *
  * assert('schema' in validatedArgs);
  *
- * const result = await legacyExecuteRootSelectionSet(validatedArgs);
- * result; // => { data: { greeting: 'Hello' } }
+ * const result = await legacyExecuteRootSelectionSet(validatedArgs); // => { data: { greeting: 'Hello' } }
  * ```
  */
 export function legacyExecuteRootSelectionSet(

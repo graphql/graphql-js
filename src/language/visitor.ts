@@ -244,9 +244,7 @@ export function visit<N extends ASTNode>(
  *       return node.definitions.join('\n');
  *     },
  *   },
- * });
- *
- * printed; // => 'hero { name }'
+ * }); // => 'hero { name }'
  * ```
  */
 export function visit<R>(

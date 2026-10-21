@@ -55,9 +55,7 @@ import type {
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   ProvidedRequiredArgumentsRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export function ProvidedRequiredArgumentsRule(

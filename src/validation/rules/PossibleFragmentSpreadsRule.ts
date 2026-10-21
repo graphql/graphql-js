@@ -56,9 +56,7 @@ import type { ValidationContext } from '../ValidationContext.ts';
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   PossibleFragmentSpreadsRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export function PossibleFragmentSpreadsRule(

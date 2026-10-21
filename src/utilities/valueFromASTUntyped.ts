@@ -29,9 +29,7 @@ import { Kind } from '../language/kinds.ts';
  * import { parseValue } from 'graphql/language';
  * import { valueFromASTUntyped } from 'graphql/utilities';
  *
- * const value = valueFromASTUntyped(parseValue('[1, 2, 3]'));
- *
- * value; // => [1, 2, 3]
+ * const value = valueFromASTUntyped(parseValue('[1, 2, 3]')); // => [1, 2, 3]
  * valueFromASTUntyped(parseValue('$name'), { name: 'Ada' }); // => 'Ada'
  * ```
  */

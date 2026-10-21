@@ -55,9 +55,7 @@ import type { ValidationContext } from '../ValidationContext.ts';
  * const validDocument = parse(`
  *   { name }
  * `);
- * const validErrors = validate(schema, validDocument, [FieldsOnCorrectTypeRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [FieldsOnCorrectTypeRule]); // => []
  * ```
  */
 export function FieldsOnCorrectTypeRule(

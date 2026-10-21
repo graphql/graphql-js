@@ -39,9 +39,7 @@ import type { ASTValidationContext } from '../ValidationContext.ts';
  * const validDocument = parse(`
  *   fragment Used on Query { name } query { ...Used }
  * `);
- * const validErrors = validate(schema, validDocument, [NoUnusedFragmentsRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [NoUnusedFragmentsRule]); // => []
  * ```
  */
 export function NoUnusedFragmentsRule(
