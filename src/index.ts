@@ -384,6 +384,8 @@ export {
   getArgumentValues,
   getVariableValues,
   getDirectiveValues,
+  compileExecution,
+  compileSubscription,
   subscribe,
   createSourceEventStream,
   mapSourceToResponseEvent,
@@ -393,6 +395,10 @@ export {
 
 export type {
   ExecutionArgs,
+  CompiledExecution,
+  CompiledExecutionArgs,
+  CompiledSubscription,
+  CompileExecutionArgs,
   RootSelectionSetExecutor,
   AsyncWorkFinishedInfo,
   ExecutionHooks,

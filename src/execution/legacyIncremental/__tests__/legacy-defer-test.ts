@@ -20,13 +20,10 @@ import {
 import { GraphQLID, GraphQLString } from '../../../type/scalars.ts';
 import { GraphQLSchema } from '../../../type/schema.ts';
 
-import { buildSchema } from '../../../utilities/buildASTSchema.ts';
-
-import type {
-  LegacyInitialIncrementalExecutionResult,
-  LegacySubsequentIncrementalExecutionResult,
-} from '../BranchingIncrementalExecutor.ts';
-import { legacyExecuteIncrementally } from '../legacyExecuteIncrementally.ts';
+import {
+  complete as completeExecution,
+  execute as executeIncrementally,
+} from './execute.ts';
 
 const friendType = new GraphQLObjectType({
   fields: {
@@ -129,6 +126,23 @@ const heroType = new GraphQLObjectType({
   name: 'Hero',
 });
 
+const cancellationUserType = new GraphQLObjectType({
+  fields: {
+    id: { type: GraphQLID },
+    name: { type: GraphQLString },
+  },
+  name: 'User',
+});
+
+const cancellationTodoType = new GraphQLObjectType({
+  fields: {
+    id: { type: GraphQLID },
+    items: { type: new GraphQLList(GraphQLString) },
+    author: { type: cancellationUserType },
+  },
+  name: 'Todo',
+});
+
 const query = new GraphQLObjectType({
   fields: {
     hero: {
@@ -136,92 +150,42 @@ const query = new GraphQLObjectType({
     },
     a: { type: a },
     g: { type: g },
+    todo: {
+      type: cancellationTodoType,
+    },
+    nonNullableTodo: {
+      type: new GraphQLNonNull(cancellationTodoType),
+    },
+    blocker: {
+      type: GraphQLString,
+    },
+    scalarList: {
+      type: new GraphQLList(GraphQLString),
+    },
+    slowScalarList: {
+      type: new GraphQLList(GraphQLString),
+    },
   },
   name: 'Query',
 });
 
 const schema = new GraphQLSchema({ query });
 
-const cancellationSchema = buildSchema(`
-  type Todo {
-    id: ID
-    items: [String]
-    author: User
-  }
-
-  type User {
-    id: ID
-    name: String
-  }
-
-  type Query {
-    todo: Todo
-    nonNullableTodo: Todo!
-    blocker: String
-    scalarList: [String]
-    slowScalarList: [String]
-  }
-
-  type Mutation {
-    foo: String
-    bar: String
-  }
-
-  type Subscription {
-    foo: String
-  }
-`);
-
-async function complete(
+function complete(
   document: DocumentNode,
   rootValue: unknown = { hero },
-  enableEarlyExecution = false,
+  options: {
+    enableEarlyExecution?: boolean;
+    abortSignal?: AbortSignal;
+  } = {},
 ) {
-  const result = await legacyExecuteIncrementally({
+  return completeExecution({
     schema,
     document,
     rootValue,
-    enableEarlyExecution,
+    enableEarlyExecution: options.enableEarlyExecution ?? false,
+    abortSignal: options.abortSignal,
   });
-
-  if ('initialResult' in result) {
-    const results: Array<
-      | LegacyInitialIncrementalExecutionResult
-      | LegacySubsequentIncrementalExecutionResult
-    > = [result.initialResult];
-    for await (const patch of result.subsequentResults) {
-      results.push(patch);
-    }
-    return results;
-  }
-  return result;
-}
-
-async function completeCancellation(
-  document: DocumentNode,
-  rootValue: unknown,
-  abortSignal: AbortSignal,
-  enableEarlyExecution = false,
-) {
-  const result = await legacyExecuteIncrementally({
-    schema: cancellationSchema,
-    document,
-    rootValue,
-    enableEarlyExecution,
-    abortSignal,
-  });
-
-  if ('initialResult' in result) {
-    const results: Array<
-      | LegacyInitialIncrementalExecutionResult
-      | LegacySubsequentIncrementalExecutionResult
-    > = [result.initialResult];
-    for await (const patch of result.subsequentResults) {
-      results.push(patch);
-    }
-    return results;
-  }
-  return result;
 }
 
 describe('Execute: defer directive (legacy)', () => {
@@ -462,7 +426,7 @@ describe('Execute: defer directive (legacy)', () => {
           },
         },
       },
-      true,
+      { enableEarlyExecution: true },
     );
 
     expectJSON(result).toDeepEqual([
@@ -1001,7 +965,7 @@ describe('Execute: defer directive (legacy)', () => {
     };
     const cResolverSpy = spyOnMethod(bResolvers, 'c');
     const eResolverSpy = spyOnMethod(bResolvers, 'e');
-    const executeResult = legacyExecuteIncrementally({
+    const executeResult = executeIncrementally({
       schema,
       document,
       rootValue: {
@@ -1113,7 +1077,7 @@ describe('Execute: defer directive (legacy)', () => {
     };
     const cResolverSpy = spyOnMethod(bResolvers, 'c');
     const eResolverSpy = spyOnMethod(bResolvers, 'e');
-    const executeResult = legacyExecuteIncrementally({
+    const executeResult = executeIncrementally({
       schema,
       document,
       rootValue: {
@@ -2014,7 +1978,7 @@ describe('Execute: defer directive (legacy)', () => {
           someField: 'someField',
         },
       },
-      true,
+      { enableEarlyExecution: true },
     );
     expectJSON(result).toDeepEqual([
       {
@@ -2071,7 +2035,7 @@ describe('Execute: defer directive (legacy)', () => {
           nonNullName: () => null,
         },
       },
-      true,
+      { enableEarlyExecution: true },
     );
     expectJSON(result).toDeepEqual({
       data: {
@@ -2109,7 +2073,7 @@ describe('Execute: defer directive (legacy)', () => {
           nonNullName: () => null,
         },
       },
-      true,
+      { enableEarlyExecution: true },
     );
     expectJSON(result).toDeepEqual([
       {
@@ -2243,7 +2207,7 @@ describe('Execute: defer directive (legacy)', () => {
       promiseWithResolvers<{
         value: () => string;
       }>();
-    const resultPromise = legacyExecuteIncrementally({
+    const resultPromise = executeIncrementally({
       schema: lateSchema,
       document,
       rootValue: {
@@ -2326,7 +2290,7 @@ describe('Execute: defer directive (legacy)', () => {
           nonNullName: () => null,
         },
       },
-      true,
+      { enableEarlyExecution: true },
     );
     expectJSON(result).toDeepEqual([
       {
@@ -2395,7 +2359,7 @@ describe('Execute: defer directive (legacy)', () => {
       promiseWithResolvers<{
         value: () => string;
       }>();
-    const resultPromise = legacyExecuteIncrementally({
+    const resultPromise = executeIncrementally({
       schema: lateSchema,
       document,
       rootValue: {
@@ -3038,8 +3002,8 @@ describe('Execute: defer directive (legacy)', () => {
       }
     `);
 
-    const result = await legacyExecuteIncrementally({
-      schema: cancellationSchema,
+    const result = await executeIncrementally({
+      schema,
       document,
       rootValue: {
         todo: {
@@ -3092,8 +3056,8 @@ describe('Execute: defer directive (legacy)', () => {
       }
     `);
 
-    const resultPromise = legacyExecuteIncrementally({
-      schema: cancellationSchema,
+    const resultPromise = executeIncrementally({
+      schema,
       document,
       rootValue: {
         todo: async () =>
@@ -3128,7 +3092,7 @@ describe('Execute: defer directive (legacy)', () => {
       }
     `);
 
-    const resultPromise = completeCancellation(
+    const resultPromise = complete(
       document,
       {
         todo: () =>
@@ -3139,7 +3103,7 @@ describe('Execute: defer directive (legacy)', () => {
               Promise.resolve(() => expect.fail('Should not be called')),
           }),
       },
-      abortController.signal,
+      { abortSignal: abortController.signal },
     );
 
     abortController.abort();
@@ -3154,8 +3118,8 @@ describe('Execute: defer directive (legacy)', () => {
     const { promise: slowPromise } = promiseWithResolvers<unknown>();
     const document = parse('{ scalarList ... @defer { slowScalarList } }');
 
-    const result = await legacyExecuteIncrementally({
-      schema: cancellationSchema,
+    const result = await executeIncrementally({
+      schema,
       document,
       rootValue: {
         scalarList: () => ['a'],
@@ -3224,8 +3188,8 @@ describe('Execute: defer directive (legacy)', () => {
 
     const sourceReturnSpy = spyOnMethod(asyncIterator, 'return');
 
-    const resultPromise = legacyExecuteIncrementally({
-      schema: cancellationSchema,
+    const resultPromise = executeIncrementally({
+      schema,
       document,
       enableEarlyExecution: true,
       abortSignal: abortController.signal,
@@ -3286,8 +3250,8 @@ describe('Execute: defer directive (legacy)', () => {
     const { promise: authorPromise, resolve: resolveAuthor } =
       promiseWithResolvers<{ id: string }>();
 
-    const result = await legacyExecuteIncrementally({
-      schema: cancellationSchema,
+    const result = await executeIncrementally({
+      schema,
       document,
       abortSignal: abortController.signal,
       enableEarlyExecution: true,
@@ -3338,8 +3302,8 @@ describe('Execute: defer directive (legacy)', () => {
     const { promise: authorPromise, reject: rejectAuthor } =
       promiseWithResolvers<{ id: string }>();
 
-    const result = await legacyExecuteIncrementally({
-      schema: cancellationSchema,
+    const result = await executeIncrementally({
+      schema,
       document,
       abortSignal: abortController.signal,
       enableEarlyExecution: true,

@@ -74,10 +74,22 @@ function inferRuntimeFromExecPath(execPath: string): Runtime {
 }
 
 function findAllBenchmarks(): Array<string> {
-  return fs
-    .readdirSync(localRepoPath('benchmark'), { withFileTypes: true })
-    .filter((dirent) => dirent.isFile())
-    .map((dirent) => dirent.name)
-    .filter((name) => name.endsWith('-benchmark.js'))
-    .map((name) => path.join('benchmark', name));
+  const benchmarkDir = localRepoPath('benchmark');
+  const benchmarks: Array<string> = [];
+  collectBenchmarks(benchmarkDir, benchmarks);
+  return benchmarks.sort();
+}
+
+function collectBenchmarks(
+  directoryPath: string,
+  benchmarks: Array<string>,
+): void {
+  for (const dirent of fs.readdirSync(directoryPath, { withFileTypes: true })) {
+    const absolutePath = path.join(directoryPath, dirent.name);
+    if (dirent.isDirectory()) {
+      collectBenchmarks(absolutePath, benchmarks);
+    } else if (dirent.isFile() && dirent.name.endsWith('-benchmark.js')) {
+      benchmarks.push(path.relative(localRepoPath(), absolutePath));
+    }
+  }
 }

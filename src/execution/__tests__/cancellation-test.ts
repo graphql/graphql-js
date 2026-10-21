@@ -26,12 +26,14 @@ import { GraphQLSchema } from '../../type/schema.ts';
 import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
 import { AbortedGraphQLExecutionError } from '../AbortedGraphQLExecutionError.ts';
+import { execute as originalExecute } from '../execute.ts';
+import { legacyExecuteIncrementally } from '../legacyIncremental/legacyExecuteIncrementally.ts';
+
 import {
   execute,
   experimentalExecuteIncrementally,
   subscribe,
-} from '../execute.ts';
-import { legacyExecuteIncrementally } from '../legacyIncremental/legacyExecuteIncrementally.ts';
+} from './executeTestUtils.ts';
 
 const schema = buildSchema(`
   type Todo {
@@ -272,7 +274,7 @@ describe('Execute: Cancellation', () => {
   it('throws the aborted execution error with an external abort while incremental initial result is still pending', async () => {
     await expectEqualPromisesOrValues(
       [experimentalExecuteIncrementally, legacyExecuteIncrementally].map(
-        async (executeIncrementally) => {
+        (executeIncrementally) => async () => {
           const abortController = new AbortController();
           const abortReason = new Error('Custom abort error');
 
@@ -787,7 +789,9 @@ describe('Execute: Cancellation', () => {
     });
 
     const document = parse('{ parent { boom side { value } } other }');
-    const resultPromise = execute({ schema: bubbleSchema, document });
+    // Compiled execution finishes already-started sibling work after null
+    // bubbling instead of returning early.
+    const resultPromise = originalExecute({ schema: bubbleSchema, document });
 
     rejectBoom(new Error('boom'));
     // wait for boom to bubble up
@@ -901,7 +905,6 @@ describe('Execute: Cancellation', () => {
 
     await expectPromise(resultPromise).toRejectWith('Custom abort error');
   });
-
   it('should stop the execution when aborted prior to return of a subscription resolver', async () => {
     const abortController = new AbortController();
     const document = parse(`
@@ -949,14 +952,14 @@ describe('Execute: Cancellation', () => {
       yield await Promise.resolve({ foo: 'foo' });
     }
 
-    const subscription = await subscribe({
+    const subscription = await subscribe(() => ({
       document,
       schema,
       abortSignal: abortController.signal,
       rootValue: {
         foo: Promise.resolve(foo()),
       },
-    });
+    }));
 
     assert(isAsyncIterable(subscription));
 
@@ -987,14 +990,14 @@ describe('Execute: Cancellation', () => {
       yield await Promise.resolve({ foo: 'foo' });
     }
 
-    const subscription = subscribe({
+    const subscription = subscribe(() => ({
       document,
       schema,
       abortSignal: abortController.signal,
       rootValue: {
         foo: foo(),
       },
-    });
+    }));
 
     assert(isAsyncIterable(subscription));
 
@@ -1026,14 +1029,14 @@ describe('Execute: Cancellation', () => {
       yield await Promise.resolve({ foo: 'foo' });
     }
 
-    const subscription = await subscribe({
+    const subscription = await subscribe(() => ({
       document,
       schema,
       abortSignal: abortController.signal,
       rootValue: {
         foo: Promise.resolve(foo()),
       },
-    });
+    }));
 
     assert(isAsyncIterable(subscription));
 
@@ -1098,7 +1101,8 @@ describe('Execute: Cancellation', () => {
     await expectPromise(resultPromise).toRejectWith(
       'This operation was aborted',
     );
-    expect(returnSpy.callCount).to.equal(1);
+    // Doubled counts reflect original and compiled execution.
+    expect(returnSpy.callCount).to.equal(2);
   });
 
   it('ignores async iterator return promise rejections after aborting list completion', async () => {
@@ -1146,6 +1150,7 @@ describe('Execute: Cancellation', () => {
     await expectPromise(resultPromise).toRejectWith(
       'This operation was aborted',
     );
-    expect(returnSpy.callCount).to.equal(1);
+    // Doubled counts reflect original and compiled execution.
+    expect(returnSpy.callCount).to.equal(2);
   });
 });

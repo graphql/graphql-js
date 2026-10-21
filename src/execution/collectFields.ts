@@ -23,6 +23,7 @@ import type { GraphQLSchema } from '../type/schema.ts';
 
 import { typeFromAST } from '../utilities/typeFromAST.ts';
 
+import type { CompiledFieldExecutionPlan } from './compile/compileFieldExecutionPlan.ts';
 import type { GraphQLVariableSignature } from './getVariableSignature.ts';
 import type { VariableValues } from './values.ts';
 import { getArgumentValues, getFragmentVariableValues } from './values.ts';
@@ -43,15 +44,17 @@ export interface FragmentVariableValues {
 /** @internal */
 export interface FragmentVariableValueSource {
   readonly signature: GraphQLVariableSignature;
-  readonly value?: ValueNode;
-  readonly fragmentVariableValues?: FragmentVariableValues;
+  readonly value: ValueNode | undefined;
+  readonly fragmentVariableValues: FragmentVariableValues | undefined;
 }
 
 /** @internal */
 export interface FieldDetails {
   node: FieldNode;
-  deferUsage?: DeferUsage | undefined;
-  fragmentVariableValues?: FragmentVariableValues | undefined;
+  deferUsage: DeferUsage | undefined;
+  fragmentVariableValues: FragmentVariableValues | undefined;
+  staticFragmentVariableValues: FragmentVariableValues | undefined;
+  compiledFieldPlan: CompiledFieldExecutionPlan | undefined;
 }
 
 /** @internal */
@@ -59,6 +62,19 @@ export type FieldDetailsList = ReadonlyArray<FieldDetails>;
 
 /** @internal */
 export type GroupedFieldSet = ReadonlyMap<string, FieldDetailsList>;
+
+/** @internal */
+export interface RootFieldCollection {
+  groupedFieldSet: GroupedFieldSet;
+  newDeferUsages: ReadonlyArray<DeferUsage>;
+  forbiddenDirectiveInstances: ReadonlyArray<DirectiveNode>;
+}
+
+/** @internal */
+export interface SubfieldCollection {
+  groupedFieldSet: GroupedFieldSet;
+  newDeferUsages: ReadonlyArray<DeferUsage>;
+}
 
 /** @internal */
 export interface FragmentDetails {
@@ -97,11 +113,7 @@ export function collectFields(
   selectionSet: SelectionSetNode,
   hideSuggestions: boolean,
   forbidSkipAndInclude = false,
-): {
-  groupedFieldSet: GroupedFieldSet;
-  newDeferUsages: ReadonlyArray<DeferUsage>;
-  forbiddenDirectiveInstances: ReadonlyArray<DirectiveNode>;
-} {
+): RootFieldCollection {
   const groupedFieldSet = new AccumulatorMap<string, FieldDetails>();
   const newDeferUsages: Array<DeferUsage> = [];
   const context: CollectFieldsContext = {
@@ -141,10 +153,7 @@ export function collectSubfields(
   returnType: GraphQLObjectType,
   fieldDetailsList: FieldDetailsList,
   hideSuggestions: boolean,
-): {
-  groupedFieldSet: GroupedFieldSet;
-  newDeferUsages: ReadonlyArray<DeferUsage>;
-} {
+): SubfieldCollection {
   const context: CollectFieldsContext = {
     schema,
     fragments,
@@ -215,6 +224,8 @@ function collectFieldsImpl(
           node: selection,
           deferUsage,
           fragmentVariableValues,
+          staticFragmentVariableValues: undefined,
+          compiledFieldPlan: undefined,
         });
         break;
       }

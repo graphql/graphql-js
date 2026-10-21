@@ -65,7 +65,8 @@ interface VariableValueSource {
   readonly value?: unknown;
 }
 
-type VariableValuesOrErrors =
+/** @internal */
+export type VariableValuesOrErrors =
   | { variableValues: VariableValues; errors?: never }
   | { errors: ReadonlyArray<GraphQLError>; variableValues?: never };
 
@@ -310,20 +311,25 @@ export function getFragmentVariableValues(
   const sources: ObjMap<FragmentVariableValueSource> = Object.create(null);
   const coerced: ObjMap<unknown> = Object.create(null);
   for (const [varName, varSignature] of Object.entries(fragmentSignatures)) {
+    sources[varName] = {
+      signature: varSignature,
+      value: undefined,
+      fragmentVariableValues: undefined,
+    };
     const argumentNode = argNodeMap.get(varName);
     if (argumentNode !== undefined) {
       sources[varName] =
         fragmentVariableValues == null
-          ? { signature: varSignature, value: argumentNode.value }
+          ? {
+              signature: varSignature,
+              value: argumentNode.value,
+              fragmentVariableValues: undefined,
+            }
           : {
               signature: varSignature,
               value: argumentNode.value,
               fragmentVariableValues,
             };
-    } else {
-      sources[varName] = {
-        signature: varSignature,
-      };
     }
 
     coerceArgument(
@@ -407,7 +413,8 @@ export function getArgumentValues(
 ): ObjMap<unknown> {
   const coercedValues: ObjMap<unknown> = Object.create(null);
 
-  const argumentNodes = node.arguments ?? [];
+  const argumentNodes: ReadonlyArray<ArgumentNode | FragmentArgumentNode> =
+    node.arguments ?? [];
   const argNodeMap = new Map(argumentNodes.map((arg) => [arg.name.value, arg]));
 
   for (const argDef of def.args) {

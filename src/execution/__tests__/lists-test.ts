@@ -4,7 +4,6 @@ import { expect } from 'chai';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';
-import { spyOnMethod } from '../../__testUtils__/spyOn.ts';
 
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 
@@ -21,8 +20,9 @@ import { GraphQLSchema } from '../../type/schema.ts';
 
 import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { execute, executeSync } from '../execute.ts';
 import type { ExecutionResult } from '../Executor.ts';
+
+import { execute, executeSync } from './executeTestUtils.ts';
 
 function delayedReject(message: string): Promise<never> {
   return (async () => {
@@ -34,11 +34,15 @@ function delayedReject(message: string): Promise<never> {
 
 describe('Execute: Accepts any iterable as list value', () => {
   function complete(rootValue: unknown) {
-    return executeSync({
+    return completeWithRootValue(() => rootValue);
+  }
+
+  function completeWithRootValue(rootValue: () => unknown) {
+    return executeSync(() => ({
       schema: buildSchema('type Query { listField: [String] }'),
       document: parse('{ listField }'),
-      rootValue,
-    });
+      rootValue: rootValue(),
+    }));
   }
 
   it('Accepts a Set as a List value', () => {
@@ -90,24 +94,31 @@ describe('Execute: Accepts any iterable as list value', () => {
 
   it('Does not call iterator `return` when iteration throws', () => {
     let nextCalls = 0;
-    const listField = {
-      [Symbol.iterator]() {
-        return this;
-      },
-      next() {
-        nextCalls++;
-        if (nextCalls === 1) {
-          throw new Error('bad');
-        }
-        return { done: true, value: undefined };
-      },
-      return() {
-        throw new Error('return bad');
-      },
+    let returnCallCount = 0;
+    const createListField = () => {
+      let index = 0;
+      return {
+        [Symbol.iterator]() {
+          return this;
+        },
+        next() {
+          nextCalls++;
+          index++;
+          if (index === 1) {
+            throw new Error('bad');
+          }
+          return { done: true, value: undefined };
+        },
+        return() {
+          returnCallCount++;
+          throw new Error('return bad');
+        },
+      };
     };
-    const returnSpy = spyOnMethod(listField, 'return');
 
-    expectJSON(complete({ listField })).toDeepEqual({
+    expectJSON(
+      completeWithRootValue(() => ({ listField: createListField() })),
+    ).toDeepEqual({
       data: { listField: null },
       errors: [
         {
@@ -117,44 +128,55 @@ describe('Execute: Accepts any iterable as list value', () => {
         },
       ],
     });
-    expect(nextCalls).to.equal(2);
-    expect(returnSpy.callCount).to.equal(0);
+    // Doubled counts reflect original and compiled execution.
+    expect(nextCalls).to.equal(4);
+    expect(returnCallCount).to.equal(0);
   });
 });
 
 describe('Execute: Handles abrupt completion in synchronous iterables', () => {
-  function complete(rootValue: unknown, as: string = '[String]') {
-    return execute({
+  function completeWithRootValue(
+    rootValue: () => unknown,
+    as: string = '[String]',
+  ) {
+    return execute(() => ({
       schema: buildSchema(`type Query { listField: ${as} }`),
       document: parse('{ listField }'),
-      rootValue,
-    });
+      rootValue: rootValue(),
+    }));
   }
 
   it('drains the iterator when `next` throws', async () => {
     let nextCalls = 0;
 
-    const listField: IterableIterator<string> = {
-      [Symbol.iterator](): IterableIterator<string> {
-        return this;
-      },
-      next(): IteratorResult<string> {
-        nextCalls++;
-        if (nextCalls === 1) {
-          return { done: false, value: 'ok' };
-        }
-        if (nextCalls === 2) {
-          throw new Error('bad');
-        }
-        return { done: true, value: undefined };
-      },
-      return(): IteratorResult<string> {
-        return { done: true, value: undefined };
-      },
+    let returnCallCount = 0;
+    const createListField = (): IterableIterator<string> => {
+      let index = 0;
+      return {
+        [Symbol.iterator](): IterableIterator<string> {
+          return this;
+        },
+        next(): IteratorResult<string> {
+          nextCalls++;
+          index++;
+          if (index === 1) {
+            return { done: false, value: 'ok' };
+          }
+          if (index === 2) {
+            throw new Error('bad');
+          }
+          return { done: true, value: undefined };
+        },
+        return(): IteratorResult<string> {
+          returnCallCount++;
+          return { done: true, value: undefined };
+        },
+      };
     };
-    const returnSpy = spyOnMethod(listField, 'return');
 
-    expectJSON(await complete({ listField })).toDeepEqual({
+    expectJSON(
+      await completeWithRootValue(() => ({ listField: createListField() })),
+    ).toDeepEqual({
       data: { listField: null },
       errors: [
         {
@@ -164,32 +186,42 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
         },
       ],
     });
-    expect(nextCalls).to.equal(3);
-    expect(returnSpy.callCount).to.equal(0);
+    // Doubled counts reflect original and compiled execution.
+    expect(nextCalls).to.equal(6);
+    expect(returnCallCount).to.equal(0);
   });
 
   it('drains the iterator when a null bubbles up from a non-null item', async () => {
     const values = [1, null, 2];
-    let index = 0;
-
-    const listField: IterableIterator<number | null> = {
-      [Symbol.iterator](): IterableIterator<number | null> {
-        return this;
-      },
-      next(): IteratorResult<number | null> {
-        const value = values[index++];
-        if (value === undefined) {
+    let nextCalls = 0;
+    let returnCallCount = 0;
+    const createListField = (): IterableIterator<number | null> => {
+      let index = 0;
+      return {
+        [Symbol.iterator](): IterableIterator<number | null> {
+          return this;
+        },
+        next(): IteratorResult<number | null> {
+          nextCalls++;
+          const value = values[index++];
+          if (value === undefined) {
+            return { done: true, value: undefined };
+          }
+          return { done: false, value };
+        },
+        return(): IteratorResult<number | null> {
+          returnCallCount++;
           return { done: true, value: undefined };
-        }
-        return { done: false, value };
-      },
-      return(): IteratorResult<number | null> {
-        return { done: true, value: undefined };
-      },
+        },
+      };
     };
-    const returnSpy = spyOnMethod(listField, 'return');
 
-    expectJSON(await complete({ listField }, '[Int!]')).toDeepEqual({
+    expectJSON(
+      await completeWithRootValue(
+        () => ({ listField: createListField() }),
+        '[Int!]',
+      ),
+    ).toDeepEqual({
       data: { listField: null },
       errors: [
         {
@@ -199,8 +231,9 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
         },
       ],
     });
-    expect(index).to.equal(4);
-    expect(returnSpy.callCount).to.equal(0);
+    // Doubled counts reflect original and compiled execution.
+    expect(nextCalls).to.equal(8);
+    expect(returnCallCount).to.equal(0);
   });
 
   it('handles iterator errors with later pending promises without calling `return`', async () => {
@@ -211,32 +244,38 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
     // eslint-disable-next-line no-undef
     process.on('unhandledRejection', unhandledRejectionListener);
     let nextCalls = 0;
-    const laterPromise = delayedReject('later bad');
-
-    const listField: IterableIterator<number | Promise<never>> = {
-      [Symbol.iterator](): IterableIterator<number | Promise<never>> {
-        return this;
-      },
-      next(): IteratorResult<number | Promise<never>> {
-        nextCalls++;
-        if (nextCalls === 1) {
-          return { done: false, value: 1 };
-        }
-        if (nextCalls === 2) {
-          throw new Error('bad');
-        }
-        if (nextCalls === 3) {
-          return { done: false, value: laterPromise };
-        }
-        return { done: true, value: undefined };
-      },
-      return(): IteratorResult<number | Promise<never>> {
-        throw new Error('ignored return error');
-      },
+    let returnCallCount = 0;
+    const createListField = (): IterableIterator<number | Promise<never>> => {
+      const laterPromise = delayedReject('later bad');
+      let index = 0;
+      return {
+        [Symbol.iterator](): IterableIterator<number | Promise<never>> {
+          return this;
+        },
+        next(): IteratorResult<number | Promise<never>> {
+          nextCalls++;
+          index++;
+          if (index === 1) {
+            return { done: false, value: 1 };
+          }
+          if (index === 2) {
+            throw new Error('bad');
+          }
+          if (index === 3) {
+            return { done: false, value: laterPromise };
+          }
+          return { done: true, value: undefined };
+        },
+        return(): IteratorResult<number | Promise<never>> {
+          returnCallCount++;
+          throw new Error('ignored return error');
+        },
+      };
     };
-    const returnSpy = spyOnMethod(listField, 'return');
 
-    expectJSON(await complete({ listField })).toDeepEqual({
+    expectJSON(
+      await completeWithRootValue(() => ({ listField: createListField() })),
+    ).toDeepEqual({
       data: { listField: null },
       errors: [
         {
@@ -254,8 +293,9 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
     // eslint-disable-next-line no-undef
     process.removeListener('unhandledRejection', unhandledRejectionListener);
 
-    expect(nextCalls).to.equal(4);
-    expect(returnSpy.callCount).to.equal(0);
+    // Doubled counts reflect original and compiled execution.
+    expect(nextCalls).to.equal(8);
+    expect(returnCallCount).to.equal(0);
     expect(unhandledRejection).to.equal(null);
   });
 
@@ -266,30 +306,40 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
     };
     // eslint-disable-next-line no-undef
     process.on('unhandledRejection', unhandledRejectionListener);
-    let index = 0;
-    const values = [
-      delayedReject('first bad'),
-      null,
-      delayedReject('third bad'),
-    ];
-    const listField: IterableIterator<Promise<string> | null> = {
-      [Symbol.iterator](): IterableIterator<Promise<string> | null> {
-        return this;
-      },
-      next(): IteratorResult<Promise<string> | null> {
-        const value = values[index++];
-        if (value === undefined) {
-          return { done: true, value: undefined };
-        }
-        return { done: false, value };
-      },
-      return(): IteratorResult<Promise<string> | null> {
-        throw new Error('ignored return error');
-      },
+    let nextCalls = 0;
+    let returnCallCount = 0;
+    const createListField = (): IterableIterator<Promise<string> | null> => {
+      const values = [
+        delayedReject('first bad'),
+        null,
+        delayedReject('third bad'),
+      ];
+      let index = 0;
+      return {
+        [Symbol.iterator](): IterableIterator<Promise<string> | null> {
+          return this;
+        },
+        next(): IteratorResult<Promise<string> | null> {
+          nextCalls++;
+          const value = values[index++];
+          if (value === undefined) {
+            return { done: true, value: undefined };
+          }
+          return { done: false, value };
+        },
+        return(): IteratorResult<Promise<string> | null> {
+          returnCallCount++;
+          throw new Error('ignored return error');
+        },
+      };
     };
-    const returnSpy = spyOnMethod(listField, 'return');
 
-    expectJSON(await complete({ listField }, '[String!]!')).toDeepEqual({
+    expectJSON(
+      await completeWithRootValue(
+        () => ({ listField: createListField() }),
+        '[String!]!',
+      ),
+    ).toDeepEqual({
       data: null,
       errors: [
         {
@@ -307,19 +357,27 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
     // eslint-disable-next-line no-undef
     process.removeListener('unhandledRejection', unhandledRejectionListener);
 
-    expect(returnSpy.callCount).to.equal(0);
-    expect(index).to.equal(4);
+    // Doubled counts reflect original and compiled execution.
+    expect(nextCalls).to.equal(8);
+    expect(returnCallCount).to.equal(0);
     expect(unhandledRejection).to.equal(null);
   });
 });
 
 describe('Execute: Accepts async iterables as list value', () => {
   function complete(rootValue: unknown, as: string = '[String]') {
-    return execute({
+    return completeWithRootValue(() => rootValue, as);
+  }
+
+  function completeWithRootValue(
+    rootValue: () => unknown,
+    as: string = '[String]',
+  ) {
+    return execute(() => ({
       schema: buildSchema(`type Query { listField: ${as} }`),
       document: parse('{ listField }'),
-      rootValue,
-    });
+      rootValue: rootValue(),
+    }));
   }
 
   function completeObjectList(
@@ -524,19 +582,22 @@ describe('Execute: Accepts async iterables as list value', () => {
 
   it('Returns async iterable when list nulls', async () => {
     const values = [1, null, 2];
-    let i = 0;
-    const listField = {
-      [Symbol.asyncIterator]() {
-        return this;
-      },
-      next() {
-        return Promise.resolve({ value: values[i++], done: false });
-      },
-      return() {
-        return Promise.resolve({ value: undefined, done: true });
-      },
+    let returnCallCount = 0;
+    const createListField = () => {
+      let i = 0;
+      return {
+        [Symbol.asyncIterator]() {
+          return this;
+        },
+        next() {
+          return Promise.resolve({ value: values[i++], done: false });
+        },
+        return() {
+          returnCallCount++;
+          return Promise.resolve({ value: undefined, done: true });
+        },
+      };
     };
-    const returnSpy = spyOnMethod(listField, 'return');
     const errors = [
       {
         message: 'Cannot return null for non-nullable field Query.listField.',
@@ -545,21 +606,29 @@ describe('Execute: Accepts async iterables as list value', () => {
       },
     ];
 
-    expectJSON(await complete({ listField }, '[Int!]')).toDeepEqual({
+    expectJSON(
+      await completeWithRootValue(
+        () => ({ listField: createListField() }),
+        '[Int!]',
+      ),
+    ).toDeepEqual({
       data: { listField: null },
       errors,
     });
-    expect(returnSpy.callCount).to.equal(1);
+    // Doubled counts reflect original and compiled execution.
+    expect(returnCallCount).to.equal(2);
   });
 
   it('Ignores error on return method when async iterator nulls', async () => {
     const values = [1, null, 2];
-    let i = 0;
-    const listField = {
-      [Symbol.asyncIterator]: () => ({
-        next: () => Promise.resolve({ value: values[i++], done: false }),
-        return: () => Promise.reject(new Error('ignored return error')),
-      }),
+    const createListField = () => {
+      let i = 0;
+      return {
+        [Symbol.asyncIterator]: () => ({
+          next: () => Promise.resolve({ value: values[i++], done: false }),
+          return: () => Promise.reject(new Error('ignored return error')),
+        }),
+      };
     };
     const errors = [
       {
@@ -569,7 +638,12 @@ describe('Execute: Accepts async iterables as list value', () => {
       },
     ];
 
-    expectJSON(await complete({ listField }, '[Int!]')).toDeepEqual({
+    expectJSON(
+      await completeWithRootValue(
+        () => ({ listField: createListField() }),
+        '[Int!]',
+      ),
+    ).toDeepEqual({
       data: { listField: null },
       errors,
     });

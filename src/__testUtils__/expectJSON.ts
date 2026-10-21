@@ -13,7 +13,8 @@ function toJSONDeep(value: unknown): unknown {
   }
 
   if (typeof value.toJSON === 'function') {
-    return value.toJSON();
+    const jsonValue = value.toJSON();
+    return jsonValue === value ? jsonValue : toJSONDeep(jsonValue);
   }
 
   if (Array.isArray(value)) {

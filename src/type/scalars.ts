@@ -33,19 +33,32 @@ export const GraphQLInt: GraphQLScalarType<number> =
       'The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.',
 
     coerceOutputValue(outputValue) {
+      if (typeof outputValue === 'number') {
+        return coerceIntFromNumber(outputValue);
+      }
+      if (typeof outputValue === 'boolean') {
+        return outputValue ? 1 : 0;
+      }
+      if (typeof outputValue === 'string') {
+        return coerceIntFromString(outputValue);
+      }
+      if (typeof outputValue === 'bigint') {
+        return coerceIntFromBigInt(outputValue);
+      }
       const coercedValue = coerceOutputValueObject(outputValue);
-
-      if (typeof coercedValue === 'number') {
-        return coerceIntFromNumber(coercedValue);
-      }
-      if (typeof coercedValue === 'boolean') {
-        return coercedValue ? 1 : 0;
-      }
-      if (typeof coercedValue === 'string') {
-        return coerceIntFromString(coercedValue);
-      }
-      if (typeof coercedValue === 'bigint') {
-        return coerceIntFromBigInt(coercedValue);
+      if (coercedValue !== outputValue) {
+        if (typeof coercedValue === 'number') {
+          return coerceIntFromNumber(coercedValue);
+        }
+        if (typeof coercedValue === 'boolean') {
+          return coercedValue ? 1 : 0;
+        }
+        if (typeof coercedValue === 'string') {
+          return coerceIntFromString(coercedValue);
+        }
+        if (typeof coercedValue === 'bigint') {
+          return coerceIntFromBigInt(coercedValue);
+        }
       }
       throw new GraphQLError(
         `Int cannot represent non-integer value: ${inspect(coercedValue)}`,
@@ -100,19 +113,32 @@ export const GraphQLFloat: GraphQLScalarType<number> =
       'The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).',
 
     coerceOutputValue(outputValue) {
+      if (typeof outputValue === 'number') {
+        return coerceFloatFromNumber(outputValue);
+      }
+      if (typeof outputValue === 'boolean') {
+        return outputValue ? 1 : 0;
+      }
+      if (typeof outputValue === 'string') {
+        return coerceFloatFromString(outputValue);
+      }
+      if (typeof outputValue === 'bigint') {
+        return coerceFloatFromBigInt(outputValue);
+      }
       const coercedValue = coerceOutputValueObject(outputValue);
-
-      if (typeof coercedValue === 'number') {
-        return coerceFloatFromNumber(coercedValue);
-      }
-      if (typeof coercedValue === 'boolean') {
-        return coercedValue ? 1 : 0;
-      }
-      if (typeof coercedValue === 'string') {
-        return coerceFloatFromString(coercedValue);
-      }
-      if (typeof coercedValue === 'bigint') {
-        return coerceFloatFromBigInt(coercedValue);
+      if (coercedValue !== outputValue) {
+        if (typeof coercedValue === 'number') {
+          return coerceFloatFromNumber(coercedValue);
+        }
+        if (typeof coercedValue === 'boolean') {
+          return coercedValue ? 1 : 0;
+        }
+        if (typeof coercedValue === 'string') {
+          return coerceFloatFromString(coercedValue);
+        }
+        if (typeof coercedValue === 'bigint') {
+          return coerceFloatFromBigInt(coercedValue);
+        }
       }
       throw new GraphQLError(
         `Float cannot represent non numeric value: ${inspect(coercedValue)}`,
@@ -156,21 +182,34 @@ export const GraphQLString: GraphQLScalarType<string> =
       'The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.',
 
     coerceOutputValue(outputValue) {
-      const coercedValue = coerceOutputValueObject(outputValue);
-
       // Coerces string, boolean and number values to a string, but do not
       // attempt to coerce object, function, symbol, or other types as strings.
-      if (typeof coercedValue === 'string') {
-        return coercedValue;
+      if (typeof outputValue === 'string') {
+        return outputValue;
       }
-      if (typeof coercedValue === 'boolean') {
-        return coercedValue ? 'true' : 'false';
+      if (typeof outputValue === 'boolean') {
+        return outputValue ? 'true' : 'false';
       }
-      if (typeof coercedValue === 'number') {
-        return coerceStringFromNumber(coercedValue);
+      if (typeof outputValue === 'number') {
+        return coerceStringFromNumber(outputValue);
       }
-      if (typeof coercedValue === 'bigint') {
-        return String(coercedValue);
+      if (typeof outputValue === 'bigint') {
+        return String(outputValue);
+      }
+      const coercedValue = coerceOutputValueObject(outputValue);
+      if (coercedValue !== outputValue) {
+        if (typeof coercedValue === 'string') {
+          return coercedValue;
+        }
+        if (typeof coercedValue === 'boolean') {
+          return coercedValue ? 'true' : 'false';
+        }
+        if (typeof coercedValue === 'number') {
+          return coerceStringFromNumber(coercedValue);
+        }
+        if (typeof coercedValue === 'bigint') {
+          return String(coercedValue);
+        }
       }
       throw new GraphQLError(
         `String cannot represent value: ${inspect(outputValue)}`,
@@ -210,16 +249,26 @@ export const GraphQLBoolean: GraphQLScalarType<boolean> =
     description: 'The `Boolean` scalar type represents `true` or `false`.',
 
     coerceOutputValue(outputValue) {
+      if (typeof outputValue === 'boolean') {
+        return outputValue;
+      }
+      if (typeof outputValue === 'number') {
+        return coerceBooleanFromNumber(outputValue);
+      }
+      if (typeof outputValue === 'bigint') {
+        return outputValue !== 0n;
+      }
       const coercedValue = coerceOutputValueObject(outputValue);
-
-      if (typeof coercedValue === 'boolean') {
-        return coercedValue;
-      }
-      if (typeof coercedValue === 'number') {
-        return coerceBooleanFromNumber(coercedValue);
-      }
-      if (typeof coercedValue === 'bigint') {
-        return coercedValue !== 0n;
+      if (coercedValue !== outputValue) {
+        if (typeof coercedValue === 'boolean') {
+          return coercedValue;
+        }
+        if (typeof coercedValue === 'number') {
+          return coerceBooleanFromNumber(coercedValue);
+        }
+        if (typeof coercedValue === 'bigint') {
+          return coercedValue !== 0n;
+        }
       }
       throw new GraphQLError(
         `Boolean cannot represent a non boolean value: ${inspect(coercedValue)}`,
@@ -260,16 +309,26 @@ export const GraphQLID: GraphQLScalarType<string> =
       'The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `"4"`) or integer (such as `4`) input value will be accepted as an ID.',
 
     coerceOutputValue(outputValue) {
+      if (typeof outputValue === 'string') {
+        return outputValue;
+      }
+      if (typeof outputValue === 'number') {
+        return coerceIDFromNumber(outputValue);
+      }
+      if (typeof outputValue === 'bigint') {
+        return String(outputValue);
+      }
       const coercedValue = coerceOutputValueObject(outputValue);
-
-      if (typeof coercedValue === 'string') {
-        return coercedValue;
-      }
-      if (typeof coercedValue === 'number') {
-        return coerceIDFromNumber(coercedValue);
-      }
-      if (typeof coercedValue === 'bigint') {
-        return String(coercedValue);
+      if (coercedValue !== outputValue) {
+        if (typeof coercedValue === 'string') {
+          return coercedValue;
+        }
+        if (typeof coercedValue === 'number') {
+          return coerceIDFromNumber(coercedValue);
+        }
+        if (typeof coercedValue === 'bigint') {
+          return String(coercedValue);
+        }
       }
       throw new GraphQLError(
         `ID cannot represent value: ${inspect(outputValue)}`,

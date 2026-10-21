@@ -14,24 +14,31 @@ export interface SharedExecutionContext {
 
 /** @internal */
 export function createSharedExecutionContext(
-  abortSignal: AbortSignal | undefined,
+  abortSignal: AbortSignal | undefined | (() => AbortSignal | undefined),
 ): SharedExecutionContext {
-  const asyncWorkTracker = new AsyncWorkTracker();
+  let asyncWorkTracker: AsyncWorkTracker | undefined;
   let resolveInfoHelpers: GraphQLResolveInfoHelpers | undefined;
+
+  const getAsyncWorkTracker = (): AsyncWorkTracker =>
+    (asyncWorkTracker ??= new AsyncWorkTracker());
+  const getAbortSignal =
+    typeof abortSignal === 'function' ? abortSignal : () => abortSignal;
 
   const promiseAll = <T>(
     values: ReadonlyArray<PromiseLike<T> | T>,
-  ): Promise<Array<T>> => asyncWorkTracker.promiseAllTrackOnReject(values);
+  ): Promise<Array<T>> => getAsyncWorkTracker().promiseAllTrackOnReject(values);
 
   const getAsyncHelpers = (): GraphQLResolveInfoHelpers =>
     (resolveInfoHelpers ??= {
       promiseAll,
-      track: (maybePromises) => asyncWorkTracker.addValues(maybePromises),
+      track: (maybePromises) => getAsyncWorkTracker().addValues(maybePromises),
     });
 
   return {
-    asyncWorkTracker,
-    getAbortSignal: () => abortSignal,
+    get asyncWorkTracker() {
+      return getAsyncWorkTracker();
+    },
+    getAbortSignal,
     getAsyncHelpers,
     promiseAll,
   };

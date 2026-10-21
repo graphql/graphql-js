@@ -8,8 +8,9 @@ import { parse } from '../../language/parser.ts';
 
 import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
-import { execute } from '../execute.ts';
 import type { ExecutionResult } from '../Executor.ts';
+
+import { execute } from './executeTestUtils.ts';
 
 const syncError = new Error('bar');
 
