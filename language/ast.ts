@@ -58,9 +58,7 @@ export class Location {
    * import { parse } from 'graphql/language';
    *
    * const document = parse('{ hello }');
-   * const location = document.loc?.toJSON();
-   *
-   * location; // => { start: 0, end: 9 }
+   * const location = document.loc?.toJSON(); // => { start: 0, end: 9 }
    * ```
    */
   toJSON(): {
@@ -153,9 +151,7 @@ export class Token {
    * import { Lexer, Source } from 'graphql/language';
    *
    * const lexer = new Lexer(new Source('{ hello }'));
-   * const token = lexer.advance().toJSON();
-   *
-   * token; // => { kind: '{', value: undefined, line: 1, column: 1 }
+   * const token = lexer.advance().toJSON(); // => { kind: '{', value: undefined, line: 1, column: 1 }
    * ```
    */
   toJSON(): {

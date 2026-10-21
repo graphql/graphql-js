@@ -54,7 +54,7 @@ import { replaceVariables } from './replaceVariables.ts';
  *   errors.push({ message: error.message, path });
  * });
  *
- * errors; // => [ { message: 'Expected value of type "Int", found: "bad".', path: ['stars'] } ]
+ * errors; // => [ { message: 'Int cannot represent non-integer value: "bad"', path: ['stars'] } ]
  * ```
  * @example
  * ```ts
@@ -295,7 +295,7 @@ function reportInvalidValue(
  *   },
  * );
  *
- * errors; // => [ { message: 'Expected value of type "Int", found: "bad".', path: ['stars'] } ]
+ * errors; // => [ { message: 'Int cannot represent non-integer value: "bad"', path: ['stars'] } ]
  * ```
  * @example
  * ```ts
@@ -314,7 +314,7 @@ function reportInvalidValue(
  * const document = parse('query ($stars: Int = 5) { review(stars: $stars) }');
  * const operation = document.definitions[0];
  * const result = getVariableValues(schema, operation.variableDefinitions, {
- *   stars: '4',
+ *   stars: 4,
  * });
  *
  * assert('variableValues' in result);

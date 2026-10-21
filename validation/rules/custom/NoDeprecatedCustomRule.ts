@@ -50,9 +50,7 @@ import type { ValidationContext } from '../../ValidationContext.ts';
  * const validDocument = parse(`
  *   { name }
  * `);
- * const validErrors = validate(schema, validDocument, [NoDeprecatedCustomRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [NoDeprecatedCustomRule]); // => []
  * ```
  */
 export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {

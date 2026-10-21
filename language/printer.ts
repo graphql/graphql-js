@@ -15,9 +15,7 @@ import { visit } from './visitor.ts';
  * import { parse, print } from 'graphql';
  *
  * const ast = parse('{ hero { name } }');
- * const text = print(ast);
- *
- * text; // => '{\n  hero {\n    name\n  }\n}'
+ * const text = print(ast); // => '{\n  hero {\n    name\n  }\n}'
  * ```
  */
 export function print(ast: ASTNode): string {

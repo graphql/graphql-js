@@ -46,9 +46,7 @@ import type {
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   UniqueDirectivesPerLocationRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export function UniqueDirectivesPerLocationRule(

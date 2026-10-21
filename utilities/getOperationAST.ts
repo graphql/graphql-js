@@ -18,7 +18,7 @@ import { Kind } from '../language/kinds.ts';
  * const operation = getOperationAST(document, 'GetName');
  *
  * operation.name.value; // => 'GetName'
- * getOperationAST(document, 'Missing'); // => undefined
+ * getOperationAST(document, 'Missing'); // => null
  * ```
  */
 export function getOperationAST(

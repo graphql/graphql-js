@@ -82,9 +82,7 @@ const MAX_COMPLEXITY_BUDGET = 500000;
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   OverlappingFieldsCanBeMergedRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export function OverlappingFieldsCanBeMergedRule(

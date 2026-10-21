@@ -37,9 +37,7 @@ import type { ValidationContext } from '../ValidationContext.ts';
  * const validDocument = parse(`
  *   { count(limit: 1) }
  * `);
- * const validErrors = validate(schema, validDocument, [ValuesOfCorrectTypeRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [ValuesOfCorrectTypeRule]); // => []
  * ```
  */
 export function ValuesOfCorrectTypeRule(

@@ -53,9 +53,7 @@ function toNodes(fieldDetailsList: FieldDetailsList): ReadonlyArray<FieldNode> {
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   SingleFieldSubscriptionsRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export function SingleFieldSubscriptionsRule(

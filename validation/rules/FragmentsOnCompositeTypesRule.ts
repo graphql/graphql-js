@@ -40,9 +40,7 @@ import type { ValidationContext } from '../ValidationContext.ts';
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   FragmentsOnCompositeTypesRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export function FragmentsOnCompositeTypesRule(

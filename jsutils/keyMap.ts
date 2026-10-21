@@ -8,6 +8,8 @@ import type { ObjMap } from './ObjMap.ts';
  * @internal
  * @example
  * ```ts
+ * import { keyMap } from 'graphql/jsutils/keyMap';
+ *
  * const phoneBook = [
  *   { name: 'Jon', num: '555-1234' },
  *   { name: 'Jenny', num: '867-5309' },

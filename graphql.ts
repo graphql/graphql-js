@@ -71,9 +71,7 @@ export interface GraphQLArgs
  *   },
  *   variableValues: { name: 'Ada' },
  *   operationName: 'SayHello',
- * });
- *
- * result; // => { data: { greeting: 'Hello, Ada!' } }
+ * }); // => { data: { greeting: 'Hello, Ada!' } }
  * ```
  * @example
  * ```ts
@@ -106,9 +104,7 @@ export interface GraphQLArgs
  *   typeResolver: (value) => {
  *     return value.kind === 'user' ? 'User' : undefined;
  *   },
- * });
- *
- * result; // => { data: { viewer: { __typename: 'User', name: 'Ada' } } }
+ * }); // => { data: { viewer: { __typename: 'User', name: 'Ada' } } }
  * ```
  * @example
  * ```ts
@@ -151,9 +147,7 @@ export interface GraphQLArgs
  *   noLocation: true,
  *   abortSignal: abortController.signal,
  *   harness,
- * });
- *
- * result; // => { data: { greeting: 'Hello' } }
+ * }); // => { data: { greeting: 'Hello' } }
  * stages; // => ['parse', 'validate', 'execute']
  * ```
  * @category Request Pipeline
@@ -190,9 +184,7 @@ export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
  *   },
  *   variableValues: { name: 'Ada' },
  *   operationName: 'SayHello',
- * });
- *
- * result; // => { data: { greeting: 'Hello, Ada!' } }
+ * }); // => { data: { greeting: 'Hello, Ada!' } }
  * ```
  * @example
  * ```ts
@@ -212,9 +204,7 @@ export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
  *     return contextValue.defaultGreeting;
  *   },
  *   contextValue: { defaultGreeting: 'Hello' },
- * });
- *
- * result; // => { data: { greeting: 'Hello' } }
+ * }); // => { data: { greeting: 'Hello' } }
  * ```
  * @category Request Pipeline
  */

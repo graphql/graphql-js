@@ -45,9 +45,7 @@ import type {
  * const validDocument = parse(`
  *   fragment Good on Query { name }
  * `);
- * const validErrors = validate(schema, validDocument, [KnownTypeNamesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [KnownTypeNamesRule]); // => []
  * ```
  */
 export function KnownTypeNamesRule(

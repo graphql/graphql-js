@@ -33,9 +33,7 @@ import type { ValidationContext } from '../ValidationContext.ts';
  * const validDocument = parse(`
  *   { name }
  * `);
- * const validErrors = validate(schema, validDocument, [ScalarLeafsRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [ScalarLeafsRule]); // => []
  * ```
  */
 export function ScalarLeafsRule(context: ValidationContext): ASTVisitor {

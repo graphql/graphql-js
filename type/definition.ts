@@ -1262,6 +1262,8 @@ export function assertAbstractType(type: unknown): GraphQLAbstractType {
  * @typeParam T - The GraphQL type wrapped by this list type.
  * @example
  * ```ts
+ * import { GraphQLList, GraphQLObjectType } from 'graphql';
+ *
  * const PersonType = new GraphQLObjectType({
  *   name: 'Person',
  *   fields: () => ({
@@ -1352,6 +1354,8 @@ export class GraphQLList<
  * @typeParam T - The nullable GraphQL type wrapped by this non-null type.
  * @example
  * ```ts
+ * import { GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
+ *
  * const RowType = new GraphQLObjectType({
  *   name: 'Row',
  *   fields: () => ({
@@ -1507,9 +1511,7 @@ export function isNullableType(type: unknown): type is GraphQLNullableType {
  *   assertNullableType,
  * } from 'graphql/type';
  *
- * const nullableType = assertNullableType(GraphQLString);
- *
- * nullableType; // => GraphQLString
+ * const nullableType = assertNullableType(GraphQLString); // => GraphQLString
  * assertNullableType(new GraphQLNonNull(GraphQLString)); // throws an error
  * ```
  */
@@ -1789,11 +1791,8 @@ export type ThunkObjMap<T> = (() => ObjMap<T>) | ObjMap<T>;
  * ```ts
  * import { GraphQLString, resolveReadonlyArrayThunk } from 'graphql/type';
  *
- * const lazyFields = resolveReadonlyArrayThunk(() => [GraphQLString]);
- * const fields = resolveReadonlyArrayThunk([GraphQLString]);
- *
- * lazyFields; // => [GraphQLString]
- * fields; // => [GraphQLString]
+ * const lazyFields = resolveReadonlyArrayThunk(() => [GraphQLString]); // => [GraphQLString]
+ * const fields = resolveReadonlyArrayThunk([GraphQLString]); // => [GraphQLString]
  * ```
  */
 export function resolveReadonlyArrayThunk<T>(
@@ -2279,6 +2278,8 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  * @typeParam TAbstract - Runtime value type used for abstract type resolution.
  * @example
  * ```ts
+ * import { GraphQLInt, GraphQLObjectType, GraphQLString } from 'graphql';
+ *
  * const AddressType = new GraphQLObjectType({
  *   name: 'Address',
  *   fields: {
@@ -2299,6 +2300,8 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  * thunk) to supply the fields lazily.
  *
  * ```ts
+ * import { GraphQLObjectType, GraphQLString } from 'graphql';
+ *
  * const PersonType = new GraphQLObjectType({
  *   name: 'Person',
  *   fields: () => ({
@@ -2907,7 +2910,8 @@ export class GraphQLField<
    * @example
    * ```ts
    * import { parse } from 'graphql/language';
-   * import { GraphQLField, GraphQLObjectType, GraphQLString } from 'graphql/type';
+   * import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+   * import { GraphQLField } from 'graphql/type/definition';
    *
    * const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
    * const document = parse('type Query { greeting: String }');
@@ -2973,7 +2977,8 @@ export class GraphQLField<
    * @returns A configuration object that can be used to recreate this field.
    * @example
    * ```ts
-   * import { GraphQLField, GraphQLObjectType, GraphQLString } from 'graphql/type';
+   * import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+   * import { GraphQLField } from 'graphql/type/definition';
    *
    * const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
    * const field = new GraphQLField(Query, 'greeting', {
@@ -3006,7 +3011,8 @@ export class GraphQLField<
    * @returns The field coordinate.
    * @example
    * ```ts
-   * import { GraphQLField, GraphQLObjectType, GraphQLString } from 'graphql/type';
+   * import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+   * import { GraphQLField } from 'graphql/type/definition';
    *
    * const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
    * const field = new GraphQLField(Query, 'greeting', { type: GraphQLString });
@@ -3022,7 +3028,8 @@ export class GraphQLField<
    * @returns The field coordinate.
    * @example
    * ```ts
-   * import { GraphQLField, GraphQLObjectType, GraphQLString } from 'graphql/type';
+   * import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+   * import { GraphQLField } from 'graphql/type/definition';
    *
    * const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
    * const field = new GraphQLField(Query, 'greeting', { type: GraphQLString });
@@ -3075,12 +3082,8 @@ export class GraphQLArgument implements GraphQLSchemaElement {
    * @param config - Argument configuration.
    * @example
    * ```ts
-   * import {
-   *   GraphQLArgument,
-   *   GraphQLField,
-   *   GraphQLObjectType,
-   *   GraphQLString,
-   * } from 'graphql/type';
+   * import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+   * import { GraphQLArgument, GraphQLField } from 'graphql/type/definition';
    *
    * const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
    * const field = new GraphQLField(Query, 'greeting', { type: GraphQLString });
@@ -3123,12 +3126,8 @@ export class GraphQLArgument implements GraphQLSchemaElement {
    * @returns A configuration object that can be used to recreate this argument.
    * @example
    * ```ts
-   * import {
-   *   GraphQLArgument,
-   *   GraphQLField,
-   *   GraphQLObjectType,
-   *   GraphQLString,
-   * } from 'graphql/type';
+   * import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+   * import { GraphQLArgument, GraphQLField } from 'graphql/type/definition';
    *
    * const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
    * const field = new GraphQLField(Query, 'greeting', { type: GraphQLString });
@@ -3156,12 +3155,8 @@ export class GraphQLArgument implements GraphQLSchemaElement {
    * @returns The argument coordinate.
    * @example
    * ```ts
-   * import {
-   *   GraphQLArgument,
-   *   GraphQLField,
-   *   GraphQLObjectType,
-   *   GraphQLString,
-   * } from 'graphql/type';
+   * import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+   * import { GraphQLArgument, GraphQLField } from 'graphql/type/definition';
    *
    * const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
    * const field = new GraphQLField(Query, 'greeting', { type: GraphQLString });
@@ -3178,12 +3173,8 @@ export class GraphQLArgument implements GraphQLSchemaElement {
    * @returns The argument coordinate.
    * @example
    * ```ts
-   * import {
-   *   GraphQLArgument,
-   *   GraphQLField,
-   *   GraphQLObjectType,
-   *   GraphQLString,
-   * } from 'graphql/type';
+   * import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+   * import { GraphQLArgument, GraphQLField } from 'graphql/type/definition';
    *
    * const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
    * const field = new GraphQLField(Query, 'greeting', { type: GraphQLString });
@@ -3203,14 +3194,13 @@ export class GraphQLArgument implements GraphQLSchemaElement {
  * @example
  * ```ts
  * import {
- *   GraphQLArgument,
- *   GraphQLField,
  *   GraphQLInt,
  *   GraphQLNonNull,
  *   GraphQLObjectType,
  *   GraphQLString,
  *   isRequiredArgument,
  * } from 'graphql/type';
+ * import { GraphQLArgument, GraphQLField } from 'graphql/type/definition';
  *
  * const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
  * const field = new GraphQLField(Query, 'reviews', { type: GraphQLString });
@@ -3283,6 +3273,8 @@ export interface GraphQLInterfaceTypeExtensions {
  * @typeParam TContext - Context object type passed to resolvers.
  * @example
  * ```ts
+ * import { GraphQLInterfaceType, GraphQLString } from 'graphql';
+ *
  * const EntityType = new GraphQLInterfaceType({
  *   name: 'Entity',
  *   fields: {
@@ -3603,15 +3595,28 @@ export interface GraphQLUnionTypeExtensions {
  * @typeParam TContext - Context object type passed to resolvers.
  * @example
  * ```ts
+ * import { GraphQLObjectType, GraphQLString, GraphQLUnionType } from 'graphql';
+ *
+ * class Dog {}
+ * class Cat {}
+ * const DogType = new GraphQLObjectType({
+ *   name: 'Dog',
+ *   fields: { name: { type: GraphQLString } },
+ * });
+ * const CatType = new GraphQLObjectType({
+ *   name: 'Cat',
+ *   fields: { name: { type: GraphQLString } },
+ * });
+ *
  * const PetType = new GraphQLUnionType({
  *   name: 'Pet',
  *   types: [DogType, CatType],
  *   resolveType: (value) => {
  *     if (value instanceof Dog) {
- *       return DogType;
+ *       return 'Dog';
  *     }
  *     if (value instanceof Cat) {
- *       return CatType;
+ *       return 'Cat';
  *     }
  *   },
  * });
@@ -4492,7 +4497,8 @@ export class GraphQLEnumValue implements GraphQLSchemaElement {
    * @param config - Enum value configuration.
    * @example
    * ```ts
-   * import { GraphQLEnumType, GraphQLEnumValue } from 'graphql/type';
+   * import { GraphQLEnumType } from 'graphql/type';
+   * import { GraphQLEnumValue } from 'graphql/type/definition';
    *
    * const Episode = new GraphQLEnumType({
    *   name: 'Episode',
@@ -4534,7 +4540,8 @@ export class GraphQLEnumValue implements GraphQLSchemaElement {
    * @returns A configuration object that can be used to recreate this enum value.
    * @example
    * ```ts
-   * import { GraphQLEnumType, GraphQLEnumValue } from 'graphql/type';
+   * import { GraphQLEnumType } from 'graphql/type';
+   * import { GraphQLEnumValue } from 'graphql/type/definition';
    *
    * const Episode = new GraphQLEnumType({
    *   name: 'Episode',
@@ -4562,7 +4569,8 @@ export class GraphQLEnumValue implements GraphQLSchemaElement {
    * @returns Enum value coordinate.
    * @example
    * ```ts
-   * import { GraphQLEnumType, GraphQLEnumValue } from 'graphql/type';
+   * import { GraphQLEnumType } from 'graphql/type';
+   * import { GraphQLEnumValue } from 'graphql/type/definition';
    *
    * const Episode = new GraphQLEnumType({
    *   name: 'Episode',
@@ -4581,7 +4589,8 @@ export class GraphQLEnumValue implements GraphQLSchemaElement {
    * @returns Enum value coordinate.
    * @example
    * ```ts
-   * import { GraphQLEnumType, GraphQLEnumValue } from 'graphql/type';
+   * import { GraphQLEnumType } from 'graphql/type';
+   * import { GraphQLEnumValue } from 'graphql/type/definition';
    *
    * const Episode = new GraphQLEnumType({
    *   name: 'Episode',
@@ -4616,6 +4625,8 @@ export interface GraphQLInputObjectTypeExtensions {
  * Using `NonNull` will ensure that a value must be provided by the query
  * @example
  * ```ts
+ * import { GraphQLFloat, GraphQLInputObjectType, GraphQLNonNull } from 'graphql';
+ *
  * const GeoPoint = new GraphQLInputObjectType({
  *   name: 'GeoPoint',
  *   fields: {
@@ -4753,7 +4764,8 @@ export class GraphQLInputObjectType implements GraphQLSchemaElement {
    * const fields = ReviewInput.getFields();
    *
    * Object.keys(fields); // => ['stars', 'commentary']
-   * fields.commentary.default; // => { literal: { kind: 'StringValue', value: '' } }
+   * fields.commentary.default.literal.kind; // => 'StringValue'
+   * fields.commentary.default.literal.value; // => ''
    * ```
    */
   getFields(): GraphQLInputFieldMap {
@@ -4963,11 +4975,8 @@ export class GraphQLInputField implements GraphQLSchemaElement {
    * @param config - Input field configuration.
    * @example
    * ```ts
-   * import {
-   *   GraphQLInputField,
-   *   GraphQLInputObjectType,
-   *   GraphQLString,
-   * } from 'graphql/type';
+   * import { GraphQLInputObjectType, GraphQLString } from 'graphql/type';
+   * import { GraphQLInputField } from 'graphql/type/definition';
    *
    * const ReviewInput = new GraphQLInputObjectType({
    *   name: 'ReviewInput',
@@ -5017,11 +5026,8 @@ export class GraphQLInputField implements GraphQLSchemaElement {
    * @returns A configuration object that can be used to recreate this input field.
    * @example
    * ```ts
-   * import {
-   *   GraphQLInputField,
-   *   GraphQLInputObjectType,
-   *   GraphQLString,
-   * } from 'graphql/type';
+   * import { GraphQLInputObjectType, GraphQLString } from 'graphql/type';
+   * import { GraphQLInputField } from 'graphql/type/definition';
    *
    * const ReviewInput = new GraphQLInputObjectType({
    *   name: 'ReviewInput',
@@ -5051,11 +5057,8 @@ export class GraphQLInputField implements GraphQLSchemaElement {
    * @returns The input field coordinate.
    * @example
    * ```ts
-   * import {
-   *   GraphQLInputField,
-   *   GraphQLInputObjectType,
-   *   GraphQLString,
-   * } from 'graphql/type';
+   * import { GraphQLInputObjectType, GraphQLString } from 'graphql/type';
+   * import { GraphQLInputField } from 'graphql/type/definition';
    *
    * const ReviewInput = new GraphQLInputObjectType({
    *   name: 'ReviewInput',
@@ -5076,11 +5079,8 @@ export class GraphQLInputField implements GraphQLSchemaElement {
    * @returns The input field coordinate.
    * @example
    * ```ts
-   * import {
-   *   GraphQLInputField,
-   *   GraphQLInputObjectType,
-   *   GraphQLString,
-   * } from 'graphql/type';
+   * import { GraphQLInputObjectType, GraphQLString } from 'graphql/type';
+   * import { GraphQLInputField } from 'graphql/type/definition';
    *
    * const ReviewInput = new GraphQLInputObjectType({
    *   name: 'ReviewInput',
@@ -5104,13 +5104,13 @@ export class GraphQLInputField implements GraphQLSchemaElement {
  * @example
  * ```ts
  * import {
- *   GraphQLInputField,
  *   GraphQLInputObjectType,
  *   GraphQLInt,
  *   GraphQLNonNull,
  *   GraphQLString,
  *   isRequiredInputField,
  * } from 'graphql/type';
+ * import { GraphQLInputField } from 'graphql/type/definition';
  *
  * const ReviewInput = new GraphQLInputObjectType({
  *   name: 'ReviewInput',
