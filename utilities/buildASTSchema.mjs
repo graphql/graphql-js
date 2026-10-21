@@ -38,10 +38,7 @@ export function buildASTSchema(documentAST, options) {
     return new GraphQLSchema({ ...config, directives });
 }
 export function buildSchema(source, options) {
-    const document = parse(source, {
-        noLocation: options?.noLocation,
-        experimentalFragmentArguments: options?.experimentalFragmentArguments,
-    });
+    const document = parse(source, options);
     return buildASTSchema(document, {
         assumeValidSDL: options?.assumeValidSDL,
         assumeValid: options?.assumeValid,

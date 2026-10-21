@@ -42,10 +42,7 @@ function buildASTSchema(documentAST, options) {
     return new schema_ts_1.GraphQLSchema({ ...config, directives });
 }
 function buildSchema(source, options) {
-    const document = (0, parser_ts_1.parse)(source, {
-        noLocation: options?.noLocation,
-        experimentalFragmentArguments: options?.experimentalFragmentArguments,
-    });
+    const document = (0, parser_ts_1.parse)(source, options);
     return buildASTSchema(document, {
         assumeValidSDL: options?.assumeValidSDL,
         assumeValid: options?.assumeValid,
