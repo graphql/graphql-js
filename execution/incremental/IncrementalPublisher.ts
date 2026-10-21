@@ -1,4 +1,6 @@
+import { memoize1 } from '../../jsutils/memoize1.ts';
 import type { ObjMap } from '../../jsutils/ObjMap.ts';
+import type { Path } from '../../jsutils/Path.ts';
 import { pathToArray } from '../../jsutils/Path.ts';
 import { ensureGraphQLError } from '../../error/ensureGraphQLError.ts';
 import type { GraphQLError } from '../../error/GraphQLError.ts';
@@ -30,9 +32,13 @@ interface SubsequentIncrementalExecutionResultContext {
 export class IncrementalPublisher {
   private _ids: Map<DeliveryGroup | ItemStream, string>;
   private _nextId: number;
+  private _cachedPathToArray: (path: Path) => Array<string | number>;
   constructor() {
     this._ids = new Map();
     this._nextId = 0;
+    // Paths are shared by every defer label at one response position, so the
+    // flattened array is built once per Path instead of once per label.
+    this._cachedPathToArray = memoize1((path: Path) => pathToArray(path));
   }
   buildResponse(
     data: ObjMap<unknown>,
@@ -74,6 +80,12 @@ export class IncrementalPublisher {
       subsequentResults,
     };
   }
+  private _pathToArray(path: Path | undefined): Array<string | number> {
+    if (path == null) {
+      return [];
+    }
+    return this._cachedPathToArray(path);
+  }
   private _ensureId(
     deferredFragmentOrStream: DeliveryGroup | ItemStream,
   ): string {
@@ -95,7 +107,7 @@ export class IncrementalPublisher {
         const id = this._ensureId(node);
         const pendingResult: PendingResult = {
           id,
-          path: pathToArray(node.path),
+          path: this._pathToArray(node.path),
         };
         if (node.label !== undefined) {
           pendingResult.label = node.label;
@@ -248,7 +260,9 @@ export class IncrementalPublisher {
     bestId: string;
     subPath: ReadonlyArray<string | number> | undefined;
   } {
-    let maxLength = pathToArray(initialDeferredFragmentRecord.path).length;
+    let maxLength = this._pathToArray(
+      initialDeferredFragmentRecord.path,
+    ).length;
     let bestId = initialId;
     for (const deliveryGroup of executionGroupValue.deliveryGroups) {
       if (deliveryGroup === initialDeferredFragmentRecord) {
@@ -259,7 +273,7 @@ export class IncrementalPublisher {
       if (id === undefined) {
         continue;
       }
-      const path = pathToArray(deliveryGroup.path);
+      const path = this._pathToArray(deliveryGroup.path);
       const length = path.length;
       if (length > maxLength) {
         maxLength = length;
