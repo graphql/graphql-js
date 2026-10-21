@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IncrementalPublisher = void 0;
+const memoize1_ts_1 = require("../../jsutils/memoize1.js");
 const Path_ts_1 = require("../../jsutils/Path.js");
 const ensureGraphQLError_ts_1 = require("../../error/ensureGraphQLError.js");
 const mapAsyncIterable_ts_1 = require("../mapAsyncIterable.js");
@@ -10,6 +11,7 @@ class IncrementalPublisher {
     constructor() {
         this._ids = new Map();
         this._nextId = 0;
+        this._cachedPathToArray = (0, memoize1_ts_1.memoize1)((path) => (0, Path_ts_1.pathToArray)(path));
     }
     buildResponse(data, errors, work, abortSignal, onFinished) {
         const { initialGroups, initialStreams, events } = (0, WorkQueue_ts_1.createWorkQueue)(work);
@@ -34,6 +36,12 @@ class IncrementalPublisher {
             subsequentResults,
         };
     }
+    _pathToArray(path) {
+        if (path == null) {
+            return [];
+        }
+        return this._cachedPathToArray(path);
+    }
     _ensureId(deferredFragmentOrStream) {
         let id = this._ids.get(deferredFragmentOrStream);
         if (id !== undefined) {
@@ -50,7 +58,7 @@ class IncrementalPublisher {
                 const id = this._ensureId(node);
                 const pendingResult = {
                     id,
-                    path: (0, Path_ts_1.pathToArray)(node.path),
+                    path: this._pathToArray(node.path),
                 };
                 if (node.label !== undefined) {
                     pendingResult.label = node.label;
@@ -167,7 +175,7 @@ class IncrementalPublisher {
         }
     }
     _getBestIdAndSubPath(initialId, initialDeferredFragmentRecord, executionGroupValue) {
-        let maxLength = (0, Path_ts_1.pathToArray)(initialDeferredFragmentRecord.path).length;
+        let maxLength = this._pathToArray(initialDeferredFragmentRecord.path).length;
         let bestId = initialId;
         for (const deliveryGroup of executionGroupValue.deliveryGroups) {
             if (deliveryGroup === initialDeferredFragmentRecord) {
@@ -177,7 +185,7 @@ class IncrementalPublisher {
             if (id === undefined) {
                 continue;
             }
-            const path = (0, Path_ts_1.pathToArray)(deliveryGroup.path);
+            const path = this._pathToArray(deliveryGroup.path);
             const length = path.length;
             if (length > maxLength) {
                 maxLength = length;

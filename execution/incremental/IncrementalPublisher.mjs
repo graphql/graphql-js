@@ -1,3 +1,4 @@
+import { memoize1 } from "../../jsutils/memoize1.mjs";
 import { pathToArray } from "../../jsutils/Path.mjs";
 import { ensureGraphQLError } from "../../error/ensureGraphQLError.mjs";
 import { mapAsyncIterable } from "../mapAsyncIterable.mjs";
@@ -7,6 +8,7 @@ export class IncrementalPublisher {
     constructor() {
         this._ids = new Map();
         this._nextId = 0;
+        this._cachedPathToArray = memoize1((path) => pathToArray(path));
     }
     buildResponse(data, errors, work, abortSignal, onFinished) {
         const { initialGroups, initialStreams, events } = createWorkQueue(work);
@@ -31,6 +33,12 @@ export class IncrementalPublisher {
             subsequentResults,
         };
     }
+    _pathToArray(path) {
+        if (path == null) {
+            return [];
+        }
+        return this._cachedPathToArray(path);
+    }
     _ensureId(deferredFragmentOrStream) {
         let id = this._ids.get(deferredFragmentOrStream);
         if (id !== undefined) {
@@ -47,7 +55,7 @@ export class IncrementalPublisher {
                 const id = this._ensureId(node);
                 const pendingResult = {
                     id,
-                    path: pathToArray(node.path),
+                    path: this._pathToArray(node.path),
                 };
                 if (node.label !== undefined) {
                     pendingResult.label = node.label;
@@ -164,7 +172,7 @@ export class IncrementalPublisher {
         }
     }
     _getBestIdAndSubPath(initialId, initialDeferredFragmentRecord, executionGroupValue) {
-        let maxLength = pathToArray(initialDeferredFragmentRecord.path).length;
+        let maxLength = this._pathToArray(initialDeferredFragmentRecord.path).length;
         let bestId = initialId;
         for (const deliveryGroup of executionGroupValue.deliveryGroups) {
             if (deliveryGroup === initialDeferredFragmentRecord) {
@@ -174,7 +182,7 @@ export class IncrementalPublisher {
             if (id === undefined) {
                 continue;
             }
-            const path = pathToArray(deliveryGroup.path);
+            const path = this._pathToArray(deliveryGroup.path);
             const length = path.length;
             if (length > maxLength) {
                 maxLength = length;

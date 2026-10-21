@@ -5,8 +5,10 @@ import type { ExperimentalIncrementalExecutionResults, IncrementalWork } from ".
 export declare class IncrementalPublisher {
     private _ids;
     private _nextId;
+    private _cachedPathToArray;
     constructor();
     buildResponse(data: ObjMap<unknown>, errors: ReadonlyArray<GraphQLError>, work: IncrementalWork, abortSignal: AbortSignal | undefined, onFinished: () => void): ExperimentalIncrementalExecutionResults;
+    private _pathToArray;
     private _ensureId;
     private _toPendingResults;
     private _handleBatch;
