@@ -257,9 +257,7 @@ export interface ExecutionArgs {
  *     greeting: ({ name }) => `Hello, ${name}!`,
  *   },
  *   variableValues: { name: 'Ada' },
- * });
- *
- * result; // => { data: { greeting: 'Hello, Ada!' } }
+ * }); // => { data: { greeting: 'Hello, Ada!' } }
  * ```
  * @example
  * ```ts
@@ -288,8 +286,7 @@ export interface ExecutionArgs {
  *   rootValue: { viewer: { kind: 'user', name: 'Ada' } },
  *   contextValue: { locale: 'en' },
  *   operationName: 'Viewer',
- *   fieldResolver: (source, _args, contextValue, info) => {
- *     contextValue.locale; // => 'en'
+ *   fieldResolver: (source, _args, _contextValue, info) => {
  *     return source[info.fieldName];
  *   },
  *   typeResolver: (value) => {

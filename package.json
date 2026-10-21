@@ -35,7 +35,7 @@
     "release:prepare": "node resources/release-prepare.js",
     "release:metadata": "node resources/release-metadata.js",
     "benchmark": "node benchmark/benchmark.js",
-    "test": "npm run lint && npm run check && npm run testonly && npm run prettier:check && npm run check:spelling && npm run check:integrations",
+    "test": "npm run lint && npm run check && npm run testonly && npm run testonly:examples && npm run prettier:check && npm run check:spelling && npm run check:integrations",
     "lint": "eslint --cache --max-warnings 0 .",
     "check": "tsc --pretty",
     "testonly": "mocha --full-trace src/**/__tests__/**/*-test.ts",
@@ -45,7 +45,9 @@
     "check:spelling": "cspell --cache --no-progress '**/*'",
     "check:integrations": "npm run build:npm && npm run build:deno && mocha --full-trace integrationTests/*-test.js",
     "build:npm": "node resources/build-npm.js",
-    "build:deno": "node resources/build-deno.js"
+    "build:deno": "node resources/build-deno.js",
+    "testonly:examples": "mocha --require ./resources/ts-register.js resources/test-examples.js",
+    "check:examples": "npm run testonly:examples"
   },
   "devDependencies": {
     "@babel/core": "7.17.9",

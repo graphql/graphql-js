@@ -35,9 +35,9 @@ const MAX_LISTS_DEPTH = 3;
  * const validDocument = parse(`
  *   { __schema { queryType { name } } }
  * `);
- * const validErrors = validate(schema, validDocument, [MaxIntrospectionDepthRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [
+ *   MaxIntrospectionDepthRule,
+ * ]); // => []
  * ```
  */
 export function MaxIntrospectionDepthRule(

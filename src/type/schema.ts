@@ -103,6 +103,8 @@ export interface GraphQLSchemaExtensions {
  * validator and executor.
  * @example
  * ```ts
+ * import { GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql';
+ *
  * const MyAppQueryRootType = new GraphQLObjectType({
  *   name: 'Query',
  *   fields: {
@@ -128,6 +130,13 @@ export interface GraphQLSchemaExtensions {
  * referenced.
  *
  * ```ts
+ * import {
+ *   GraphQLInterfaceType,
+ *   GraphQLObjectType,
+ *   GraphQLSchema,
+ *   GraphQLString,
+ * } from 'graphql';
+ *
  * const characterInterface = new GraphQLInterfaceType({
  *   name: 'Character',
  *   fields: {
@@ -172,9 +181,26 @@ export interface GraphQLSchemaExtensions {
  * these specified directives, you must explicitly declare them.
  *
  * ```ts
+ * import {
+ *   DirectiveLocation,
+ *   GraphQLDirective,
+ *   GraphQLObjectType,
+ *   GraphQLSchema,
+ *   GraphQLString,
+ *   specifiedDirectives,
+ * } from 'graphql';
+ *
  * const MyAppSchema = new GraphQLSchema({
- *   query: MyAppQueryRootType,
- *   directives: specifiedDirectives.concat([myCustomDirective]),
+ *   query: new GraphQLObjectType({
+ *     name: 'Query',
+ *     fields: { greeting: { type: GraphQLString } },
+ *   }),
+ *   directives: specifiedDirectives.concat([
+ *     new GraphQLDirective({
+ *       name: 'custom',
+ *       locations: [DirectiveLocation.FIELD],
+ *     }),
+ *   ]),
  * });
  * ```
  */
@@ -748,7 +774,7 @@ export class GraphQLSchema {
    *   }
    * `);
    *
-   * schema.getDirectives().map((directive) => directive.name); // => ['include', 'skip', 'deprecated', 'specifiedBy', 'oneOf', 'upper']
+   * schema.getDirectives().map((directive) => directive.name); // => ['upper', 'include', 'skip', 'deprecated', 'specifiedBy', 'oneOf']
    * ```
    */
   getDirectives(): ReadonlyArray<GraphQLDirective> {

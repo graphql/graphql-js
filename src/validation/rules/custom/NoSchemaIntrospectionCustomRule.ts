@@ -42,9 +42,9 @@ import type { ValidationContext } from '../../ValidationContext';
  * const validDocument = parse(`
  *   { name }
  * `);
- * const validErrors = validate(schema, validDocument, [NoSchemaIntrospectionCustomRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [
+ *   NoSchemaIntrospectionCustomRule,
+ * ]); // => []
  * ```
  */
 export function NoSchemaIntrospectionCustomRule(

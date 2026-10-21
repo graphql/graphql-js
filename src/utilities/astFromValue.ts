@@ -64,7 +64,7 @@ import { GraphQLID } from '../type/scalars';
  *   ReviewInput,
  * );
  *
- * print(valueNode); // => '{ stars: 5, tags: ["featured", "verified"] }'
+ * print(valueNode); // => '{stars: 5, tags: ["featured", "verified"]}'
  * astFromValue(undefined, GraphQLString); // => null
  * astFromValue(null, new GraphQLNonNull(GraphQLString)); // => null
  * ```

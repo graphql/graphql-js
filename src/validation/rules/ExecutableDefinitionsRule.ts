@@ -38,9 +38,9 @@ import type { ASTValidationContext } from '../ValidationContext';
  * const validDocument = parse(`
  *   { name }
  * `);
- * const validErrors = validate(schema, validDocument, [ExecutableDefinitionsRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [
+ *   ExecutableDefinitionsRule,
+ * ]); // => []
  * ```
  */
 export function ExecutableDefinitionsRule(

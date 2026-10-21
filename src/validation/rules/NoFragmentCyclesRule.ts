@@ -42,9 +42,7 @@ import type { ASTValidationContext } from '../ValidationContext';
  * const validDocument = parse(`
  *   fragment A on Query { name } query { ...A }
  * `);
- * const validErrors = validate(schema, validDocument, [NoFragmentCyclesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [NoFragmentCyclesRule]); // => []
  * ```
  */
 export function NoFragmentCyclesRule(

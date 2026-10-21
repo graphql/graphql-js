@@ -1700,15 +1700,15 @@ export class Parser {
    * @returns Parsed schema coordinate AST.
    * @example
    * ```ts
-   * import { Parser, Source } from 'graphql/language';
+   * import { parseSchemaCoordinate } from 'graphql/language';
    *
-   * const typeCoordinate = new Parser(new Source('User.name')).parseSchemaCoordinate();
-   * const directiveCoordinate = new Parser(new Source('@include(if:)')).parseSchemaCoordinate();
+   * const typeCoordinate = parseSchemaCoordinate('User.name');
+   * const directiveCoordinate = parseSchemaCoordinate('@include(if:)');
    *
    * typeCoordinate.name.value; // => 'User'
    * typeCoordinate.memberName?.value; // => 'name'
-   * directiveCoordinate.name.value; // => 'deprecated'
-   * directiveCoordinate.argumentName?.value; // => 'reason'
+   * directiveCoordinate.name.value; // => 'include'
+   * directiveCoordinate.argumentName?.value; // => 'if'
    * ```
    */
   parseSchemaCoordinate(): SchemaCoordinateNode {
