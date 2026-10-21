@@ -35,6 +35,12 @@ export interface ParseOptions {
      */
     maxComments?: number | undefined;
     /**
+     * The maximum length of source text accepted by the parser. The length is
+     * measured in UTF-16 code units, as reported by `Source.body.length`.
+     * Sources longer than this limit are rejected before lexing.
+     */
+    maxSourceLength?: number | undefined;
+    /**
      * EXPERIMENTAL:
      *
      * If enabled, the parser will understand and parse fragment variable definitions

@@ -65,6 +65,11 @@ export class Parser {
         this._tokenCounter = 0;
         this._lexer._maxComments = _options.maxComments;
         this._lexer._commentCount = 0;
+        const maxSourceLength = _options.maxSourceLength;
+        if (maxSourceLength !== undefined &&
+            this._lexer.source.body.length > maxSourceLength) {
+            throw syntaxError(this._lexer.source, maxSourceLength, `Source contains more than ${maxSourceLength} UTF-16 code units. Parsing aborted.`);
+        }
     }
     get tokenCount() {
         return this._tokenCounter;
