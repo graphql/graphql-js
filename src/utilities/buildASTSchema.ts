@@ -151,10 +151,7 @@ export function buildSchema(
   source: string | Source,
   options?: BuildSchemaOptions & ParseOptions,
 ): GraphQLSchema {
-  const document = parse(source, {
-    noLocation: options?.noLocation,
-    experimentalFragmentArguments: options?.experimentalFragmentArguments,
-  });
+  const document = parse(source, options);
 
   return buildASTSchema(document, {
     assumeValidSDL: options?.assumeValidSDL,
