@@ -335,14 +335,20 @@ export const specifiedScalarTypes: ReadonlyArray<GraphQLScalarType> =
  * @example
  * ```ts
  * import {
- *   GraphQLScalarType,
+ *   assertScalarType,
  *   GraphQLString,
  *   isSpecifiedScalarType,
  * } from 'graphql/type';
+ * import { buildSchema } from 'graphql/utilities';
  *
- * const DateTime = new GraphQLScalarType({
- *   name: 'DateTime',
- * });
+ * const schema = buildSchema(`
+ *   scalar DateTime
+ *
+ *   type Query {
+ *     now: DateTime
+ *   }
+ * `);
+ * const DateTime = assertScalarType(schema.getType('DateTime'));
  *
  * isSpecifiedScalarType(GraphQLString); // => true
  * isSpecifiedScalarType(DateTime); // => false
