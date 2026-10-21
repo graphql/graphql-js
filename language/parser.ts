@@ -105,6 +105,12 @@ export interface ParseOptions {
    */
   maxComments?: number | undefined;
   /**
+   * The maximum length of source text accepted by the parser. The length is
+   * measured in UTF-16 code units, as reported by `Source.body.length`.
+   * Sources longer than this limit are rejected before lexing.
+   */
+  maxSourceLength?: number | undefined;
+  /**
    * EXPERIMENTAL:
    *
    * If enabled, the parser will understand and parse fragment variable definitions
@@ -355,6 +361,17 @@ export class Parser {
     this._tokenCounter = 0;
     this._lexer._maxComments = _options.maxComments;
     this._lexer._commentCount = 0;
+    const maxSourceLength = _options.maxSourceLength;
+    if (
+      maxSourceLength !== undefined &&
+      this._lexer.source.body.length > maxSourceLength
+    ) {
+      throw syntaxError(
+        this._lexer.source,
+        maxSourceLength,
+        `Source contains more than ${maxSourceLength} UTF-16 code units. Parsing aborted.`,
+      );
+    }
   }
   get tokenCount(): number {
     return this._tokenCounter;
