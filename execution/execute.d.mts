@@ -48,9 +48,7 @@ export type RootSelectionSetExecutor = (validatedExecutionArgs: ValidatedSubscri
  *     greeting: ({ name }) => `Hello, ${name}!`,
  *   },
  *   variableValues: { name: 'Ada' },
- * });
- *
- * result; // => { data: { greeting: 'Hello, Ada!' } }
+ * }); // => { data: { greeting: 'Hello, Ada!' } }
  * ```
  */
 export declare function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult>;
@@ -84,9 +82,7 @@ export declare function execute(args: ExecutionArgs): PromiseOrValue<ExecutionRe
  *   schema,
  *   document: parse('{ greeting }'),
  *   rootValue: { greeting: 'Hello' },
- * });
- *
- * result; // => { data: { greeting: 'Hello' } }
+ * }); // => { data: { greeting: 'Hello' } }
  * ```
  * @category Incremental Execution
  */
@@ -129,8 +125,7 @@ export declare function executeIgnoringIncremental(args: ExecutionArgs): Promise
  *
  * assert('schema' in validatedArgs);
  *
- * const result = await executeRootSelectionSet(validatedArgs);
- * result; // => { data: { greeting: 'Hello' } }
+ * const result = await executeRootSelectionSet(validatedArgs); // => { data: { greeting: 'Hello' } }
  * ```
  */
 export declare function executeRootSelectionSet(validatedExecutionArgs: ValidatedExecutionArgs): PromiseOrValue<ExecutionResult>;
@@ -157,8 +152,7 @@ export declare function executeRootSelectionSet(validatedExecutionArgs: Validate
  *
  * assert('schema' in validatedArgs);
  *
- * const result = await experimentalExecuteRootSelectionSet(validatedArgs);
- * result; // => { data: { greeting: 'Hello' } }
+ * const result = await experimentalExecuteRootSelectionSet(validatedArgs); // => { data: { greeting: 'Hello' } }
  * ```
  * @category Incremental Execution
  */
@@ -183,9 +177,7 @@ export declare function executeRootSelectionSetIgnoringIncremental(validatedExec
  *   schema,
  *   document: parse('{ greeting }'),
  *   rootValue: { greeting: 'Hello' },
- * });
- *
- * result; // => { data: { greeting: 'Hello' } }
+ * }); // => { data: { greeting: 'Hello' } }
  * ```
  */
 export declare function executeSync(args: ExecutionArgs): ExecutionResult;
@@ -223,8 +215,7 @@ export declare function executeSync(args: ExecutionArgs): ExecutionResult;
  *
  * assert('schema' in validatedArgs);
  *
- * const result = await executeSubscriptionEvent(validatedArgs);
- * result; // => { data: { greeting: 'Hello' } }
+ * const result = await executeSubscriptionEvent(validatedArgs); // => { data: { greeting: 'Hello' } }
  * ```
  */
 export declare function executeSubscriptionEvent(validatedExecutionArgs: ValidatedSubscriptionArgs): PromiseOrValue<ExecutionResult>;
@@ -443,8 +434,7 @@ export declare function createSourceEventStream(validatedExecutionArgs: Validate
  *   rootValue: { viewer: { kind: 'user', name: 'Ada' } },
  *   contextValue: { locale: 'en' },
  *   operationName: 'Viewer',
- *   fieldResolver: (source, _args, contextValue, info) => {
- *     contextValue.locale; // => 'en'
+ *   fieldResolver: (source, _args, _contextValue, info) => {
  *     return source[info.fieldName];
  *   },
  *   typeResolver: (value) => {
@@ -461,6 +451,7 @@ export declare function createSourceEventStream(validatedExecutionArgs: Validate
  *
  * assert('operation' in validatedArgs);
  *
+ * validatedArgs.contextValue.locale; // => 'en'
  * validatedArgs.operation.name?.value; // => 'Viewer'
  * validatedArgs.hideSuggestions; // => true
  * ```

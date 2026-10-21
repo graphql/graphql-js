@@ -31,9 +31,7 @@ import type { SDLValidationContext, ValidationContext } from "../ValidationConte
  * const validDocument = parse(`
  *   { name @include(if: true) }
  * `);
- * const validErrors = validate(schema, validDocument, [KnownDirectivesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [KnownDirectivesRule]); // => []
  * ```
  */
 export declare function KnownDirectivesRule(context: ValidationContext | SDLValidationContext): ASTVisitor;

@@ -298,7 +298,8 @@ export declare class TypeInfo {
      *   }),
      * );
      *
-     * defaultLimit; // => { literal: { kind: 'IntValue', value: '10' } }
+     * defaultLimit.literal.kind; // => 'IntValue'
+     * defaultLimit.literal.value; // => '10'
      * ```
      */
     getDefaultValue(): unknown;

@@ -33,9 +33,7 @@ import type { ValidationContext } from "../ValidationContext.js";
  * const validDocument = parse(`
  *   { name }
  * `);
- * const validErrors = validate(schema, validDocument, [FieldsOnCorrectTypeRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [FieldsOnCorrectTypeRule]); // => []
  * ```
  */
 export declare function FieldsOnCorrectTypeRule(context: ValidationContext): ASTVisitor;

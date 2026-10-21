@@ -30,9 +30,7 @@ import type { ASTValidationContext } from "../ValidationContext.mjs";
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   MaxIntrospectionDepthRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export declare function MaxIntrospectionDepthRule(context: ASTValidationContext): ASTVisitor;

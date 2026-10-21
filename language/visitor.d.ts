@@ -219,9 +219,7 @@ export declare function visit<N extends ASTNode>(root: N, visitor: ASTVisitor, v
  *       return node.definitions.join('\n');
  *     },
  *   },
- * });
- *
- * printed; // => 'hero { name }'
+ * }); // => 'hero { name }'
  * ```
  */
 export declare function visit<R>(root: ASTNode, visitor: ASTReducer<R>, visitorKeys?: ASTVisitorKeyMap): R;

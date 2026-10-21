@@ -21,9 +21,7 @@ import type { GraphQLSchema } from "./schema.js";
  *     name: String
  *   }
  * `);
- * const errors = validateSchema(schema);
- *
- * errors; // => []
+ * const errors = validateSchema(schema); // => []
  * ```
  */
 export declare function validateSchema(schema: GraphQLSchema): ReadonlyArray<GraphQLError>;

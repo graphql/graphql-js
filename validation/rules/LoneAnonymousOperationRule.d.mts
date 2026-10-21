@@ -35,9 +35,7 @@ import type { ASTValidationContext } from "../ValidationContext.mjs";
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   LoneAnonymousOperationRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export declare function LoneAnonymousOperationRule(context: ASTValidationContext): ASTVisitor;

@@ -35,7 +35,7 @@ import type { VariableValues } from "../execution/values.js";
  *   errors.push({ message: error.message, path });
  * });
  *
- * errors; // => [ { message: 'Expected value of type "Int", found: "bad".', path: ['stars'] } ]
+ * errors; // => [ { message: 'Int cannot represent non-integer value: "bad"', path: ['stars'] } ]
  * ```
  * @example
  * ```ts
@@ -104,7 +104,7 @@ export declare function validateInputValue(inputValue: unknown, type: GraphQLInp
  *   },
  * );
  *
- * errors; // => [ { message: 'Expected value of type "Int", found: "bad".', path: ['stars'] } ]
+ * errors; // => [ { message: 'Int cannot represent non-integer value: "bad"', path: ['stars'] } ]
  * ```
  * @example
  * ```ts
@@ -123,7 +123,7 @@ export declare function validateInputValue(inputValue: unknown, type: GraphQLInp
  * const document = parse('query ($stars: Int = 5) { review(stars: $stars) }');
  * const operation = document.definitions[0];
  * const result = getVariableValues(schema, operation.variableDefinitions, {
- *   stars: '4',
+ *   stars: 4,
  * });
  *
  * assert('variableValues' in result);

@@ -37,15 +37,15 @@ export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
  * ```
  * @example
  * ```ts
- * // This variant uses validation options when the SDL references unknown types.
  * import { parse } from 'graphql/language';
  * import { buildASTSchema } from 'graphql/utilities';
  *
- * const document = parse('type Query { broken: MissingType }');
+ * const document = parse('type Query { greeting: String greeting: String }');
  *
  * buildASTSchema(document); // throws an error
+ *
+ * // Skipping SDL validation allows the duplicate field definition.
  * buildASTSchema(document, {
- *   assumeValid: true,
  *   assumeValidSDL: true,
  * }); // does not throw
  * ```

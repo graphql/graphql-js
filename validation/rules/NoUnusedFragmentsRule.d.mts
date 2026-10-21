@@ -33,9 +33,7 @@ import type { ASTValidationContext } from "../ValidationContext.mjs";
  * const validDocument = parse(`
  *   fragment Used on Query { name } query { ...Used }
  * `);
- * const validErrors = validate(schema, validDocument, [NoUnusedFragmentsRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [NoUnusedFragmentsRule]); // => []
  * ```
  */
 export declare function NoUnusedFragmentsRule(context: ASTValidationContext): ASTVisitor;

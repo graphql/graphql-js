@@ -40,9 +40,7 @@ import type { ValidationContext } from "../ValidationContext.mjs";
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   SingleFieldSubscriptionsRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export declare function SingleFieldSubscriptionsRule(context: ValidationContext): ASTVisitor;

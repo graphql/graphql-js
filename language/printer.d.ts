@@ -10,9 +10,7 @@ import type { ASTNode } from "./ast.js";
  * import { parse, print } from 'graphql';
  *
  * const ast = parse('{ hero { name } }');
- * const text = print(ast);
- *
- * text; // => '{\n  hero {\n    name\n  }\n}'
+ * const text = print(ast); // => '{\n  hero {\n    name\n  }\n}'
  * ```
  */
 export declare function print(ast: ASTNode): string;

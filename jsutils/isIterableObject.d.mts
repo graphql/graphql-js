@@ -9,6 +9,8 @@
  * @internal
  * @example
  * ```ts
+ * import { isIterableObject } from 'graphql/jsutils/isIterableObject';
+ *
  * isIterableObject([1, 2, 3]); // => true
  * isIterableObject(new Map()); // => true
  * isIterableObject('ABC'); // => false

@@ -18,9 +18,7 @@ export interface SourceLocation {
  * import { Source, getLocation } from 'graphql/language';
  *
  * const source = new Source('type Query { hello: String }');
- * const location = getLocation(source, 13);
- *
- * location; // => { line: 1, column: 14 }
+ * const location = getLocation(source, 13); // => { line: 1, column: 14 }
  * ```
  */
 export declare function getLocation(source: Source, position: number): SourceLocation;

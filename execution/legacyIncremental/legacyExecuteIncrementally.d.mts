@@ -158,8 +158,7 @@ export declare function legacyExecuteIncrementally(args: ExecutionArgs): Promise
  *
  * assert('schema' in validatedArgs);
  *
- * const result = await legacyExecuteRootSelectionSet(validatedArgs);
- * result; // => { data: { greeting: 'Hello' } }
+ * const result = await legacyExecuteRootSelectionSet(validatedArgs); // => { data: { greeting: 'Hello' } }
  * ```
  */
 export declare function legacyExecuteRootSelectionSet(validatedExecutionArgs: ValidatedExecutionArgs): PromiseOrValue<ExecutionResult | LegacyExperimentalIncrementalExecutionResults>;

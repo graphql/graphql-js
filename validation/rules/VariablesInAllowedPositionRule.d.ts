@@ -34,9 +34,7 @@ import type { ValidationContext } from "../ValidationContext.js";
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   VariablesInAllowedPositionRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export declare function VariablesInAllowedPositionRule(context: ValidationContext): ASTVisitor;

@@ -61,9 +61,7 @@ import { Source } from "../language/source.mjs";
  * ```ts
  * import { stripIgnoredCharacters } from 'graphql/utilities';
  *
- * const source = stripIgnoredCharacters('query Example { name }');
- *
- * source; // => 'query Example{name}'
+ * const source = stripIgnoredCharacters('query Example { name }'); // => 'query Example{name}'
  * ```
  */
 export declare function stripIgnoredCharacters(source: string | Source): string;

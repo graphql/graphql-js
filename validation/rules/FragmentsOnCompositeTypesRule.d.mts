@@ -36,9 +36,7 @@ import type { ValidationContext } from "../ValidationContext.mjs";
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   FragmentsOnCompositeTypesRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export declare function FragmentsOnCompositeTypesRule(context: ValidationContext): ASTVisitor;

@@ -42,9 +42,7 @@ import type { ValidationContext } from "../ValidationContext.mjs";
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   PossibleFragmentSpreadsRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export declare function PossibleFragmentSpreadsRule(context: ValidationContext): ASTVisitor;

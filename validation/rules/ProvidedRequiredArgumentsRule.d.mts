@@ -33,9 +33,7 @@ import type { SDLValidationContext, ValidationContext } from "../ValidationConte
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   ProvidedRequiredArgumentsRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export declare function ProvidedRequiredArgumentsRule(context: ValidationContext): ASTVisitor;

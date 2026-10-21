@@ -61,10 +61,10 @@ import type { IntrospectionOptions, IntrospectionQuery } from "./getIntrospectio
  *   (directive) => directive.name === 'deprecated',
  * );
  *
- * urlType.specifiedByURL; // => undefined
  * urlType.description; // => undefined
- * introspection.__schema.description; // => undefined
+ * urlType.specifiedByURL; // => undefined
  * deprecatedDirective.isRepeatable; // => undefined
+ * introspection.__schema.description; // => undefined
  * ```
  */
 export declare function introspectionFromSchema(schema: GraphQLSchema, options?: IntrospectionOptions): IntrospectionQuery;

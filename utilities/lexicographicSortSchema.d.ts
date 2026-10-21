@@ -29,18 +29,18 @@ import { GraphQLSchema } from "../type/schema.js";
  *
  * const sortedSchema = lexicographicSortSchema(schema);
  *
- * printSchema(sortedSchema);
- * // =>
- * // enum Episode {
- * //   EMPIRE
- * //   JEDI
- * //   NEW_HOPE
- * // }
- * //
- * // type Query {
- * //   apple: String
- * //   zebra: String
- * // }
+ * const expectedSDL = `enum Episode {
+ *   EMPIRE
+ *   JEDI
+ *   NEW_HOPE
+ * }
+ *
+ * type Query {
+ *   apple: String
+ *   zebra: String
+ * }`;
+ *
+ * printSchema(sortedSchema); // => expectedSDL
  * ```
  */
 export declare function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema;

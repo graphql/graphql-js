@@ -39,9 +39,7 @@ import type { ASTValidationContext } from "../ValidationContext.mjs";
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   UniqueInputFieldNamesRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export declare function UniqueInputFieldNamesRule(context: ASTValidationContext): ASTVisitor;

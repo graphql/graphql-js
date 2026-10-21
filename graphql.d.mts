@@ -62,9 +62,7 @@ export interface GraphQLArgs extends ParseOptions, ValidationOptions, Omit<Execu
  *   },
  *   variableValues: { name: 'Ada' },
  *   operationName: 'SayHello',
- * });
- *
- * result; // => { data: { greeting: 'Hello, Ada!' } }
+ * }); // => { data: { greeting: 'Hello, Ada!' } }
  * ```
  * @example
  * ```ts
@@ -97,9 +95,7 @@ export interface GraphQLArgs extends ParseOptions, ValidationOptions, Omit<Execu
  *   typeResolver: (value) => {
  *     return value.kind === 'user' ? 'User' : undefined;
  *   },
- * });
- *
- * result; // => { data: { viewer: { __typename: 'User', name: 'Ada' } } }
+ * }); // => { data: { viewer: { __typename: 'User', name: 'Ada' } } }
  * ```
  * @example
  * ```ts
@@ -142,9 +138,7 @@ export interface GraphQLArgs extends ParseOptions, ValidationOptions, Omit<Execu
  *   noLocation: true,
  *   abortSignal: abortController.signal,
  *   harness,
- * });
- *
- * result; // => { data: { greeting: 'Hello' } }
+ * }); // => { data: { greeting: 'Hello' } }
  * stages; // => ['parse', 'validate', 'execute']
  * ```
  * @category Request Pipeline
@@ -178,9 +172,7 @@ export declare function graphql(args: GraphQLArgs): Promise<ExecutionResult>;
  *   },
  *   variableValues: { name: 'Ada' },
  *   operationName: 'SayHello',
- * });
- *
- * result; // => { data: { greeting: 'Hello, Ada!' } }
+ * }); // => { data: { greeting: 'Hello, Ada!' } }
  * ```
  * @example
  * ```ts
@@ -200,9 +192,7 @@ export declare function graphql(args: GraphQLArgs): Promise<ExecutionResult>;
  *     return contextValue.defaultGreeting;
  *   },
  *   contextValue: { defaultGreeting: 'Hello' },
- * });
- *
- * result; // => { data: { greeting: 'Hello' } }
+ * }); // => { data: { greeting: 'Hello' } }
  * ```
  * @category Request Pipeline
  */

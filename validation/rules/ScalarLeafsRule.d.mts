@@ -29,9 +29,7 @@ import type { ValidationContext } from "../ValidationContext.mjs";
  * const validDocument = parse(`
  *   { name }
  * `);
- * const validErrors = validate(schema, validDocument, [ScalarLeafsRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [ScalarLeafsRule]); // => []
  * ```
  */
 export declare function ScalarLeafsRule(context: ValidationContext): ASTVisitor;

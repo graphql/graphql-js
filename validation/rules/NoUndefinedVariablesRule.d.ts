@@ -33,9 +33,7 @@ import type { ValidationContext } from "../ValidationContext.js";
  * const validDocument = parse(`
  *   query ($id: ID) { field(arg: $id) }
  * `);
- * const validErrors = validate(schema, validDocument, [NoUndefinedVariablesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [NoUndefinedVariablesRule]); // => []
  * ```
  */
 export declare function NoUndefinedVariablesRule(context: ValidationContext): ASTVisitor;

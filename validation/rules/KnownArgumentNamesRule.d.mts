@@ -34,9 +34,7 @@ import type { SDLValidationContext, ValidationContext } from "../ValidationConte
  * const validDocument = parse(`
  *   { field(arg: "1") }
  * `);
- * const validErrors = validate(schema, validDocument, [KnownArgumentNamesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [KnownArgumentNamesRule]); // => []
  * ```
  */
 export declare function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor;

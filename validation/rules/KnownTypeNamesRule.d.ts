@@ -31,9 +31,7 @@ import type { SDLValidationContext, ValidationContext } from "../ValidationConte
  * const validDocument = parse(`
  *   fragment Good on Query { name }
  * `);
- * const validErrors = validate(schema, validDocument, [KnownTypeNamesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [KnownTypeNamesRule]); // => []
  * ```
  */
 export declare function KnownTypeNamesRule(context: ValidationContext | SDLValidationContext): ASTVisitor;

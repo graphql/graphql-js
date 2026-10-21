@@ -35,9 +35,7 @@ import type { ASTValidationContext } from "../ValidationContext.js";
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   ExecutableDefinitionsRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export declare function ExecutableDefinitionsRule(context: ASTValidationContext): ASTVisitor;

@@ -73,11 +73,8 @@ export declare function printType(type: GraphQLNamedType): string;
  * @returns SDL string for the directive definition.
  * @example
  * ```ts
- * import {
- *   DirectiveLocation,
- *   GraphQLDirective,
- *   GraphQLString,
- * } from 'graphql/type';
+ * import { GraphQLDirective, GraphQLString } from 'graphql/type';
+ * import { DirectiveLocation } from 'graphql/language';
  * import { printDirective } from 'graphql/utilities';
  *
  * const authDirective = new GraphQLDirective({

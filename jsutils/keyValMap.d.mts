@@ -5,6 +5,8 @@ import type { ObjMap } from "./ObjMap.mjs";
  * @internal
  * @example
  * ```ts
+ * import { keyValMap } from 'graphql/jsutils/keyValMap';
+ *
  * const phoneBook = [
  *   { name: 'Jon', num: '555-1234' },
  *   { name: 'Jenny', num: '867-5309' },
@@ -14,9 +16,7 @@ import type { ObjMap } from "./ObjMap.mjs";
  *   phoneBook,
  *   (entry) => entry.name,
  *   (entry) => entry.num,
- * );
- *
- * phonesByName; // => { Jon: '555-1234', Jenny: '867-5309' }
+ * ); // => { Jon: '555-1234', Jenny: '867-5309' }
  * ```
  */
 export declare function keyValMap<T, V>(list: ReadonlyArray<T>, keyFn: (item: T) => string, valFn: (item: T) => V): ObjMap<V>;

@@ -37,9 +37,7 @@ import type { ValidationContext } from "../../ValidationContext.mjs";
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   NoSchemaIntrospectionCustomRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export declare function NoSchemaIntrospectionCustomRule(context: ValidationContext): ASTVisitor;

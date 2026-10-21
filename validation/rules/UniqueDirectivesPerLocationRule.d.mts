@@ -35,9 +35,7 @@ import type { SDLValidationContext, ValidationContext } from "../ValidationConte
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   UniqueDirectivesPerLocationRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export declare function UniqueDirectivesPerLocationRule(context: ValidationContext | SDLValidationContext): ASTVisitor;

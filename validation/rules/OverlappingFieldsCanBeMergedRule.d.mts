@@ -41,9 +41,7 @@ import type { ValidationContext } from "../ValidationContext.mjs";
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   OverlappingFieldsCanBeMergedRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export declare function OverlappingFieldsCanBeMergedRule(validationContext: ValidationContext): ASTVisitor;

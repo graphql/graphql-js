@@ -17,7 +17,7 @@ import type { DocumentNode, OperationDefinitionNode } from "../language/ast.mjs"
  * const operation = getOperationAST(document, 'GetName');
  *
  * operation.name.value; // => 'GetName'
- * getOperationAST(document, 'Missing'); // => undefined
+ * getOperationAST(document, 'Missing'); // => null
  * ```
  */
 export declare function getOperationAST(documentAST: DocumentNode, operationName?: Maybe<string>): Maybe<OperationDefinitionNode>;

@@ -48,9 +48,7 @@ import type { ValidationContext } from "../../ValidationContext.mjs";
  * const validDocument = parse(`
  *   { name }
  * `);
- * const validErrors = validate(schema, validDocument, [NoDeprecatedCustomRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [NoDeprecatedCustomRule]); // => []
  * ```
  */
 export declare function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor;

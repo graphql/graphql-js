@@ -32,9 +32,7 @@ import type { ASTValidationContext } from "../ValidationContext.mjs";
  * const validDocument = parse(`
  *   fragment A on Query { name } query { ...A }
  * `);
- * const validErrors = validate(schema, validDocument, [UniqueFragmentNamesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [UniqueFragmentNamesRule]); // => []
  * ```
  */
 export declare function UniqueFragmentNamesRule(context: ASTValidationContext): ASTVisitor;

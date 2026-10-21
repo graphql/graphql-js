@@ -39,9 +39,7 @@ import type { ValidationContext } from "../ValidationContext.js";
  * `);
  * const validErrors = validate(schema, validDocument, [
  *   VariablesAreInputTypesRule,
- * ]);
- *
- * validErrors; // => []
+ * ]); // => []
  * ```
  */
 export declare function VariablesAreInputTypesRule(context: ValidationContext): ASTVisitor;
