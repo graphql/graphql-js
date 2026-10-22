@@ -262,7 +262,7 @@ function getAssertionWrapper(expression, comment, location, assertionIndex) {
   }
   if (comment === '// throws an error') {
     return {
-      before: ts.isAwaitExpression(expression)
+      before: containsAwait(expression)
         ? `${start}__recordExecution(await __assert.rejects(async () => (`
         : `${start}__recordExecution(__assert.throws(() => (`,
       after: `), undefined, ${label}), ${assertionIndex}))`,
@@ -275,6 +275,16 @@ function getAssertionWrapper(expression, comment, location, assertionIndex) {
     };
   }
   return undefined;
+}
+
+// Await inside a nested function does not make the enclosing expression async.
+function containsAwait(node) {
+  if (ts.isAwaitExpression(node)) {
+    return true;
+  }
+  return (
+    !ts.isFunctionLike(node) && Boolean(ts.forEachChild(node, containsAwait))
+  );
 }
 
 function applyEdits(code, edits) {
