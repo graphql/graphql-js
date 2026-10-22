@@ -129,19 +129,27 @@ function parseExample(example) {
 
 function getImportEdits(source) {
   const edits = [];
-  for (const statement of source.statements) {
-    if (!ts.isImportDeclaration(statement)) {
-      continue;
+  function visit(node) {
+    const specifier =
+      ts.isImportDeclaration(node) || ts.isExportDeclaration(node)
+        ? node.moduleSpecifier
+        : ts.isCallExpression(node) &&
+            node.expression.kind === ts.SyntaxKind.ImportKeyword
+          ? node.arguments[0]
+          : undefined;
+    if (specifier && ts.isStringLiteral(specifier)) {
+      const target = resolveSourceImport(specifier.text);
+      if (target !== undefined) {
+        edits.push({
+          start: specifier.getStart(source),
+          end: specifier.end,
+          text: JSON.stringify(target),
+        });
+      }
     }
-    const url = resolveSourceImport(statement.moduleSpecifier.text);
-    if (url !== undefined) {
-      edits.push({
-        start: statement.moduleSpecifier.getStart(source),
-        end: statement.moduleSpecifier.end,
-        text: JSON.stringify(url),
-      });
-    }
+    ts.forEachChild(node, visit);
   }
+  visit(source);
   return edits;
 }
 
