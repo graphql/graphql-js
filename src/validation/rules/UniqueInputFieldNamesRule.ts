@@ -44,9 +44,9 @@ import type { ASTValidationContext } from '../ValidationContext';
  * const validDocument = parse(`
  *   { search(filter: { name: "a" }) }
  * `);
- * const validErrors = validate(schema, validDocument, [UniqueInputFieldNamesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [
+ *   UniqueInputFieldNamesRule,
+ * ]); // => []
  * ```
  */
 export function UniqueInputFieldNamesRule(

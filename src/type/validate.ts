@@ -64,9 +64,7 @@ import { assertSchema } from './schema';
  *     name: String
  *   }
  * `);
- * const errors = validateSchema(schema);
- *
- * errors; // => []
+ * const errors = validateSchema(schema); // => []
  * ```
  */
 export function validateSchema(

@@ -35,9 +35,7 @@ import type { ASTValidationContext } from '../ValidationContext';
  * const validDocument = parse(`
  *   query ($id: ID) { field(arg: $id) }
  * `);
- * const validErrors = validate(schema, validDocument, [UniqueVariableNamesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [UniqueVariableNamesRule]); // => []
  * ```
  */
 export function UniqueVariableNamesRule(

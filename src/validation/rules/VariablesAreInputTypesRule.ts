@@ -46,9 +46,9 @@ import type { ValidationContext } from '../ValidationContext';
  * const validDocument = parse(`
  *   query ($id: ID) { field(arg: $id) }
  * `);
- * const validErrors = validate(schema, validDocument, [VariablesAreInputTypesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [
+ *   VariablesAreInputTypesRule,
+ * ]); // => []
  * ```
  */
 export function VariablesAreInputTypesRule(

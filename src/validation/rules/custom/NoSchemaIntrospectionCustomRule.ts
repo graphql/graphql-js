@@ -37,14 +37,14 @@ import type { ValidationContext } from '../../ValidationContext';
  * `);
  * const invalidErrors = validate(schema, invalidDocument, [NoSchemaIntrospectionCustomRule]);
  *
- * invalidErrors.length; // => 1
+ * invalidErrors.length; // => 2
  *
  * const validDocument = parse(`
  *   { name }
  * `);
- * const validErrors = validate(schema, validDocument, [NoSchemaIntrospectionCustomRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [
+ *   NoSchemaIntrospectionCustomRule,
+ * ]); // => []
  * ```
  */
 export function NoSchemaIntrospectionCustomRule(

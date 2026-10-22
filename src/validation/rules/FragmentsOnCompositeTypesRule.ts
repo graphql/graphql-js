@@ -42,9 +42,9 @@ import type { ValidationContext } from '../ValidationContext';
  * const validDocument = parse(`
  *   fragment Good on Query { name }
  * `);
- * const validErrors = validate(schema, validDocument, [FragmentsOnCompositeTypesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [
+ *   FragmentsOnCompositeTypesRule,
+ * ]); // => []
  * ```
  */
 export function FragmentsOnCompositeTypesRule(

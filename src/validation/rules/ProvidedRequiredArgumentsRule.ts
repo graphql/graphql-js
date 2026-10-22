@@ -48,9 +48,9 @@ import type {
  * const validDocument = parse(`
  *   { field(required: "x") }
  * `);
- * const validErrors = validate(schema, validDocument, [ProvidedRequiredArgumentsRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [
+ *   ProvidedRequiredArgumentsRule,
+ * ]); // => []
  * ```
  */
 export function ProvidedRequiredArgumentsRule(

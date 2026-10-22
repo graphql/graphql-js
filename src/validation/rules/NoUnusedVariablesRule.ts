@@ -38,9 +38,7 @@ import type { ValidationContext } from '../ValidationContext';
  * const validDocument = parse(`
  *   query ($id: ID) { field(arg: $id) }
  * `);
- * const validErrors = validate(schema, validDocument, [NoUnusedVariablesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [NoUnusedVariablesRule]); // => []
  * ```
  */
 export function NoUnusedVariablesRule(context: ValidationContext): ASTVisitor {

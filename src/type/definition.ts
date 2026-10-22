@@ -1118,6 +1118,8 @@ export function assertAbstractType(type: unknown): GraphQLAbstractType {
  * @typeParam T - The GraphQL type wrapped by this list type.
  * @example
  * ```ts
+ * import { GraphQLList, GraphQLObjectType } from 'graphql';
+ *
  * const PersonType = new GraphQLObjectType({
  *   name: 'Person',
  *   fields: () => ({
@@ -1208,6 +1210,8 @@ export class GraphQLList<T extends GraphQLType> {
  * @typeParam T - The nullable GraphQL type wrapped by this non-null type.
  * @example
  * ```ts
+ * import { GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
+ *
  * const RowType = new GraphQLObjectType({
  *   name: 'Row',
  *   fields: () => ({
@@ -1377,9 +1381,7 @@ export function isNullableType(type: unknown): type is GraphQLNullableType {
  *   assertNullableType,
  * } from 'graphql/type';
  *
- * const nullableType = assertNullableType(GraphQLString);
- *
- * nullableType; // => GraphQLString
+ * const nullableType = assertNullableType(GraphQLString); // => GraphQLString
  * assertNullableType(new GraphQLNonNull(GraphQLString)); // throws an error
  * ```
  */
@@ -1659,11 +1661,8 @@ export type ThunkObjMap<T> = (() => ObjMap<T>) | ObjMap<T>;
  * ```ts
  * import { GraphQLString, resolveReadonlyArrayThunk } from 'graphql/type';
  *
- * const lazyFields = resolveReadonlyArrayThunk(() => [GraphQLString]);
- * const fields = resolveReadonlyArrayThunk([GraphQLString]);
- *
- * lazyFields; // => [GraphQLString]
- * fields; // => [GraphQLString]
+ * const lazyFields = resolveReadonlyArrayThunk(() => [GraphQLString]); // => [GraphQLString]
+ * const fields = resolveReadonlyArrayThunk([GraphQLString]); // => [GraphQLString]
  * ```
  */
 export function resolveReadonlyArrayThunk<T>(
@@ -1720,6 +1719,8 @@ export interface GraphQLScalarTypeExtensions {
  * @typeParam TExternal - The serialized representation exposed in GraphQL results.
  * @example
  * ```ts
+ * import { GraphQLScalarType } from 'graphql/type';
+ *
  * const OddType = new GraphQLScalarType({
  *   name: 'Odd',
  *   serialize: (value) => {
@@ -2012,6 +2013,8 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  * @typeParam TContext - Context object type passed to resolvers.
  * @example
  * ```ts
+ * import { GraphQLInt, GraphQLObjectType, GraphQLString } from 'graphql';
+ *
  * const AddressType = new GraphQLObjectType({
  *   name: 'Address',
  *   fields: {
@@ -2032,6 +2035,8 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  * thunk) to supply the fields lazily.
  *
  * ```ts
+ * import { GraphQLObjectType, GraphQLString } from 'graphql';
+ *
  * const PersonType = new GraphQLObjectType({
  *   name: 'Person',
  *   fields: () => ({
@@ -2516,7 +2521,7 @@ export type GraphQLFieldResolver<
 
 /** Information about the currently executing GraphQL field. */
 export interface GraphQLResolveInfo {
-  /** The field name referenced by this schema coordinate. */
+  /** Name of the field being resolved. */
   readonly fieldName: string;
   /** AST field nodes that contributed to the current field execution. */
   readonly fieldNodes: ReadonlyArray<FieldNode>;
@@ -2524,9 +2529,9 @@ export interface GraphQLResolveInfo {
   readonly returnType: GraphQLOutputType;
   /** Object type that owns the current field. */
   readonly parentType: GraphQLObjectType;
-  /** Response path where this error occurred during execution. */
+  /** Response path of the field being resolved. */
   readonly path: Path;
-  /** The schema used for validation or execution. */
+  /** The schema being executed. */
   readonly schema: GraphQLSchema;
   /** Fragment definitions in the operation document keyed by fragment name. */
   readonly fragments: ObjMap<FragmentDefinitionNode>;
@@ -2727,6 +2732,8 @@ export interface GraphQLInterfaceTypeExtensions {
  * when the field is resolved.
  * @example
  * ```ts
+ * import { GraphQLInterfaceType, GraphQLString } from 'graphql';
+ *
  * const EntityType = new GraphQLInterfaceType({
  *   name: 'Entity',
  *   fields: {
@@ -3048,15 +3055,28 @@ export interface GraphQLUnionTypeExtensions {
  * to determine which type is actually used when the field is resolved.
  * @example
  * ```ts
+ * import { GraphQLObjectType, GraphQLString, GraphQLUnionType } from 'graphql';
+ *
+ * class Dog {}
+ * class Cat {}
+ * const DogType = new GraphQLObjectType({
+ *   name: 'Dog',
+ *   fields: { name: { type: GraphQLString } },
+ * });
+ * const CatType = new GraphQLObjectType({
+ *   name: 'Cat',
+ *   fields: { name: { type: GraphQLString } },
+ * });
+ *
  * const PetType = new GraphQLUnionType({
  *   name: 'Pet',
  *   types: [DogType, CatType],
  *   resolveType: (value) => {
  *     if (value instanceof Dog) {
- *       return DogType;
+ *       return 'Dog';
  *     }
  *     if (value instanceof Cat) {
- *       return CatType;
+ *       return 'Cat';
  *     }
  *   }
  * });
@@ -3856,6 +3876,8 @@ export interface GraphQLInputObjectTypeExtensions {
  * Using `NonNull` will ensure that a value must be provided by the query
  * @example
  * ```ts
+ * import { GraphQLFloat, GraphQLInputObjectType, GraphQLNonNull } from 'graphql';
+ *
  * const GeoPoint = new GraphQLInputObjectType({
  *   name: 'GeoPoint',
  *   fields: {

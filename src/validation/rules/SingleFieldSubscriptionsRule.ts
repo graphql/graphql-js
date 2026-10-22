@@ -50,9 +50,9 @@ import type { ValidationContext } from '../ValidationContext';
  * const validDocument = parse(`
  *   subscription { a }
  * `);
- * const validErrors = validate(schema, validDocument, [SingleFieldSubscriptionsRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [
+ *   SingleFieldSubscriptionsRule,
+ * ]); // => []
  * ```
  */
 export function SingleFieldSubscriptionsRule(

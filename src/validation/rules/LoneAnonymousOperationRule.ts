@@ -37,9 +37,9 @@ import type { ASTValidationContext } from '../ValidationContext';
  * const validDocument = parse(`
  *   { name }
  * `);
- * const validErrors = validate(schema, validDocument, [LoneAnonymousOperationRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [
+ *   LoneAnonymousOperationRule,
+ * ]); // => []
  * ```
  */
 export function LoneAnonymousOperationRule(
