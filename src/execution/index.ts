@@ -5,7 +5,11 @@
  * @packageDocumentation
  */
 
-export { pathToArray as responsePathAsArray } from '../jsutils/Path.ts';
+export type { PathDigest } from '../jsutils/Path.ts';
+export {
+  pathToArray as responsePathAsArray,
+  pathToDigest as getResponsePathDigest,
+} from '../jsutils/Path.ts';
 
 export {
   createSourceEventStream,

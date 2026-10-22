@@ -1,5 +1,5 @@
 /** @internal */
-export function isPromise(value: unknown): value is Promise<unknown> {
+export function isPromise<T>(value: T | Promise<T>): value is Promise<T> {
   return value instanceof Promise;
 }
 

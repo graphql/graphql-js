@@ -559,6 +559,7 @@ describe('Execute: defer directive (legacy)', () => {
               {
                 message: 'bad',
                 locations: [{ line: 7, column: 11 }],
+                pathNonNull: [false, false],
                 path: ['hero', 'name'],
               },
             ],
@@ -1658,6 +1659,7 @@ describe('Execute: defer directive (legacy)', () => {
                 message:
                   'Cannot return null for non-nullable field c.nonNullErrorField.',
                 locations: [{ line: 8, column: 17 }],
+                pathNonNull: [false, false, false, true],
                 path: ['a', 'b', 'c', 'nonNullErrorField'],
               },
             ],
@@ -1715,6 +1717,7 @@ describe('Execute: defer directive (legacy)', () => {
                 message:
                   'Cannot return null for non-nullable field c.nonNullErrorField.',
                 locations: [{ line: 17, column: 17 }],
+                pathNonNull: [false, false, false, true],
                 path: ['a', 'b', 'c', 'nonNullErrorField'],
               },
             ],
@@ -1778,6 +1781,7 @@ describe('Execute: defer directive (legacy)', () => {
                 message:
                   'Cannot return null for non-nullable field a.nonNullErrorField.',
                 locations: [{ line: 6, column: 13 }],
+                pathNonNull: [false, true],
                 path: ['a', 'nonNullErrorField'],
               },
             ],
@@ -1850,6 +1854,7 @@ describe('Execute: defer directive (legacy)', () => {
                 message:
                   'Cannot return null for non-nullable field c.nonNullErrorField.',
                 locations: [{ line: 8, column: 17 }],
+                pathNonNull: [false, false, false, true],
                 path: ['a', 'b', 'c', 'nonNullErrorField'],
               },
             ],
@@ -1907,6 +1912,7 @@ describe('Execute: defer directive (legacy)', () => {
                 message:
                   'Cannot return null for non-nullable field c.nonNullErrorField.',
                 locations: [{ line: 7, column: 17 }],
+                pathNonNull: [false, false, false, true],
                 path: ['a', 'b', 'c', 'someError'],
               },
             ],
@@ -1919,6 +1925,7 @@ describe('Execute: defer directive (legacy)', () => {
                 message:
                   'Cannot return null for non-nullable field c.nonNullErrorField.',
                 locations: [{ line: 16, column: 17 }],
+                pathNonNull: [false, false, false, true],
                 path: ['a', 'b', 'c', 'anotherError'],
               },
             ],
@@ -1964,6 +1971,7 @@ describe('Execute: defer directive (legacy)', () => {
                 message:
                   'Cannot return null for non-nullable field c.nonNullErrorField.',
                 locations: [{ line: 7, column: 17 }],
+                pathNonNull: [false, false, false, true],
                 path: ['a', 'b', 'c', 'someError'],
               },
             ],
@@ -2042,6 +2050,7 @@ describe('Execute: defer directive (legacy)', () => {
                 message:
                   'Cannot return null for non-nullable field c.nonNullErrorField.',
                 locations: [{ line: 8, column: 17 }],
+                pathNonNull: [false, false, false, true],
                 path: ['a', 'b', 'c', 'nonNullErrorField'],
               },
             ],
@@ -2082,6 +2091,7 @@ describe('Execute: defer directive (legacy)', () => {
           message:
             'Cannot return null for non-nullable field Hero.nonNullName.',
           locations: [{ line: 4, column: 11 }],
+          pathNonNull: [false, true],
           path: ['hero', 'nonNullName'],
         },
       ],
@@ -2121,6 +2131,7 @@ describe('Execute: defer directive (legacy)', () => {
             message:
               'Cannot return null for non-nullable field Hero.nonNullName.',
             locations: [{ line: 4, column: 11 }],
+            pathNonNull: [false, true],
             path: ['hero', 'nonNullName'],
           },
         ],
@@ -2174,6 +2185,7 @@ describe('Execute: defer directive (legacy)', () => {
             message:
               'Cannot return null for non-nullable field a.nonNullErrorField.',
             locations: [{ line: 7, column: 11 }],
+            pathNonNull: [false, true],
             path: ['a', 'nonNullErrorField'],
           },
         ],
@@ -2268,6 +2280,7 @@ describe('Execute: defer directive (legacy)', () => {
         {
           message: 'boom',
           locations: [{ line: 4, column: 11 }],
+          pathNonNull: [false, true],
           path: ['parent', 'boom'],
         },
       ],
@@ -2344,6 +2357,7 @@ describe('Execute: defer directive (legacy)', () => {
                 message:
                   'Cannot return null for non-nullable field Hero.nonNullName.',
                 locations: [{ line: 5, column: 13 }],
+                pathNonNull: [false, true],
                 path: ['hero', 'nonNullName'],
               },
             ],
@@ -2427,6 +2441,7 @@ describe('Execute: defer directive (legacy)', () => {
               {
                 message: 'boom',
                 locations: [{ line: 8, column: 13 }],
+                pathNonNull: [false, true],
                 path: ['parent', 'boom'],
               },
             ],
@@ -2758,6 +2773,7 @@ describe('Execute: defer directive (legacy)', () => {
               {
                 message: 'bad',
                 locations: [{ line: 9, column: 9 }],
+                pathNonNull: [false, false],
                 path: ['hero', 'name'],
               },
             ],
@@ -2801,6 +2817,7 @@ describe('Execute: defer directive (legacy)', () => {
                 message:
                   'Cannot return null for non-nullable field Hero.nonNullName.',
                 locations: [{ line: 9, column: 9 }],
+                pathNonNull: [false, true],
                 path: ['hero', 'nonNullName'],
               },
             ],
@@ -2839,6 +2856,7 @@ describe('Execute: defer directive (legacy)', () => {
               column: 11,
             },
           ],
+          pathNonNull: [false, true],
           path: ['hero', 'nonNullName'],
         },
       ],
@@ -2880,6 +2898,7 @@ describe('Execute: defer directive (legacy)', () => {
                 message:
                   'Cannot return null for non-nullable field Hero.nonNullName.',
                 locations: [{ line: 9, column: 9 }],
+                pathNonNull: [false, true],
                 path: ['hero', 'nonNullName'],
               },
             ],
@@ -3017,6 +3036,7 @@ describe('Execute: defer directive (legacy)', () => {
           message:
             'Cannot return null for non-nullable field Friend.nonNullName.',
           locations: [{ line: 5, column: 13 }],
+          pathNonNull: [false, false, false, true],
           path: ['hero', 'friends', 0, 'nonNullName'],
         },
       ],
