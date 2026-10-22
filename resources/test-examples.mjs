@@ -129,19 +129,27 @@ function parseExample(example) {
 
 function getImportEdits(source) {
   const edits = [];
-  for (const statement of source.statements) {
-    if (!ts.isImportDeclaration(statement)) {
-      continue;
+  function visit(node) {
+    const specifier =
+      ts.isImportDeclaration(node) || ts.isExportDeclaration(node)
+        ? node.moduleSpecifier
+        : ts.isCallExpression(node) &&
+            node.expression.kind === ts.SyntaxKind.ImportKeyword
+          ? node.arguments[0]
+          : undefined;
+    if (specifier && ts.isStringLiteral(specifier)) {
+      const target = resolveSourceImport(specifier.text);
+      if (target !== undefined) {
+        edits.push({
+          start: specifier.getStart(source),
+          end: specifier.end,
+          text: JSON.stringify(target),
+        });
+      }
     }
-    const url = resolveSourceImport(statement.moduleSpecifier.text);
-    if (url !== undefined) {
-      edits.push({
-        start: statement.moduleSpecifier.getStart(source),
-        end: statement.moduleSpecifier.end,
-        text: JSON.stringify(url),
-      });
-    }
+    ts.forEachChild(node, visit);
   }
+  visit(source);
   return edits;
 }
 
@@ -203,7 +211,7 @@ function getAssertionEdits(source, example) {
           continue;
         }
         handledAnnotations.add(range.pos);
-        assertions.push({ location: label, executed: false });
+        assertions.push({ location: label, executed: false, pending: 0 });
         // Wrap the expression so assertions inside it can be edited separately.
         assertionEdits.push({
           start: expression.getStart(source),
@@ -250,32 +258,41 @@ function getAnnotatedExpression(statement, location) {
 // Add assertion code before and after the original expression.
 function getAssertionWrapper(expression, comment, location, assertionIndex) {
   const label = JSON.stringify(location);
+  // Start before evaluating the expression: a caught failure must leave a
+  // pending check even if this assertion succeeded on an earlier invocation.
+  const start = `(__startAssertion(${assertionIndex}), `;
   const expected = /^\/\/ => (.+)$/.exec(comment);
   if (expected) {
     return {
-      before: '__checkValue((',
-      after: `), (${expected[1]}), ${assertionIndex})`,
+      before: `${start}__checkValue((`,
+      after: `), (${expected[1]}), ${assertionIndex}))`,
     };
   }
   if (comment === '// throws an error') {
-    if (ts.isAwaitExpression(expression)) {
-      return {
-        before: '__recordExecution(await __assert.rejects(async () => (',
-        after: `), undefined, ${label}), ${assertionIndex})`,
-      };
-    }
     return {
-      before: '__recordExecution(__assert.throws(() => (',
-      after: `), undefined, ${label}), ${assertionIndex})`,
+      before: containsAwait(expression)
+        ? `${start}__recordExecution(await __assert.rejects(async () => (`
+        : `${start}__recordExecution(__assert.throws(() => (`,
+      after: `), undefined, ${label}), ${assertionIndex}))`,
     };
   }
   if (comment === '// does not throw') {
     return {
-      before: '__recordExecution((',
-      after: `), ${assertionIndex})`,
+      before: `${start}__recordExecution((`,
+      after: `), ${assertionIndex}))`,
     };
   }
   return undefined;
+}
+
+// Await inside a nested function does not make the enclosing expression async.
+function containsAwait(node) {
+  if (ts.isAwaitExpression(node)) {
+    return true;
+  }
+  return (
+    !ts.isFunctionLike(node) && Boolean(ts.forEachChild(node, containsAwait))
+  );
 }
 
 function applyEdits(code, edits) {
@@ -293,19 +310,26 @@ function addRuntimeChecks(code, assertions) {
 import __assert from 'node:assert/strict';
 import { expectJSON as __expectJSON } from ${JSON.stringify(helper.href)};
 const __exampleAssertions = ${JSON.stringify(assertions)};
+function __startAssertion(assertionIndex) {
+  __exampleAssertions[assertionIndex].pending++;
+}
 function __checkValue(actual, expected, assertionIndex) {
   __expectJSON(actual, __exampleAssertions[assertionIndex].location)
     .toDeepEqual(expected);
   return __recordExecution(actual, assertionIndex);
 }
 function __recordExecution(value, assertionIndex) {
-  __exampleAssertions[assertionIndex].executed = true;
+  const assertion = __exampleAssertions[assertionIndex];
+  assertion.executed = true;
+  assertion.pending--;
   // Preserve the value when an assertion wraps a variable initializer.
   return value;
 }
 ${code}
-// An assertion inside an uncalled callback must not silently pass.
+// A failed or unfinished invocation must not be hidden by an earlier success.
 for (const assertion of __exampleAssertions) {
+  __assert.equal(assertion.pending, 0,
+    'Example assertion did not complete: ' + assertion.location);
   __assert.ok(assertion.executed,
     'Example assertion was not executed: ' + assertion.location);
 }
