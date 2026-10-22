@@ -85,6 +85,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
               // hence the vague error message here.
               'Argument "input" of non-null type "TestInputObject!" must not be null.',
             path: ['test'],
+            pathNonNull: [false],
           },
         ],
       });

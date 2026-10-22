@@ -124,7 +124,7 @@ function coerceInputValueImpl(
     const itemType = type.ofType;
     if (isIterableObject(inputValue)) {
       return Array.from(inputValue, (itemValue, index) => {
-        const itemPath = addPath(path, index, undefined);
+        const itemPath = addPath(path, index, undefined, false);
         return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
       });
     }
@@ -168,7 +168,7 @@ function coerceInputValueImpl(
         fieldValue,
         field.type,
         onError,
-        addPath(path, field.name, type.name),
+        addPath(path, field.name, type.name, false),
       );
     }
 

@@ -407,6 +407,7 @@ describe('Star Wars Query Tests', () => {
             message: 'secretBackstory is secret.',
             locations: [{ line: 5, column: 13 }],
             path: ['hero', 'secretBackstory'],
+            pathNonNull: [false, false],
           },
         ],
       });
@@ -451,16 +452,19 @@ describe('Star Wars Query Tests', () => {
             message: 'secretBackstory is secret.',
             locations: [{ line: 7, column: 15 }],
             path: ['hero', 'friends', 0, 'secretBackstory'],
+            pathNonNull: [false, false, false, false],
           },
           {
             message: 'secretBackstory is secret.',
             locations: [{ line: 7, column: 15 }],
             path: ['hero', 'friends', 1, 'secretBackstory'],
+            pathNonNull: [false, false, false, false],
           },
           {
             message: 'secretBackstory is secret.',
             locations: [{ line: 7, column: 15 }],
             path: ['hero', 'friends', 2, 'secretBackstory'],
+            pathNonNull: [false, false, false, false],
           },
         ],
       });
@@ -489,6 +493,7 @@ describe('Star Wars Query Tests', () => {
             message: 'secretBackstory is secret.',
             locations: [{ line: 5, column: 13 }],
             path: ['mainHero', 'story'],
+            pathNonNull: [false, false],
           },
         ],
       });

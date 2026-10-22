@@ -22,6 +22,9 @@ settings:
         type: false
         required:
           - name
+      experimental:
+        name: false
+        type: false
       packageDocumentation:
         name: false
         type: false
@@ -703,6 +706,7 @@ overrides:
         - error
         - definedTags:
             - category
+            - experimental
             - defaultValue
             - packageDocumentation
             - remarks

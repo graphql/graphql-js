@@ -45,6 +45,7 @@ describe('GraphQLError', () => {
       source,
       positions: [1, 2, 3],
       path: ['a', 'b', 'c'],
+      pathNonNull: [false, true, false],
       originalError: new Error('test'),
       extensions: { foo: 'bar' },
     });
@@ -52,6 +53,7 @@ describe('GraphQLError', () => {
     expect(Object.keys(e)).to.deep.equal([
       'message',
       'path',
+      'pathNonNull',
       'locations',
       'extensions',
     ]);
@@ -191,10 +193,12 @@ describe('GraphQLError', () => {
     `);
 
     const path = ['path', 2, 'field'];
+    const pathNonNull = [false, true, false];
     const extensions = { foo: 'bar' };
     const eFull = new GraphQLError('msg', {
       nodes: fieldNode,
       path,
+      pathNonNull,
       extensions,
     });
 
@@ -213,6 +217,11 @@ describe('GraphQLError', () => {
           "path",
           2,
           "field"
+        ],
+        "pathNonNull": [
+          false,
+          true,
+          false
         ],
         "extensions": {
           "foo": "bar"
@@ -303,11 +312,15 @@ describe('toJSON', () => {
   });
 
   it('includes path', () => {
-    const error = new GraphQLError('msg', { path: ['path', 3, 'to', 'field'] });
+    const error = new GraphQLError('msg', {
+      path: ['path', 3, 'to', 'field'],
+      pathNonNull: [false, true, false, true],
+    });
 
     expect(error.toJSON()).to.deep.equal({
       message: 'msg',
       path: ['path', 3, 'to', 'field'],
+      pathNonNull: [false, true, false, true],
     });
   });
 
