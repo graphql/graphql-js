@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { stripTypeScriptTypes } from 'node:module';
 import path from 'node:path';
-import { test } from 'node:test';
+import { after, test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { SourceTextModule } from 'node:vm';
 
@@ -10,7 +10,7 @@ import ts from 'typescript';
 
 import type { SourceEdit } from './jsdoc-examples.ts';
 import { applyEdits, extractJSDocExamples } from './jsdoc-examples.ts';
-import { localRepoPath, readdirRecursive } from './utils.ts';
+import { localRepoPath, makeTmpDir, npm, readdirRecursive } from './utils.ts';
 
 interface Example {
   filename: string;
@@ -24,20 +24,50 @@ const root = localRepoPath();
 const allExamples = await findExamples();
 assert(allExamples.length > 0, 'No JSDoc examples found');
 
-for (const example of allExamples) {
+const { tmpDirPath } = makeTmpDir(`graphql-js-examples-${process.pid}`);
+const originalDirectory = process.cwd();
+after(() => {
+  process.chdir(originalDirectory);
+  fs.rmSync(tmpDirPath(), { recursive: true, force: true });
+});
+
+// Install the built package just as a consumer would, using its actual exports.
+const packageDirectory = tmpDirPath('npmDist');
+npm({ cwd: root, quiet: true }).run('build:npm', '--', packageDirectory);
+const exampleNpm = npm({ cwd: tmpDirPath(), quiet: true });
+const archiveName = exampleNpm.pack(packageDirectory);
+fs.writeFileSync(
+  tmpDirPath('package.json'),
+  JSON.stringify({
+    private: true,
+    type: 'module',
+    dependencies: { graphql: `file:./${archiveName}` },
+  }),
+);
+exampleNpm.install('--ignore-scripts');
+
+process.chdir(tmpDirPath());
+
+// Check the original examples before adding runtime assertions.
+for (const [index, example] of allExamples.entries()) {
   test(`${example.filename}:${example.line}`, { timeout: 10000 }, async () => {
     const source = parseExample(example);
-    const importEdits = getImportEdits(source);
     const { assertionEdits, locations, runtimeName } = getAssertionEdits(
       source,
       example,
     );
-    const code = toJavaScript(
-      applyEdits(example.code, [...importEdits, ...assertionEdits]),
-      example.language,
+    const code = applyEdits(example.code, assertionEdits);
+    const extension = example.language === 'ts' ? 'mts' : 'mjs';
+    const filename = tmpDirPath(`${index}.${extension}`);
+    fs.writeFileSync(
+      filename,
+      // Identify failures with the original example's location.
+      `${addRuntimeChecks(code, locations, runtimeName)}\n//# sourceURL=${example.filename}:${example.line}\n`,
     );
-    const module = `${addRuntimeChecks(code, locations, runtimeName)}\n//# sourceURL=${example.filename}:${example.line}\n`;
-    await import(`data:text/javascript,${encodeURIComponent(module)}`);
+    // A side-effect import avoids invoking an example's exported `then`.
+    const entrypoint = tmpDirPath(`${index}-run.mjs`);
+    fs.writeFileSync(entrypoint, `import './${index}.${extension}';\n`);
+    await import(pathToFileURL(entrypoint).href);
   });
 }
 
@@ -105,49 +135,6 @@ function parseExample(example: Example): ts.SourceFile {
     },
     true,
   );
-}
-
-function getImportEdits(source: ts.SourceFile): Array<SourceEdit> {
-  const edits: Array<SourceEdit> = [];
-  function visit(node: ts.Node): void {
-    const specifier =
-      ts.isImportDeclaration(node) || ts.isExportDeclaration(node)
-        ? node.moduleSpecifier
-        : ts.isCallExpression(node) &&
-            node.expression.kind === ts.SyntaxKind.ImportKeyword
-          ? node.arguments[0]
-          : undefined;
-    if (specifier && ts.isStringLiteral(specifier)) {
-      const target = resolveSourceImport(specifier.text);
-      if (target !== undefined) {
-        edits.push({
-          start: specifier.getStart(source),
-          end: specifier.end,
-          text: JSON.stringify(target),
-        });
-      }
-    }
-    ts.forEachChild(node, visit);
-  }
-  visit(source);
-  return edits;
-}
-
-// Package imports in documentation run against this checkout's TypeScript source.
-function resolveSourceImport(specifier: string): string | undefined {
-  if (specifier !== 'graphql' && !specifier.startsWith('graphql/')) {
-    return undefined;
-  }
-  const subpath =
-    specifier === 'graphql'
-      ? 'index'
-      : specifier.slice('graphql/'.length).replace(/\.js$/, '');
-  const filename = path.join(root, 'src', subpath);
-  const target =
-    fs.existsSync(filename) && fs.statSync(filename).isDirectory()
-      ? path.join(filename, 'index.ts')
-      : `${filename}.ts`;
-  return pathToFileURL(target).href;
 }
 
 function toJavaScript(code: string, language: Example['language']): string {

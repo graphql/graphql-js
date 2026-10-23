@@ -111,14 +111,13 @@ change website API output must include the generated files.
 
 ### Executable API examples
 
-Run `npm run check:examples` to execute all JavaScript and TypeScript fences under
-JSDoc `@example` tags in `src`. No package build is needed. CI runs the same check
-on the latest supported Node.js version.
+Run `npm run check:examples` to execute JSDoc `@example` code fences in `src`
+against the built npm package. CI runs the same check on the latest supported
+Node.js version.
 
-Each fence is a separate ES module: include its imports and setup. Imports from
-`graphql` resolve directly to the source in `src`.
-It checks runtime behavior, not TypeScript types. GraphQL fences are not executed.
-Examples without expectations are smoke tests.
+Each executable `js` or `ts` fence is a separate ES module: include its imports
+and setup. GraphQL fences are not executed. Examples without expectations are
+smoke tests.
 
 Add a fenced example under `@example` in the API's JSDoc comment. Use trailing
 comments to describe expected results:
