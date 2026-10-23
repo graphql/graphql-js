@@ -819,7 +819,7 @@ export class IncrementalExecutor<
     for (const newDeferUsage of newDeferUsages) {
       if (sharedExecutionContext.remainingDeferredFragments < 1) {
         inlined = true;
-        continue;
+        break;
       }
       sharedExecutionContext.remainingDeferredFragments--;
 
