@@ -1,7 +1,9 @@
+import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { localRepoPath, prettify } from './utils.ts';
+import { applyEdits, extractJSDocExamples } from './jsdoc-examples.ts';
+import { localRepoPath, prettify, readdirRecursive } from './utils.ts';
 
 type Mode = 'check' | 'write';
 
@@ -10,26 +12,15 @@ interface Options {
   mode: Mode;
 }
 
-interface JsdocLine {
-  content: string;
-  prefix: string;
-}
-
-interface LineUpdate {
-  end: number;
-  lines: Array<string>;
-  start: number;
-}
-
 const languageExtensions = new Map([
   ['graphql', 'graphql'],
   ['gql', 'graphql'],
   ['javascript', 'js'],
   ['js', 'js'],
   ['jsx', 'jsx'],
-  ['ts', 'ts'],
+  ['ts', 'mts'],
   ['tsx', 'tsx'],
-  ['typescript', 'ts'],
+  ['typescript', 'mts'],
 ]);
 
 const sourceDir = localRepoPath('src');
@@ -81,7 +72,10 @@ function sourceFilePaths(
   fileArgs: ReadonlyArray<string>,
 ): ReadonlyArray<string> {
   if (fileArgs.length === 0) {
-    return Array.from(sourceFiles(sourceDir));
+    return [...readdirRecursive(sourceDir)]
+      .filter(({ name, stats }) => name.endsWith('.ts') && stats.isFile())
+      .map(({ filepath }) => filepath)
+      .sort((a, b) => a.localeCompare(b));
   }
 
   const filePaths = new Set<string>();
@@ -89,7 +83,8 @@ function sourceFilePaths(
     const filePath = path.resolve(fileArg);
     const relativePath = path.relative(sourceDir, filePath);
     if (
-      !relativePath.startsWith('..') &&
+      relativePath !== '..' &&
+      !relativePath.startsWith(`..${path.sep}`) &&
       !path.isAbsolute(relativePath) &&
       filePath.endsWith('.ts') &&
       fs.existsSync(filePath) &&
@@ -111,224 +106,76 @@ async function prettifyFile(
   filePath: string,
   source: string,
 ): Promise<{ issues: Array<string>; source: string }> {
-  const lines = source.split('\n');
-  const blockResults = [];
-  const updates: Array<LineUpdate> = [];
-
-  for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-    if (!lines[lineIndex].includes('/**')) {
-      continue;
-    }
-
-    const blockStart = lineIndex;
-    while (lineIndex < lines.length && !lines[lineIndex].includes('*/')) {
-      lineIndex++;
-    }
-
-    if (lineIndex === lines.length) {
-      break;
-    }
-
-    const blockEnd = lineIndex;
-    if (hasExampleTag(lines, blockStart, blockEnd)) {
-      blockResults.push(prettifyBlock(filePath, lines, blockStart, blockEnd));
-    }
-  }
-
-  const fileIssues = [];
-  for (const result of await Promise.all(blockResults)) {
-    fileIssues.push(...result.issues);
-    updates.push(...result.updates);
-  }
-
-  for (const update of updates.reverse()) {
-    lines.splice(update.start, update.end - update.start + 1, ...update.lines);
-  }
-
-  return { issues: fileIssues, source: lines.join('\n') };
-}
-
-async function prettifyBlock(
-  filePath: string,
-  lines: ReadonlyArray<string>,
-  blockStart: number,
-  blockEnd: number,
-): Promise<{ issues: Array<string>; updates: Array<LineUpdate> }> {
-  const fenceResults: Array<
-    Promise<{ issues: Array<string>; update?: LineUpdate }>
-  > = [];
-  let currentTag;
-
-  for (let lineIndex = blockStart + 1; lineIndex < blockEnd; lineIndex++) {
-    const line = jsdocLine(lines[lineIndex]);
-    if (line == null) {
-      continue;
-    }
-
-    const tag = /^@([^\s]+)/.exec(line.content.trimStart())?.[1];
-    if (tag != null) {
-      currentTag = tag;
-    }
-
-    const fence = /^\s*```([^\s`]*)\s*(.*)$/.exec(line.content);
-    if (fence == null) {
-      continue;
-    }
-
-    const fenceEnd = closingFenceLine(lines, lineIndex + 1, blockEnd);
-    if (fenceEnd == null) {
-      fenceResults.push(
-        Promise.resolve({
-          issues: [
-            formatIssue(filePath, lineIndex, 'Unclosed JSDoc example fence.'),
-          ],
-        }),
-      );
-      break;
-    }
-
-    const language = fence[1].toLowerCase();
-    const extension = languageExtensions.get(language);
-    const metadata = fence[2];
-    if (
-      currentTag === 'example' &&
-      extension != null &&
-      !metadata.includes('prettier-ignore')
-    ) {
-      fenceResults.push(
-        prettifyFence(filePath, lines, lineIndex, fenceEnd, extension),
-      );
-    }
-
-    lineIndex = fenceEnd;
-  }
-
-  const blockIssues = [];
-  const updates: Array<LineUpdate> = [];
-  for (const result of await Promise.all(fenceResults)) {
-    blockIssues.push(...result.issues);
-    if (result.update != null) {
-      updates.push(result.update);
-    }
-  }
-
-  return { issues: blockIssues, updates };
-}
-
-async function prettifyFence(
-  filePath: string,
-  lines: ReadonlyArray<string>,
-  fenceStart: number,
-  fenceEnd: number,
-  extension: string,
-): Promise<{ issues: Array<string>; update?: LineUpdate }> {
-  const codeLines = [];
-  const contentPrefix = jsdocLine(lines[fenceStart])?.prefix ?? ' * ';
-
-  for (let lineIndex = fenceStart + 1; lineIndex < fenceEnd; lineIndex++) {
-    const line = jsdocLine(lines[lineIndex]);
-    codeLines.push(line?.content ?? lines[lineIndex]);
-  }
-
-  const code = codeLines.join('\n');
-  let formatted;
+  const filename = path.relative(localRepoPath(), filePath);
+  let examples;
   try {
-    formatted = (await prettify(`example.${extension}`, code)).trimEnd();
+    examples = await extractJSDocExamples(source, filename);
   } catch (error) {
-    return {
-      issues: [
-        formatIssue(
-          filePath,
-          fenceStart,
-          `Could not prettify ${extension} example: ${errorMessage(error)}`,
+    return { issues: [errorMessage(error)], source };
+  }
+  const fenceResults = await Promise.all(
+    examples.map(async (example) => {
+      const { code, language, metadata, line, start, end, prefix } = example;
+      const extension = languageExtensions.get(language);
+      if (extension == null || metadata.includes('prettier-ignore')) {
+        return {};
+      }
+      let formatted;
+      try {
+        formatted = (await prettify(`example.${extension}`, code)).trimEnd();
+      } catch (error) {
+        return {
+          issue: `${filename}:${line - 1}: Could not prettify ${language} example: ${errorMessage(error)}`,
+        };
+      }
+      if (formatted === code) {
+        return {};
+      }
+      if (options.mode === 'check') {
+        return {
+          issue: `${filename}:${line - 1}: JSDoc example is not formatted.`,
+        };
+      }
+      const newline = /\r\n?|\n/.exec(source.slice(start, end))?.[0] ?? '\n';
+      const text =
+        formatted
+          .split('\n')
+          .map((content) =>
+            content === '' ? prefix.trimEnd() : prefix + content,
+          )
+          .join(newline) + newline;
+      return { update: { start, end, text }, code: formatted };
+    }),
+  );
+  const issues = fenceResults.flatMap(({ issue }) => issue ?? []);
+  const updatedSource = applyEdits(
+    source,
+    fenceResults.flatMap(({ update }) => update ?? []),
+  );
+  if (updatedSource !== source) {
+    try {
+      // Formatting embedded strings can create a closing fence. Check the
+      // resulting Markdown before writing changes back to a source file.
+      const updatedExamples = await extractJSDocExamples(
+        updatedSource,
+        filename,
+      );
+      assert.deepEqual(
+        updatedExamples.map(({ code }) => code),
+        examples.map(
+          (example, index) => fenceResults[index].code ?? example.code,
         ),
-      ],
-    };
-  }
-
-  if (formatted === code) {
-    return { issues: [] };
-  }
-
-  if (options.mode === 'check') {
-    return {
-      issues: [
-        formatIssue(filePath, fenceStart, 'JSDoc example is not formatted.'),
-      ],
-    };
-  }
-
-  return {
-    issues: [],
-    update: {
-      end: fenceEnd - 1,
-      lines: formatted
-        .split('\n')
-        .map((line) => commentLine(contentPrefix, line)),
-      start: fenceStart + 1,
-    },
-  };
-}
-
-function hasExampleTag(
-  lines: ReadonlyArray<string>,
-  blockStart: number,
-  blockEnd: number,
-): boolean {
-  for (let lineIndex = blockStart + 1; lineIndex < blockEnd; lineIndex++) {
-    const line = jsdocLine(lines[lineIndex]);
-    if (line?.content.trimStart().startsWith('@example')) {
-      return true;
+      );
+    } catch {
+      issues.push(
+        `${filename}: Formatting would change JSDoc example boundaries; use longer code fences.`,
+      );
+      return { issues, source };
     }
   }
-  return false;
-}
-
-function closingFenceLine(
-  lines: ReadonlyArray<string>,
-  start: number,
-  blockEnd: number,
-): number | undefined {
-  for (let lineIndex = start; lineIndex < blockEnd; lineIndex++) {
-    if (jsdocLine(lines[lineIndex])?.content.trim() === '```') {
-      return lineIndex;
-    }
-  }
-}
-
-function jsdocLine(line: string): JsdocLine | undefined {
-  const match = /^(\s*\*\s?)(.*)$/.exec(line);
-  if (match == null) {
-    return;
-  }
-  return { content: match[2], prefix: match[1] };
-}
-
-function commentLine(prefix: string, content: string): string {
-  return content === '' ? prefix.trimEnd() : prefix + content;
-}
-
-function formatIssue(
-  filePath: string,
-  lineIndex: number,
-  message: string,
-): string {
-  return `${path.relative(localRepoPath(), filePath)}:${lineIndex + 1}: ${message}`;
+  return { issues, source: updatedSource };
 }
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message.split('\n')[0] : String(error);
-}
-
-function* sourceFiles(dirPath: string): Generator<string> {
-  const entries = fs.readdirSync(dirPath, { withFileTypes: true });
-
-  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
-    const entryPath = path.join(dirPath, entry.name);
-    if (entry.isDirectory()) {
-      yield* sourceFiles(entryPath);
-    } else if (entry.name.endsWith('.ts')) {
-      yield entryPath;
-    }
-  }
 }

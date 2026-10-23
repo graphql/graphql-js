@@ -172,7 +172,7 @@ function spawn(
   }
 }
 
-function* readdirRecursive(dirPath: string): Generator<{
+export function* readdirRecursive(dirPath: string): Generator<{
   name: string;
   filepath: string;
   stats: fs.Stats;
