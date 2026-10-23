@@ -6,7 +6,7 @@ import { GraphQLError } from '../../error/GraphQLError.ts';
 import { cancellablePromise } from '../cancellablePromise.ts';
 import { returnIteratorCatchingErrors } from '../returnIteratorCatchingErrors.ts';
 
-import type { BatchWorkUnit } from './completeBatchWork.ts';
+import type { BatchCompletion } from './batchCompletion.ts';
 import {
   completeFieldBatchGroup,
   handleFieldBatchGroupError,
@@ -26,21 +26,16 @@ export function completeAsyncFieldBatchGroup<TPositionContext>(
   batchGroup: BatchFieldGroup<TPositionContext>,
   activeEntries: ReadonlyArray<BatchFieldEntry<TPositionContext>>,
   iterator: AsyncIterator<unknown>,
-): BatchWorkUnit {
+): BatchCompletion {
   let completedCount = 0;
-  let currentWork: BatchWorkUnit | undefined;
-  let entriesThatMustRemainActive = activeEntries;
-  let rejected = false;
-  const clearCurrentWork = () => {
-    currentWork = undefined;
-  };
-  const updateEntriesThatMustRemainActive = () => {
-    const entriesToComplete = activeEntries.slice(completedCount);
-    entriesThatMustRemainActive =
-      entriesToComplete.length === 0 ? activeEntries : entriesToComplete;
+  let currentChunkCompletion: BatchCompletion | undefined;
+  let entriesNeededForResponse = activeEntries;
+  let failed = false;
+  const clearCurrentChunkCompletion = () => {
+    currentChunkCompletion = undefined;
   };
 
-  const complete = async () => {
+  const completeChunks = async () => {
     while (true) {
       const abortSignal = executor.getAbortSignal();
       if (abortSignal?.aborted) {
@@ -184,7 +179,7 @@ export function completeAsyncFieldBatchGroup<TPositionContext>(
       }
 
       try {
-        currentWork = completeFieldBatchGroup(
+        currentChunkCompletion = completeFieldBatchGroup(
           executor,
           data,
           rootPath,
@@ -193,10 +188,13 @@ export function completeAsyncFieldBatchGroup<TPositionContext>(
           batchValues,
         );
         completedCount = nextCompletedCount;
-        updateEntriesThatMustRemainActive();
-        if (currentWork !== undefined) {
-          const completionPromise =
-            currentWork.promise.finally(clearCurrentWork);
+        const entriesToComplete = activeEntries.slice(completedCount);
+        entriesNeededForResponse =
+          entriesToComplete.length === 0 ? activeEntries : entriesToComplete;
+        if (currentChunkCompletion !== undefined) {
+          const completionPromise = currentChunkCompletion.promise.finally(
+            clearCurrentChunkCompletion,
+          );
           // eslint-disable-next-line no-await-in-loop
           await completionPromise;
         }
@@ -207,7 +205,7 @@ export function completeAsyncFieldBatchGroup<TPositionContext>(
       }
 
       if (
-        entriesThatMustRemainActive.every((entry) =>
+        entriesNeededForResponse.every((entry) =>
           executor.collectedErrors.hasNulledPosition(entry.path),
         )
       ) {
@@ -218,25 +216,24 @@ export function completeAsyncFieldBatchGroup<TPositionContext>(
     }
   };
 
-  const promise = complete().then(
+  const promise = completeChunks().then(
     () => {
-      currentWork = undefined;
-      entriesThatMustRemainActive = [];
+      currentChunkCompletion = undefined;
+      entriesNeededForResponse = [];
     },
     (error: unknown) => {
-      rejected = true;
-      currentWork = undefined;
+      failed = true;
+      currentChunkCompletion = undefined;
       throw error;
     },
   );
 
   return {
     promise,
-    refresh: () => currentWork?.refresh?.(),
-    isActive: () =>
-      rejected ||
-      (currentWork?.isActive() ?? false) ||
-      entriesThatMustRemainActive.some(
+    isNeededForResponse: () =>
+      failed ||
+      (currentChunkCompletion?.isNeededForResponse() ?? false) ||
+      entriesNeededForResponse.some(
         (entry) => !executor.collectedErrors.hasNulledPosition(entry.path),
       ),
   };

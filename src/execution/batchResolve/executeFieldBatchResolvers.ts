@@ -18,12 +18,12 @@ import {
 
 import { getArgumentValues } from '../values.ts';
 
-import { completeAsyncFieldBatchGroup } from './completeAsyncFieldBatchGroup.ts';
-import type { BatchWorkUnit } from './completeBatchWork.ts';
+import type { BatchCompletion } from './batchCompletion.ts';
 import {
-  completeBatchWork,
-  createBatchWorkContinuation,
-} from './completeBatchWork.ts';
+  batchCompletionFromPromise,
+  combineBatchCompletions,
+} from './batchCompletion.ts';
+import { completeAsyncFieldBatchGroup } from './completeAsyncFieldBatchGroup.ts';
 import {
   completeFieldBatchGroup,
   handleFieldBatchGroupError,
@@ -48,7 +48,7 @@ export function executeFieldBatchResolvers<TPositionContext>(
   rootPath: Path | undefined,
   batchFieldGroups: BatchFieldGroupMap<TPositionContext>,
 ): Array<Promise<void>> {
-  const workUnits: Array<BatchWorkUnit> = [];
+  const completions: Array<BatchCompletion> = [];
   try {
     for (const batchGroup of batchFieldGroups.values()) {
       const activeEntries = batchGroup.entries.filter(
@@ -57,28 +57,28 @@ export function executeFieldBatchResolvers<TPositionContext>(
       if (activeEntries.length === 0) {
         continue;
       }
-      const result = executeFieldBatchResolver(
+      const completion = executeFieldBatchResolver(
         executor,
         data,
         rootPath,
         batchGroup,
         activeEntries,
       );
-      if (result !== undefined) {
-        workUnits.push(result);
+      if (completion !== undefined) {
+        completions.push(completion);
       }
     }
   } catch (error) {
-    if (workUnits.length !== 0) {
+    if (completions.length !== 0) {
       executor
         .getAsyncHelpers()
-        .track(workUnits.map((workUnit) => workUnit.promise));
+        .track(completions.map((completion) => completion.promise));
     }
     throw error;
   }
 
-  const completed = completeBatchWork(executor, workUnits);
-  return completed === undefined ? [] : [completed];
+  const completion = combineBatchCompletions(executor, completions);
+  return completion === undefined ? [] : [completion.promise];
 }
 
 function executeFieldBatchResolver<TPositionContext>(
@@ -87,7 +87,7 @@ function executeFieldBatchResolver<TPositionContext>(
   rootPath: Path | undefined,
   batchGroup: BatchFieldGroup<TPositionContext>,
   activeEntries: ReadonlyArray<BatchFieldEntry<TPositionContext>>,
-): BatchWorkUnit | undefined {
+): BatchCompletion | undefined {
   let batchResult;
   try {
     executor.throwIfAborted();
@@ -141,33 +141,32 @@ function executeFieldBatchResolver<TPositionContext>(
           );
 
     if (isPromiseLike(batchResult)) {
-      return createBatchWorkContinuation(
-        Promise.resolve(batchResult).then(
-          (resolvedBatchResult) =>
-            completeFieldBatchResult(
-              executor,
-              data,
-              rootPath,
-              batchGroup,
-              activeEntries,
-              resolvedBatchResult,
-            ),
-          (rawError: unknown) => {
-            handleFieldBatchGroupError(
-              executor,
-              data,
-              rootPath,
-              rawError,
-              batchGroup,
-              activeEntries,
-            );
-            return undefined;
-          },
-        ),
-        () =>
-          activeEntries.some(
-            (entry) => !executor.collectedErrors.hasNulledPosition(entry.path),
+      const promisedCompletion = Promise.resolve(batchResult).then(
+        (resolvedBatchResult) =>
+          completeFieldBatchResult(
+            executor,
+            data,
+            rootPath,
+            batchGroup,
+            activeEntries,
+            resolvedBatchResult,
           ),
+        (rawError: unknown) => {
+          handleFieldBatchGroupError(
+            executor,
+            data,
+            rootPath,
+            rawError,
+            batchGroup,
+            activeEntries,
+          );
+          return undefined;
+        },
+      );
+      return batchCompletionFromPromise(promisedCompletion, () =>
+        activeEntries.some(
+          (entry) => !executor.collectedErrors.hasNulledPosition(entry.path),
+        ),
       );
     }
   } catch (rawError) {
@@ -201,7 +200,7 @@ export function completeFieldBatchResult<TPositionContext>(
   batchGroup: BatchFieldGroup<TPositionContext>,
   activeEntries: ReadonlyArray<BatchFieldEntry<TPositionContext>>,
   batchResult: unknown,
-): BatchWorkUnit | undefined {
+): BatchCompletion | undefined {
   let asyncIteratorMethod: (() => AsyncIterator<unknown>) | undefined;
   let iterator!: AsyncIterator<unknown>;
   let batchValues!: Array<unknown>;

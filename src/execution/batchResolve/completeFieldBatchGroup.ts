@@ -12,8 +12,8 @@ import { isObjectType } from '../../type/definition.ts';
 
 import { buildResolveInfo } from '../buildResolveInfo.ts';
 
-import type { BatchWorkUnit } from './completeBatchWork.ts';
-import { createBatchWork } from './completeBatchWork.ts';
+import type { BatchCompletion } from './batchCompletion.ts';
+import { combineBatchCompletions } from './batchCompletion.ts';
 import { getNullablePath } from './getNullablePath.ts';
 import { setPathValue } from './setPathValue.ts';
 import type {
@@ -31,14 +31,14 @@ export function completeFieldBatchGroup<TPositionContext>(
   batchGroup: BatchFieldGroup<TPositionContext>,
   batchEntries: ReadonlyArray<BatchFieldEntry<TPositionContext>>,
   batchValues: ReadonlyArray<unknown>,
-): BatchWorkUnit | undefined {
+): BatchCompletion | undefined {
   const batchObjectType =
     isObjectType(batchGroup.fieldDef.type) &&
     batchGroup.fieldDef.type.isTypeOf === undefined
       ? batchGroup.fieldDef.type
       : undefined;
 
-  const workUnits: Array<BatchWorkUnit> = [];
+  const completions: Array<BatchCompletion> = [];
   try {
     for (const [i, entry] of batchEntries.entries()) {
       const result = completeFieldBatchRecord(
@@ -51,23 +51,23 @@ export function completeFieldBatchGroup<TPositionContext>(
         batchValues[i],
       );
       if (isPromise(result)) {
-        workUnits.push({
+        completions.push({
           promise: result,
-          isActive: () =>
+          isNeededForResponse: () =>
             !executor.collectedErrors.hasNulledPosition(entry.path),
         });
       }
     }
   } catch (error) {
-    if (workUnits.length !== 0) {
+    if (completions.length !== 0) {
       executor
         .getAsyncHelpers()
-        .track(workUnits.map((workUnit) => workUnit.promise));
+        .track(completions.map((completion) => completion.promise));
     }
     throw error;
   }
 
-  return createBatchWork(executor, workUnits);
+  return combineBatchCompletions(executor, completions);
 }
 
 // eslint-disable-next-line max-params
