@@ -115,10 +115,8 @@ Run `npm run check:examples` to execute all JavaScript and TypeScript fences und
 JSDoc `@example` tags in `src`. No package build is needed. CI runs the same check
 on the latest supported Node.js version.
 
-Each fence is a separate ES module: include its imports and setup. The runner
-rewrites imports and assertion comments, strips types with Node, and executes
-the code directly in memory. Imports from `graphql` resolve directly to the
-source in `src`.
+Each fence is a separate ES module: include its imports and setup. Imports from
+`graphql` resolve directly to the source in `src`.
 It checks runtime behavior, not TypeScript types. GraphQL fences are not executed.
 Examples without expectations are smoke tests.
 

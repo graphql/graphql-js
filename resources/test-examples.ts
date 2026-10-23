@@ -1,22 +1,29 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-// eslint-disable-next-line n/no-unsupported-features/node-builtins -- Native type stripping for examples.
 import { stripTypeScriptTypes } from 'node:module';
 import path from 'node:path';
 import { test } from 'node:test';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url';
+import { SourceTextModule } from 'node:vm';
 
 import ts from 'typescript';
 
-import { applyEdits } from './jsdoc-examples.ts';
+import type { SourceEdit } from './jsdoc-examples.ts';
+import { applyEdits, extractJSDocExamples } from './jsdoc-examples.ts';
+import { localRepoPath, readdirRecursive } from './utils.ts';
 
-const root = fileURLToPath(new URL('../', import.meta.url));
+interface Example {
+  filename: string;
+  line: number;
+  code: string;
+  language: 'js' | 'ts';
+}
 
-const allExamples = findExamples();
+const root = localRepoPath();
+
+const allExamples = await findExamples();
 assert(allExamples.length > 0, 'No JSDoc examples found');
 
-// Find examples, parse their code, rewrite imports and assertions, then run them.
-// TypeScript reads syntax; Node strips types and runs the resulting ES modules.
 for (const example of allExamples) {
   test(`${example.filename}:${example.line}`, { timeout: 10000 }, async () => {
     const source = parseExample(example);
@@ -25,116 +32,84 @@ for (const example of allExamples) {
       source,
       example,
     );
-    const code = applyEdits(example.code, [...importEdits, ...assertionEdits]);
-    const module = addRuntimeChecks(code, locations, runtimeName);
-    // The source URL identifies failures and keeps identical examples distinct.
-    const javascript = stripTypeScriptTypes(module, {
-      sourceUrl: `${example.filename}:${example.line}`,
-    });
-    await import(`data:text/javascript,${encodeURIComponent(javascript)}`);
+    const code = toJavaScript(
+      applyEdits(example.code, [...importEdits, ...assertionEdits]),
+      example.language,
+    );
+    const module = `${addRuntimeChecks(code, locations, runtimeName)}\n//# sourceURL=${example.filename}:${example.line}\n`;
+    await import(`data:text/javascript,${encodeURIComponent(module)}`);
   });
 }
 
-function findExamples() {
-  const examples = [];
-  const names = fs.readdirSync(path.join(root, 'src'), { recursive: true });
-  for (const name of names.sort()) {
-    if (name.endsWith('.ts')) {
-      const filename = path.join('src', name);
-      const text = fs.readFileSync(path.join(root, filename), 'utf8');
-      examples.push(...extractExamples(text, filename));
-    }
-  }
-  return examples;
-}
-
-function extractExamples(text, filename) {
-  const source = ts.createSourceFile(
-    filename,
-    text,
-    ts.ScriptTarget.Latest,
-    true,
+async function findExamples(): Promise<Array<Example>> {
+  const filenames = [...readdirRecursive(path.join(root, 'src'))]
+    .filter(({ name, stats }) => name.endsWith('.ts') && stats.isFile())
+    .map(({ filepath }) => filepath)
+    .sort();
+  const examples = await Promise.all(
+    filenames.map(async (filePath) => {
+      const filename = path.relative(root, filePath);
+      const text = fs.readFileSync(filePath, 'utf8');
+      return extractExamples(text, filename);
+    }),
   );
-  const comments = new Map();
-  function visit(node) {
-    for (const comment of node.jsDoc || []) {
-      comments.set(comment.pos, comment);
-    }
-    ts.forEachChild(node, visit);
-  }
-  visit(source);
+  return examples.flat();
+}
 
-  const examples = [];
-  for (const comment of [...comments.values()].sort((a, b) => a.pos - b.pos)) {
-    // Read the full comment: GraphQL directives inside fences can resemble tags.
-    const lines = text
-      .slice(comment.pos, comment.end)
-      .split(/\r?\n/)
-      .map((line) => line.replace(/^\s*\* ?/, ''));
-    const firstLine =
-      source.getLineAndCharacterOfPosition(comment.pos).line + 1;
-    let inExample = false;
-    for (let lineIndex = 1; lineIndex < lines.length; lineIndex++) {
-      const content = lines[lineIndex];
-      if (/^@\w/.test(content)) {
-        inExample = /^@example\b/.test(content);
-      }
-      const fence = /^\s*```([^\s`]*)\s*(.*)$/.exec(content);
-      if (!fence) {
-        continue;
-      }
-      const [, language, metadata] = fence;
-      const codeStart = lineIndex + 1;
-      while (++lineIndex < lines.length && lines[lineIndex].trim() !== '```') {
-        // Skip the whole fence, including languages that are not executable.
-      }
-      const line = firstLine + codeStart;
-      assert(lineIndex < lines.length, `${filename}:${line}: unclosed fence`);
-      if (
-        !inExample ||
-        !['ts', 'typescript', 'js', 'javascript'].includes(language)
-      ) {
-        continue;
-      }
-      assert.equal(
-        metadata,
-        '',
-        `${filename}:${line}: unsupported example metadata`,
-      );
-      examples.push({
-        filename,
-        line,
-        code: lines.slice(codeStart, lineIndex).join('\n'),
-      });
+async function extractExamples(
+  text: string,
+  filename: string,
+): Promise<Array<Example>> {
+  const examples: Array<Example> = [];
+  for (const { code, line, language, metadata } of await extractJSDocExamples(
+    text,
+    filename,
+  )) {
+    if (!['ts', 'typescript', 'js', 'javascript'].includes(language)) {
+      continue;
     }
+    assert.equal(
+      metadata,
+      '',
+      `${filename}:${line}: unsupported example metadata`,
+    );
+    examples.push({
+      filename,
+      line,
+      // Match Node's module loader before parsing or instrumenting hashbangs.
+      code: code.replace(/^\uFEFF/, ''),
+      language: language === 'ts' || language === 'typescript' ? 'ts' : 'js',
+    });
   }
   return examples;
 }
 
-function parseExample(example) {
-  const source = ts.createSourceFile(
-    'example.ts',
-    example.code,
+function parseExample(example: Example): ts.SourceFile {
+  // Check the original syntax before assertion edits can make invalid code valid.
+  assert.doesNotThrow(
+    () =>
+      new SourceTextModule(toJavaScript(example.code, example.language), {
+        identifier: `${example.filename}:${example.line}`,
+      }),
+    `${example.filename}:${example.line}: invalid example syntax`,
+  );
+  return ts.createSourceFile(
+    example.language === 'ts' ? 'example.mts' : 'example.mjs',
+    // An empty export makes TypeScript parse import-free examples as modules.
+    // Appending it keeps all original source positions unchanged.
+    `${example.code}\nexport {};`,
     {
       languageVersion: ts.ScriptTarget.Latest,
-      // Examples are ES modules even when they have no imports or exports.
-      setExternalModuleIndicator(file) {
-        file.externalModuleIndicator = true;
-      },
+      // JSDoc inside an example is documentation, not executable assertions.
+      jsDocParsingMode: ts.JSDocParsingMode.ParseNone,
     },
     true,
   );
-  assert.equal(
-    source.parseDiagnostics.length,
-    0,
-    `${example.filename}:${example.line}: invalid example syntax`,
-  );
-  return source;
 }
 
-function getImportEdits(source) {
-  const edits = [];
-  function visit(node) {
+function getImportEdits(source: ts.SourceFile): Array<SourceEdit> {
+  const edits: Array<SourceEdit> = [];
+  function visit(node: ts.Node): void {
     const specifier =
       ts.isImportDeclaration(node) || ts.isExportDeclaration(node)
         ? node.moduleSpecifier
@@ -159,7 +134,7 @@ function getImportEdits(source) {
 }
 
 // Package imports in documentation run against this checkout's TypeScript source.
-function resolveSourceImport(specifier) {
+function resolveSourceImport(specifier: string): string | undefined {
   if (specifier !== 'graphql' && !specifier.startsWith('graphql/')) {
     return undefined;
   }
@@ -175,10 +150,14 @@ function resolveSourceImport(specifier) {
   return pathToFileURL(target).href;
 }
 
-function getAssertionEdits(source, example) {
+function toJavaScript(code: string, language: Example['language']): string {
+  return language === 'ts' ? stripTypeScriptTypes(code) : code;
+}
+
+function getAssertionEdits(source: ts.SourceFile, example: Example) {
   const { code, filename, line: firstLine } = example;
-  const assertionEdits = [];
-  const locations = [];
+  const assertionEdits: Array<SourceEdit> = [];
+  const locations: Array<string> = [];
   const nodes = [...walkSyntax(source)];
   // Inspect actual comments, not strings that happen to contain "// =>".
   const annotationPositions = new Set(
@@ -206,7 +185,7 @@ function getAssertionEdits(source, example) {
   ) {
     runtimeName += '_';
   }
-  function location(position) {
+  function location(position: number): string {
     const { line } = source.getLineAndCharacterOfPosition(position);
     return `${filename}:${firstLine + line}`;
   }
@@ -282,21 +261,27 @@ function getAssertionEdits(source, example) {
       });
     }
   }
+
   // Reject misplaced or malformed annotations instead of silently skipping them.
   for (const position of annotationPositions) {
     assert.fail(`${location(position)}: unsupported example annotation`);
   }
   return { assertionEdits, locations, runtimeName };
 }
-function* walkSyntax(node) {
+
+function* walkSyntax(node: ts.Node): Generator<ts.Node> {
   yield node;
   // Include punctuation tokens to find comments in empty blocks and containers.
   for (const child of node.getChildren()) {
     yield* walkSyntax(child);
   }
 }
+
 // Both statement forms check a value; declarations must keep that value too.
-function getAnnotatedExpression(statement, location) {
+function getAnnotatedExpression(
+  statement: ts.ExpressionStatement | ts.VariableStatement,
+  location: string,
+): ts.Expression {
   if (ts.isExpressionStatement(statement)) {
     return statement.expression;
   }
@@ -310,7 +295,8 @@ function getAnnotatedExpression(statement, location) {
   assert(initializer, `${location}: annotated variables need an initializer`);
   return initializer;
 }
-function getBindingNames(name) {
+
+function getBindingNames(name: ts.BindingName): Array<string> {
   if (ts.isIdentifier(name)) {
     return [name.getText()];
   }
@@ -318,8 +304,13 @@ function getBindingNames(name) {
     ts.isOmittedExpression(element) ? [] : getBindingNames(element.name),
   );
 }
+
 // Add assertion code before and after the original expression.
-function getAssertionWrapper(comment, assertion, runtimeName) {
+function getAssertionWrapper(
+  comment: string,
+  assertion: string,
+  runtimeName: string,
+) {
   // Begin with an identifier or a block to preserve statement boundaries.
   // Start before evaluating the expression: a caught failure must leave a
   // pending check even if this assertion succeeded on an earlier invocation.
@@ -347,7 +338,12 @@ function getAssertionWrapper(comment, assertion, runtimeName) {
   }
   return undefined;
 }
-function addRuntimeChecks(code, locations, runtimeName) {
+
+function addRuntimeChecks(
+  code: string,
+  locations: ReadonlyArray<string>,
+  runtimeName: string,
+): string {
   const helper = new URL('./example-assertions.ts', import.meta.url);
   const shebang = ts.getShebang(code) ?? '';
   return `${shebang}
@@ -358,4 +354,3 @@ ${code.slice(shebang.length)}
 for (const assertion of ${runtimeName}) { assertion.verify(); }
 `;
 }
-export {};
