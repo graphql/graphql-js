@@ -1588,6 +1588,70 @@ describe('Execute: experimental field batch resolvers', () => {
     });
   });
 
+  for (const failure of [
+    'then getter',
+    'iterator getter',
+    'iterator creation',
+    'iteration',
+    'array element',
+  ] as const) {
+    for (const promised of [false, true]) {
+      it(`locates ${failure} failures in a ${promised ? 'promised' : 'synchronous'} batch result`, async () => {
+        const error = new Error('Cannot read batch results.');
+        const fail = () => {
+          throw error;
+        };
+        const values = ['Ada', 'Grace'];
+        switch (failure) {
+          case 'then getter':
+            Object.defineProperty(values, 'then', { get: fail });
+            break;
+          case 'iterator getter':
+            Object.defineProperty(values, Symbol.iterator, { get: fail });
+            break;
+          case 'iterator creation':
+            Object.defineProperty(values, Symbol.iterator, { value: fail });
+            break;
+          case 'iteration':
+            Object.defineProperty(values, Symbol.iterator, {
+              value: () => ({ next: fail }),
+            });
+            break;
+          case 'array element':
+            Object.defineProperty(values, '1', { get: fail });
+            break;
+        }
+        const UserType = new GraphQLObjectType({
+          name: 'BatchResultFailureUser',
+          fields: {
+            name: batchedField(GraphQLString, () =>
+              promised ? Promise.resolve(values) : values,
+            ),
+          },
+        });
+        const schema = schemaWithQueryFields({
+          keep: { type: GraphQLString },
+          users: { type: new GraphQLList(UserType) },
+        });
+
+        const result = await execute({
+          schema,
+          document: parse('{ keep users { name } }'),
+          rootValue: { keep: 'kept', users: [{}, {}] },
+        });
+
+        expectJSON(result).toDeepEqual({
+          data: { keep: 'kept', users: [{ name: null }, { name: null }] },
+          errors: [0, 1].map((index) => ({
+            message: error.message,
+            path: ['users', index, 'name'],
+            locations: [{ line: 1, column: 16 }],
+          })),
+        });
+      });
+    }
+  }
+
   it('throws a located error when a nullable batch error path is stale', () => {
     const UserType = new GraphQLObjectType({
       name: 'BatchStaleUser',

@@ -1,12 +1,10 @@
 import { invariant } from '../../jsutils/invariant.ts';
-import { isIterableObject } from '../../jsutils/isIterableObject.ts';
 import { isPromise } from '../../jsutils/isPromise.ts';
 import type { Path } from '../../jsutils/Path.ts';
 import { pathToArray } from '../../jsutils/Path.ts';
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 
 import { ensureGraphQLError } from '../../error/ensureGraphQLError.ts';
-import { GraphQLError as GraphQLErrorClass } from '../../error/GraphQLError.ts';
 import { locatedError } from '../../error/locatedError.ts';
 
 import type { GraphQLObjectType } from '../../type/definition.ts';
@@ -32,37 +30,8 @@ export function completeFieldBatchGroup<TPositionContext>(
   rootPath: Path | undefined,
   batchGroup: BatchFieldGroup<TPositionContext>,
   batchEntries: ReadonlyArray<BatchFieldEntry<TPositionContext>>,
-  batchResult: unknown,
+  batchValues: ReadonlyArray<unknown>,
 ): BatchWorkUnit | undefined {
-  if (!isIterableObject(batchResult)) {
-    handleFieldBatchGroupError(
-      executor,
-      data,
-      rootPath,
-      new GraphQLErrorClass(
-        `Expected batch resolver for field "${batchGroup.parentType}.${batchGroup.fieldDef.name}" to return an Iterable.`,
-      ),
-      batchGroup,
-      batchEntries,
-    );
-    return;
-  }
-
-  const batchValues = Array.from(batchResult);
-  if (batchValues.length !== batchEntries.length) {
-    handleFieldBatchGroupError(
-      executor,
-      data,
-      rootPath,
-      new GraphQLErrorClass(
-        `Expected batch resolver for field "${batchGroup.parentType}.${batchGroup.fieldDef.name}" to return ${batchEntries.length} results, returned ${batchValues.length}.`,
-      ),
-      batchGroup,
-      batchEntries,
-    );
-    return;
-  }
-
   const batchObjectType =
     isObjectType(batchGroup.fieldDef.type) &&
     batchGroup.fieldDef.type.isTypeOf === undefined

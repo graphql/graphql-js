@@ -1,7 +1,10 @@
+import { isIterableObject } from '../../jsutils/isIterableObject.ts';
 import { isPromiseLike } from '../../jsutils/isPromise.ts';
 import type { ObjMap } from '../../jsutils/ObjMap.ts';
 import type { Path } from '../../jsutils/Path.ts';
 import { pathToArray } from '../../jsutils/Path.ts';
+
+import { GraphQLError } from '../../error/GraphQLError.ts';
 
 import type {
   GraphQLBatchResolveContext,
@@ -135,6 +138,37 @@ function executeFieldBatchResolver<TPositionContext>(
             buildBatchResolveContext(args, batchGroup, activeEntries),
             resolveBatch,
           );
+
+    if (isPromiseLike(batchResult)) {
+      return createBatchWorkContinuation(
+        Promise.resolve(batchResult).then(
+          (resolvedBatchResult) =>
+            completeFieldBatchResult(
+              executor,
+              data,
+              rootPath,
+              batchGroup,
+              activeEntries,
+              resolvedBatchResult,
+            ),
+          (rawError: unknown) => {
+            handleFieldBatchGroupError(
+              executor,
+              data,
+              rootPath,
+              rawError,
+              batchGroup,
+              activeEntries,
+            );
+            return undefined;
+          },
+        ),
+        () =>
+          activeEntries.some(
+            (entry) => !executor.collectedErrors.hasNulledPosition(entry.path),
+          ),
+      );
+    }
   } catch (rawError) {
     handleFieldBatchGroupError(
       executor,
@@ -145,37 +179,6 @@ function executeFieldBatchResolver<TPositionContext>(
       activeEntries,
     );
     return;
-  }
-
-  if (isPromiseLike(batchResult)) {
-    return createBatchWorkContinuation(
-      Promise.resolve(batchResult).then(
-        (resolvedBatchResult) =>
-          completeFieldBatchResult(
-            executor,
-            data,
-            rootPath,
-            batchGroup,
-            activeEntries,
-            resolvedBatchResult,
-          ),
-        (rawError: unknown) => {
-          handleFieldBatchGroupError(
-            executor,
-            data,
-            rootPath,
-            rawError,
-            batchGroup,
-            activeEntries,
-          );
-          return undefined;
-        },
-      ),
-      () =>
-        activeEntries.some(
-          (entry) => !executor.collectedErrors.hasNulledPosition(entry.path),
-        ),
-    );
   }
 
   return completeFieldBatchResult(
@@ -199,10 +202,27 @@ export function completeFieldBatchResult<TPositionContext>(
   batchResult: unknown,
 ): BatchWorkUnit | undefined {
   let asyncIteratorMethod: (() => AsyncIterator<unknown>) | undefined;
+  let iterator!: AsyncIterator<unknown>;
+  let batchValues!: Array<unknown>;
   try {
     asyncIteratorMethod = (
       batchResult as AsyncIterable<unknown> | null | undefined
     )?.[Symbol.asyncIterator];
+    if (typeof asyncIteratorMethod === 'function') {
+      iterator = asyncIteratorMethod.call(batchResult);
+    } else {
+      if (!isIterableObject(batchResult)) {
+        throw new GraphQLError(
+          `Expected batch resolver for field "${batchGroup.parentType}.${batchGroup.fieldDef.name}" to return an Iterable.`,
+        );
+      }
+      batchValues = Array.from(batchResult);
+      if (batchValues.length !== activeEntries.length) {
+        throw new GraphQLError(
+          `Expected batch resolver for field "${batchGroup.parentType}.${batchGroup.fieldDef.name}" to return ${activeEntries.length} results, returned ${batchValues.length}.`,
+        );
+      }
+    }
   } catch (rawError) {
     handleFieldBatchGroupError(
       executor,
@@ -215,21 +235,8 @@ export function completeFieldBatchResult<TPositionContext>(
     return;
   }
 
+  // Field completion owns its errors and may propagate them past this group.
   if (typeof asyncIteratorMethod === 'function') {
-    let iterator: AsyncIterator<unknown>;
-    try {
-      iterator = asyncIteratorMethod.call(batchResult);
-    } catch (rawError) {
-      handleFieldBatchGroupError(
-        executor,
-        data,
-        rootPath,
-        rawError,
-        batchGroup,
-        activeEntries,
-      );
-      return;
-    }
     return completeAsyncFieldBatchGroup(
       executor,
       data,
@@ -246,7 +253,7 @@ export function completeFieldBatchResult<TPositionContext>(
     rootPath,
     batchGroup,
     activeEntries,
-    batchResult,
+    batchValues,
   );
 }
 
