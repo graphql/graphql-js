@@ -176,12 +176,14 @@ async function complete(
   document: DocumentNode,
   rootValue: unknown = { hero },
   enableEarlyExecution = false,
+  options: { maxDeferredFragments?: number } = {},
 ) {
   const result = await legacyExecuteIncrementally({
     schema,
     document,
     rootValue,
     enableEarlyExecution,
+    options,
   });
 
   if ('initialResult' in result) {
@@ -3371,28 +3373,13 @@ describe('Execute: defer directive (legacy)', () => {
 });
 
 describe('Execute: defer directive (legacy maxDeferredFragments)', () => {
-  async function completeWithLimit(
+  function completeWithLimit(
     document: DocumentNode,
     maxDeferredFragments: number,
   ) {
-    const result = await legacyExecuteIncrementally({
-      schema,
-      document,
-      rootValue: { hero },
-      options: { maxDeferredFragments },
+    return complete(document, { hero }, false, {
+      maxDeferredFragments,
     });
-
-    if ('initialResult' in result) {
-      const results: Array<
-        | LegacyInitialIncrementalExecutionResult
-        | LegacySubsequentIncrementalExecutionResult
-      > = [result.initialResult];
-      for await (const patch of result.subsequentResults) {
-        results.push(patch);
-      }
-      return results;
-    }
-    return result;
   }
 
   it('Counts a deferred fragment once per list item', async () => {
