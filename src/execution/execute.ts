@@ -104,7 +104,7 @@ export type RootSelectionSetExecutor = (
  *   schema,
  *   document: parse('query ($name: String!) { greeting(name: $name) }'),
  *   rootValue: {
- *     greeting: ({ name }) => `Hello, ${name}!`,
+ *     greeting: ({ name }: { name: string }) => `Hello, ${name}!`,
  *   },
  *   variableValues: { name: 'Ada' },
  * }); // => { data: { greeting: 'Hello, Ada!' } }
@@ -510,7 +510,10 @@ export function executeSubscriptionEvent(
  *     'subscription Greeting($locale: String) { greeting(locale: $locale) }',
  *   ),
  *   rootValue: {
- *     greeting: (args, contextValue) => {
+ *     greeting: (
+ *       args: { locale?: string },
+ *       contextValue: { defaultLocale: string },
+ *     ) => {
  *       const locale = args.locale ?? contextValue.defaultLocale;
  *       return locale === 'fr' ? frenchGreetings() : defaultGreetings();
  *     },

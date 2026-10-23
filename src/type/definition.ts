@@ -1328,7 +1328,7 @@ export function assertAbstractType(type: unknown): GraphQLAbstractType {
  * ```ts
  * import { GraphQLList, GraphQLObjectType } from 'graphql';
  *
- * const PersonType = new GraphQLObjectType({
+ * const PersonType: GraphQLObjectType = new GraphQLObjectType({
  *   name: 'Person',
  *   fields: () => ({
  *     parents: { type: new GraphQLList(PersonType) },
@@ -2408,7 +2408,7 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  * ```ts
  * import { GraphQLObjectType, GraphQLString } from 'graphql';
  *
- * const PersonType = new GraphQLObjectType({
+ * const PersonType: GraphQLObjectType = new GraphQLObjectType({
  *   name: 'Person',
  *   fields: () => ({
  *     name: { type: GraphQLString },

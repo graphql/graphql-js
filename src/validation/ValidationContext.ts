@@ -246,7 +246,7 @@ export class ValidationContext extends ASTValidationContext {
    *   }
    * `);
    * const document = parse('{ greeting }');
-   * const errors = [];
+   * const errors: Array<GraphQLError> = [];
    * const context = new ValidationContext(
    *   schema,
    *   document,

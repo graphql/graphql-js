@@ -55,7 +55,8 @@ import { replaceVariables } from './replaceVariables.ts';
  *     stars: { type: new GraphQLNonNull(GraphQLInt) },
  *   },
  * });
- * const errors = [];
+ * const errors: Array<{ message: string; path: ReadonlyArray<string | number> }> =
+ *   [];
  *
  * validateInputValue({ stars: 'bad' }, ReviewInput, (error, path) => {
  *   errors.push({ message: error.message, path });
@@ -75,7 +76,7 @@ import { replaceVariables } from './replaceVariables.ts';
  *     comment: { type: GraphQLString },
  *   },
  * });
- * const errors = [];
+ * const errors: Array<string> = [];
  *
  * validateInputValue(
  *   { rating: 'extra field' },
@@ -311,7 +312,8 @@ function reportInvalidValue(
  *     stars: { type: new GraphQLNonNull(GraphQLInt) },
  *   },
  * });
- * const errors = [];
+ * const errors: Array<{ message: string; path: ReadonlyArray<string | number> }> =
+ *   [];
  *
  * validateInputLiteral(
  *   parseValue('{ stars: "bad" }'),
@@ -345,7 +347,7 @@ function reportInvalidValue(
  *
  * assert('variableValues' in result);
  *
- * const errors = [];
+ * const errors: Array<string> = [];
  * validateInputLiteral(
  *   parseValue('$stars'),
  *   GraphQLInt,

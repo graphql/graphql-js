@@ -85,7 +85,7 @@ export class TypeInfo {
    *   }
    * `);
    * const typeInfo = new TypeInfo(schema);
-   * const seenTypes = [];
+   * const seenTypes: Array<string> = [];
    *
    * visit(
    *   parse('{ greeting }'),
@@ -201,7 +201,7 @@ export class TypeInfo {
    *   }
    * `);
    * const typeInfo = new TypeInfo(schema);
-   * const fieldTypes = {};
+   * const fieldTypes: Record<string, string> = {};
    *
    * visit(
    *   parse('{ viewer { name } }'),
@@ -237,7 +237,7 @@ export class TypeInfo {
    *   }
    * `);
    * const typeInfo = new TypeInfo(schema);
-   * const parentTypes = {};
+   * const parentTypes: Record<string, string> = {};
    *
    * visit(
    *   parse('{ viewer { name } }'),
@@ -274,7 +274,7 @@ export class TypeInfo {
    *   }
    * `);
    * const typeInfo = new TypeInfo(schema);
-   * const inputTypes = {};
+   * const inputTypes: Record<string, string> = {};
    *
    * visit(
    *   parse('{ reviews(stars: 5, sort: OLDEST) }'),
@@ -312,7 +312,7 @@ export class TypeInfo {
    *   }
    * `);
    * const typeInfo = new TypeInfo(schema);
-   * const parentInputTypes = {};
+   * const parentInputTypes: Record<string, string> = {};
    *
    * visit(
    *   parse('{ reviews(filter: { stars: 5 }) }'),
@@ -915,7 +915,7 @@ function getFragmentSignatures(
  *   }
  * `);
  * const typeInfo = new TypeInfo(schema);
- * const fields = [];
+ * const fields: Array<{ name: string; parentType: string; type: string }> = [];
  *
  * visit(
  *   parse('{ greeting }'),
