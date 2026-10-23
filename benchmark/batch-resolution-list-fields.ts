@@ -258,10 +258,10 @@ function createExecutorModes(
     [
       'graphql-js-17-dataloader',
       createGraphQLJSExecutor({
-        label: `${baselineRevision} dataloader`,
+        label: `${baselineRevision} request batch loader`,
         runtime: baselineRuntime,
-        schema: createDataloaderSchema(baselineRuntime),
-        createContext: createDataloaderContext,
+        schema: createRequestBatchLoaderSchema(baselineRuntime),
+        createContext: createRequestBatchLoaderContext,
       }),
     ],
     [
@@ -330,7 +330,7 @@ function createRegularAsyncSchema(runtime: RuntimeModules): unknown {
   });
 }
 
-function createDataloaderSchema(runtime: RuntimeModules): unknown {
+function createRequestBatchLoaderSchema(runtime: RuntimeModules): unknown {
   return createWidgetSchema(runtime, {
     resolve: (
       source: WidgetSource,
@@ -340,7 +340,7 @@ function createDataloaderSchema(runtime: RuntimeModules): unknown {
   });
 }
 
-function createDataloaderContext(): Required<BenchContext> {
+function createRequestBatchLoaderContext(): Required<BenchContext> {
   return {
     loaders: {
       widget: new RequestBatchLoader(async (sources) => {
@@ -1112,7 +1112,7 @@ function executorLabelForMode(mode: Mode): string {
     case 'graphql-js-17':
       return `${baselineRevision} regular async`;
     case 'graphql-js-17-dataloader':
-      return `${baselineRevision} dataloader`;
+      return `${baselineRevision} request batch loader`;
     case 'graphql-js-local-batch':
       return 'working tree batch';
     case 'graphql-breadth-js':
