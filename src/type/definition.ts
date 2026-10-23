@@ -4410,8 +4410,8 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
    *   },
    * });
    *
-   * RGB.parseLiteral(parseValue('RED')); // => 0
-   * RGB.parseLiteral(parseValue('"RED"')); // throws an error
+   * RGB.parseLiteral(parseValue('RED'), undefined); // => 0
+   * RGB.parseLiteral(parseValue('"RED"'), undefined); // throws an error
    * ```
    * @deprecated use `coerceInputLiteral()` instead, `parseLiteral()` will be removed in v18
    */
