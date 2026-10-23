@@ -1187,6 +1187,90 @@ describe('Execute: experimental field batch resolvers', () => {
     ]);
   });
 
+  for (const batchResultMode of ['synchronous', 'asynchronous'] as const) {
+    it(`preserves ${batchResultMode} root batch results beside ordinary async fields`, async () => {
+      const schema = schemaWithQueryFields({
+        first: {
+          type: GraphQLString,
+          resolve: () => Promise.resolve('first'),
+        },
+        name: batchedField(GraphQLString, () =>
+          batchResultMode === 'synchronous'
+            ? ['Ada']
+            : Promise.resolve(['Ada']),
+        ),
+        last: {
+          type: GraphQLString,
+          resolve: () => Promise.resolve('last'),
+        },
+      });
+
+      const result = await execute({
+        schema,
+        document: parse('{ first alias: name last }'),
+      });
+
+      expectJSON(result).toDeepEqual({
+        data: { first: 'first', alias: 'Ada', last: 'last' },
+      });
+      expect(Object.keys(result.data as any)).to.deep.equal([
+        'first',
+        'alias',
+        'last',
+      ]);
+    });
+
+    it(`preserves ${batchResultMode} nested batch results beside ordinary async fields`, async () => {
+      const FriendType = new GraphQLObjectType({
+        name: 'BatchMixedAsyncFriend',
+        fields: {
+          id: {
+            type: GraphQLString,
+            resolve: (source: any) => Promise.resolve(source.id),
+          },
+          name: batchedField(GraphQLString, (sources) => {
+            const names = sources.map((source: any) => source.name);
+            return batchResultMode === 'synchronous'
+              ? names
+              : Promise.resolve(names);
+          }),
+        },
+      });
+      const schema = schemaWithUserFields({
+        id: {
+          type: GraphQLString,
+          resolve: (source: any) => Promise.resolve(source.id),
+        },
+        friend: batchedField(FriendType, (sources) => {
+          const friends = sources.map((source: any) => source.friend);
+          return batchResultMode === 'synchronous'
+            ? friends
+            : Promise.resolve(friends);
+        }),
+      });
+
+      const result = await execute({
+        schema,
+        document: parse('{ users { id friend { id name } } }'),
+        rootValue: {
+          users: [
+            { id: '1', friend: { id: '2', name: 'Ada' } },
+            { id: '3', friend: { id: '4', name: 'Grace' } },
+          ],
+        },
+      });
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          users: [
+            { id: '1', friend: { id: '2', name: 'Ada' } },
+            { id: '3', friend: { id: '4', name: 'Grace' } },
+          ],
+        },
+      });
+    });
+  }
+
   it('bubbles batch nulls to multidimensional list nullable positions', async () => {
     const calls: Array<BatchCall> = [];
 
@@ -2164,6 +2248,10 @@ describe('Execute: experimental field batch resolvers', () => {
 
   it('can complete a deferred payload from a synchronous batched field', async () => {
     const schema = schemaWithQueryFields({
+      id: {
+        type: GraphQLString,
+        resolve: () => Promise.resolve('1'),
+      },
       name: batchedField(GraphQLString, () => ['Ada']),
     });
 
@@ -2172,6 +2260,7 @@ describe('Execute: experimental field batch resolvers', () => {
       document: parse(`
         {
           ... @defer(label: "later") {
+            id
             name
           }
         }
@@ -2185,7 +2274,7 @@ describe('Execute: experimental field batch resolvers', () => {
         hasNext: true,
       },
       {
-        incremental: [{ data: { name: 'Ada' }, id: '0' }],
+        incremental: [{ data: { id: '1', name: 'Ada' }, id: '0' }],
         completed: [{ id: '0' }],
         hasNext: false,
       },
@@ -2534,6 +2623,10 @@ describe('Execute: experimental field batch resolvers', () => {
   it('can complete streamed items from an async batched field', async () => {
     const schema = schemaWithUserFields(
       {
+        id: {
+          type: GraphQLString,
+          resolve: (source: any) => Promise.resolve(source.id),
+        },
         name: batchedField(GraphQLString, (sources) =>
           Promise.resolve(sources.map((source: any) => source.name)),
         ),
@@ -2546,12 +2639,13 @@ describe('Execute: experimental field batch resolvers', () => {
       document: parse(`
         {
           users @stream(initialCount: 0, label: "users") {
+            id
             name
           }
         }
       `),
       rootValue: {
-        users: [{ name: 'Ada' }],
+        users: [{ id: '1', name: 'Ada' }],
       },
     });
 
@@ -2566,7 +2660,7 @@ describe('Execute: experimental field batch resolvers', () => {
       {
         incremental: [
           {
-            items: [{ name: 'Ada' }],
+            items: [{ id: '1', name: 'Ada' }],
             id: '0',
           },
         ],

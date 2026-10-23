@@ -750,10 +750,14 @@ export class Executor<
       return results;
     }
 
-    // Otherwise, results is a map from field name to the result of resolving that
-    // field, which is possibly a promise. Return a promise that will return this
-    // same map, but with any promises replaced with the values they resolved to.
-    return promiseForObject(results, this.promiseAll);
+    // Queued batch entries reference results, so preserve its identity when
+    // replacing ordinary field promises with their resolved values.
+    return promiseForObject(results, this.promiseAll).then((resolved) => {
+      for (const key of Object.keys(resolved)) {
+        results[key] = resolved[key];
+      }
+      return results;
+    });
   }
 
   executeBatchField(
