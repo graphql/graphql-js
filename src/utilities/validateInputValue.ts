@@ -329,7 +329,7 @@ function reportInvalidValue(
  * ```ts
  * // This variant resolves variable references using VariableValues from getVariableValues().
  * import assert from 'node:assert';
- * import { parse, parseValue } from 'graphql/language';
+ * import { parse, parseValue, Kind } from 'graphql/language';
  * import { GraphQLInt } from 'graphql/type';
  * import { getVariableValues } from 'graphql/execution';
  * import { buildSchema, validateInputLiteral } from 'graphql/utilities';
@@ -341,7 +341,8 @@ function reportInvalidValue(
  * `);
  * const document = parse('query ($stars: Int = 5) { review(stars: $stars) }');
  * const operation = document.definitions[0];
- * const result = getVariableValues(schema, operation.variableDefinitions, {
+ * assert(operation.kind === Kind.OPERATION_DEFINITION);
+ * const result = getVariableValues(schema, operation.variableDefinitions ?? [], {
  *   stars: 4,
  * });
  *

@@ -122,7 +122,8 @@ export class GraphQLDirective implements GraphQLSchemaElement {
    * @param config - Configuration describing this object.
    * @example
    * ```ts
-   * import { DirectiveLocation, parse } from 'graphql/language';
+   * import assert from 'node:assert/strict';
+   * import { DirectiveLocation, parse, Kind } from 'graphql/language';
    * import {
    *   GraphQLBoolean,
    *   GraphQLDirective,
@@ -134,6 +135,8 @@ export class GraphQLDirective implements GraphQLSchemaElement {
    *   directive @cacheControl(maxAge: Int) repeatable on FIELD_DEFINITION
    *   extend directive @cacheControl @tag
    * `);
+   * assert(document.definitions[0].kind === Kind.DIRECTIVE_DEFINITION);
+   * assert(document.definitions[1].kind === Kind.DIRECTIVE_EXTENSION);
    * const definition = document.definitions[0];
    *
    * const cacheControl = new GraphQLDirective({
@@ -150,7 +153,7 @@ export class GraphQLDirective implements GraphQLSchemaElement {
    *     },
    *     maxAge: {
    *       type: GraphQLInt,
-   *       astNode: definition.arguments[0],
+   *       astNode: definition.arguments?.[0],
    *     },
    *   },
    *   isRepeatable: true,

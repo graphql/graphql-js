@@ -74,10 +74,17 @@ export function isExecutableDefinitionNode(
  * @returns True when the operation definition is a subscription.
  * @example
  * ```ts
- * import { parse, isSubscriptionOperationDefinitionNode } from 'graphql/language';
+ * import assert from 'node:assert/strict';
+ * import {
+ *   parse,
+ *   isSubscriptionOperationDefinitionNode,
+ *   Kind,
+ * } from 'graphql/language';
  *
  * const subscription = parse('subscription { greeting }').definitions[0];
  * const query = parse('{ greeting }').definitions[0];
+ * assert(subscription.kind === Kind.OPERATION_DEFINITION);
+ * assert(query.kind === Kind.OPERATION_DEFINITION);
  *
  * isSubscriptionOperationDefinitionNode(subscription); // => true
  * isSubscriptionOperationDefinitionNode(query); // => false
@@ -97,8 +104,11 @@ export function isSubscriptionOperationDefinitionNode(
  * ```ts
  * import { Kind, isSelectionNode } from 'graphql/language';
  *
- * const field = { kind: Kind.FIELD, name: { kind: Kind.NAME, value: 'hello' } };
- * const document = { kind: Kind.DOCUMENT, definitions: [] };
+ * const field = {
+ *   kind: Kind.FIELD,
+ *   name: { kind: Kind.NAME, value: 'hello' },
+ * } as const;
+ * const document = { kind: Kind.DOCUMENT, definitions: [] } as const;
  *
  * isSelectionNode(field); // => true
  * isSelectionNode(document); // => false

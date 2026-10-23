@@ -278,8 +278,9 @@ export class GraphQLSchema {
    * ```
    * @example
    * ```ts
+   * import assert from 'node:assert/strict';
    * // This variant configures every schema option, including directives and extensions.
-   * import { DirectiveLocation, parse } from 'graphql/language';
+   * import { DirectiveLocation, parse, Kind } from 'graphql/language';
    * import {
    *   GraphQLBoolean,
    *   GraphQLDirective,
@@ -318,6 +319,8 @@ export class GraphQLSchema {
    *
    *   extend schema @auth
    * `);
+   * assert(schemaDocument.definitions[0].kind === Kind.SCHEMA_DEFINITION);
+   * assert(schemaDocument.definitions[1].kind === Kind.SCHEMA_EXTENSION);
    *
    * const schema = new GraphQLSchema({
    *   description: 'Operations exposed by the application.',

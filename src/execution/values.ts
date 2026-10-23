@@ -88,7 +88,7 @@ type VariableValuesOrErrors =
  * ```ts
  * // Coerce provided variables and apply operation defaults.
  * import assert from 'node:assert';
- * import { parse } from 'graphql/language';
+ * import { parse, Kind } from 'graphql/language';
  * import { buildSchema } from 'graphql/utilities';
  * import { getVariableValues } from 'graphql/execution';
  *
@@ -103,8 +103,9 @@ type VariableValuesOrErrors =
  *   }
  * `);
  * const operation = document.definitions[0];
+ * assert(operation.kind === Kind.OPERATION_DEFINITION);
  *
- * const result = getVariableValues(schema, operation.variableDefinitions, {
+ * const result = getVariableValues(schema, operation.variableDefinitions ?? [], {
  *   stars: 5,
  * });
  *
@@ -116,7 +117,7 @@ type VariableValuesOrErrors =
  * ```ts
  * // This variant uses maxErrors to cap reported coercion errors.
  * import assert from 'node:assert';
- * import { parse } from 'graphql/language';
+ * import { parse, Kind } from 'graphql/language';
  * import { buildSchema } from 'graphql/utilities';
  * import { getVariableValues } from 'graphql/execution';
  *
@@ -136,10 +137,11 @@ type VariableValuesOrErrors =
  *   }
  * `);
  * const operation = document.definitions[0];
+ * assert(operation.kind === Kind.OPERATION_DEFINITION);
  *
  * const result = getVariableValues(
  *   schema,
- *   operation.variableDefinitions,
+ *   operation.variableDefinitions ?? [],
  *   { first: { stars: 'bad' }, second: { stars: 'also bad' } },
  *   { maxErrors: 1 },
  * );
@@ -355,8 +357,9 @@ export function getFragmentVariableValues(
  * @returns A map of coerced argument values.
  * @example
  * ```ts
+ * import assert from 'node:assert/strict';
  * // Read literal argument values and defaults.
- * import { parse } from 'graphql/language';
+ * import { parse, Kind } from 'graphql/language';
  * import { buildSchema } from 'graphql/utilities';
  * import { getArgumentValues } from 'graphql/execution';
  *
@@ -367,7 +370,10 @@ export function getFragmentVariableValues(
  * `);
  * const fieldDef = schema.getQueryType().getFields().reviews;
  * const document = parse('{ reviews(stars: 5) }');
- * const fieldNode = document.definitions[0].selectionSet.selections[0];
+ * const operation = document.definitions[0];
+ * assert(operation.kind === Kind.OPERATION_DEFINITION);
+ * const fieldNode = operation.selectionSet.selections[0];
+ * assert(fieldNode.kind === Kind.FIELD);
  *
  * getArgumentValues(fieldDef, fieldNode); // => { stars: 5, limit: 10 }
  * ```
@@ -375,7 +381,7 @@ export function getFragmentVariableValues(
  * ```ts
  * // This variant resolves argument values from operation variables.
  * import assert from 'node:assert';
- * import { parse } from 'graphql/language';
+ * import { parse, Kind } from 'graphql/language';
  * import { buildSchema } from 'graphql/utilities';
  * import { getArgumentValues, getVariableValues } from 'graphql/execution';
  *
@@ -387,10 +393,16 @@ export function getFragmentVariableValues(
  * const fieldDef = schema.getQueryType().getFields().reviews;
  * const document = parse('query ($stars: Int!) { reviews(stars: $stars) }');
  * const operation = document.definitions[0];
- * const fieldNode = document.definitions[0].selectionSet.selections[0];
- * const variables = getVariableValues(schema, operation.variableDefinitions, {
- *   stars: 5,
- * });
+ * assert(operation.kind === Kind.OPERATION_DEFINITION);
+ * const fieldNode = operation.selectionSet.selections[0];
+ * assert(fieldNode.kind === Kind.FIELD);
+ * const variables = getVariableValues(
+ *   schema,
+ *   operation.variableDefinitions ?? [],
+ *   {
+ *     stars: 5,
+ *   },
+ * );
  *
  * assert('variableValues' in variables);
  *
@@ -555,13 +567,16 @@ function printArgumentOrFragmentVariable(
  * @returns A map of coerced directive argument values, or undefined when absent.
  * @example
  * ```ts
+ * import assert from 'node:assert/strict';
  * // Read literal directive arguments from a node.
- * import { parse } from 'graphql/language';
+ * import { parse, Kind } from 'graphql/language';
  * import { GraphQLSkipDirective } from 'graphql/type';
  * import { getDirectiveValues } from 'graphql/execution';
  *
  * const document = parse('{ name @skip(if: true) }');
- * const fieldNode = document.definitions[0].selectionSet.selections[0];
+ * const operation = document.definitions[0];
+ * assert(operation.kind === Kind.OPERATION_DEFINITION);
+ * const fieldNode = operation.selectionSet.selections[0];
  *
  * getDirectiveValues(GraphQLSkipDirective, fieldNode); // => { if: true }
  * ```
@@ -569,7 +584,7 @@ function printArgumentOrFragmentVariable(
  * ```ts
  * // This variant resolves directive arguments from variables and handles absent directives.
  * import assert from 'node:assert';
- * import { parse } from 'graphql/language';
+ * import { parse, Kind } from 'graphql/language';
  * import { GraphQLIncludeDirective } from 'graphql/type';
  * import { buildSchema } from 'graphql/utilities';
  * import { getDirectiveValues, getVariableValues } from 'graphql/execution';
@@ -579,10 +594,15 @@ function printArgumentOrFragmentVariable(
  *   'query ($includeName: Boolean!) { name @include(if: $includeName) }',
  * );
  * const operation = document.definitions[0];
- * const fieldNode = document.definitions[0].selectionSet.selections[0];
- * const variables = getVariableValues(schema, operation.variableDefinitions, {
- *   includeName: false,
- * });
+ * assert(operation.kind === Kind.OPERATION_DEFINITION);
+ * const fieldNode = operation.selectionSet.selections[0];
+ * const variables = getVariableValues(
+ *   schema,
+ *   operation.variableDefinitions ?? [],
+ *   {
+ *     includeName: false,
+ *   },
+ * );
  *
  * assert('variableValues' in variables);
  *
