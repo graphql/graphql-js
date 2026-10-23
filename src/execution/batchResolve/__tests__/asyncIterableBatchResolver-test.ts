@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 import { assert, expect } from 'chai';
 
 import { expectJSON } from '../../../__testUtils__/expectJSON.ts';
+import { expectPromise } from '../../../__testUtils__/expectPromise.ts';
 
 import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.ts';
 
@@ -754,6 +755,75 @@ describe('Execute: async iterable field batch resolver results', () => {
     });
     expect(returnCalls).to.equal(1);
   });
+
+  for (const settlement of ['fulfillment', 'rejection'] as const) {
+    it(`tracks a cancelled iterator read until its late ${settlement}`, async () => {
+      const nextStarted = promiseWithResolvers<undefined>();
+      const nextResult =
+        promiseWithResolvers<IteratorResult<ReadonlyArray<string>>>();
+      const asyncWorkFinished = promiseWithResolvers<undefined>();
+      let returnCalls = 0;
+      let asyncWorkFinishedCalled = false;
+      const batches: AsyncIterable<ReadonlyArray<string>> = {
+        [Symbol.asyncIterator]() {
+          return {
+            next() {
+              nextStarted.resolve(undefined);
+              return nextResult.promise;
+            },
+            return() {
+              returnCalls++;
+              return Promise.resolve({ done: true, value: undefined });
+            },
+          };
+        },
+      };
+      const schema = schemaWithQueryFields({
+        name: batchedField(GraphQLString, () => batches),
+      });
+      const controller = new AbortController();
+      const result = execute({
+        schema,
+        document: parse('{ name }'),
+        abortSignal: controller.signal,
+        hooks: {
+          asyncWorkFinished() {
+            asyncWorkFinishedCalled = true;
+            asyncWorkFinished.resolve(undefined);
+          },
+        },
+      });
+
+      await nextStarted.promise;
+      controller.abort(new Error('stop iterator read'));
+      const error = await expectPromise(result).toReject();
+      assert(error instanceof AbortedGraphQLExecutionError);
+      expectJSON(await error.abortedResult).toDeepEqual({
+        data: { name: null },
+        errors: [
+          {
+            message: 'Aborted!',
+            path: ['name'],
+            locations: [{ line: 1, column: 3 }],
+          },
+        ],
+      });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 0);
+      });
+      const finishedBeforeReadSettled = asyncWorkFinishedCalled;
+
+      if (settlement === 'fulfillment') {
+        nextResult.resolve({ done: true, value: undefined });
+      } else {
+        nextResult.reject(new Error('late iterator failure'));
+      }
+      await asyncWorkFinished.promise;
+
+      expect(returnCalls).to.equal(1);
+      expect(finishedBeforeReadSettled).to.equal(false);
+    });
+  }
 
   it('closes the iterator if a non-cancellable next settles after its signal aborts', async () => {
     let closed = false;

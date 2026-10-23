@@ -59,13 +59,12 @@ export function completeAsyncFieldBatchGroup<TPositionContext>(
       let iteration: IteratorResult<unknown>;
       try {
         const nextResult = Promise.resolve(iterator.next());
-        if (abortSignal === undefined) {
-          // eslint-disable-next-line no-await-in-loop
-          iteration = await nextResult;
-        } else {
-          // eslint-disable-next-line no-await-in-loop
-          iteration = await cancellablePromise(nextResult, abortSignal);
-        }
+        // Cancellation can stop awaiting a read before the iterator settles it.
+        executor.getAsyncHelpers().track([nextResult]);
+        // eslint-disable-next-line no-await-in-loop
+        iteration = await (abortSignal === undefined
+          ? nextResult
+          : cancellablePromise(nextResult, abortSignal));
       } catch (rawError) {
         const rejectedAbortSignal = executor.getAbortSignal();
         if (rejectedAbortSignal?.aborted) {
