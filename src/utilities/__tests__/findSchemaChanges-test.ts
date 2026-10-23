@@ -504,4 +504,93 @@ describe('findSchemaChanges', () => {
       },
     ]);
   });
+
+  it('should detect if an input object becomes a oneOf input object', () => {
+    const oldSchema = buildSchema(`
+      input Foo {
+        x: String
+        y: String
+      }
+
+      type Query {
+        foo(arg: Foo): String
+      }
+    `);
+
+    const newSchema = buildSchema(`
+      input Foo @oneOf {
+        x: String
+        y: String
+      }
+
+      type Query {
+        foo(arg: Foo): String
+      }
+    `);
+    expect(findSchemaChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        description: '@oneOf was added to Foo.',
+        type: BreakingChangeType.INPUT_OBJECT_ONE_OF_ADDED,
+      },
+    ]);
+  });
+
+  it('should detect if an input object stops being a oneOf input object', () => {
+    const oldSchema = buildSchema(`
+      input Foo @oneOf {
+        x: String
+        y: String
+      }
+
+      type Query {
+        foo(arg: Foo): String
+      }
+    `);
+
+    const newSchema = buildSchema(`
+      input Foo {
+        x: String
+        y: String
+      }
+
+      type Query {
+        foo(arg: Foo): String
+      }
+    `);
+    expect(findSchemaChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        description: '@oneOf was removed from Foo.',
+        type: SafeChangeType.INPUT_OBJECT_ONE_OF_REMOVED,
+      },
+    ]);
+  });
+
+  it('should not detect a change when an input object stays a oneOf input object', () => {
+    const oldSchema = buildSchema(`
+      input Foo @oneOf {
+        x: String
+      }
+
+      type Query {
+        foo(arg: Foo): String
+      }
+    `);
+
+    const newSchema = buildSchema(`
+      input Foo @oneOf {
+        x: String
+        y: String
+      }
+
+      type Query {
+        foo(arg: Foo): String
+      }
+    `);
+    expect(findSchemaChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        description: 'An optional field Foo.y was added.',
+        type: DangerousChangeType.OPTIONAL_INPUT_FIELD_ADDED,
+      },
+    ]);
+  });
 });
