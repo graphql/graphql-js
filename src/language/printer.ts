@@ -4,6 +4,7 @@ import type { Maybe } from '../jsutils/Maybe.ts';
 
 import type { ASTNode } from './ast.ts';
 import { printBlockString } from './blockString.ts';
+import { Kind } from './kinds.ts';
 import { printString } from './printString.ts';
 import type { ASTReducer } from './visitor.ts';
 import { visit } from './visitor.ts';
@@ -38,7 +39,7 @@ const printDocASTReducer: ASTReducer<string> = {
   },
 
   OperationDefinition: {
-    leave(node) {
+    leave(node, key, parent) {
       const varDefs = hasMultilineItems(node.variableDefinitions)
         ? wrap('(\n', join(node.variableDefinitions, '\n'), '\n)')
         : wrap('(', join(node.variableDefinitions, ', '), ')');
@@ -54,8 +55,16 @@ const printDocASTReducer: ASTReducer<string> = {
         );
 
       // Anonymous queries with no directives or variable definitions can use
-      // the query short form.
-      return (prefix === 'query' ? '' : prefix + ' ') + node.selectionSet;
+      // the query short form. Keep the keyword when the previous definition
+      // can still accept a brace body, so the selection set is not parsed
+      // as that body.
+      const previous = Array.isArray(parent)
+        ? parent[Number(key) - 1]
+        : undefined;
+      const shortForm =
+        prefix === 'query' &&
+        (previous === undefined || !omitsBraceBody(previous));
+      return (shortForm ? '' : prefix + ' ') + node.selectionSet;
     },
   },
 
@@ -421,6 +430,37 @@ function indent(str: string): string {
 
 function hasMultilineItems(maybeArray: Maybe<ReadonlyArray<string>>): boolean {
   return maybeArray?.some((str) => str.includes('\n')) ?? false;
+}
+
+/**
+ * A definition omits a brace body when printing it leaves the next `{` able
+ * to be parsed as that body. Object, interface, input, and enum definitions
+ * and extensions do this when they declare no fields or values. Schema
+ * definitions and extensions do this when they declare no operation types.
+ * @internal
+ */
+function omitsBraceBody(node: ASTNode): boolean {
+  switch (node.kind) {
+    case Kind.OBJECT_TYPE_DEFINITION:
+    case Kind.OBJECT_TYPE_EXTENSION:
+    case Kind.INTERFACE_TYPE_DEFINITION:
+    case Kind.INTERFACE_TYPE_EXTENSION:
+    case Kind.INPUT_OBJECT_TYPE_DEFINITION:
+    case Kind.INPUT_OBJECT_TYPE_EXTENSION:
+      return isEmptyList(node.fields);
+    case Kind.ENUM_TYPE_DEFINITION:
+    case Kind.ENUM_TYPE_EXTENSION:
+      return isEmptyList(node.values);
+    case Kind.SCHEMA_DEFINITION:
+    case Kind.SCHEMA_EXTENSION:
+      return isEmptyList(node.operationTypes);
+    default:
+      return false;
+  }
+}
+
+function isEmptyList(items: ReadonlyArray<unknown> | undefined): boolean {
+  return items === undefined || items.length === 0;
 }
 
 function wrappedLineAndArgs(
