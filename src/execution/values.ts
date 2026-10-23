@@ -149,7 +149,7 @@ type VariableValuesOrErrors =
  * assert('errors' in result);
  *
  * result.errors.length; // => 2
- * result.errors[1].message; // matches /error limit reached/
+ * result.errors[1].message.includes('error limit reached'); // => true
  * ```
  */
 export function getVariableValues(
