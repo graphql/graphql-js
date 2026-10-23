@@ -1,0 +1,281 @@
+---
+title: Experimental Batch Resolution
+sidebarTitle: Batch Resolution
+---
+
+import { Callout } from 'nextra/components';
+
+# Experimental Batch Resolution
+
+<Callout type="warning">
+  This page describes the experimental proposal in [PR
+  #4760](https://github.com/graphql/graphql-js/pull/4760). The examples require
+  a build containing that proposal. These APIs are not part of a released
+  GraphQL.js version and may change during review.
+</Callout>
+
+GraphQL.js normally calls a field resolver once for each parent object. For a
+list of posts, that means calling `Post.author` once per post. If each call
+fetches an author independently, the operation can produce an N+1 query
+problem.
+
+The batch resolution proposal lets a field receive several parent objects in
+one call. The executor collects compatible field executions, calls their batch
+resolver with an array of sources, and completes one result for each source.
+Your resolver can then fetch the related records with one backend request.
+
+## Connecting this to the GraphQL Golden Path
+
+The [GraphQL Golden Path guide to batched
+execution](https://goldenpath.graphql.org/practices/batched-execution/)
+recommends making batching the default experience so that list queries do not
+depend on every resolver author remembering to avoid N+1 calls. Its guidance
+is a work in progress.
+
+This proposal supplies an execution primitive that schema builders and server
+frameworks could use toward that goal. GraphQL.js itself keeps the feature
+opt-in: applications must enable it for execution and supply batch resolvers
+on the fields they want to batch. Changing existing resolver behavior and
+execution timing by default would risk breaking applications. A framework
+adopting the proposal could make batch resolvers its usual authoring model
+while existing GraphQL.js applications retain their current behavior.
+
+## Enable batch resolvers
+
+The proposal introduces two settings:
+
+- Set `experimentalBatchResolve` on a field definition to provide its batch
+  resolver.
+- Pass `enableBatchResolvers: true` to execution to use those resolvers.
+
+When enabled, a field's `experimentalBatchResolve` takes precedence over its
+ordinary `resolve` function. Fields without a batch resolver continue to use
+their ordinary resolver or the default field resolver. When the execution
+flag is absent or false, GraphQL.js ignores batch resolvers entirely.
+
+Keep an ordinary `resolve` function if the same schema must also support
+execution without batching. A field with only `experimentalBatchResolve`
+falls back to the default field resolver when batching is disabled.
+
+### Resolver arguments
+
+```js
+function experimentalBatchResolve(sources, args, context, info) {
+  // Return one value for each source, in the same order.
+}
+```
+
+| Argument  | Meaning                                                                                                         |
+| --------- | --------------------------------------------------------------------------------------------------------------- |
+| `sources` | The parent objects for the field executions in this batch.                                                      |
+| `args`    | The coerced argument values shared by this field selection.                                                     |
+| `context` | The operation's `contextValue`, as with ordinary resolvers.                                                     |
+| `info`    | Field execution information with `paths`, one response path per source, in place of the ordinary single `path`. |
+
+TypeScript applications can use the proposed `GraphQLFieldBatchResolver` and
+`GraphQLBatchedResolveInfo` types. Batch info also includes the execution
+helpers `getAbortSignal()` and `getAsyncHelpers()` described in
+[Abort Signals](/docs/abort-signals) and
+[Execution Hooks](/docs/execution-hooks).
+
+## Example: Fetch authors for a list of posts
+
+This example uses in-memory functions to represent a backend. The call log
+shows where database or service requests would occur in an application.
+
+```js
+import {
+  graphql,
+  GraphQLID,
+  GraphQLList,
+  GraphQLObjectType,
+  GraphQLSchema,
+  GraphQLString,
+} from 'graphql';
+
+const authors = [
+  { id: 'u2', name: 'Grace' },
+  { id: 'u1', name: 'Ada' },
+];
+const posts = [
+  { id: 'p1', authorId: 'u1' },
+  { id: 'p2', authorId: 'u2' },
+  { id: 'p3', authorId: 'u1' },
+];
+const backendCalls = [];
+
+const contextValue = {
+  async getPosts() {
+    backendCalls.push('posts');
+    return posts;
+  },
+  async getUserById(id) {
+    backendCalls.push(`user:${id}`);
+    return authors.find((author) => author.id === id) ?? null;
+  },
+  async getUsersByIds(ids) {
+    backendCalls.push(`users:${ids.join(',')}`);
+    return authors.filter((author) => ids.includes(author.id));
+  },
+};
+
+const UserType = new GraphQLObjectType({
+  name: 'User',
+  fields: {
+    id: { type: GraphQLID },
+    name: { type: GraphQLString },
+  },
+});
+
+const PostType = new GraphQLObjectType({
+  name: 'Post',
+  fields: {
+    id: { type: GraphQLID },
+    author: {
+      type: UserType,
+      resolve(post, _args, context) {
+        return context.getUserById(post.authorId);
+      },
+      async experimentalBatchResolve(posts, _args, context) {
+        const ids = [...new Set(posts.map((post) => post.authorId))];
+        const users = await context.getUsersByIds(ids);
+        const usersById = new Map(users.map((user) => [user.id, user]));
+        return posts.map((post) => usersById.get(post.authorId) ?? null);
+      },
+    },
+  },
+});
+
+const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      posts: {
+        type: new GraphQLList(PostType),
+        resolve: (_source, _args, context) => context.getPosts(),
+      },
+    },
+  }),
+});
+
+const result = await graphql({
+  schema,
+  source: '{ posts { id author { id name } } }',
+  contextValue,
+  enableBatchResolvers: true,
+});
+
+console.log(result.data);
+console.log(backendCalls); // ['posts', 'users:u1,u2']
+```
+
+The three posts produce one author batch. Although the backend returns Grace
+before Ada, the resolver maps its results back into source order: Ada, Grace,
+Ada. Deduplicating the author IDs reduces the backend input to two keys while
+the returned array still contains three values. A missing author becomes
+`null` in that post's position.
+
+With batching disabled, this schema uses the ordinary `resolve` function and
+performs three individual author lookups after fetching the posts. The client
+query and schema field types stay the same.
+
+## What forms a batch?
+
+The executor queues fields with batch resolvers while executing a selection
+set. Once ordinary field work has completed, it drains the queued batches.
+Completing a batch can discover more fields with batch resolvers, which run
+in later rounds.
+
+Grouping follows collected field selections. For example, the `author`
+selection in the previous operation is shared across the posts, so those
+executions can form one batch. Separate selections are not combined merely
+because they use the same schema field or backend key:
+
+```graphql
+{
+  posts {
+    primary: author {
+      name
+    }
+    secondary: author {
+      name
+    }
+  }
+}
+```
+
+Here, the two aliases form separate batches. Concrete runtime object types
+and incremental execution boundaries can also separate work. Do not assume
+that a batch contains every use of a field throughout an operation.
+
+Top-level mutation fields remain serial. The executor drains the batch work
+for one mutation field before moving to the next one. Deferred execution
+groups and separately streamed items have their own batch queues; enabling
+early execution does not combine them with the initial payload's queue.
+
+## Return values and failures
+
+A batch resolver can return an array directly or a promise for that array.
+Return exactly one value per source, in the same order. Backend result order,
+missing rows, and duplicate keys are the resolver's responsibility.
+
+The returned values undergo field completion, including scalar serialization,
+nested selections, and non-null propagation. Return `null` for a missing
+nullable value. An `Error` in one array position represents a failure for that
+field execution. Throwing or rejecting from the batch resolver represents a
+failure for the batch's active field executions. Non-null field types can
+propagate those failures to their nearest nullable ancestor.
+
+### Producing results in chunks
+
+The proposal also accepts an async iterable of result arrays, or a promise for
+one. Each yielded array supplies the next contiguous results in source order:
+
+```js
+async function* experimentalBatchResolve(sources, _args, context, info) {
+  const signal = info.getAbortSignal();
+  const chunkSize = 100;
+
+  for (let offset = 0; offset < sources.length; offset += chunkSize) {
+    const chunk = sources.slice(offset, offset + chunkSize);
+    yield await context.fetchValuesInSourceOrder(chunk, { signal });
+  }
+}
+```
+
+The combined number of yielded values must equal `sources.length`; empty
+chunks are allowed. The executor completes a chunk's immediate field work
+before requesting the next chunk. Newly queued batch fields run in later
+batch rounds.
+
+This is a resolver result protocol. Returning an async iterable does not by
+itself send incremental responses to the client. Client-visible incremental
+delivery still uses [defer and stream](/docs/defer-stream) and the incremental
+execution API. Async iterables also require asynchronous execution and cannot
+complete through `executeSync()`.
+
+## How this relates to DataLoader
+
+[DataLoader](/docs/n1-dataloader) batches individual `.load(key)` calls and
+provides request-scoped caching when configured that way. The batch resolver
+proposal changes the field invocation itself: the executor passes an array
+of sources to one resolver call.
+
+Batch resolution does not provide a key cache or automatically deduplicate
+sources. The example deduplicates IDs explicitly. A request-scoped loader or
+cache can still be useful when repeated keys occur across aliases, separate
+selections, or later execution rounds. Keep that cache scoped to the request
+and its authorization context.
+
+Execution-level batching also needs a backend operation that actually handles
+several inputs efficiently. Calling a single-record fetch once per source
+inside `Promise.all()` still makes one backend request per source. Measure
+backend calls, batch sizes, response latency, and execution overhead on your
+own workload when evaluating the proposal.
+
+## Further reading
+
+- [Batch resolution proposal, PR #4760](https://github.com/graphql/graphql-js/pull/4760)
+- [GraphQL Golden Path: Batched execution](https://goldenpath.graphql.org/practices/batched-execution/)
+- [Solving the N+1 Problem with DataLoader](/docs/n1-dataloader)
+- [Anatomy of a Resolver](/docs/resolver-anatomy)

@@ -42,6 +42,7 @@ const meta = {
   },
   'graphql-harness': '',
   'advanced-execution-pipelines': '',
+  'batch-resolution': '',
   'abort-signals': '',
   'execution-hooks': '',
   'tracing-channels': '',
