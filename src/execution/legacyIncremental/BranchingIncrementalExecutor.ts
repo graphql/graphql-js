@@ -290,12 +290,14 @@ export class BranchingIncrementalExecutor extends IncrementalExecutor<LegacyExpe
   ) => BranchingIncrementalExecutor {
     const validatedExecutionArgs = this.validatedExecutionArgs;
     const sharedExecutionContext = this.sharedExecutionContext;
+    const rootGroupedFieldSet = this.rootGroupedFieldSet;
 
     return (deferUsageSet?: DeferUsageSet) =>
       new BranchingIncrementalExecutor(
         validatedExecutionArgs,
         sharedExecutionContext,
         deferUsageSet,
+        rootGroupedFieldSet,
       );
   }
 
