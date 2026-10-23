@@ -115,9 +115,14 @@ Run `npm run check:examples` to execute JSDoc `@example` code fences in `src`
 against the built npm package. CI runs the same check on the latest supported
 Node.js version.
 
-Each executable `js` or `ts` fence is a separate ES module: include its imports
-and setup. GraphQL fences are not executed. Examples without expectations are
-smoke tests.
+Executable examples must use TypeScript, with a `ts` or `typescript` fence.
+Each fence is a separate ES module: include its imports and setup. All examples
+are type checked against the built package before execution, using the
+repository's TypeScript settings except `noUnusedLocals`. Examples must both
+type check and run successfully. Use optional chaining for optional values or
+`assert` to check and narrow required values, rather than non-null assertions.
+Only `graphql` and `gql` fences are excluded from execution. Examples without
+expectations are still type checked and run as smoke tests.
 
 Add a fenced example under `@example` in the API's JSDoc comment. Use trailing
 comments to describe expected results:

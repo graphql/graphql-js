@@ -10,13 +10,18 @@ import ts from 'typescript';
 
 import type { SourceEdit } from './jsdoc-examples.ts';
 import { applyEdits, extractJSDocExamples } from './jsdoc-examples.ts';
-import { localRepoPath, makeTmpDir, npm, readdirRecursive } from './utils.ts';
+import {
+  localRepoPath,
+  makeTmpDir,
+  npm,
+  readdirRecursive,
+  readTSConfig,
+} from './utils.ts';
 
 interface Example {
   filename: string;
   line: number;
   code: string;
-  language: 'js' | 'ts';
 }
 
 const root = localRepoPath();
@@ -46,19 +51,21 @@ fs.writeFileSync(
 );
 exampleNpm.install('--ignore-scripts');
 
+const typeErrors = checkExampleTypes(allExamples, tmpDirPath());
 process.chdir(tmpDirPath());
 
 // Check the original examples before adding runtime assertions.
 for (const [index, example] of allExamples.entries()) {
   test(`${example.filename}:${example.line}`, { timeout: 10000 }, async () => {
+    const errors = typeErrors.get(example) ?? [];
+    assert.equal(errors.length, 0, errors.join('\n'));
     const source = parseExample(example);
     const { assertionEdits, locations, runtimeName } = getAssertionEdits(
       source,
       example,
     );
     const code = applyEdits(example.code, assertionEdits);
-    const extension = example.language === 'ts' ? 'mts' : 'mjs';
-    const filename = tmpDirPath(`${index}.${extension}`);
+    const filename = tmpDirPath(`${index}.mts`);
     fs.writeFileSync(
       filename,
       // Identify failures with the original example's location.
@@ -66,9 +73,42 @@ for (const [index, example] of allExamples.entries()) {
     );
     // A side-effect import avoids invoking an example's exported `then`.
     const entrypoint = tmpDirPath(`${index}-run.mjs`);
-    fs.writeFileSync(entrypoint, `import './${index}.${extension}';\n`);
+    fs.writeFileSync(entrypoint, `import './${index}.mts';\n`);
     await import(pathToFileURL(entrypoint).href);
   });
+}
+
+function checkExampleTypes(
+  examples: ReadonlyArray<Example>,
+  directory: string,
+): Map<Example, Array<string>> {
+  const examplesByPath = new Map<string, Example>();
+  for (const [index, example] of examples.entries()) {
+    const filename = path.join(directory, `${index}.mts`);
+    fs.writeFileSync(filename, example.code);
+    examplesByPath.set(filename, example);
+  }
+  const errors = new Map<Example, Array<string>>();
+  const program = ts.createProgram(
+    [...examplesByPath.keys()],
+    readTSConfig({
+      // Snippets may end after declaring a value or an annotated result.
+      noUnusedLocals: false,
+      typeRoots: [localRepoPath('node_modules/@types')],
+    }),
+  );
+  for (const diagnostic of ts.getPreEmitDiagnostics(program)) {
+    const message = `TS${diagnostic.code}: ${ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')}`;
+    const { file, start } = diagnostic;
+    assert(file && start !== undefined, message);
+    const { line } = file.getLineAndCharacterOfPosition(start);
+    const example = examplesByPath.get(path.normalize(file.fileName));
+    assert(example, `${file.fileName}:${line + 1}: ${message}`);
+    const messages = errors.get(example) ?? [];
+    messages.push(`${example.filename}:${example.line + line}: ${message}`);
+    errors.set(example, messages);
+  }
+  return errors;
 }
 
 async function findExamples(): Promise<Array<Example>> {
@@ -95,9 +135,13 @@ async function extractExamples(
     text,
     filename,
   )) {
-    if (!['ts', 'typescript', 'js', 'javascript'].includes(language)) {
+    if (['graphql', 'gql'].includes(language)) {
       continue;
     }
+    assert(
+      ['ts', 'typescript'].includes(language),
+      `${filename}:${line}: executable examples must use a TypeScript fence (ts or typescript)`,
+    );
     assert.equal(
       metadata,
       '',
@@ -108,7 +152,6 @@ async function extractExamples(
       line,
       // Match Node's module loader before parsing or instrumenting hashbangs.
       code: code.replace(/^\uFEFF/, ''),
-      language: language === 'ts' || language === 'typescript' ? 'ts' : 'js',
     });
   }
   return examples;
@@ -118,13 +161,13 @@ function parseExample(example: Example): ts.SourceFile {
   // Check the original syntax before assertion edits can make invalid code valid.
   assert.doesNotThrow(
     () =>
-      new SourceTextModule(toJavaScript(example.code, example.language), {
+      new SourceTextModule(stripTypeScriptTypes(example.code), {
         identifier: `${example.filename}:${example.line}`,
       }),
     `${example.filename}:${example.line}: invalid example syntax`,
   );
   return ts.createSourceFile(
-    example.language === 'ts' ? 'example.mts' : 'example.mjs',
+    'example.mts',
     // An empty export makes TypeScript parse import-free examples as modules.
     // Appending it keeps all original source positions unchanged.
     `${example.code}\nexport {};`,
@@ -135,10 +178,6 @@ function parseExample(example: Example): ts.SourceFile {
     },
     true,
   );
-}
-
-function toJavaScript(code: string, language: Example['language']): string {
-  return language === 'ts' ? stripTypeScriptTypes(code) : code;
 }
 
 function getAssertionEdits(source: ts.SourceFile, example: Example) {
