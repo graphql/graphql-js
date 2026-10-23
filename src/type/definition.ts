@@ -3500,7 +3500,7 @@ export class GraphQLInterfaceType<
    *   resolveType: (value) => {
    *     return typeof value === 'object' && value != null && 'url' in value
    *       ? 'WebPage'
-   *       : null;
+   *       : undefined;
    *   },
    *   extensions: { abstract: true },
    *   astNode: document.definitions[1],
