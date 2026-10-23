@@ -152,6 +152,7 @@ kind.toLowerCase(); // => 'document'
 
 Use one initialized variable declaration per annotation. Destructuring checks the
 whole initializer's result before assigning its properties to the variables.
+When an initializer is expected to throw, its variables are left `undefined`.
 
 Top-level `await` is supported. Inside an example fence, an async result can be
 checked like this:
