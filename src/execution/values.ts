@@ -368,7 +368,8 @@ export function getFragmentVariableValues(
  *     reviews(stars: Int!, limit: Int = 10): [String]
  *   }
  * `);
- * const fieldDef = schema.getQueryType().getFields().reviews;
+ * const fieldDef = schema.getQueryType()?.getFields().reviews;
+ * assert(fieldDef);
  * const document = parse('{ reviews(stars: 5) }');
  * const operation = document.definitions[0];
  * assert(operation.kind === Kind.OPERATION_DEFINITION);
@@ -390,7 +391,8 @@ export function getFragmentVariableValues(
  *     reviews(stars: Int!): [String]
  *   }
  * `);
- * const fieldDef = schema.getQueryType().getFields().reviews;
+ * const fieldDef = schema.getQueryType()?.getFields().reviews;
+ * assert(fieldDef);
  * const document = parse('query ($stars: Int!) { reviews(stars: $stars) }');
  * const operation = document.definitions[0];
  * assert(operation.kind === Kind.OPERATION_DEFINITION);

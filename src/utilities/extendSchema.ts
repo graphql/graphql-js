@@ -99,6 +99,7 @@ interface Options extends GraphQLSchemaValidationOptions {
  * @example
  * ```ts
  * // Extend a schema with new fields and types.
+ * import assert from 'node:assert/strict';
  * import { parse } from 'graphql/language';
  * import { buildSchema, extendSchema } from 'graphql/utilities';
  *
@@ -121,7 +122,9 @@ interface Options extends GraphQLSchemaValidationOptions {
  *
  * schema.getType('Review'); // => undefined
  * extendedSchema.getType('Review')?.name; // => 'Review'
- * Object.keys(extendedSchema.getQueryType().getFields()); // => ['greeting', 'farewell']
+ * const queryType = extendedSchema.getQueryType();
+ * assert(queryType);
+ * Object.keys(queryType.getFields()); // => ['greeting', 'farewell']
  * ```
  * @example
  * ```ts

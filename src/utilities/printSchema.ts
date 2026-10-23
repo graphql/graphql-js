@@ -173,6 +173,7 @@ function hasDefaultRootOperationTypes(schema: GraphQLSchema): boolean {
  * @returns The printed string representation.
  * @example
  * ```ts
+ * import assert from 'node:assert/strict';
  * import { buildSchema, printType } from 'graphql/utilities';
  *
  * const schema = buildSchema(`
@@ -186,7 +187,9 @@ function hasDefaultRootOperationTypes(schema: GraphQLSchema): boolean {
  *   }
  * `);
  *
- * printType(schema.getType('User')); // => ['type User {', '  id: ID!', '  name: String', '}'].join('\n')
+ * const userType = schema.getType('User');
+ * assert(userType);
+ * printType(userType); // => ['type User {', '  id: ID!', '  name: String', '}'].join('\n')
  * ```
  */
 export function printType(type: GraphQLNamedType): string {

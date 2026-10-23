@@ -379,7 +379,7 @@ export class TypeInfo {
    *   }
    * `);
    * const typeInfo = new TypeInfo(schema);
-   * let defaultLimit;
+   * let defaultLimit: unknown;
    *
    * visit(
    *   parse('{ reviews(limit: 5) }'),
@@ -390,8 +390,7 @@ export class TypeInfo {
    *   }),
    * );
    *
-   * defaultLimit.literal.kind; // => 'IntValue'
-   * defaultLimit.literal.value; // => '10'
+   * defaultLimit; // => schema.getQueryType()?.getFields().reviews.args[0].default
    * ```
    */
   getDefaultValue(): unknown {

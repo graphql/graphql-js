@@ -259,7 +259,7 @@ const fieldSymbol: unique symbol = Symbol('Field');
  * import { isField } from 'graphql/type';
  *
  * const schema = buildSchema('type Query { greeting: String }');
- * const field = schema.getQueryType().getFields().greeting;
+ * const field = schema.getQueryType()?.getFields().greeting;
  *
  * isField(field); // => true
  * isField(schema.getQueryType()); // => false
@@ -279,7 +279,7 @@ export function isField(field: unknown): field is GraphQLField {
  * import { assertField } from 'graphql/type';
  *
  * const schema = buildSchema('type Query { greeting: String }');
- * const field = assertField(schema.getQueryType().getFields().greeting);
+ * const field = assertField(schema.getQueryType()?.getFields().greeting);
  *
  * field.name; // => 'greeting'
  * assertField(schema.getQueryType()); // throws an error
@@ -305,7 +305,7 @@ const argumentSymbol: unique symbol = Symbol('Argument');
  * import { isArgument } from 'graphql/type';
  *
  * const schema = buildSchema('type Query { greeting(name: String): String }');
- * const arg = schema.getQueryType().getFields().greeting.args[0];
+ * const arg = schema.getQueryType()?.getFields().greeting.args[0];
  *
  * isArgument(arg); // => true
  * isArgument(schema.getQueryType()); // => false
@@ -325,7 +325,7 @@ export function isArgument(arg: unknown): arg is GraphQLArgument {
  * import { assertArgument } from 'graphql/type';
  *
  * const schema = buildSchema('type Query { greeting(name: String): String }');
- * const arg = assertArgument(schema.getQueryType().getFields().greeting.args[0]);
+ * const arg = assertArgument(schema.getQueryType()?.getFields().greeting.args[0]);
  *
  * arg.name; // => 'name'
  * assertArgument(schema.getQueryType()); // throws an error
@@ -1769,7 +1769,7 @@ export function getNamedType(type: undefined | null): void;
  *
  * const inputArg = schema.getQueryType()?.getFields().review.args[0];
  *
- * getNamedType(inputArg?.type).toString(); // => 'ReviewInput'
+ * getNamedType(inputArg?.type)?.toString(); // => 'ReviewInput'
  * ```
  */
 export function getNamedType(type: GraphQLInputType): GraphQLNamedInputType;
@@ -1794,7 +1794,7 @@ export function getNamedType(type: GraphQLInputType): GraphQLNamedInputType;
  *
  * const usersField = schema.getQueryType()?.getFields().users;
  *
- * getNamedType(usersField?.type).toString(); // => 'User'
+ * getNamedType(usersField?.type)?.toString(); // => 'User'
  * ```
  */
 export function getNamedType(type: GraphQLOutputType): GraphQLNamedOutputType;
@@ -2523,7 +2523,7 @@ export class GraphQLObjectType<
    * User.name; // => 'User'
    * User.getInterfaces(); // => [Node]
    * Object.keys(User.getFields()); // => ['id', 'name']
-   * User.getFields().name.args[0].default.value; // => 'short'
+   * User.getFields().name.args[0].default?.value; // => 'short'
    * User.extensions; // => { entity: 'User' }
    * ```
    * @example
@@ -3077,7 +3077,7 @@ export class GraphQLField<
    *
    * field.parentType; // => Query
    * field.name; // => 'greeting'
-   * field.args[0].default.value; // => 'world'
+   * field.args[0].default?.value; // => 'world'
    * typeof field.subscribe; // => 'function'
    * field.deprecationReason; // => 'Use hello.'
    * field.astNode; // => fieldNode
@@ -3246,7 +3246,7 @@ export class GraphQLArgument implements GraphQLSchemaElement {
    *
    * arg.parent; // => field
    * arg.name; // => 'name'
-   * arg.default.value; // => 'world'
+   * arg.default?.value; // => 'world'
    * ```
    */
   constructor(
@@ -3290,7 +3290,7 @@ export class GraphQLArgument implements GraphQLSchemaElement {
    *   default: { value: 'world' },
    * });
    *
-   * arg.toConfig().default.value; // => 'world'
+   * arg.toConfig().default?.value; // => 'world'
    * ```
    */
   toConfig(): GraphQLArgumentNormalizedConfig {
@@ -4179,7 +4179,7 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
    * Episode.description; // => 'A Star Wars film episode.'
    * Episode.coerceOutputValue(5); // => 'EMPIRE'
    * Episode.coerceInputValue('JEDI'); // => 6
-   * Episode.getValue('JEDI').deprecationReason; // => 'Use RETURN_OF_THE_JEDI.'
+   * Episode.getValue('JEDI')?.deprecationReason; // => 'Use RETURN_OF_THE_JEDI.'
    * Episode.extensions; // => { catalog: 'films' }
    * ```
    */
@@ -4498,6 +4498,7 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
    * @returns Enum value AST node, or undefined if the value is invalid.
    * @example
    * ```ts
+   * import assert from 'node:assert/strict';
    * import { print } from 'graphql/language';
    * import { GraphQLEnumType } from 'graphql/type';
    *
@@ -4510,7 +4511,9 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
    *   },
    * });
    *
-   * print(RGB.valueToLiteral('BLUE')); // => 'BLUE'
+   * const literal = RGB.valueToLiteral('BLUE');
+   * assert(literal);
+   * print(literal); // => 'BLUE'
    * RGB.valueToLiteral(2); // => undefined
    * RGB.valueToLiteral('PURPLE'); // => undefined
    * ```
@@ -4954,7 +4957,7 @@ export class GraphQLInputObjectType implements GraphQLSchemaElement {
    * ReviewInput.description; // => 'Input collected when reviewing a product.'
    * String(fields.stars.type); // => 'Int!'
    * fields.stars.extensions; // => { min: 1, max: 5 }
-   * fields.commentary.default.value; // => ''
+   * fields.commentary.default?.value; // => ''
    * fields.commentary.deprecationReason; // => 'Use body.'
    * ReviewInput.isOneOf; // => false
    * SearchBy.isOneOf; // => true
@@ -4985,6 +4988,8 @@ export class GraphQLInputObjectType implements GraphQLSchemaElement {
    * @returns The fields keyed by field name.
    * @example
    * ```ts
+   * import { Kind } from 'graphql/language';
+   * import assert from 'node:assert/strict';
    * import { buildSchema } from 'graphql/utilities';
    * import { assertInputObjectType } from 'graphql/type';
    *
@@ -5003,8 +5008,9 @@ export class GraphQLInputObjectType implements GraphQLSchemaElement {
    * const fields = ReviewInput.getFields();
    *
    * Object.keys(fields); // => ['stars', 'commentary']
-   * fields.commentary.default.literal.kind; // => 'StringValue'
-   * fields.commentary.default.literal.value; // => ''
+   * const literal = fields.commentary.default?.literal;
+   * assert(literal?.kind === Kind.STRING);
+   * literal.value; // => ''
    * ```
    */
   getFields(): GraphQLInputFieldMap {
@@ -5241,7 +5247,7 @@ export class GraphQLInputField implements GraphQLSchemaElement {
    *
    * field.parentType; // => ReviewInput
    * field.name; // => 'commentary'
-   * field.default.value; // => ''
+   * field.default?.value; // => ''
    * ```
    */
   constructor(

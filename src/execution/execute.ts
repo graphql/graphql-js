@@ -717,7 +717,7 @@ export function createSourceEventStream(
  *
  * assert('operation' in validatedArgs);
  *
- * validatedArgs.contextValue.locale; // => 'en'
+ * validatedArgs.contextValue; // => { locale: 'en' }
  * validatedArgs.operation.name?.value; // => 'Viewer'
  * validatedArgs.hideSuggestions; // => true
  * ```

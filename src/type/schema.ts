@@ -814,6 +814,7 @@ export class GraphQLSchema {
    * @returns The field definition, including supported introspection fields.
    * @example
    * ```ts
+   * import assert from 'node:assert/strict';
    * import { buildSchema } from 'graphql/utilities';
    *
    * const schema = buildSchema(`
@@ -822,6 +823,7 @@ export class GraphQLSchema {
    *   }
    * `);
    * const queryType = schema.getQueryType();
+   * assert(queryType);
    *
    * schema.getField(queryType, 'greeting')?.name; // => 'greeting'
    * schema.getField(queryType, '__typename')?.name; // => '__typename'

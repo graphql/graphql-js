@@ -166,7 +166,7 @@ export class GraphQLDirective implements GraphQLSchemaElement {
    * cacheControl.name; // => 'cacheControl'
    * cacheControl.description; // => 'Controls HTTP cache hints for a field.'
    * cacheControl.args[0].name; // => 'inheritMaxAge'
-   * cacheControl.args[0].default.value; // => false
+   * cacheControl.args[0].default?.value; // => false
    * cacheControl.isRepeatable; // => true
    * cacheControl.extensions; // => { scope: 'cache' }
    * ```
