@@ -1975,10 +1975,10 @@ export interface GraphQLScalarTypeExtensions {
  * ```ts
  * import { GraphQLScalarType, Kind } from 'graphql';
  *
- * const ensureOdd = (value) => {
- *   if (!Number.isFinite(value)) {
+ * const ensureOdd = (value: unknown) => {
+ *   if (typeof value !== 'number' || !Number.isInteger(value)) {
  *     throw new Error(
- *       `Scalar "Odd" cannot represent "${value}" since it is not a finite number.`,
+ *       `Scalar "Odd" cannot represent "${value}" since it is not an integer.`,
  *     );
  *   }
  *
@@ -2003,6 +2003,10 @@ export interface GraphQLScalarTypeExtensions {
  *     return { kind: Kind.INT, value: String(ensureOdd(value)) };
  *   },
  * });
+ *
+ * OddType.coerceInputValue(3); // => 3
+ * OddType.coerceInputValue(2); // throws an error
+ * OddType.coerceInputValue(1.5); // throws an error
  * ```
  */
 export class GraphQLScalarType<
@@ -2068,31 +2072,28 @@ export class GraphQLScalarType<
    *   extend scalar Odd @specifiedBy(url: "https://example.com/odd-v2")
    * `);
    *
+   * const ensureOdd = (value: unknown) => {
+   *   if (
+   *     typeof value !== 'number' ||
+   *     !Number.isInteger(value) ||
+   *     value % 2 === 0
+   *   ) {
+   *     throw new TypeError('Odd can only accept odd integers.');
+   *   }
+   *   return value;
+   * };
+   *
    * const Odd = new GraphQLScalarType({
    *   name: 'Odd',
    *   description: 'Odd integer values.',
    *   specifiedByURL: 'https://example.com/odd',
-   *   coerceOutputValue: (value) => {
-   *     if (typeof value !== 'number' || value % 2 === 0) {
-   *       throw new TypeError('Odd can only produce odd numbers.');
-   *     }
-   *     return value;
-   *   },
-   *   coerceInputValue: (value) => {
-   *     if (typeof value !== 'number' || value % 2 === 0) {
-   *       throw new TypeError('Odd can only accept odd numbers.');
-   *     }
-   *     return value;
-   *   },
+   *   coerceOutputValue: ensureOdd,
+   *   coerceInputValue: ensureOdd,
    *   coerceInputLiteral: (ast) => {
    *     if (ast.kind !== Kind.INT) {
    *       throw new TypeError('Odd can only accept integer literals.');
    *     }
-   *     const value = Number(ast.value);
-   *     if (value % 2 === 0) {
-   *       throw new TypeError('Odd can only accept odd integer literals.');
-   *     }
-   *     return value;
+   *     return ensureOdd(Number(ast.value));
    *   },
    *   valueToLiteral: (value) => {
    *     return { kind: Kind.INT, value: String(ensureOdd(value)) };
@@ -2106,6 +2107,9 @@ export class GraphQLScalarType<
    * Odd.specifiedByURL; // => 'https://example.com/odd'
    * Odd.coerceOutputValue(3); // => 3
    * Odd.coerceInputValue(5); // => 5
+   * Odd.valueToLiteral?.(3); // => { kind: 'IntValue', value: '3' }
+   * Odd.valueToLiteral?.(2); // throws an error
+   * Odd.valueToLiteral?.(1.5); // throws an error
    * Odd.extensions; // => { numeric: true }
    * ```
    */
