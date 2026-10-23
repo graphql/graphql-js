@@ -32,6 +32,7 @@ export interface BatchExecutor<TPositionContext> {
   collectedErrors: CollectedErrorsLike;
   batchFieldGroups: BatchFieldGroupMap<TPositionContext>;
   rootGroupedFieldSet: GroupedFieldSet | undefined;
+  throwIfAborted: () => void;
   getAbortSignal: () => AbortSignal | undefined;
   getAsyncHelpers: () => GraphQLResolveInfoHelpers;
   promiseAll: <T>(

@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 import { assert, expect } from 'chai';
 
 import { expectJSON } from '../../../__testUtils__/expectJSON.ts';
+import { expectPromise } from '../../../__testUtils__/expectPromise.ts';
 import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.ts';
 import { spyOnMethod } from '../../../__testUtils__/spyOn.ts';
 
@@ -975,6 +976,101 @@ describe('Execute: experimental field batch resolvers', () => {
     removeEventListenerSpy.restore();
   });
 
+  it('does not complete a batch result that arrives after cancellation', async () => {
+    const batchStarted = promiseWithResolvers<undefined>();
+    const batchResult = promiseWithResolvers<ReadonlyArray<{ name: string }>>();
+    const calls: Array<string> = [];
+    const FriendType = new GraphQLObjectType({
+      name: 'BatchCancelledFriend',
+      fields: {
+        ordinary: {
+          type: GraphQLString,
+          resolve: () => {
+            calls.push('ordinary');
+            return 'ordinary';
+          },
+        },
+        batched: batchedField(GraphQLString, () => {
+          calls.push('batched');
+          return ['batched'];
+        }),
+      },
+    });
+    const schema = schemaWithQueryFields({
+      friend: batchedField(FriendType, () => {
+        batchStarted.resolve(undefined);
+        return batchResult.promise;
+      }),
+    });
+    const controller = new AbortController();
+    const result = execute({
+      schema,
+      document: parse('{ friend { ordinary batched } }'),
+      abortSignal: controller.signal,
+    });
+
+    await batchStarted.promise;
+    controller.abort(new Error('stop late batch'));
+    const error = await expectPromise(result).toReject();
+    assert(error instanceof AbortedGraphQLExecutionError);
+    batchResult.resolve([{ name: 'late' }]);
+
+    expectJSON(await error.abortedResult).toDeepEqual({
+      data: { friend: null },
+      errors: [
+        {
+          message: 'Aborted!',
+          path: ['friend'],
+          locations: [{ line: 1, column: 3 }],
+        },
+      ],
+    });
+    expect(calls).to.deep.equal([]);
+  });
+
+  it('does not start queued batches after an ordinary async field is cancelled', async () => {
+    const ordinaryResult = promiseWithResolvers<string>();
+    let batchCalls = 0;
+    const schema = schemaWithQueryFields({
+      ordinary: {
+        type: GraphQLString,
+        resolve: () => ordinaryResult.promise,
+      },
+      batched: batchedField(GraphQLString, () => {
+        batchCalls++;
+        return ['batched'];
+      }),
+    });
+    const controller = new AbortController();
+    const result = execute({
+      schema,
+      document: parse('{ ordinary batched }'),
+      abortSignal: controller.signal,
+    });
+
+    controller.abort(new Error('stop queued batches'));
+    const error = await expectPromise(result).toReject();
+    assert(error instanceof AbortedGraphQLExecutionError);
+    ordinaryResult.resolve('late');
+
+    expectJSON(await error.abortedResult).toDeepEqual({
+      data: { ordinary: null, batched: null },
+      errors: [
+        {
+          message: 'Aborted!',
+          path: ['ordinary'],
+          locations: [{ line: 1, column: 3 }],
+        },
+        {
+          message: 'Aborted!',
+          path: ['batched'],
+          locations: [{ line: 1, column: 12 }],
+        },
+      ],
+    });
+    expect(batchCalls).to.equal(0);
+  });
+
   it('runs later batch rounds for subfields produced by a batch', async () => {
     const calls: Array<ReadonlyArray<string>> = [];
 
@@ -1702,6 +1798,7 @@ describe('Execute: experimental field batch resolvers', () => {
           batchFieldGroups: new Map(),
           rootGroupedFieldSet: new Map([['user', [{ node: userFieldNode }]]]),
           getAbortSignal: () => undefined,
+          throwIfAborted: () => undefined,
           getAsyncHelpers: () => ({
             promiseAll: (values) => Promise.all(values),
             track: () => undefined,

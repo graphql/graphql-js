@@ -433,6 +433,12 @@ export class Executor<
     this.resolverAbortController?.abort(this.abortReason);
   }
 
+  throwIfAborted(): void {
+    if (this.aborted) {
+      throw new Error('Aborted!');
+    }
+  }
+
   finish<T>(result: T): T {
     if (this.aborted) {
       throw this.createAbortedExecutionError(result);
@@ -549,9 +555,7 @@ export class Executor<
     return promiseReduce(
       groupedFieldSet,
       (results, [responseName, fieldDetailsList]) => {
-        if (this.aborted) {
-          throw new Error('Aborted!');
-        }
+        this.throwIfAborted();
         const fieldPath = addPath(path, responseName, parentType.name);
         const result = this.executeField(
           parentType,
@@ -590,9 +594,7 @@ export class Executor<
     return promiseReduce(
       groupedFieldSet,
       (results, [responseName, fieldDetailsList]) => {
-        if (this.aborted) {
-          throw new Error('Aborted!');
-        }
+        this.throwIfAborted();
         const fieldPath = addPath(path, responseName, parentType.name);
         const result = this.executeBatchField(
           parentType,
@@ -1088,9 +1090,7 @@ export class Executor<
   ): Promise<unknown> {
     try {
       const resolved = await result;
-      if (this.aborted) {
-        throw new Error('Aborted!');
-      }
+      this.throwIfAborted();
       let completed = this.completeValue(
         returnType,
         fieldDetailsList,

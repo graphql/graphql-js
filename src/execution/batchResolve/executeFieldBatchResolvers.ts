@@ -90,6 +90,7 @@ function executeFieldBatchResolver<TPositionContext>(
 ): BatchWorkUnit | undefined {
   let batchResult;
   try {
+    executor.throwIfAborted();
     const {
       schema,
       fragmentDefinitions,
@@ -205,6 +206,7 @@ export function completeFieldBatchResult<TPositionContext>(
   let iterator!: AsyncIterator<unknown>;
   let batchValues!: Array<unknown>;
   try {
+    executor.throwIfAborted();
     asyncIteratorMethod = (
       batchResult as AsyncIterable<unknown> | null | undefined
     )?.[Symbol.asyncIterator];
