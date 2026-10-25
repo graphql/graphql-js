@@ -49,14 +49,14 @@ export function MaxIntrospectionDepthRule(
   function checkDepth(
     node: ASTNode,
     visitedFragments: {
-      [fragmentName: string]: true | undefined;
+      [fragmentName: string]: number | undefined;
     } = Object.create(null),
     depth: number = 0,
   ): boolean {
     if (node.kind === Kind.FRAGMENT_SPREAD) {
       const fragmentName = node.name.value;
-      if (visitedFragments[fragmentName] === true) {
-        // Fragment cycles are handled by `NoFragmentCyclesRule`.
+      const visitedDepth = visitedFragments[fragmentName];
+      if (visitedDepth !== undefined && visitedDepth >= depth) {
         return false;
       }
       const fragment = context.getFragment(fragmentName);
@@ -64,17 +64,8 @@ export function MaxIntrospectionDepthRule(
         // Missing fragments checks are handled by `KnownFragmentNamesRule`.
         return false;
       }
-      // Rather than following an immutable programming pattern which has
-      // significant memory and garbage collection overhead, we've opted to
-      // take a mutable approach for efficiency's sake. Importantly visiting a
-      // fragment twice is fine, so long as you don't do one visit inside the
-      // other.
-      try {
-        visitedFragments[fragmentName] = true;
-        return checkDepth(fragment, visitedFragments, depth);
-      } finally {
-        visitedFragments[fragmentName] = undefined;
-      }
+      visitedFragments[fragmentName] = depth;
+      return checkDepth(fragment, visitedFragments, depth);
     }
     if (
       node.kind === Kind.FIELD &&
