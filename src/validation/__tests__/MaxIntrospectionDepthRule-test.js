@@ -466,6 +466,7 @@ describe('Validate: Max introspection nodes rule', () => {
     query test {
       __schema {
         types {
+          ...Three
           ...One
         }
       }
