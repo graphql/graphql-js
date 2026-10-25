@@ -5,20 +5,16 @@ export function MaxIntrospectionDepthRule(context) {
     function checkDepth(node, visitedFragments = Object.create(null), depth = 0) {
         if (node.kind === Kind.FRAGMENT_SPREAD) {
             const fragmentName = node.name.value;
-            if (visitedFragments[fragmentName] === true) {
+            const visitedDepth = visitedFragments[fragmentName];
+            if (visitedDepth !== undefined && visitedDepth >= depth) {
                 return false;
             }
             const fragment = context.getFragment(fragmentName);
             if (!fragment) {
                 return false;
             }
-            try {
-                visitedFragments[fragmentName] = true;
-                return checkDepth(fragment, visitedFragments, depth);
-            }
-            finally {
-                visitedFragments[fragmentName] = undefined;
-            }
+            visitedFragments[fragmentName] = depth;
+            return checkDepth(fragment, visitedFragments, depth);
         }
         if (node.kind === Kind.FIELD &&
             (node.name.value === 'fields' ||
