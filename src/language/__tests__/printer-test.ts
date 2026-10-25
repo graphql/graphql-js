@@ -84,6 +84,366 @@ describe('Printer: Query document', () => {
     `);
   });
 
+  it('keeps the query keyword after a definition that omits a brace body', () => {
+    const cases = [
+      [
+        'type A\n\nquery { a: b }',
+        dedent`
+          type A
+
+          query {
+            a: b
+          }
+        `,
+      ],
+      [
+        'interface A\n\nquery { a: b }',
+        dedent`
+          interface A
+
+          query {
+            a: b
+          }
+        `,
+      ],
+      [
+        'input A\n\nquery { a: b }',
+        dedent`
+          input A
+
+          query {
+            a: b
+          }
+        `,
+      ],
+      [
+        'enum A\n\nquery { a }',
+        dedent`
+          enum A
+
+          query {
+            a
+          }
+        `,
+      ],
+      [
+        'extend type A @d\n\nquery { a: b }',
+        dedent`
+          extend type A @d
+
+          query {
+            a: b
+          }
+        `,
+      ],
+      [
+        'extend interface A @d\n\nquery { a: b }',
+        dedent`
+          extend interface A @d
+
+          query {
+            a: b
+          }
+        `,
+      ],
+      [
+        'extend input A @d\n\nquery { a: b }',
+        dedent`
+          extend input A @d
+
+          query {
+            a: b
+          }
+        `,
+      ],
+      [
+        'extend enum A @d\n\nquery { a }',
+        dedent`
+          extend enum A @d
+
+          query {
+            a
+          }
+        `,
+      ],
+      [
+        'extend schema @d\n\nquery { query: Q }',
+        dedent`
+          extend schema @d
+
+          query {
+            query: Q
+          }
+        `,
+      ],
+      [
+        '"Doc"\ntype A\n\nquery { a }',
+        dedent`
+          "Doc"
+          type A
+
+          query {
+            a
+          }
+        `,
+      ],
+    ] as const;
+
+    for (const [source, expected] of cases) {
+      const printed = print(parse(source));
+      expect(printed, source).to.equal(expected);
+      expect(
+        parse(printed).definitions.map((definition) => definition.kind),
+      ).to.deep.equal(
+        parse(source).definitions.map((definition) => definition.kind),
+      );
+    }
+
+    const emptyFields = parse('{ a: b }').definitions[0];
+    expect(
+      print({
+        kind: Kind.DOCUMENT,
+        definitions: [
+          {
+            kind: Kind.OBJECT_TYPE_DEFINITION,
+            name: { kind: Kind.NAME, value: 'A' },
+            fields: [],
+          },
+          emptyFields,
+        ],
+      }),
+    ).to.equal(dedent`
+      type A
+
+      query {
+        a: b
+      }
+    `);
+  });
+
+  it('keeps the query short form when the previous definition cannot take that body', () => {
+    const cases = [
+      [
+        'type A { x: Int }\n\n{ a: b }',
+        dedent`
+          type A {
+            x: Int
+          }
+
+          {
+            a: b
+          }
+        `,
+      ],
+      [
+        'interface A { x: Int }\n\n{ a: b }',
+        dedent`
+          interface A {
+            x: Int
+          }
+
+          {
+            a: b
+          }
+        `,
+      ],
+      [
+        'input A { x: Int }\n\n{ a: b }',
+        dedent`
+          input A {
+            x: Int
+          }
+
+          {
+            a: b
+          }
+        `,
+      ],
+      [
+        'enum A { X }\n\n{ a }',
+        dedent`
+          enum A {
+            X
+          }
+
+          {
+            a
+          }
+        `,
+      ],
+      [
+        'extend type A @d { x: Int }\n\n{ a: b }',
+        dedent`
+          extend type A @d {
+            x: Int
+          }
+
+          {
+            a: b
+          }
+        `,
+      ],
+      [
+        'extend schema @d { query: Q }\n\n{ a }',
+        dedent`
+          extend schema @d {
+            query: Q
+          }
+
+          {
+            a
+          }
+        `,
+      ],
+      [
+        'schema { query: Q }\n\n{ a }',
+        dedent`
+          schema {
+            query: Q
+          }
+
+          {
+            a
+          }
+        `,
+      ],
+      [
+        'scalar A\n\n{ a }',
+        dedent`
+          scalar A
+
+          {
+            a
+          }
+        `,
+      ],
+      [
+        'union A = B\n\n{ a }',
+        dedent`
+          union A = B
+
+          {
+            a
+          }
+        `,
+      ],
+      [
+        'directive @d on FIELD\n\n{ a }',
+        dedent`
+          directive @d on FIELD
+
+          {
+            a
+          }
+        `,
+      ],
+      [
+        'fragment F on T { a }\n\n{ b }',
+        dedent`
+          fragment F on T {
+            a
+          }
+
+          {
+            b
+          }
+        `,
+      ],
+      [
+        '{ a }\n\ntype A',
+        dedent`
+          {
+            a
+          }
+
+          type A
+        `,
+      ],
+      [
+        'type A\n\nquery Named { a }',
+        dedent`
+          type A
+
+          query Named {
+            a
+          }
+        `,
+      ],
+      [
+        'type A\n\nmutation { a }',
+        dedent`
+          type A
+
+          mutation {
+            a
+          }
+        `,
+      ],
+      [
+        'type A\n\nquery ($a: Int) { a }',
+        dedent`
+          type A
+
+          query ($a: Int) {
+            a
+          }
+        `,
+      ],
+      [
+        'type A\n\nquery @d { a }',
+        dedent`
+          type A
+
+          query @d {
+            a
+          }
+        `,
+      ],
+      [
+        'type A\n\n"Doc"\nquery { a }',
+        dedent`
+          type A
+
+          "Doc"
+          query {
+            a
+          }
+        `,
+      ],
+      [
+        'type A\n\nquery { a }\n\n{ b }',
+        dedent`
+          type A
+
+          query {
+            a
+          }
+
+          {
+            b
+          }
+        `,
+      ],
+    ] as const;
+
+    for (const [source, expected] of cases) {
+      const printed = print(parse(source));
+      expect(printed, source).to.equal(expected);
+      expect(
+        parse(printed).definitions.map((definition) => definition.kind),
+      ).to.deep.equal(
+        parse(source).definitions.map((definition) => definition.kind),
+      );
+    }
+
+    const operation = parse('{ id }').definitions[0];
+    expect(print(operation)).to.equal(dedent`
+      {
+        id
+      }
+    `);
+  });
+
   it('prints query with variable directives', () => {
     const queryASTWithVariableDirective = parse(
       'query ($foo: TestType = { a: 123 } @testDirective(if: true) @test) { id }',
