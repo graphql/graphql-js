@@ -17,6 +17,7 @@ import { suggestionList } from '../jsutils/suggestionList';
 import { toObjMap } from '../jsutils/toObjMap';
 
 import { GraphQLError } from '../error/GraphQLError';
+import type { GraphQLErrorBehavior } from '../error/GraphQLErrorBehavior';
 
 import type {
   EnumTypeDefinitionNode,
@@ -2536,6 +2537,11 @@ export interface GraphQLResolveInfo {
   readonly operation: OperationDefinitionNode;
   /** Runtime variable values keyed by variable name. */
   readonly variableValues: { [variable: string]: unknown };
+  /**
+   * How execution errors should be handled.
+   * @experimental
+   */
+  readonly onError: GraphQLErrorBehavior;
 }
 
 /**

@@ -10,13 +10,15 @@ import type { Maybe } from '../jsutils/Maybe';
 import { memoize3 } from '../jsutils/memoize3';
 import type { ObjMap } from '../jsutils/ObjMap';
 import type { Path } from '../jsutils/Path';
-import { addPath, pathToArray } from '../jsutils/Path';
+import { addPath, pathToDigest } from '../jsutils/Path';
 import { promiseForObject } from '../jsutils/promiseForObject';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import { promiseReduce } from '../jsutils/promiseReduce';
 
 import type { GraphQLFormattedError } from '../error/GraphQLError';
 import { GraphQLError } from '../error/GraphQLError';
+import type { GraphQLErrorBehavior } from '../error/GraphQLErrorBehavior';
+import { isErrorBehavior } from '../error/GraphQLErrorBehavior';
 import { locatedError } from '../error/locatedError';
 
 import type {
@@ -59,6 +61,8 @@ import {
   collectSubfields as _collectSubfields,
 } from './collectFields';
 import { getArgumentValues, getVariableValues } from './values';
+
+const DEFAULT_ERROR_BEHAVIOR = 'PROPAGATE';
 
 /**
  * A memoized collection of relevant subfields with regard to the return
@@ -121,6 +125,11 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   collectedErrors: CollectedErrors;
+  /**
+   * How execution errors should be handled.
+   * @experimental
+   */
+  onError: GraphQLErrorBehavior;
 }
 
 class CollectedErrors {
@@ -213,6 +222,14 @@ export interface ExecutionArgs {
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   /** Resolver used for the root subscription field. */
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  /**
+   * Set to `"NULL"` to disable error propagation. Set to `"ABORT"` to have all
+   * errors propagate as far as possible (typically to the operation root,
+   * resulting in `{ "errors": [...], "data": null }`).
+   * @defaultValue `"PROPAGATE"`
+   * @experimental
+   */
+  onError?: GraphQLErrorBehavior;
   /** Additional execution options. */
   options?: {
     /** Set the maximum number of errors allowed for coercing (defaults to 50). */
@@ -526,8 +543,17 @@ export function buildExecutionContext(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
+    onError,
     options,
   } = args;
+
+  if (onError != null && !isErrorBehavior(onError)) {
+    return [
+      new GraphQLError(
+        'Unsupported `onError` value; supported values are `NULL`, `PROPAGATE` and `ABORT`.',
+      ),
+    ];
+  }
 
   let operation: OperationDefinitionNode | undefined;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
@@ -588,6 +614,7 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     collectedErrors: new CollectedErrors(),
+    onError: onError ?? DEFAULT_ERROR_BEHAVIOR,
   };
 }
 
@@ -652,17 +679,28 @@ function executeFieldsSerially(
   return promiseReduce(
     fields.entries(),
     (results, [responseName, fieldNodes]) => {
-      const fieldPath = addPath(path, responseName, parentType.name);
+      const fieldDef = getFieldDef(
+        exeContext.schema,
+        parentType,
+        fieldNodes[0],
+      );
+      if (fieldDef == null) {
+        return results;
+      }
+      const fieldPath = addPath(
+        path,
+        responseName,
+        parentType.name,
+        isNonNullType(fieldDef.type),
+      );
       const result = executeField(
         exeContext,
         parentType,
         sourceValue,
         fieldNodes,
         fieldPath,
+        fieldDef,
       );
-      if (result === undefined) {
-        return results;
-      }
       if (isPromise(result)) {
         return result.then((resolvedResult) => {
           results[responseName] = resolvedResult;
@@ -694,20 +732,32 @@ function executeFields(
 
   try {
     for (const [responseName, fieldNodes] of fields.entries()) {
-      const fieldPath = addPath(path, responseName, parentType.name);
+      const fieldDef = getFieldDef(
+        exeContext.schema,
+        parentType,
+        fieldNodes[0],
+      );
+      if (fieldDef == null) {
+        continue;
+      }
+      const fieldPath = addPath(
+        path,
+        responseName,
+        parentType.name,
+        isNonNullType(fieldDef.type),
+      );
       const result = executeField(
         exeContext,
         parentType,
         sourceValue,
         fieldNodes,
         fieldPath,
+        fieldDef,
       );
 
-      if (result !== undefined) {
-        results[responseName] = result;
-        if (isPromise(result)) {
-          containsPromise = true;
-        }
+      results[responseName] = result;
+      if (isPromise(result)) {
+        containsPromise = true;
       }
     }
   } catch (error) {
@@ -745,12 +795,8 @@ function executeField(
   source: unknown,
   fieldNodes: ReadonlyArray<FieldNode>,
   path: Path,
-): PromiseOrValue<unknown> {
-  const fieldDef = getFieldDef(exeContext.schema, parentType, fieldNodes[0]);
-  if (!fieldDef) {
-    return;
-  }
-
+  fieldDef: GraphQLField<unknown, unknown>,
+): PromiseOrValue<{} | null> {
   const returnType = fieldDef.type;
   const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
 
@@ -800,13 +846,13 @@ function executeField(
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
       return completed.then(undefined, (rawError) => {
-        const error = locatedError(rawError, fieldNodes, pathToArray(path));
+        const error = locatedError(rawError, fieldNodes, pathToDigest(path));
         return handleFieldError(error, returnType, path, exeContext);
       });
     }
     return completed;
   } catch (rawError) {
-    const error = locatedError(rawError, fieldNodes, pathToArray(path));
+    const error = locatedError(rawError, fieldNodes, pathToDigest(path));
     return handleFieldError(error, returnType, path, exeContext);
   }
 }
@@ -832,6 +878,7 @@ export function buildResolveInfo(
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
+    onError: exeContext.onError,
   };
 }
 
@@ -841,10 +888,24 @@ function handleFieldError(
   path: Path,
   exeContext: ExecutionContext,
 ): null {
-  // If the field type is non-nullable, then it is resolved without any
-  // protection from errors, however it still properly locates the error.
-  if (isNonNullType(returnType)) {
+  if (exeContext.onError === 'PROPAGATE') {
+    // If the field type is non-nullable, then it is resolved without any
+    // protection from errors, however it still properly locates the error.
+    if (isNonNullType(returnType)) {
+      throw error;
+    }
+  } else if (exeContext.onError === 'ABORT') {
+    // In this mode, any error propagates to the root.
     throw error;
+  } else if (exeContext.onError === 'NULL') {
+    // In this mode, the client takes responsibility for error handling, so we
+    // do not propagate errors.
+    /* c8 ignore next 6 */
+  } else {
+    invariant(
+      false,
+      'Unexpected onError setting: ' + inspect(exeContext.onError),
+    );
   }
 
   // Otherwise, error protection is applied, logging the error and resolving
@@ -883,7 +944,7 @@ function completeValue(
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
-): PromiseOrValue<unknown> {
+): PromiseOrValue<{} | null> {
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
     throw result;
@@ -986,11 +1047,12 @@ function completeListValue(
   // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
   const itemType = returnType.ofType;
+  const itemTypeNonNull = isNonNullType(itemType);
   let containsPromise = false;
   const completedResults = Array.from(result, (item, index) => {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
-    const itemPath = addPath(path, index, undefined);
+    const itemPath = addPath(path, index, undefined, itemTypeNonNull);
     try {
       let completedItem;
       if (isPromise(item)) {
@@ -1023,14 +1085,14 @@ function completeListValue(
           const error = locatedError(
             rawError,
             fieldNodes,
-            pathToArray(itemPath),
+            pathToDigest(itemPath),
           );
           return handleFieldError(error, itemType, itemPath, exeContext);
         });
       }
       return completedItem;
     } catch (rawError) {
-      const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
+      const error = locatedError(rawError, fieldNodes, pathToDigest(itemPath));
       return handleFieldError(error, itemType, itemPath, exeContext);
     }
   });
@@ -1044,10 +1106,7 @@ function completeListValue(
  *
  * @internal
  */
-function completeLeafValue(
-  returnType: GraphQLLeafType,
-  result: unknown,
-): unknown {
+function completeLeafValue(returnType: GraphQLLeafType, result: unknown): {} {
   const serializedResult = returnType.serialize(result);
   if (serializedResult == null) {
     throw new Error(
@@ -1055,7 +1114,7 @@ function completeLeafValue(
         `return non-nullable value, returned: ${inspect(serializedResult)}`,
     );
   }
-  return serializedResult;
+  return serializedResult as {};
 }
 
 /**

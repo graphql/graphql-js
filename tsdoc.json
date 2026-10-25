@@ -10,6 +10,7 @@
     "@deprecated": true,
     "@defaultValue": true,
     "@example": true,
+    "@experimental": true,
     "@link": true,
     "@param": true,
     "@packageDocumentation": true,

@@ -1,6 +1,7 @@
 /** @category Errors */
 
 import type { Maybe } from '../jsutils/Maybe';
+import type { PathDigest } from '../jsutils/Path';
 import { toError } from '../jsutils/toError';
 
 import type { ASTNode } from '../language/ast';
@@ -13,7 +14,7 @@ import { GraphQLError } from './GraphQLError';
  * document responsible for the original Error.
  * @param rawOriginalError - The original error value to wrap.
  * @param nodes - The AST nodes associated with the error.
- * @param path - The response path associated with the error.
+ * @param digest - The response path digest associated with the error.
  * @returns The GraphQL error.
  * @example
  * ```ts
@@ -22,9 +23,10 @@ import { GraphQLError } from './GraphQLError';
  *
  * const document = parse('{ viewer { name } }');
  * const fieldNode = document.definitions[0].selectionSet.selections[0];
- * const error = locatedError(new Error('Resolver failed'), fieldNode, [
- *   'viewer',
- * ]);
+ * const error = locatedError(new Error('Resolver failed'), fieldNode, {
+ *   path: ['viewer'],
+ *   pathNonNull: [false],
+ * });
  *
  * error.message; // => 'Resolver failed'
  * error.locations; // => [{ line: 1, column: 3 }]
@@ -34,7 +36,32 @@ import { GraphQLError } from './GraphQLError';
 export function locatedError(
   rawOriginalError: unknown,
   nodes: ASTNode | ReadonlyArray<ASTNode> | undefined | null,
+  digest: PathDigest,
+): GraphQLError;
+/**
+ * Given an arbitrary value, presumably thrown while attempting to execute a
+ * GraphQL operation, produce a new GraphQLError aware of the location in the
+ * document responsible for the original Error.
+ * @param rawOriginalError - The original error value to wrap.
+ * @param nodes - The AST nodes associated with the error.
+ * @param path - The response path associated with the error.
+ * @returns The GraphQL error.
+ * @example
+ * ```ts
+ * locatedError(new Error('Resolver failed'), undefined, ['viewer']);
+ * ```
+ * @deprecated Pass a digest rather than a path.
+ */
+export function locatedError(
+  rawOriginalError: unknown,
+  nodes: ASTNode | ReadonlyArray<ASTNode> | undefined | null,
   path?: Maybe<ReadonlyArray<string | number>>,
+): GraphQLError;
+/** @internal */
+export function locatedError(
+  rawOriginalError: unknown,
+  nodes: ASTNode | ReadonlyArray<ASTNode> | undefined | null,
+  digestOrPath?: Maybe<PathDigest | ReadonlyArray<string | number>>,
 ): GraphQLError {
   const originalError = toError(rawOriginalError);
 
@@ -43,15 +70,24 @@ export function locatedError(
     return originalError;
   }
 
+  const digest: Partial<PathDigest> =
+    digestOrPath == null
+      ? { path: undefined, pathNonNull: undefined }
+      : 'length' in digestOrPath
+      ? { path: digestOrPath, pathNonNull: undefined }
+      : digestOrPath;
+  const { path, pathNonNull } = digest;
+
   return new GraphQLError(originalError.message, {
     nodes: (originalError as GraphQLError).nodes ?? nodes,
     source: (originalError as GraphQLError).source,
     positions: (originalError as GraphQLError).positions,
     path,
+    pathNonNull,
     originalError,
   });
 }
 
 function isLocatedGraphQLError(error: any): error is GraphQLError {
-  return Array.isArray(error.path);
+  return Array.isArray(error.path) && Array.isArray(error.pathNonNull);
 }
