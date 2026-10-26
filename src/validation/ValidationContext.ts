@@ -117,19 +117,27 @@ export class ASTValidationContext {
     return spreads;
   }
 
+  // TODO: In the next major version, accept multiple operations here and
+  // remove getRecursivelyReferencedFragmentsForOperations.
   getRecursivelyReferencedFragments(
     operation: OperationDefinitionNode,
   ): ReadonlyArray<FragmentDefinitionNode> {
+    return this.getRecursivelyReferencedFragmentsForOperations([operation]);
+  }
+
+  getRecursivelyReferencedFragmentsForOperations(
+    operations: ReadonlyArray<OperationDefinitionNode>,
+  ): ReadonlyArray<FragmentDefinitionNode> {
     const fragmentNames = new Set(
-      this.getFragmentSpreads(operation.selectionSet).map(
-        (spread) => spread.name.value,
+      operations.flatMap(({ selectionSet }) =>
+        this.getFragmentSpreads(selectionSet).map(({ name }) => name.value),
       ),
     );
     let fragments = this._recursivelyReferencedFragments.get(fragmentNames);
     if (!fragments) {
       fragments = [];
       const collectedNames = new Set<string>();
-      const nodesToVisit: Array<SelectionSetNode> = [operation.selectionSet];
+      const nodesToVisit = operations.map(({ selectionSet }) => selectionSet);
       let node: SelectionSetNode | undefined;
       while ((node = nodesToVisit.pop())) {
         for (const spread of this.getFragmentSpreads(node)) {
