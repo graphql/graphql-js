@@ -331,4 +331,21 @@ describe('Validate: Defer/Stream directive on root field', () => {
       },
     ]);
   });
+
+  it('Fragment spread cycle shared by multiple root mutations', () => {
+    expectValid(`
+      mutation First {
+        ...rootFragment
+      }
+      mutation Second {
+        ...rootFragment
+      }
+      fragment rootFragment on MutationRoot {
+        ...otherFragment
+      }
+      fragment otherFragment on MutationRoot {
+        ...rootFragment
+      }
+    `);
+  });
 });

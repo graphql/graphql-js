@@ -562,4 +562,22 @@ describe('Validate: Defer/Stream directive on valid operations', () => {
       },
     ]);
   });
+
+  it('Defer fragment spread shared by multiple subscriptions', () => {
+    expectValid(`
+      subscription First {
+        subscriptionField {
+          ...myFragment @defer(if: false)
+        }
+      }
+      subscription Second {
+        subscriptionField {
+          ...myFragment @defer(if: false)
+        }
+      }
+      fragment myFragment on Message {
+        body
+      }
+    `);
+  });
 });
