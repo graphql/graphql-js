@@ -331,4 +331,24 @@ describe('Validate: Defer/Stream directive on root field', () => {
       },
     ]);
   });
+
+  it('Defer fragment spread after a plain root fragment spread', () => {
+    expectErrors(`
+      mutation {
+        ...rootFragment
+        ...rootFragment @defer
+      }
+      fragment rootFragment on MutationRoot {
+        mutationField {
+          body
+        }
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Defer directive cannot be used on root mutation type "MutationRoot".',
+        locations: [{ line: 4, column: 25 }],
+      },
+    ]);
+  });
 });

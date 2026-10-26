@@ -105,10 +105,6 @@ function forbidDeferStream({
       }
     } else if (selection.kind === 'FragmentSpread') {
       const fragmentName = selection.name.value;
-      if (visitedFragments.has(fragmentName)) {
-        continue;
-      }
-      visitedFragments.add(fragmentName);
       const fragment = context.getFragment(fragmentName);
       if (fragment) {
         const defer = getDeferDirective(selection);
@@ -120,6 +116,10 @@ function forbidDeferStream({
             ),
           );
         }
+        if (visitedFragments.has(fragmentName)) {
+          continue;
+        }
+        visitedFragments.add(fragmentName);
         forbidDeferStream({
           context,
           operationType,
