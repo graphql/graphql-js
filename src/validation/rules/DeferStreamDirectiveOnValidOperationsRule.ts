@@ -191,7 +191,7 @@ function forbidUnconditionalDeferStream({
           context.reportError(
             new GraphQLError(
               'Defer directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
-              { nodes: [directive, ...parentNodes] },
+              { nodes: [directive, ...parentNodes.toReversed()] },
             ),
           );
         }
@@ -200,7 +200,7 @@ function forbidUnconditionalDeferStream({
           context.reportError(
             new GraphQLError(
               'Stream directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.',
-              { nodes: [directive, ...parentNodes] },
+              { nodes: [directive, ...parentNodes.toReversed()] },
             ),
           );
         }
@@ -214,12 +214,14 @@ function forbidUnconditionalDeferStream({
       visitedFragments.add(fragmentName);
       const fragment = context.getFragment(fragmentName);
       if (fragment) {
+        parentNodes.push(selection);
         forbidUnconditionalDeferStream({
           context,
-          parentNodes: [selection, ...parentNodes],
+          parentNodes,
           selectionSet: fragment?.selectionSet,
           visitedFragments,
         });
+        parentNodes.pop();
       }
     } else if (selection.selectionSet) {
       forbidUnconditionalDeferStream({
