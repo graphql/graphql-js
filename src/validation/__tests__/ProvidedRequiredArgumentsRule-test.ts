@@ -427,6 +427,24 @@ describe('Validate: Provided required arguments', () => {
         `);
     });
 
+    it('checks required arguments on each spread', () => {
+      expectErrors(`
+        {
+          ...F(x: 3)
+          ...F
+        }
+        fragment F($x: Int!, $y: Int = 3) on Query {
+          foo
+        }
+      `).toDeepEqual([
+        {
+          message:
+            'Fragment "F" argument "x" of type "Int!" is required, but it was not provided.',
+          locations: [{ line: 4, column: 11 }],
+        },
+      ]);
+    });
+
     it('Skips missing fragments', () => {
       expectValid(`
           {

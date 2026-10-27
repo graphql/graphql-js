@@ -17,6 +17,7 @@ import { isRequiredArgument, isType } from '../../type/definition.ts';
 import { specifiedDirectives } from '../../type/directives.ts';
 
 import { typeFromAST } from '../../utilities/typeFromAST.ts';
+import type { FragmentSignature } from '../../utilities/TypeInfo.ts';
 
 import type {
   SDLValidationContext,
@@ -61,6 +62,10 @@ import type {
 export function ProvidedRequiredArgumentsRule(
   context: ValidationContext,
 ): ASTVisitor {
+  const requiredArgsByFragment = new Map<
+    FragmentSignature,
+    Array<[string, VariableDefinitionNode]>
+  >();
   return {
     // eslint-disable-next-line new-cap
     ...ProvidedRequiredArgumentsOnDirectivesRule(context),
@@ -94,18 +99,19 @@ export function ProvidedRequiredArgumentsRule(
         if (!fragmentSignature) {
           return false;
         }
+        let requiredArgs = requiredArgsByFragment.get(fragmentSignature);
+        if (!requiredArgs) {
+          requiredArgs = [...fragmentSignature.variableDefinitions].filter(
+            ([, definition]) => isRequiredArgumentNode(definition),
+          );
+          requiredArgsByFragment.set(fragmentSignature, requiredArgs);
+        }
 
         const providedArgs = new Set(
           spreadNode.arguments?.map((arg) => arg.name.value),
         );
-        for (const [
-          varName,
-          variableDefinition,
-        ] of fragmentSignature.variableDefinitions) {
-          if (
-            !providedArgs.has(varName) &&
-            isRequiredArgumentNode(variableDefinition)
-          ) {
+        for (const [varName, variableDefinition] of requiredArgs) {
+          if (!providedArgs.has(varName)) {
             const type = typeFromAST(
               context.getSchema(),
               variableDefinition.type,
