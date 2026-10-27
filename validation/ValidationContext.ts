@@ -1,6 +1,7 @@
 /** @category Validation Context */
 import type { Maybe } from '../jsutils/Maybe.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
+import { SetMap } from '../jsutils/SetMap.ts';
 import type { GraphQLError } from '../error/GraphQLError.ts';
 import type {
   DocumentNode,
@@ -46,15 +47,15 @@ export class ASTValidationContext {
   private _onError: (error: GraphQLError) => void;
   private _fragments: ObjMap<FragmentDefinitionNode> | undefined;
   private _fragmentSpreads: Map<SelectionSetNode, Array<FragmentSpreadNode>>;
-  private _recursivelyReferencedFragments: Map<
-    OperationDefinitionNode,
+  private _recursivelyReferencedFragments: SetMap<
+    string,
     Array<FragmentDefinitionNode>
   >;
   constructor(ast: DocumentNode, onError: (error: GraphQLError) => void) {
     this._ast = ast;
     this._fragments = undefined;
     this._fragmentSpreads = new Map();
-    this._recursivelyReferencedFragments = new Map();
+    this._recursivelyReferencedFragments = new SetMap();
     this._onError = onError;
   }
   get [Symbol.toStringTag](): string {
@@ -105,7 +106,12 @@ export class ASTValidationContext {
   getRecursivelyReferencedFragments(
     operation: OperationDefinitionNode,
   ): ReadonlyArray<FragmentDefinitionNode> {
-    let fragments = this._recursivelyReferencedFragments.get(operation);
+    const fragmentNames = new Set(
+      this.getFragmentSpreads(operation.selectionSet).map(
+        (spread) => spread.name.value,
+      ),
+    );
+    let fragments = this._recursivelyReferencedFragments.get(fragmentNames);
     if (!fragments) {
       fragments = [];
       const collectedNames = new Set<string>();
@@ -124,7 +130,7 @@ export class ASTValidationContext {
           }
         }
       }
-      this._recursivelyReferencedFragments.set(operation, fragments);
+      this._recursivelyReferencedFragments.set(fragmentNames, fragments);
     }
     return fragments;
   }
