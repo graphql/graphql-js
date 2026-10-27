@@ -159,10 +159,13 @@ class ValidationContext extends ASTValidationContext {
     getRecursiveVariableUsages(operation) {
         let usages = this._recursiveVariableUsages.get(operation);
         if (!usages) {
-            usages = this.getVariableUsages(operation);
-            for (const frag of this.getRecursivelyReferencedFragments(operation)) {
-                usages = usages.concat(this.getVariableUsages(frag));
+            const fragments = this.getRecursivelyReferencedFragments(operation);
+            let fragmentUsages = this._recursiveVariableUsages.get(fragments);
+            if (!fragmentUsages) {
+                fragmentUsages = fragments.flatMap((frag) => this.getVariableUsages(frag));
+                this._recursiveVariableUsages.set(fragments, fragmentUsages);
             }
+            usages = this.getVariableUsages(operation).concat(fragmentUsages);
             this._recursiveVariableUsages.set(operation, usages);
         }
         return usages;
