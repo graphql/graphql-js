@@ -390,4 +390,22 @@ describe('Validate: Subscriptions with single field', () => {
       `,
     ).toDeepEqual([]);
   });
+
+  it('shared fragment in multiple subscriptions', () => {
+    expectValid(`
+      subscription sub {
+        ...newMessageFields
+      }
+      subscription other {
+        ...newMessageFields
+      }
+
+      fragment newMessageFields on SubscriptionRoot {
+        newMessage {
+          body
+          sender
+        }
+      }
+    `);
+  });
 });
