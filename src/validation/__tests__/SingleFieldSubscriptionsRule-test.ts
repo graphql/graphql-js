@@ -422,4 +422,19 @@ describe('Validate: Subscriptions with single field', () => {
       }
     `);
   });
+
+  it('collects fields from fragments with different defer conditions', () => {
+    expectValid(`
+      subscription {
+        ...newMessageFields @defer
+        ...newMessageFields @defer(if: false)
+      }
+      fragment newMessageFields on SubscriptionRoot {
+        newMessage {
+          body
+          sender
+        }
+      }
+    `);
+  });
 });
