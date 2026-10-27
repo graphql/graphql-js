@@ -1,3 +1,4 @@
+import { SetMap } from "../jsutils/SetMap.mjs";
 import { Kind } from "../language/kinds.mjs";
 import { visit } from "../language/visitor.mjs";
 import { TypeInfo, visitWithTypeInfo } from "../utilities/TypeInfo.mjs";
@@ -6,7 +7,7 @@ export class ASTValidationContext {
         this._ast = ast;
         this._fragments = undefined;
         this._fragmentSpreads = new Map();
-        this._recursivelyReferencedFragments = new Map();
+        this._recursivelyReferencedFragments = new SetMap();
         this._onError = onError;
     }
     get [Symbol.toStringTag]() {
@@ -55,7 +56,8 @@ export class ASTValidationContext {
         return spreads;
     }
     getRecursivelyReferencedFragments(operation) {
-        let fragments = this._recursivelyReferencedFragments.get(operation);
+        const fragmentNames = new Set(this.getFragmentSpreads(operation.selectionSet).map((spread) => spread.name.value));
+        let fragments = this._recursivelyReferencedFragments.get(fragmentNames);
         if (!fragments) {
             fragments = [];
             const collectedNames = new Set();
@@ -74,7 +76,7 @@ export class ASTValidationContext {
                     }
                 }
             }
-            this._recursivelyReferencedFragments.set(operation, fragments);
+            this._recursivelyReferencedFragments.set(fragmentNames, fragments);
         }
         return fragments;
     }

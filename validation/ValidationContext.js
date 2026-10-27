@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ValidationContext = exports.SDLValidationContext = exports.ASTValidationContext = void 0;
+const SetMap_ts_1 = require("../jsutils/SetMap.js");
 const kinds_ts_1 = require("../language/kinds.js");
 const visitor_ts_1 = require("../language/visitor.js");
 const TypeInfo_ts_1 = require("../utilities/TypeInfo.js");
@@ -9,7 +10,7 @@ class ASTValidationContext {
         this._ast = ast;
         this._fragments = undefined;
         this._fragmentSpreads = new Map();
-        this._recursivelyReferencedFragments = new Map();
+        this._recursivelyReferencedFragments = new SetMap_ts_1.SetMap();
         this._onError = onError;
     }
     get [Symbol.toStringTag]() {
@@ -58,7 +59,8 @@ class ASTValidationContext {
         return spreads;
     }
     getRecursivelyReferencedFragments(operation) {
-        let fragments = this._recursivelyReferencedFragments.get(operation);
+        const fragmentNames = new Set(this.getFragmentSpreads(operation.selectionSet).map((spread) => spread.name.value));
+        let fragments = this._recursivelyReferencedFragments.get(fragmentNames);
         if (!fragments) {
             fragments = [];
             const collectedNames = new Set();
@@ -77,7 +79,7 @@ class ASTValidationContext {
                     }
                 }
             }
-            this._recursivelyReferencedFragments.set(operation, fragments);
+            this._recursivelyReferencedFragments.set(fragmentNames, fragments);
         }
         return fragments;
     }
