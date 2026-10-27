@@ -1,0 +1,564 @@
+---
+title: Handle Errors and Debug GraphQL
+description: Format errors safely for clients, implement custom error types, debug production issues, and build error recovery strategies for GraphQL.js applications.
+---
+
+# Handle Errors and Debug GraphQL
+
+Production GraphQL servers need robust error handling that protects sensitive information while providing developers with the context they need to diagnose issues. GraphQL's structured error format gives you control over what clients see and what gets logged internally.
+
+This guide shows you how to format errors safely, create custom error types, debug production problems, and implement recovery strategies for GraphQL.js applications.
+
+## Format errors for production
+
+GraphQL errors contain details that help during development but can expose sensitive information in production. Control what clients receive by formatting errors before they leave your server.
+
+### Remove sensitive error details
+
+Strip stack traces and internal messages from errors sent to clients.
+
+```javascript
+import { graphql } from 'graphql';
+
+export async function executeGraphQLRequest(schema, source, contextValue) {
+  const result = await graphql({ schema, source, contextValue });
+  
+  if (result.errors) {
+    result.errors = result.errors.map(error => ({
+      message: error.message,
+      locations: error.locations,
+      path: error.path,
+      extensions: {
+        code: error.extensions?.code || 'INTERNAL_SERVER_ERROR'
+      }
+    }));
+  }
+  
+  return result;
+}
+```
+
+This example transforms errors to include only safe fields. Stack traces, original error objects, and internal details get filtered out before the response reaches the client.
+
+To adapt this pattern:
+
+- Add a `formatError` function to your GraphQL configuration
+- Include extension codes that help clients handle different error types without exposing implementation details
+- Log the full error internally before formatting it for the client
+- Consider environment-specific formatting that shows more details in development
+
+### Categorize errors with codes
+
+Use error codes to help clients distinguish between different error types without revealing system internals.
+
+```javascript
+export class GraphQLError extends Error {
+  constructor(message, code, extensions = {}) {
+    super(message);
+    this.extensions = {
+      code,
+      ...extensions
+    };
+  }
+}
+
+export class AuthenticationError extends GraphQLError {
+  constructor(message = 'Authentication required') {
+    super(message, 'UNAUTHENTICATED');
+  }
+}
+
+export class ForbiddenError extends GraphQLError {
+  constructor(message = 'Forbidden') {
+    super(message, 'FORBIDDEN');
+  }
+}
+
+export class ValidationError extends GraphQLError {
+  constructor(message, fields = []) {
+    super(message, 'BAD_USER_INPUT', { fields });
+  }
+}
+```
+
+These custom error classes set standardized codes that clients can handle programmatically. The extensions object carries additional context like which fields failed validation.
+
+To implement custom errors:
+
+- Throw them from your resolvers when specific conditions occur
+- Document error codes in your API documentation so client developers know what to expect
+- Use consistent codes across your entire API
+- Add fields to extensions that help clients recover from errors without exposing sensitive data
+
+### Log errors with context
+
+Capture detailed error information for debugging while keeping client responses clean.
+
+```javascript
+import { logger } from './logger.js';
+
+export function formatError(error, context) {
+  logger.error('graphql_error', {
+    message: error.message,
+    code: error.extensions?.code,
+    path: error.path,
+    operationName: context.operationName,
+    userId: context.userId,
+    stackTrace: error.originalError?.stack,
+    timestamp: new Date().toISOString()
+  });
+  
+  return {
+    message: error.message,
+    locations: error.locations,
+    path: error.path,
+    extensions: {
+      code: error.extensions?.code || 'INTERNAL_SERVER_ERROR'
+    }
+  };
+}
+```
+
+This formatter logs comprehensive error details internally while returning a sanitized version to clients. The log includes stack traces, user context, and operation details.
+
+When implementing error logging:
+
+- Include request IDs to correlate errors with other logs
+- Add structured fields that your monitoring system can index and alert on
+- Sanitize logged data to avoid capturing passwords or tokens
+- Rate limit error logs for specific error types to prevent log flooding during incidents
+
+## Create custom error types
+
+Custom errors communicate specific problems to clients and make resolver code more maintainable.
+
+### Handle validation errors
+
+Provide detailed feedback when client input fails validation.
+
+```javascript
+export class InputValidationError extends GraphQLError {
+  constructor(message, invalidFields) {
+    super(message, 'BAD_USER_INPUT', {
+      invalidFields: invalidFields.map(field => ({
+        field: field.name,
+        message: field.message
+      }))
+    });
+  }
+}
+
+// In resolver
+const UserMutations = {
+  createUser: async (parent, args, context) => {
+    const errors = validateUserInput(args.input);
+    
+    if (errors.length > 0) {
+      throw new InputValidationError(
+        'User input validation failed',
+        errors
+      );
+    }
+    
+    return createUser(args.input);
+  }
+};
+```
+
+This error type structures validation failures in a way clients can use to display field-specific error messages. The extensions include which fields failed and why.
+
+To use validation errors effectively:
+
+- Validate all input before performing any operations
+- Return all validation errors at once rather than failing on the first error
+- Use consistent field names that match your input types
+- Consider internationalization by providing error codes that clients can translate
+
+### Handle resource errors
+
+Communicate when requested resources don't exist or aren't accessible.
+
+```javascript
+export class NotFoundError extends GraphQLError {
+  constructor(resourceType, resourceId) {
+    super(
+      `${resourceType} not found`,
+      'NOT_FOUND',
+      { resourceType, resourceId }
+    );
+  }
+}
+
+export class ConflictError extends GraphQLError {
+  constructor(message, conflictingResource) {
+    super(message, 'CONFLICT', { conflictingResource });
+  }
+}
+
+// In resolver
+const Query = {
+  user: async (parent, args, context) => {
+    const user = await fetchUser(args.id);
+    
+    if (!user) {
+      throw new NotFoundError('User', args.id);
+    }
+    
+    if (!canAccessUser(context.userId, user.id)) {
+      throw new ForbiddenError('Cannot access this user');
+    }
+    
+    return user;
+  }
+};
+```
+
+These error types distinguish between "not found" and "forbidden" scenarios. The extensions provide context about what resource was involved.
+
+When implementing resource errors:
+
+- Use NOT_FOUND for missing resources and FORBIDDEN when the resource exists but the user lacks access
+- Include enough information in extensions to help clients display meaningful messages without exposing security details
+- Consider using generic messages for forbidden resources to avoid confirming resource existence
+
+### Handle external service errors
+
+Wrap errors from external services to prevent internal details from leaking to clients.
+
+```javascript
+export class ExternalServiceError extends GraphQLError {
+  constructor(serviceName, originalError) {
+    super(
+      'External service temporarily unavailable',
+      'SERVICE_UNAVAILABLE',
+      { serviceName }
+    );
+    
+    this.originalError = originalError;
+  }
+}
+
+// In resolver
+const Query = {
+  recommendation: async (parent, args, context) => {
+    try {
+      return await recommendationService.fetch(args.userId);
+    } catch (error) {
+      logger.error('recommendation_service_error', {
+        error: error.message,
+        stack: error.stack,
+        userId: args.userId
+      });
+      
+      throw new ExternalServiceError('recommendation', error);
+    }
+  }
+};
+```
+
+This pattern catches errors from external services, logs the full details internally, and returns a generic error to clients. The service name helps clients understand which feature is unavailable without exposing implementation details.
+
+To handle external service errors:
+
+- Wrap all external calls in try-catch blocks
+- Log the original error with full context before transforming it
+- Consider implementing retry logic before throwing errors
+- Add circuit breakers for services that frequently fail to prevent cascading failures
+
+## Debug production issues
+
+Production debugging requires techniques that don't rely on attaching debuggers or adding temporary logging.
+
+### Add request tracing
+
+Track requests through your system to understand execution flow.
+
+```javascript
+import { randomUUID } from 'crypto';
+
+export function createContext(req) {
+  const requestId = req.headers['x-request-id'] || randomUUID();
+  const startTime = Date.now();
+  
+  return {
+    requestId,
+    startTime,
+    breadcrumbs: [],
+    
+    addBreadcrumb: function(category, message, data = {}) {
+      this.breadcrumbs.push({
+        category,
+        message,
+        data,
+        timestamp: Date.now() - this.startTime,
+        requestId: this.requestId
+      });
+    }
+  };
+}
+
+// In resolver
+const Query = {
+  user: async (parent, args, context) => {
+    context.addBreadcrumb('database', 'Fetching user', { userId: args.id });
+    
+    const user = await fetchUser(args.id);
+    
+    context.addBreadcrumb('database', 'User fetched', { 
+      userId: args.id,
+      found: !!user 
+    });
+    
+    return user;
+  }
+};
+```
+
+This pattern creates a trail of breadcrumbs throughout request execution. Each breadcrumb records what happened and when, relative to the request start time.
+
+To implement request tracing:
+
+- Add breadcrumbs at key points in your resolvers
+- Include breadcrumbs in error logs to see what happened before the error
+- Keep breadcrumb data lightweight to avoid performance impact
+- Send breadcrumbs to your error tracking service when errors occur
+- Propagate request IDs to external services for distributed tracing
+
+### Enable debug mode safely
+
+Provide detailed error information in development without exposing it in production.
+
+```javascript
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+export function formatError(error, context) {
+  const formatted = {
+    message: error.message,
+    locations: error.locations,
+    path: error.path,
+    extensions: {
+      code: error.extensions?.code || 'INTERNAL_SERVER_ERROR'
+    }
+  };
+  
+  if (isDevelopment) {
+    formatted.extensions.stackTrace = error.originalError?.stack;
+    formatted.extensions.breadcrumbs = context.breadcrumbs;
+  }
+  
+  return formatted;
+}
+```
+
+This formatter includes stack traces and breadcrumbs in development but omits them in production. Developers get the context they need locally without risk of exposing it to production clients.
+
+When implementing debug modes:
+
+- Check environment variables rather than configuration files that might accidentally enable debug mode in production
+- Consider adding a secure debug endpoint that requires authentication and can be enabled temporarily for production debugging
+- Never include debug information in responses to unauthenticated requests
+
+### Capture error context
+
+Include relevant state information when errors occur to aid debugging.
+
+```javascript
+export function wrapResolver(resolver, typeName, fieldName) {
+  return async (parent, args, context, info) => {
+    try {
+      return await resolver(parent, args, context, info);
+    } catch (error) {
+      const errorContext = {
+        typeName,
+        fieldName,
+        args: sanitizeArgs(args),
+        userId: context.userId,
+        requestId: context.requestId,
+        parentType: parent?.constructor?.name,
+        breadcrumbs: context.breadcrumbs
+      };
+      
+      logger.error('resolver_error', {
+        error: error.message,
+        stack: error.stack,
+        context: errorContext
+      });
+      
+      throw error;
+    }
+  };
+}
+
+function sanitizeArgs(args) {
+  const sanitized = { ...args };
+  const sensitiveFields = ['password', 'token', 'secret'];
+  
+  sensitiveFields.forEach(field => {
+    if (field in sanitized) {
+      sanitized[field] = '[REDACTED]';
+    }
+  });
+  
+  return sanitized;
+}
+```
+
+This wrapper captures context about where and why an error occurred. The sanitization prevents sensitive data from appearing in logs.
+
+To capture useful error context:
+
+- Wrap all resolvers to add consistent error handling
+- Include parent object types to understand resolver chains
+- Add user information to correlate errors with specific users or usage patterns
+- Sanitize all data before logging to prevent leaking credentials or personal information
+
+## Implement error recovery
+
+Build resilience into your GraphQL server so it can handle and recover from errors gracefully.
+
+### Handle partial failures
+
+Return successful data alongside errors instead of failing entire operations.
+
+```javascript
+const Query = {
+  users: async (parent, args, context) => {
+    const userIds = args.ids;
+    const users = [];
+    const errors = [];
+    
+    for (const id of userIds) {
+      try {
+        const user = await fetchUser(id);
+        users.push(user);
+      } catch (error) {
+        errors.push({
+          message: `Failed to fetch user ${id}`,
+          extensions: {
+            code: 'USER_FETCH_FAILED',
+            userId: id
+          }
+        });
+        users.push(null);
+      }
+    }
+    
+    return users;
+  }
+};
+```
+
+This resolver attempts to fetch all requested users and returns whatever succeeded. Errors for individual users get reported without failing the entire query.
+
+When implementing partial failure handling:
+
+- Decide per-field whether partial success makes sense
+- Document which fields return partial results so clients know what to expect
+- Consider returning error information in the data itself for better client-side handling
+- Balance between failing fast and attempting recovery based on your use case
+
+### Add fallback data sources
+
+Provide degraded service when primary data sources fail.
+
+```javascript
+export async function fetchUserWithFallback(userId, context) {
+  try {
+    return await primaryDatabase.fetchUser(userId);
+  } catch (primaryError) {
+    logger.warn('primary_database_unavailable', {
+      userId,
+      error: primaryError.message
+    });
+    
+    try {
+      const cachedUser = await cache.get(`user:${userId}`);
+      if (cachedUser) {
+        return { ...cachedUser, stale: true };
+      }
+    } catch (cacheError) {
+      logger.error('cache_unavailable', {
+        userId,
+        error: cacheError.message
+      });
+    }
+    
+    throw new ExternalServiceError('database', primaryError);
+  }
+}
+```
+
+This function tries the primary database first, falls back to cached data if the database is unavailable, and only throws an error if both fail. The returned data includes a flag indicating it came from cache.
+
+To implement fallback strategies:
+
+- Identify which data can safely come from stale sources
+- Add metadata to responses indicating when fallback data was used
+- Set cache TTLs appropriate for your fallback tolerance
+- Monitor fallback usage to detect infrastructure problems
+- Consider returning partial data rather than failing completely
+
+### Implement retry logic
+
+Retry transient failures automatically before reporting errors to clients.
+
+```javascript
+export async function retryOperation(operation, maxRetries = 3) {
+  let lastError;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      
+      if (!isRetry(error)) {
+        throw error;
+      }
+      
+      const delay = Math.min(100 * Math.pow(2, attempt), 1000);
+      await sleep(delay);
+      
+      logger.warn('operation_retry', {
+        attempt: attempt + 1,
+        maxRetries,
+        error: error.message
+      });
+    }
+  }
+  
+  throw lastError;
+}
+
+function isRetry(error) {
+  const retryCodes = ['ETIMEDOUT', 'ECONNRESET', 'ENOTFOUND'];
+  return retryCodes.includes(error.code) || error.statusCode >= 500;
+}
+
+// In resolver
+const Query = {
+  posts: async (parent, args, context) => {
+    return retryOperation(() => fetchPosts(args.limit));
+  }
+};
+```
+
+This function implements exponential backoff for retrying failed operations. It only retries errors that are likely transient, like network timeouts or 5xx server errors.
+
+When adding retry logic:
+
+- Identify which operations are safe to retry
+- Avoid retrying mutations that aren't idempotent unless you've added idempotency keys
+- Set maximum retry counts to prevent hanging requests
+- Use exponential backoff to avoid overwhelming failing services
+- Log retry attempts to detect flaky dependencies
+
+## Additional error handling considerations
+
+Several other aspects support robust error handling in production:
+
+- **Error aggregation**: Group similar errors together to avoid alert fatigue and identify patterns in production issues
+- **Error rate monitoring**: Track error rates over time to detect increases that indicate problems, even if individual errors seem normal
+- **Client error reporting**: Implement client-side error tracking to capture errors that occur during client-side GraphQL operations
+- **Graceful degradation**: Design your schema so clients can handle missing or null fields without breaking
+- **Error documentation**: Document expected error codes and scenarios in your API documentation so clients can handle them appropriately
