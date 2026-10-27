@@ -139,6 +139,14 @@ describe('Schema Builder', () => {
     );
   });
 
+  it('forwards list type nesting limits', () => {
+    const source = 'type Query { field: [[Int]] }';
+    expect(() => buildSchema(source, { maxListDepth: 2 })).to.not.throw();
+    expect(() => buildSchema(source, { maxListDepth: 1 })).to.throw(
+      'Document exceeds maximum list depth of 1. Parsing aborted.',
+    );
+  });
+
   it('Ignores non-type system definitions', () => {
     const sdl = `
       type Query {
