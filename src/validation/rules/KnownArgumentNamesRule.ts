@@ -109,7 +109,7 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
 export function KnownArgumentNamesOnDirectivesRule(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor {
-  const directiveArgs = new Map<string, ReadonlyArray<string>>();
+  const directiveArgs = new Map<string, ReadonlySet<string>>();
 
   const schema = context.getSchema();
   const definedDirectives = schema
@@ -118,7 +118,7 @@ export function KnownArgumentNamesOnDirectivesRule(
   for (const directive of definedDirectives) {
     directiveArgs.set(
       directive.name,
-      directive.args.map((arg) => arg.name),
+      new Set(directive.args.map((arg) => arg.name)),
     );
   }
 
@@ -129,7 +129,7 @@ export function KnownArgumentNamesOnDirectivesRule(
 
       directiveArgs.set(
         def.name.value,
-        argsNodes.map((arg) => arg.name.value),
+        new Set(argsNodes.map((arg) => arg.name.value)),
       );
     }
   }
@@ -142,10 +142,10 @@ export function KnownArgumentNamesOnDirectivesRule(
       if (directiveNode.arguments != null && knownArgs != null) {
         for (const argNode of directiveNode.arguments) {
           const argName = argNode.name.value;
-          if (!knownArgs.includes(argName)) {
+          if (!knownArgs.has(argName)) {
             const suggestions = context.hideSuggestions
               ? []
-              : suggestionList(argName, knownArgs);
+              : suggestionList(argName, [...knownArgs]);
             context.reportError(
               new GraphQLError(
                 `Unknown argument "${argName}" on directive "@${directiveName}".` +
