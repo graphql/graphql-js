@@ -203,7 +203,7 @@ export class ValidationContext extends ASTValidationContext {
   >;
 
   private _recursiveVariableUsages: Map<
-    OperationDefinitionNode,
+    OperationDefinitionNode | ReadonlyArray<FragmentDefinitionNode>,
     ReadonlyArray<VariableUsage>
   >;
   private _hideSuggestions: boolean;
@@ -477,10 +477,15 @@ export class ValidationContext extends ASTValidationContext {
   ): ReadonlyArray<VariableUsage> {
     let usages = this._recursiveVariableUsages.get(operation);
     if (!usages) {
-      usages = this.getVariableUsages(operation);
-      for (const frag of this.getRecursivelyReferencedFragments(operation)) {
-        usages = usages.concat(this.getVariableUsages(frag));
+      const fragments = this.getRecursivelyReferencedFragments(operation);
+      let fragmentUsages = this._recursiveVariableUsages.get(fragments);
+      if (!fragmentUsages) {
+        fragmentUsages = fragments.flatMap((frag) =>
+          this.getVariableUsages(frag),
+        );
+        this._recursiveVariableUsages.set(fragments, fragmentUsages);
       }
+      usages = this.getVariableUsages(operation).concat(fragmentUsages);
       this._recursiveVariableUsages.set(operation, usages);
     }
     return usages;

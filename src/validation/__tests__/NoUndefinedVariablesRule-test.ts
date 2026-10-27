@@ -467,4 +467,19 @@ describe('Validate: No undefined variables', () => {
       },
     ]);
   });
+
+  it('keeps operation variables separate across shared fragments', () => {
+    expectValid(`
+      query Foo($a: String, $b: String) {
+        field(b: $b)
+        ...FragA
+      }
+      query Bar($a: String) {
+        ...FragA
+      }
+      fragment FragA on Type {
+        field(a: $a)
+      }
+    `);
+  });
 });
