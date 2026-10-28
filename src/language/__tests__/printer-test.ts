@@ -6,10 +6,36 @@ import { dedent, dedentString } from '../../__testUtils__/dedent.ts';
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.ts';
 
 import { Kind } from '../kinds.ts';
-import { parse, parseSchemaCoordinate } from '../parser.ts';
-import { print } from '../printer.ts';
+import { parse, parseSchemaCoordinate, parseValue } from '../parser.ts';
+import { print, printForError } from '../printer.ts';
 
 describe('Printer: Query document', () => {
+  it('limits indentation depth when requested', () => {
+    const ast = parse('{ a { b { c } } }');
+    expect(print(ast, { maxIndentDepth: 0 })).to.equal('{ a { b { c } } }');
+    expect(print(ast, { maxIndentDepth: 1 })).to.equal('{\n  a { b { c } }\n}');
+    expect(print(ast, {})).to.equal(print(ast));
+  });
+
+  it('preserves block strings when indentation is disabled', () => {
+    const value = parseValue('"""first\nsecond"""');
+
+    expect(print(value, { maxIndentDepth: 0 })).to.equal(
+      '"""\nfirst\nsecond\n"""',
+    );
+  });
+
+  it('limits error indentation to 100 levels', () => {
+    const source = '['.repeat(200) + '0' + ']'.repeat(200);
+    const ast = parseValue(source);
+    const printed = printForError(ast);
+
+    expect(print(ast)).to.include('\n' + ' '.repeat(201));
+    expect(printed).to.include('\n' + ' '.repeat(200));
+    expect(printed).to.not.include('\n' + ' '.repeat(201));
+    expect(printed.replaceAll(/\s/g, '')).to.equal(source);
+  });
+
   it('prints minimal ast', () => {
     const ast = {
       kind: Kind.FIELD,
