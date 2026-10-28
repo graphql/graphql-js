@@ -35,9 +35,7 @@ import type { ASTValidationContext } from '../ValidationContext';
  * const validDocument = parse(`
  *   query One { name } query Two { name }
  * `);
- * const validErrors = validate(schema, validDocument, [UniqueOperationNamesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [UniqueOperationNamesRule]); // => []
  * ```
  */
 export function UniqueOperationNamesRule(

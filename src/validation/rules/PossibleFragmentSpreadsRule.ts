@@ -52,9 +52,9 @@ import type { ValidationContext } from '../ValidationContext';
  * const validDocument = parse(`
  *   { dog { ... on Dog { barkVolume } } }
  * `);
- * const validErrors = validate(schema, validDocument, [PossibleFragmentSpreadsRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [
+ *   PossibleFragmentSpreadsRule,
+ * ]); // => []
  * ```
  */
 export function PossibleFragmentSpreadsRule(

@@ -125,8 +125,8 @@ export class GraphQLDirective {
    *
    * const document = parse(`
    *   directive @cacheControl(maxAge: Int) repeatable on FIELD_DEFINITION
-   *   extend directive @cacheControl(maxAge: Int) on FIELD_DEFINITION
-   * `);
+   *   extend directive @cacheControl @tag
+   * `, { experimentalDirectivesOnDirectiveDefinitions: true });
    * const definition = document.definitions[0];
    *
    * const cacheControl = new GraphQLDirective({

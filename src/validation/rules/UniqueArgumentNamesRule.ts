@@ -39,9 +39,7 @@ import type { ASTValidationContext } from '../ValidationContext';
  * const validDocument = parse(`
  *   { field(arg: "1") }
  * `);
- * const validErrors = validate(schema, validDocument, [UniqueArgumentNamesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [UniqueArgumentNamesRule]); // => []
  * ```
  */
 export function UniqueArgumentNamesRule(

@@ -70,10 +70,10 @@ import { getIntrospectionQuery } from './getIntrospectionQuery';
  *   (directive) => directive.name === 'deprecated',
  * );
  *
- * urlType.specifiedByURL; // => undefined
  * urlType.description; // => undefined
- * introspection.__schema.description; // => undefined
+ * urlType.specifiedByURL; // => undefined
  * deprecatedDirective.isRepeatable; // => undefined
+ * introspection.__schema.description; // => undefined
  * ```
  */
 export function introspectionFromSchema(

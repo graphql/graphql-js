@@ -36,9 +36,7 @@ import type { ValidationContext } from '../ValidationContext';
  * const validDocument = parse(`
  *   fragment NameFields on Query { name } query { ...NameFields }
  * `);
- * const validErrors = validate(schema, validDocument, [KnownFragmentNamesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [KnownFragmentNamesRule]); // => []
  * ```
  */
 export function KnownFragmentNamesRule(context: ValidationContext): ASTVisitor {
