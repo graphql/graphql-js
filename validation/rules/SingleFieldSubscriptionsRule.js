@@ -16,7 +16,10 @@ function SingleFieldSubscriptionsRule(context) {
                 const subscriptionType = schema.getSubscriptionType();
                 if (subscriptionType) {
                     const operationName = node.name ? node.name.value : null;
-                    const variableValues = Object.create(null);
+                    const variableValues = {
+                        sources: Object.create(null),
+                        coerced: Object.create(null),
+                    };
                     if (!fragments) {
                         fragments = Object.create(null);
                         for (const definition of context.getDocument().definitions) {
