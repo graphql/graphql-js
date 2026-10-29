@@ -83,6 +83,7 @@ export function collectFields(
   selectionSet: SelectionSetNode,
   hideSuggestions: boolean,
   forbidSkipAndInclude = false,
+  visit: typeof visitSelectionSets = visitSelectionSets,
 ): {
   groupedFieldSet: GroupedFieldSet;
   newDeferUsages: ReadonlyArray<DeferUsage>;
@@ -100,7 +101,7 @@ export function collectFields(
     forbiddenDirectiveInstances: [],
     forbidSkipAndInclude,
   };
-  collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsages);
+  visit(context, selectionSet, groupedFieldSet, newDeferUsages);
   return {
     groupedFieldSet,
     newDeferUsages,
@@ -145,7 +146,7 @@ export function collectSubfields(
     const selectionSet = fieldDetail.node.selectionSet;
     if (selectionSet) {
       const { deferUsage, fragmentVariableValues } = fieldDetail;
-      collectFieldsImpl(
+      visitSelectionSets(
         context,
         selectionSet,
         subGroupedFieldSet,
@@ -162,13 +163,14 @@ export function collectSubfields(
 }
 /** @internal */
 // eslint-disable-next-line max-params
-function collectFieldsImpl(
+export function visitSelectionSets(
   context: CollectFieldsContext,
   selectionSet: SelectionSetNode,
   groupedFieldSet: AccumulatorMap<string, FieldDetails>,
   newDeferUsages: Array<DeferUsage>,
   deferUsage?: DeferUsage,
   fragmentVariableValues?: FragmentVariableValues,
+  recurse: typeof visitSelectionSets = visitSelectionSets,
 ): void {
   const {
     schema,
@@ -217,23 +219,25 @@ function collectFieldsImpl(
           deferUsage,
         );
         if (!newDeferUsage) {
-          collectFieldsImpl(
+          recurse(
             context,
             selection.selectionSet,
             groupedFieldSet,
             newDeferUsages,
             deferUsage,
             fragmentVariableValues,
+            recurse,
           );
         } else {
           newDeferUsages.push(newDeferUsage);
-          collectFieldsImpl(
+          recurse(
             context,
             selection.selectionSet,
             groupedFieldSet,
             newDeferUsages,
             newDeferUsage,
             fragmentVariableValues,
+            recurse,
           );
         }
         break;
@@ -291,13 +295,14 @@ function collectFieldsImpl(
             hideSuggestions,
           );
         }
-        collectFieldsImpl(
+        recurse(
           context,
           fragment.definition.selectionSet,
           groupedFieldSet,
           newDeferUsages,
           maybeNewDeferUsage,
           newFragmentVariableValues,
+          recurse,
         );
         break;
       }
