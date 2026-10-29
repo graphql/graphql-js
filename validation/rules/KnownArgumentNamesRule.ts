@@ -130,7 +130,9 @@ export function KnownArgumentNamesOnDirectivesRule(
         for (const argNode of directiveNode.arguments) {
           const argName = argNode.name.value;
           if (!knownArgs.includes(argName)) {
-            const suggestions = suggestionList(argName, knownArgs);
+            const suggestions = context.hideSuggestions
+              ? []
+              : suggestionList(argName, knownArgs);
             context.reportError(
               new GraphQLError(
                 `Unknown argument "${argName}" on directive "@${directiveName}".` +
