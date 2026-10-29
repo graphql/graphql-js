@@ -40,6 +40,9 @@ const MAX_LISTS_DEPTH = 3;
 export function MaxIntrospectionDepthRule(
   context: ASTValidationContext,
 ): ASTVisitor {
+  const checkedFragments: {
+    [key: string]: number | undefined;
+  } = Object.create(null);
   /**
    * Counts the depth of list fields in "__Type" recursively and
    * returns `true` if the limit has been reached.
@@ -50,13 +53,17 @@ export function MaxIntrospectionDepthRule(
     node: ASTNode,
     visitedFragments: {
       [fragmentName: string]: number | undefined;
-    } = Object.create(null),
+    },
     depth: number = 0,
   ): boolean {
     if (node.kind === Kind.FRAGMENT_SPREAD) {
       const fragmentName = node.name.value;
-      const visitedDepth = visitedFragments[fragmentName];
-      if (visitedDepth !== undefined && visitedDepth >= depth) {
+      const visitedEntryDepth = visitedFragments[fragmentName];
+      const checkedEntryDepth = checkedFragments[fragmentName];
+      if (
+        (visitedEntryDepth !== undefined && visitedEntryDepth >= depth) ||
+        (checkedEntryDepth !== undefined && checkedEntryDepth >= depth)
+      ) {
         return false;
       }
       const fragment = context.getFragment(fragmentName);
@@ -94,13 +101,19 @@ export function MaxIntrospectionDepthRule(
   return {
     Field(node) {
       if (node.name.value === '__schema' || node.name.value === '__type') {
-        if (checkDepth(node)) {
+        const visitedFragments: {
+          [key: string]: number;
+        } = Object.create(null);
+        if (checkDepth(node, visitedFragments)) {
           context.reportError(
             new GraphQLError('Maximum introspection depth exceeded', {
               nodes: [node],
             }),
           );
           return false;
+        }
+        for (const name of Object.keys(visitedFragments)) {
+          checkedFragments[name] = visitedFragments[name];
         }
       }
     },
