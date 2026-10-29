@@ -6,7 +6,7 @@ import { isObjectLike } from '../jsutils/isObjectLike.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
 
 import { Kind } from '../language/kinds.ts';
-import { print } from '../language/printer.ts';
+import { printForError as print } from '../language/printer.ts';
 
 import { defaultScalarValueToLiteral } from '../utilities/valueToLiteral.ts';
 

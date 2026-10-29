@@ -15,7 +15,7 @@ import { GraphQLError } from '../error/GraphQLError.ts';
 
 import type { ASTNode, ValueNode, VariableNode } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
-import { print } from '../language/printer.ts';
+import { printForError as print } from '../language/printer.ts';
 
 import type { GraphQLInputType } from '../type/definition.ts';
 import {

@@ -40,7 +40,7 @@ import type {
   ValueNode,
 } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
-import { print } from '../language/printer.ts';
+import { printForError as print } from '../language/printer.ts';
 
 import type { GraphQLVariableSignature } from '../execution/getVariableSignature.ts';
 import type { VariableValues } from '../execution/values.ts';
