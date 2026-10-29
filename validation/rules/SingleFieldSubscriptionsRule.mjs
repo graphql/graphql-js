@@ -1,11 +1,24 @@
 import { GraphQLError } from "../../error/GraphQLError.mjs";
 import { Kind } from "../../language/kinds.mjs";
-import { collectFields } from "../../execution/collectFields.mjs";
+import { GraphQLDeferDirective } from "../../type/directives.mjs";
+import { collectFields, visitSelectionSets as visitSelectionSetsImpl, } from "../../execution/collectFields.mjs";
 function toNodes(fieldDetailsList) {
     return fieldDetailsList.map((fieldDetails) => fieldDetails.node);
 }
 export function SingleFieldSubscriptionsRule(context) {
     let fragments;
+    const visitSelectionSets = (visitContext, selectionSet, groupedFieldSet, newDeferUsages, ...[deferUsage, fragmentVariableValues]) => {
+        context.spendFragmentWork(selectionSet.selections.length);
+        for (const selection of selectionSet.selections) {
+            const directives = selection.directives;
+            if (directives !== undefined) {
+                context.spendFragmentWork(directives.length);
+                const defer = directives.find((directive) => directive.name.value === GraphQLDeferDirective.name);
+                context.spendFragmentWork(defer?.arguments?.length ?? 0);
+            }
+        }
+        visitSelectionSetsImpl(visitContext, selectionSet, groupedFieldSet, newDeferUsages, deferUsage, fragmentVariableValues, visitSelectionSets);
+    };
     return {
         OperationDefinition(node) {
             if (node.operation === 'subscription') {
@@ -25,7 +38,7 @@ export function SingleFieldSubscriptionsRule(context) {
                             }
                         }
                     }
-                    const { groupedFieldSet, forbiddenDirectiveInstances } = collectFields(schema, fragments, variableValues, subscriptionType, node.selectionSet, context.hideSuggestions, true);
+                    const { groupedFieldSet, forbiddenDirectiveInstances } = collectFields(schema, fragments, variableValues, subscriptionType, node.selectionSet, context.hideSuggestions, true, visitSelectionSets);
                     if (forbiddenDirectiveInstances.length > 0) {
                         context.reportError(new GraphQLError(operationName != null
                             ? `Subscription "${operationName}" must not use \`@skip\` or \`@include\` directives in the top level selection.`
