@@ -65,21 +65,16 @@ export class ASTValidationContext {
         let fragments = this._recursivelyReferencedFragments.get(fragmentNames);
         if (!fragments) {
             fragments = [];
-            const collectedNames = new Set();
-            const nodesToVisit = operations.map(({ selectionSet }) => selectionSet);
-            let node;
-            while ((node = nodesToVisit.pop())) {
-                const spreads = this.getFragmentSpreads(node);
-                this.spendFragmentWork(spreads.length);
-                for (const spread of spreads) {
-                    const fragName = spread.name.value;
-                    if (!collectedNames.has(fragName)) {
-                        collectedNames.add(fragName);
-                        const fragment = this.getFragment(fragName);
-                        if (fragment) {
-                            fragments.push(fragment);
-                            nodesToVisit.push(fragment.selectionSet);
-                        }
+            this.spendFragmentWork(fragmentNames.size);
+            const collectedNames = new Set(fragmentNames);
+            for (const fragName of collectedNames) {
+                const fragment = this.getFragment(fragName);
+                if (fragment) {
+                    fragments.push(fragment);
+                    const spreads = this.getFragmentSpreads(fragment.selectionSet);
+                    this.spendFragmentWork(spreads.length);
+                    for (const spread of spreads) {
+                        collectedNames.add(spread.name.value);
                     }
                 }
             }
