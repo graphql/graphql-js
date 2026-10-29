@@ -2,11 +2,14 @@ import { GraphQLError } from "../../error/GraphQLError.mjs";
 import { Kind } from "../../language/kinds.mjs";
 const MAX_LISTS_DEPTH = 3;
 export function MaxIntrospectionDepthRule(context) {
-    function checkDepth(node, visitedFragments = Object.create(null), depth = 0) {
+    const checkedFragments = Object.create(null);
+    function checkDepth(node, visitedFragments, depth = 0) {
         if (node.kind === Kind.FRAGMENT_SPREAD) {
             const fragmentName = node.name.value;
-            const visitedDepth = visitedFragments[fragmentName];
-            if (visitedDepth !== undefined && visitedDepth >= depth) {
+            const visitedEntryDepth = visitedFragments[fragmentName];
+            const checkedEntryDepth = checkedFragments[fragmentName];
+            if ((visitedEntryDepth !== undefined && visitedEntryDepth >= depth) ||
+                (checkedEntryDepth !== undefined && checkedEntryDepth >= depth)) {
                 return false;
             }
             const fragment = context.getFragment(fragmentName);
@@ -38,11 +41,15 @@ export function MaxIntrospectionDepthRule(context) {
     return {
         Field(node) {
             if (node.name.value === '__schema' || node.name.value === '__type') {
-                if (checkDepth(node)) {
+                const visitedFragments = Object.create(null);
+                if (checkDepth(node, visitedFragments)) {
                     context.reportError(new GraphQLError('Maximum introspection depth exceeded', {
                         nodes: [node],
                     }));
                     return false;
+                }
+                for (const name of Object.keys(visitedFragments)) {
+                    checkedFragments[name] = visitedFragments[name];
                 }
             }
         },
