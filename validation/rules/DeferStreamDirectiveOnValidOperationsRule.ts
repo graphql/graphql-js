@@ -2,7 +2,6 @@
 import { GraphQLError } from '../../error/GraphQLError.ts';
 import type {
   DirectiveNode,
-  FragmentDefinitionNode,
   FragmentSpreadNode,
   SelectionSetNode,
 } from '../../language/ast.ts';
@@ -140,17 +139,9 @@ export function DeferStreamDirectiveOnValidOperationsRule(
       if (operation.operation !== OperationTypeNode.SUBSCRIPTION) {
         return;
       }
-      const document = context.getDocument();
-      const fragments = new Map<string, FragmentDefinitionNode>();
-      for (const definition of document.definitions) {
-        if (definition.kind === Kind.FRAGMENT_DEFINITION) {
-          fragments.set(definition.name.value, definition);
-        }
-      }
       const visitedFragments = new Set<string>();
       forbidUnconditionalDeferStream({
         context,
-        fragments,
         selectionSet: operation.selectionSet,
         parentNodes: [],
         visitedFragments,
@@ -160,13 +151,11 @@ export function DeferStreamDirectiveOnValidOperationsRule(
 }
 function forbidUnconditionalDeferStream({
   context,
-  fragments,
   selectionSet,
   parentNodes,
   visitedFragments,
 }: {
   context: ValidationContext;
-  fragments: Map<string, FragmentDefinitionNode>;
   selectionSet: SelectionSetNode;
   parentNodes: Array<FragmentSpreadNode>;
   visitedFragments: Set<string>;
@@ -211,11 +200,10 @@ function forbidUnconditionalDeferStream({
         continue;
       }
       visitedFragments.add(fragmentName);
-      const fragment = fragments.get(fragmentName);
+      const fragment = context.getFragment(fragmentName);
       if (fragment) {
         forbidUnconditionalDeferStream({
           context,
-          fragments,
           parentNodes: [selection, ...parentNodes],
           selectionSet: fragment?.selectionSet,
           visitedFragments,
@@ -224,7 +212,6 @@ function forbidUnconditionalDeferStream({
     } else if (selection.selectionSet) {
       forbidUnconditionalDeferStream({
         context,
-        fragments,
         selectionSet: selection.selectionSet,
         parentNodes,
         visitedFragments,

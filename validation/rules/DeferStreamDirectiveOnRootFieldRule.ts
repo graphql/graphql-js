@@ -1,14 +1,12 @@
 /** @category Validation Rules */
 import { GraphQLError } from '../../error/GraphQLError.ts';
 import type {
-  FragmentDefinitionNode,
   FragmentSpreadNode,
   InlineFragmentNode,
   OperationDefinitionNode,
   OperationTypeNode,
   SelectionSetNode,
 } from '../../language/ast.ts';
-import { Kind } from '../../language/kinds.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
 import type { GraphQLObjectType } from '../../type/definition.ts';
 import {
@@ -56,13 +54,6 @@ export function DeferStreamDirectiveOnRootFieldRule(
 ): ASTVisitor {
   return {
     OperationDefinition(node: OperationDefinitionNode) {
-      const document = context.getDocument();
-      const fragments = new Map<string, FragmentDefinitionNode>();
-      for (const definition of document.definitions) {
-        if (definition.kind === Kind.FRAGMENT_DEFINITION) {
-          fragments.set(definition.name.value, definition);
-        }
-      }
       if (node.operation !== 'subscription' && node.operation !== 'mutation') {
         return;
       }
@@ -73,7 +64,6 @@ export function DeferStreamDirectiveOnRootFieldRule(
           context,
           operationType: node.operation,
           rootType,
-          fragments,
           selectionSet: node.selectionSet,
           visitedFragments: new Set(),
         });
@@ -85,14 +75,12 @@ function forbidDeferStream({
   context,
   operationType,
   rootType,
-  fragments,
   selectionSet,
   visitedFragments,
 }: {
   context: ValidationContext;
   operationType: OperationTypeNode;
   rootType: GraphQLObjectType;
-  fragments: Map<string, FragmentDefinitionNode>;
   selectionSet: SelectionSetNode;
   visitedFragments: Set<string>;
 }) {
@@ -115,7 +103,7 @@ function forbidDeferStream({
         continue;
       }
       visitedFragments.add(fragmentName);
-      const fragment = fragments.get(fragmentName);
+      const fragment = context.getFragment(fragmentName);
       if (fragment) {
         const defer = getDeferDirective(selection);
         if (defer !== undefined) {
@@ -130,7 +118,6 @@ function forbidDeferStream({
           context,
           operationType,
           rootType,
-          fragments,
           selectionSet: fragment.selectionSet,
           visitedFragments,
         });
@@ -149,7 +136,6 @@ function forbidDeferStream({
         context,
         operationType,
         rootType,
-        fragments,
         selectionSet: selection.selectionSet,
         visitedFragments,
       });
