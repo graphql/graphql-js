@@ -5,8 +5,10 @@ const SetMap_ts_1 = require("../jsutils/SetMap.js");
 const kinds_ts_1 = require("../language/kinds.js");
 const visitor_ts_1 = require("../language/visitor.js");
 const TypeInfo_ts_1 = require("../utilities/TypeInfo.js");
+const validationAbortedError_ts_1 = require("./validationAbortedError.js");
 class ASTValidationContext {
     constructor(ast, onError) {
+        this._remainingFragmentWork = 50_000;
         this._ast = ast;
         this._fragments = undefined;
         this._fragmentSpreads = new Map();
@@ -70,7 +72,9 @@ class ASTValidationContext {
             const nodesToVisit = operations.map(({ selectionSet }) => selectionSet);
             let node;
             while ((node = nodesToVisit.pop())) {
-                for (const spread of this.getFragmentSpreads(node)) {
+                const spreads = this.getFragmentSpreads(node);
+                this.spendFragmentWork(spreads.length);
+                for (const spread of spreads) {
                     const fragName = spread.name.value;
                     if (!collectedNames.has(fragName)) {
                         collectedNames.add(fragName);
@@ -85,6 +89,12 @@ class ASTValidationContext {
             this._recursivelyReferencedFragments.set(fragmentNames, fragments);
         }
         return fragments;
+    }
+    spendFragmentWork(cost) {
+        this._remainingFragmentWork -= cost;
+        if (this._remainingFragmentWork < 0) {
+            throw validationAbortedError_ts_1.validationAbortedError;
+        }
     }
 }
 exports.ASTValidationContext = ASTValidationContext;
@@ -165,9 +175,15 @@ class ValidationContext extends ASTValidationContext {
             const fragments = this.getRecursivelyReferencedFragments(operation);
             let fragmentUsages = this._recursiveVariableUsages.get(fragments);
             if (!fragmentUsages) {
-                fragmentUsages = fragments.flatMap((frag) => this.getVariableUsages(frag));
+                this.spendFragmentWork(fragments.length);
+                fragmentUsages = fragments.flatMap((frag) => {
+                    const localUsages = this.getVariableUsages(frag);
+                    this.spendFragmentWork(localUsages.length);
+                    return localUsages;
+                });
                 this._recursiveVariableUsages.set(fragments, fragmentUsages);
             }
+            this.spendFragmentWork(fragmentUsages.length);
             usages = this.getVariableUsages(operation).concat(fragmentUsages);
             this._recursiveVariableUsages.set(operation, usages);
         }

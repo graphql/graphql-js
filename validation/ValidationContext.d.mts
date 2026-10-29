@@ -24,6 +24,7 @@ interface VariableUsage {
  * @internal
  */
 export declare class ASTValidationContext {
+    private _remainingFragmentWork;
     private _ast;
     private _onError;
     private _fragments;
@@ -37,6 +38,8 @@ export declare class ASTValidationContext {
     getFragmentSpreads(node: SelectionSetNode): ReadonlyArray<FragmentSpreadNode>;
     getRecursivelyReferencedFragments(operation: OperationDefinitionNode): ReadonlyArray<FragmentDefinitionNode>;
     getRecursivelyReferencedFragmentsForOperations(operations: ReadonlyArray<OperationDefinitionNode>): ReadonlyArray<FragmentDefinitionNode>;
+    /** @internal */
+    spendFragmentWork(cost: number): void;
 }
 /** @internal */
 export type ASTValidationRule = (context: ASTValidationContext) => ASTVisitor;
