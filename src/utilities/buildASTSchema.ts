@@ -77,6 +77,7 @@ export function buildASTSchema(
     assumeValid: false,
     experimentalAllowEmptyObjectTypes: false,
     experimentalAllowEmptyAbstractTypes: false,
+    experimentalAllowEmptyInputObjectTypes: false,
   };
   const config = extendSchemaImpl(emptySchemaConfig, documentAST, options);
 
@@ -162,5 +163,7 @@ export function buildSchema(
       options?.experimentalAllowEmptyObjectTypes,
     experimentalAllowEmptyAbstractTypes:
       options?.experimentalAllowEmptyAbstractTypes,
+    experimentalAllowEmptyInputObjectTypes:
+      options?.experimentalAllowEmptyInputObjectTypes,
   });
 }
