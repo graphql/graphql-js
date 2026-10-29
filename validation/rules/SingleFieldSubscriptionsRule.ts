@@ -67,7 +67,10 @@ export function SingleFieldSubscriptionsRule(
         const subscriptionType = schema.getSubscriptionType();
         if (subscriptionType) {
           const operationName = node.name ? node.name.value : null;
-          const variableValues: VariableValues = Object.create(null);
+          const variableValues: VariableValues = {
+            sources: Object.create(null),
+            coerced: Object.create(null),
+          };
           if (!fragments) {
             fragments = Object.create(null) as ObjMap<FragmentDetails>;
             for (const definition of context.getDocument().definitions) {
