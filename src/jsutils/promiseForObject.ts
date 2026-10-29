@@ -1,4 +1,4 @@
-import { isPromise } from './isPromise.ts';
+import { isPromiseLike } from './isPromise.ts';
 import type { ObjMap } from './ObjMap.ts';
 import type { PromiseOrValue } from './PromiseOrValue.ts';
 
@@ -9,7 +9,7 @@ import type { PromiseOrValue } from './PromiseOrValue.ts';
  * This is akin to bluebird's `Promise.props`, but implemented only using
  * `Promise.all` so it will work with any implementation of ES6 promises.
  *
- * Only promise values are passed to `promiseAll`; synchronous values are
+ * Only promise-like values are passed to `promiseAll`; synchronous values are
  * copied into the result as-is.
  *
  * @internal
@@ -26,7 +26,7 @@ export function promiseForObject<T>(
   const promises: Array<Promise<T>> = [];
   for (let i = 0; i < values.length; ++i) {
     const value = values[i];
-    if (isPromise(value)) {
+    if (isPromiseLike(value)) {
       promiseIndices.push(i);
       promises.push(value);
     }

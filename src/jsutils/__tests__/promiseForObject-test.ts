@@ -62,6 +62,23 @@ describe('promiseForObject', () => {
     });
   });
 
+  it('passes non-native thenables to promiseAll', async () => {
+    const { calls, promiseAll } = spyingPromiseAll();
+    const thenable = {
+      then(resolve: (value: string) => void) {
+        resolve('thenable');
+      },
+    };
+
+    const result = await promiseForObject<unknown>(
+      { a: 'a', b: thenable },
+      promiseAll,
+    );
+
+    expect(calls).to.deep.equal([[thenable]]);
+    expect(result).to.deep.equal({ a: 'a', b: 'thenable' });
+  });
+
   it('returns a null-prototype object', async () => {
     const result = await promiseForObject(
       { a: Promise.resolve(1) },
