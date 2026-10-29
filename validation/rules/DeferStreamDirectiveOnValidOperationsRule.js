@@ -47,22 +47,29 @@ function canBeSkippedViaIncludeDirective(node) {
     return true;
 }
 function DeferStreamDirectiveOnValidOperationsRule(context) {
+    const checkedFragments = new Set();
     return {
         OperationDefinition(operation) {
             if (operation.operation !== ast_ts_1.OperationTypeNode.SUBSCRIPTION) {
                 return;
             }
             const visitedFragments = new Set();
-            forbidUnconditionalDeferStream({
+            if (forbidUnconditionalDeferStream({
                 context,
+                checkedFragments,
                 selectionSet: operation.selectionSet,
                 parentNodes: [],
                 visitedFragments,
-            });
+            })) {
+                for (const name of visitedFragments) {
+                    checkedFragments.add(name);
+                }
+            }
         },
     };
 }
-function forbidUnconditionalDeferStream({ context, selectionSet, parentNodes, visitedFragments, }) {
+function forbidUnconditionalDeferStream({ context, checkedFragments, selectionSet, parentNodes, visitedFragments, }) {
+    let valid = true;
     for (const selection of selectionSet.selections) {
         const skip = selection.directives?.find((d) => d.name.value === directives_ts_1.GraphQLSkipDirective.name);
         if (skip && canBeSkippedViaSkipDirective(skip)) {
@@ -75,41 +82,49 @@ function forbidUnconditionalDeferStream({ context, selectionSet, parentNodes, vi
         for (const directive of selection.directives ?? []) {
             if (directive.name.value === directives_ts_1.GraphQLDeferDirective.name) {
                 if (!ifArgumentCanBeFalse(directive)) {
+                    valid = false;
                     context.reportError(new GraphQLError_ts_1.GraphQLError('Defer directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.', { nodes: [directive, ...parentNodes.toReversed()] }));
                 }
             }
             else if (directive.name.value === directives_ts_1.GraphQLStreamDirective.name) {
                 if (!ifArgumentCanBeFalse(directive)) {
+                    valid = false;
                     context.reportError(new GraphQLError_ts_1.GraphQLError('Stream directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.', { nodes: [directive, ...parentNodes.toReversed()] }));
                 }
             }
         }
         if (selection.kind === 'FragmentSpread') {
             const fragmentName = selection.name.value;
-            if (visitedFragments.has(fragmentName)) {
+            if (visitedFragments.has(fragmentName) ||
+                checkedFragments.has(fragmentName)) {
                 continue;
             }
             visitedFragments.add(fragmentName);
             const fragment = context.getFragment(fragmentName);
             if (fragment) {
                 parentNodes.push(selection);
-                forbidUnconditionalDeferStream({
-                    context,
-                    parentNodes,
-                    selectionSet: fragment?.selectionSet,
-                    visitedFragments,
-                });
+                valid =
+                    forbidUnconditionalDeferStream({
+                        context,
+                        checkedFragments,
+                        parentNodes,
+                        selectionSet: fragment.selectionSet,
+                        visitedFragments,
+                    }) && valid;
                 parentNodes.pop();
             }
         }
         else if (selection.selectionSet) {
-            forbidUnconditionalDeferStream({
-                context,
-                selectionSet: selection.selectionSet,
-                parentNodes,
-                visitedFragments,
-            });
+            valid =
+                forbidUnconditionalDeferStream({
+                    context,
+                    checkedFragments,
+                    selectionSet: selection.selectionSet,
+                    parentNodes,
+                    visitedFragments,
+                }) && valid;
         }
     }
+    return valid;
 }
 //# sourceMappingURL=DeferStreamDirectiveOnValidOperationsRule.js.map
