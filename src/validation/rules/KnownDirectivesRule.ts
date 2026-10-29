@@ -54,14 +54,14 @@ import type {
 export function KnownDirectivesRule(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor {
-  const locationsMap = new Map<string, ReadonlyArray<string>>();
+  const locationsMap = new Map<string, ReadonlySet<string>>();
 
   const schema = context.getSchema();
   const definedDirectives = schema
     ? schema.getDirectives()
     : specifiedDirectives;
   for (const directive of definedDirectives) {
-    locationsMap.set(directive.name, directive.locations);
+    locationsMap.set(directive.name, new Set(directive.locations));
   }
 
   const astDefinitions = context.getDocument().definitions;
@@ -69,7 +69,7 @@ export function KnownDirectivesRule(
     if (def.kind === Kind.DIRECTIVE_DEFINITION) {
       locationsMap.set(
         def.name.value,
-        def.locations.map((name) => name.value),
+        new Set(def.locations.map((name) => name.value)),
       );
     }
   }
@@ -87,7 +87,7 @@ export function KnownDirectivesRule(
       }
 
       const candidateLocation = getDirectiveLocationForASTPath(ancestors);
-      if (candidateLocation != null && !locations.includes(candidateLocation)) {
+      if (candidateLocation != null && !locations.has(candidateLocation)) {
         context.reportError(
           new GraphQLError(
             `Directive "@${name}" may not be used on ${candidateLocation}.`,
