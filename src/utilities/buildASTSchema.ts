@@ -75,9 +75,7 @@ export function buildASTSchema(
     extensions: Object.create(null),
     extensionASTNodes: [],
     assumeValid: false,
-    experimentalAllowEmptyObjectTypes: false,
-    experimentalAllowEmptyAbstractTypes: false,
-    experimentalAllowEmptyInputObjectTypes: false,
+    experimentalAllowEmptyTypes: false,
   };
   const config = extendSchemaImpl(emptySchemaConfig, documentAST, options);
 
@@ -159,11 +157,6 @@ export function buildSchema(
   return buildASTSchema(document, {
     assumeValidSDL: options?.assumeValidSDL,
     assumeValid: options?.assumeValid,
-    experimentalAllowEmptyObjectTypes:
-      options?.experimentalAllowEmptyObjectTypes,
-    experimentalAllowEmptyAbstractTypes:
-      options?.experimentalAllowEmptyAbstractTypes,
-    experimentalAllowEmptyInputObjectTypes:
-      options?.experimentalAllowEmptyInputObjectTypes,
+    experimentalAllowEmptyTypes: options?.experimentalAllowEmptyTypes,
   });
 }

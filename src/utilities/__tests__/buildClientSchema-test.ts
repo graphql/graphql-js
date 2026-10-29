@@ -75,14 +75,14 @@ describe('Type System: build schema from introspection', () => {
       type Empty
     `;
     const serverSchema = buildSchema(sdl, {
-      experimentalAllowEmptyObjectTypes: true,
+      experimentalAllowEmptyTypes: true,
     });
     const introspection = introspectionFromSchema(serverSchema);
     const clientSchema = buildClientSchema(introspection, {
-      experimentalAllowEmptyObjectTypes: true,
+      experimentalAllowEmptyTypes: true,
     });
 
-    expect(clientSchema.experimentalAllowEmptyObjectTypes).to.equal(true);
+    expect(clientSchema.experimentalAllowEmptyTypes).to.equal(true);
     expect(printSchema(clientSchema)).to.equal(sdl);
     expect(
       graphqlSync({
@@ -106,14 +106,14 @@ describe('Type System: build schema from introspection', () => {
       }
     `;
     const serverSchema = buildSchema(sdl, {
-      experimentalAllowEmptyAbstractTypes: true,
+      experimentalAllowEmptyTypes: true,
     });
     const introspection = introspectionFromSchema(serverSchema);
     const clientSchema = buildClientSchema(introspection, {
-      experimentalAllowEmptyAbstractTypes: true,
+      experimentalAllowEmptyTypes: true,
     });
 
-    expect(clientSchema.experimentalAllowEmptyAbstractTypes).to.equal(true);
+    expect(clientSchema.experimentalAllowEmptyTypes).to.equal(true);
     expect(printSchema(clientSchema)).to.equal(sdl);
     expect(
       graphqlSync({
@@ -135,14 +135,14 @@ describe('Type System: build schema from introspection', () => {
       input Empty
     `;
     const serverSchema = buildSchema(sdl, {
-      experimentalAllowEmptyInputObjectTypes: true,
+      experimentalAllowEmptyTypes: true,
     });
     const introspection = introspectionFromSchema(serverSchema);
     const clientSchema = buildClientSchema(introspection, {
-      experimentalAllowEmptyInputObjectTypes: true,
+      experimentalAllowEmptyTypes: true,
     });
 
-    expect(clientSchema.experimentalAllowEmptyInputObjectTypes).to.equal(true);
+    expect(clientSchema.experimentalAllowEmptyTypes).to.equal(true);
     expect(printSchema(clientSchema)).to.equal(sdl);
     expect(
       graphqlSync({

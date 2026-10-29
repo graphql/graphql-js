@@ -117,9 +117,9 @@ describe('Schema Parser', () => {
     });
   });
 
-  it('parses empty fields definition with experimentalAllowEmptyObjectTypes', () => {
+  it('parses empty fields definition with experimentalAllowEmptyTypes', () => {
     const doc = parse('type Hello {}', {
-      experimentalAllowEmptyObjectTypes: true,
+      experimentalAllowEmptyTypes: true,
     });
 
     expectJSON(doc).toDeepEqual({
@@ -139,9 +139,9 @@ describe('Schema Parser', () => {
     });
   });
 
-  it('parses empty fields definition on interfaces and extensions with experimentalAllowEmptyObjectTypes', () => {
+  it('parses empty fields definition on interfaces and extensions with experimentalAllowEmptyTypes', () => {
     const doc = parse('interface Hello {} extend type World {}', {
-      experimentalAllowEmptyObjectTypes: true,
+      experimentalAllowEmptyTypes: true,
     });
 
     expectJSON(doc).toDeepNestedProperty('definitions[0].fields', []);
@@ -155,9 +155,9 @@ describe('Schema Parser', () => {
     });
   });
 
-  it('parses empty fields definition with experimentalAllowEmptyAbstractTypes', () => {
+  it('parses empty interface fields definition with experimentalAllowEmptyTypes', () => {
     const doc = parse('interface Hello {}', {
-      experimentalAllowEmptyAbstractTypes: true,
+      experimentalAllowEmptyTypes: true,
     });
 
     expectJSON(doc).toDeepEqual({
@@ -184,9 +184,9 @@ describe('Schema Parser', () => {
     });
   });
 
-  it('parses empty input fields definition with experimentalAllowEmptyInputObjectTypes', () => {
+  it('parses empty input fields definition with experimentalAllowEmptyTypes', () => {
     const doc = parse('input Hello {}', {
-      experimentalAllowEmptyInputObjectTypes: true,
+      experimentalAllowEmptyTypes: true,
     });
 
     expectJSON(doc).toDeepEqual({
@@ -205,9 +205,9 @@ describe('Schema Parser', () => {
     });
   });
 
-  it('parses empty input fields definition on extensions with experimentalAllowEmptyInputObjectTypes', () => {
+  it('parses empty input fields definition on extensions with experimentalAllowEmptyTypes', () => {
     const doc = parse('extend input Hello {}', {
-      experimentalAllowEmptyInputObjectTypes: true,
+      experimentalAllowEmptyTypes: true,
     });
 
     expectJSON(doc).toDeepNestedProperty('definitions[0].fields', []);

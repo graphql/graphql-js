@@ -123,20 +123,6 @@ export interface ParseOptions {
   /**
    * EXPERIMENTAL:
    *
-   * If enabled, the parser accepts an empty set of braces as an input fields
-   * definition, as proposed in https://github.com/graphql/graphql-spec/pull/1249
-   *
-   * ```graphql
-   * input Empty {}
-   * ```
-   *
-   * This is equivalent to omitting the braces entirely (`input Empty`).
-   */
-  experimentalAllowEmptyInputObjectTypes?: boolean | undefined;
-
-  /**
-   * EXPERIMENTAL:
-   *
    * If enabled, the parser will understand and parse fragment variable definitions
    * and arguments on fragment spreads. Fragment variable definitions will be represented
    * in the `variableDefinitions` field of the FragmentDefinitionNode.
@@ -180,29 +166,18 @@ export interface ParseOptions {
    * EXPERIMENTAL:
    *
    * If enabled, the parser accepts an empty set of braces as a fields
-   * definition, as proposed in https://github.com/graphql/graphql-spec/pull/1245
+   * definition or an input fields definition, as proposed in
+   * https://github.com/graphql/graphql-spec/pull/1228,
+   * https://github.com/graphql/graphql-spec/pull/1229 and
+   * https://github.com/graphql/graphql-spec/pull/1249
    *
    * ```graphql
    * type Empty {}
-   * ```
-   *
-   * This is equivalent to omitting the braces entirely (`type Empty`).
-   */
-  experimentalAllowEmptyObjectTypes?: boolean | undefined;
-
-  /**
-   * EXPERIMENTAL:
-   *
-   * If enabled, the parser accepts an empty set of braces as a fields
-   * definition, as proposed in https://github.com/graphql/graphql-spec/pull/1229
-   *
-   * ```graphql
    * interface Empty {}
+   * input Empty {}
    * ```
-   *
-   * This is equivalent to omitting the braces entirely (`interface Empty`).
    */
-  experimentalAllowEmptyAbstractTypes?: boolean | undefined;
+  experimentalAllowEmptyTypes?: boolean | undefined;
 }
 
 /**
@@ -1246,8 +1221,7 @@ export class Parser {
    * FieldsDefinition : { FieldDefinition+ }
    * ```
    *
-   * With `experimentalAllowEmptyObjectTypes` or
-   * `experimentalAllowEmptyAbstractTypes`:
+   * With `experimentalAllowEmptyTypes`:
    *
    * ```
    * FieldsDefinition : { FieldDefinition* }
@@ -1257,8 +1231,7 @@ export class Parser {
    */
   parseFieldsDefinition(): Array<FieldDefinitionNode> | undefined {
     if (
-      (this._options.experimentalAllowEmptyObjectTypes === true ||
-        this._options.experimentalAllowEmptyAbstractTypes === true) &&
+      this._options.experimentalAllowEmptyTypes === true &&
       this.peek(TokenKind.BRACE_L)
     ) {
       return this.any(
@@ -1501,7 +1474,7 @@ export class Parser {
    * InputFieldsDefinition : { InputValueDefinition+ }
    * ```
    *
-   * With `experimentalAllowEmptyInputObjectTypes`:
+   * With `experimentalAllowEmptyTypes`:
    *
    * ```
    * InputFieldsDefinition : { InputValueDefinition* }
@@ -1511,7 +1484,7 @@ export class Parser {
    */
   parseInputFieldsDefinition(): Array<InputValueDefinitionNode> | undefined {
     if (
-      this._options.experimentalAllowEmptyInputObjectTypes === true &&
+      this._options.experimentalAllowEmptyTypes === true &&
       this.peek(TokenKind.BRACE_L)
     ) {
       return this.any(
