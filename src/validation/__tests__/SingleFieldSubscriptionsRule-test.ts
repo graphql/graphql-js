@@ -408,4 +408,18 @@ describe('Validate: Subscriptions with single field', () => {
       }
     `);
   });
+
+  it('collects fields with a directive variable', () => {
+    expectValid(`
+      subscription S($condition: Boolean!) {
+        ...newMessageFields @defer(if: $condition)
+      }
+      fragment newMessageFields on SubscriptionRoot {
+        newMessage {
+          body
+          sender
+        }
+      }
+    `);
+  });
 });
