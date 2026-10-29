@@ -301,6 +301,9 @@ export function extendSchemaImpl(
           astNode: schemaDef ?? config.astNode,
           extensionASTNodes: config.extensionASTNodes.concat(schemaExtensions),
           assumeValid: options?.assumeValid ?? false,
+          experimentalAllowEmptyInputObjectTypes:
+            options?.experimentalAllowEmptyInputObjectTypes ??
+            config.experimentalAllowEmptyInputObjectTypes,
         };
       },
       [SchemaElementKind.INPUT_OBJECT]: (config) => {
