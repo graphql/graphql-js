@@ -53,6 +53,7 @@ export function parseSchemaCoordinate(source) {
 }
 export class Parser {
     constructor(source, options = {}) {
+        this._listDepth = 0;
         const { lexer, ..._options } = options;
         if (lexer) {
             this._lexer = lexer;
@@ -445,12 +446,17 @@ export class Parser {
         const start = this._lexer.token;
         let type;
         if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
+            const maxListDepth = this._options.maxListDepth ?? 200;
+            if (++this._listDepth > maxListDepth) {
+                throw syntaxError(this._lexer.source, start.start, `Document exceeds maximum list depth of ${maxListDepth}. Parsing aborted.`);
+            }
             const innerType = this.parseTypeReference();
             this.expectToken(TokenKind.BRACKET_R);
             type = this.node(start, {
                 kind: Kind.LIST_TYPE,
                 type: innerType,
             });
+            --this._listDepth;
         }
         else {
             type = this.parseNamedType();

@@ -41,6 +41,11 @@ export interface ParseOptions {
      */
     maxSourceLength?: number | undefined;
     /**
+     * The maximum nesting depth of list type references. Defaults to 200.
+     * Set to `Infinity` to allow any list depth.
+     */
+    maxListDepth?: number | undefined;
+    /**
      * EXPERIMENTAL:
      *
      * If enabled, the parser will understand and parse fragment variable definitions
@@ -223,6 +228,7 @@ export declare class Parser {
     protected _options: Omit<ParseOptions, 'lexer'>;
     protected _lexer: LexerInterface;
     protected _tokenCounter: number;
+    protected _listDepth: number;
     constructor(source: string | Source, options?: ParseOptions);
     get tokenCount(): number;
     /**
