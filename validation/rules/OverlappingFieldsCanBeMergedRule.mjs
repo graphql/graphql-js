@@ -264,7 +264,7 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
     }
     const type1 = def1?.type;
     const type2 = def2?.type;
-    if (type1 && type2 && doTypesConflict(type1, type2)) {
+    if (type1 && type2 && doTypesConflict(ruleContext, type1, type2)) {
         const type1String = (fieldInfo1.typeString ??= inspect(type1));
         const type2String = (fieldInfo2.typeString ??= inspect(type2));
         return {
@@ -402,13 +402,14 @@ function getValueInfo(ruleContext, value) {
     ruleContext.valueInfoByNode.set(value, valueInfo);
     return valueInfo;
 }
-function doTypesConflict(type1, type2) {
+function doTypesConflict(ruleContext, type1, type2) {
     if (type1 === type2) {
         return false;
     }
+    spendComplexityBudget(ruleContext, 1);
     if (isListType(type1)) {
         return isListType(type2)
-            ? doTypesConflict(type1.ofType, type2.ofType)
+            ? doTypesConflict(ruleContext, type1.ofType, type2.ofType)
             : true;
     }
     if (isListType(type2)) {
@@ -416,7 +417,7 @@ function doTypesConflict(type1, type2) {
     }
     if (isNonNullType(type1)) {
         return isNonNullType(type2)
-            ? doTypesConflict(type1.ofType, type2.ofType)
+            ? doTypesConflict(ruleContext, type1.ofType, type2.ofType)
             : true;
     }
     if (isNonNullType(type2)) {
