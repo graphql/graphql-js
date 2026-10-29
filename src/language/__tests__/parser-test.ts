@@ -232,6 +232,29 @@ describe('Parser', () => {
     expect(lexer.token.next?.next).to.equal(null);
   });
 
+  it('limits list nesting in type references', () => {
+    expect(() => parseType('[[Int!]!]!', { maxListDepth: 2 })).to.not.throw();
+    expect(() => parseType('[[Int!]!]!', { maxListDepth: 1 })).to.throw(
+      'Document exceeds maximum list depth of 1. Parsing aborted.',
+    );
+    for (const depth of [200, 201]) {
+      const type = '['.repeat(depth) + 'Int!' + ']!'.repeat(depth);
+      for (const source of [
+        `query($first: ${type}, $second: ${type}) { field }`,
+        `fragment F($first: ${type}, $second: ${type}) on Query { field }`,
+      ]) {
+        const parseSource = () =>
+          parse(source, { experimentalFragmentArguments: true });
+        if (depth === 200) {
+          expect(parseSource).to.not.throw();
+        } else {
+          expect(parseSource).to.throw('Parsing aborted.');
+        }
+      }
+      expect(() => parseType(type, { maxListDepth: Infinity })).to.not.throw();
+    }
+  });
+
   it('exposes the tokenCount', () => {
     expect(parse('{ foo }').tokenCount).to.equal(3);
     expect(parse('{ foo(bar: "baz") }').tokenCount).to.equal(8);
