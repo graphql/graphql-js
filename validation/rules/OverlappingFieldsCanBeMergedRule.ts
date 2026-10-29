@@ -154,6 +154,7 @@ interface FieldDetails {
 }
 interface FieldInfo {
   comparisons: Map<FieldInfo, FieldComparison>;
+  namedType: Maybe<GraphQLNamedType>;
   arguments: ArgumentInfo | undefined;
   hasStream: boolean;
   streamArguments: ArgumentInfo | undefined;
@@ -890,10 +891,10 @@ function findConflict(
       validationContext,
       ruleContext,
       areMutuallyExclusive,
-      getNamedType(type1),
+      fieldInfo1.namedType,
       selectionSet1,
       scope1,
-      getNamedType(type2),
+      fieldInfo2.namedType,
       selectionSet2,
       scope2,
     );
@@ -909,6 +910,7 @@ function getFieldInfo(fieldDetails: FieldDetails): FieldInfo {
     );
     fieldDetails.info = {
       comparisons: new Map(),
+      namedType: getNamedType(fieldDetails.definition?.type),
       arguments: getArgumentInfo(node.arguments),
       hasStream: stream !== undefined,
       streamArguments: getArgumentInfo(stream?.arguments),
