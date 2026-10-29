@@ -152,12 +152,10 @@ class TypeInfo {
                 break;
             }
             case kinds_ts_1.Kind.LIST: {
-                const listType = (0, definition_ts_1.getNullableType)(this.getInputType());
-                const itemType = (0, definition_ts_1.isListType)(listType)
-                    ? listType.ofType
-                    : undefined;
+                const inputType = this.getInputType();
+                const listType = inputType && (0, definition_ts_1.getNullableType)(inputType);
                 this._defaultValueStack.push(undefined);
-                this._inputTypeStack.push((0, definition_ts_1.isInputType)(itemType) ? itemType : undefined);
+                this._inputTypeStack.push(listType && (0, definition_ts_1.isListType)(listType) ? listType.ofType : undefined);
                 break;
             }
             case kinds_ts_1.Kind.OBJECT_FIELD: {
