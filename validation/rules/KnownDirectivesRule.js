@@ -15,12 +15,12 @@ function KnownDirectivesRule(context) {
         ? schema.getDirectives()
         : directives_ts_1.specifiedDirectives;
     for (const directive of definedDirectives) {
-        locationsMap.set(directive.name, directive.locations);
+        locationsMap.set(directive.name, new Set(directive.locations));
     }
     const astDefinitions = context.getDocument().definitions;
     for (const def of astDefinitions) {
         if (def.kind === kinds_ts_1.Kind.DIRECTIVE_DEFINITION) {
-            locationsMap.set(def.name.value, def.locations.map((name) => name.value));
+            locationsMap.set(def.name.value, new Set(def.locations.map((name) => name.value)));
         }
     }
     return {
@@ -32,7 +32,7 @@ function KnownDirectivesRule(context) {
                 return;
             }
             const candidateLocation = getDirectiveLocationForASTPath(ancestors);
-            if (candidateLocation != null && !locations.includes(candidateLocation)) {
+            if (candidateLocation != null && !locations.has(candidateLocation)) {
                 context.reportError(new GraphQLError_ts_1.GraphQLError(`Directive "@${name}" may not be used on ${candidateLocation}.`, { nodes: node }));
             }
         },
