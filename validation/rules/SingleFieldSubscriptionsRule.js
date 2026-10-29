@@ -8,6 +8,7 @@ function toNodes(fieldDetailsList) {
     return fieldDetailsList.map((fieldDetails) => fieldDetails.node);
 }
 function SingleFieldSubscriptionsRule(context) {
+    let fragments;
     return {
         OperationDefinition(node) {
             if (node.operation === 'subscription') {
@@ -16,11 +17,12 @@ function SingleFieldSubscriptionsRule(context) {
                 if (subscriptionType) {
                     const operationName = node.name ? node.name.value : null;
                     const variableValues = Object.create(null);
-                    const document = context.getDocument();
-                    const fragments = Object.create(null);
-                    for (const definition of document.definitions) {
-                        if (definition.kind === kinds_ts_1.Kind.FRAGMENT_DEFINITION) {
-                            fragments[definition.name.value] = { definition };
+                    if (!fragments) {
+                        fragments = Object.create(null);
+                        for (const definition of context.getDocument().definitions) {
+                            if (definition.kind === kinds_ts_1.Kind.FRAGMENT_DEFINITION) {
+                                fragments[definition.name.value] = { definition };
+                            }
                         }
                     }
                     const { groupedFieldSet, forbiddenDirectiveInstances } = (0, collectFields_ts_1.collectFields)(schema, fragments, variableValues, subscriptionType, node.selectionSet, context.hideSuggestions, true);
