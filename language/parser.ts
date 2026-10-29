@@ -111,6 +111,11 @@ export interface ParseOptions {
    */
   maxSourceLength?: number | undefined;
   /**
+   * The maximum nesting depth of list type references. Defaults to 200.
+   * Set to `Infinity` to allow any list depth.
+   */
+  maxListDepth?: number | undefined;
+  /**
    * EXPERIMENTAL:
    *
    * If enabled, the parser will understand and parse fragment variable definitions
@@ -349,6 +354,7 @@ export class Parser {
   protected _options: Omit<ParseOptions, 'lexer'>;
   protected _lexer: LexerInterface;
   protected _tokenCounter: number;
+  protected _listDepth = 0;
   constructor(source: string | Source, options: ParseOptions = {}) {
     const { lexer, ..._options } = options;
     if (lexer) {
@@ -979,12 +985,21 @@ export class Parser {
     const start = this._lexer.token;
     let type;
     if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
+      const maxListDepth = this._options.maxListDepth ?? 200;
+      if (++this._listDepth > maxListDepth) {
+        throw syntaxError(
+          this._lexer.source,
+          start.start,
+          `Document exceeds maximum list depth of ${maxListDepth}. Parsing aborted.`,
+        );
+      }
       const innerType = this.parseTypeReference();
       this.expectToken(TokenKind.BRACKET_R);
       type = this.node<ListTypeNode>(start, {
         kind: Kind.LIST_TYPE,
         type: innerType,
       });
+      --this._listDepth;
     } else {
       type = this.parseNamedType();
     }
