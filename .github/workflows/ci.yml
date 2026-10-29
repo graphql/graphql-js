@@ -97,8 +97,12 @@ jobs:
         run: git diff --exit-code package-lock.json
 
   integrationTests:
-    name: Run integration tests
+    name: Run integration tests (${{ matrix.shard }}/${{ strategy.job-total }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
     permissions:
       contents: read # for actions/checkout
     steps:
@@ -118,6 +122,9 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Run Integration Tests
+        env:
+          INTEGRATION_TEST_SHARD: ${{ strategy.job-index }}
+          INTEGRATION_TEST_SHARD_COUNT: ${{ strategy.job-total }}
         run: npm run check:integrations
 
   fuzz:
