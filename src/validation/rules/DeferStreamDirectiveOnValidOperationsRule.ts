@@ -145,33 +145,44 @@ function canBeSkippedViaIncludeDirective(node: DirectiveNode): boolean {
 export function DeferStreamDirectiveOnValidOperationsRule(
   context: ValidationContext,
 ): ASTVisitor {
+  const checkedFragments = new Set<string>();
   return {
     OperationDefinition(operation) {
       if (operation.operation !== OperationTypeNode.SUBSCRIPTION) {
         return;
       }
       const visitedFragments = new Set<string>();
-      forbidUnconditionalDeferStream({
-        context,
-        selectionSet: operation.selectionSet,
-        parentNodes: [],
-        visitedFragments,
-      });
+      if (
+        forbidUnconditionalDeferStream({
+          context,
+          checkedFragments,
+          selectionSet: operation.selectionSet,
+          parentNodes: [],
+          visitedFragments,
+        })
+      ) {
+        for (const name of visitedFragments) {
+          checkedFragments.add(name);
+        }
+      }
     },
   };
 }
 
 function forbidUnconditionalDeferStream({
   context,
+  checkedFragments,
   selectionSet,
   parentNodes,
   visitedFragments,
 }: {
   context: ValidationContext;
+  checkedFragments: Set<string>;
   selectionSet: SelectionSetNode;
   parentNodes: Array<FragmentSpreadNode>;
   visitedFragments: Set<string>;
-}) {
+}): boolean {
+  let valid = true;
   for (const selection of selectionSet.selections) {
     const skip = selection.directives?.find(
       (d) => d.name.value === GraphQLSkipDirective.name,
@@ -188,6 +199,7 @@ function forbidUnconditionalDeferStream({
     for (const directive of selection.directives ?? []) {
       if (directive.name.value === GraphQLDeferDirective.name) {
         if (!ifArgumentCanBeFalse(directive)) {
+          valid = false;
           context.reportError(
             new GraphQLError(
               'Defer directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
@@ -197,6 +209,7 @@ function forbidUnconditionalDeferStream({
         }
       } else if (directive.name.value === GraphQLStreamDirective.name) {
         if (!ifArgumentCanBeFalse(directive)) {
+          valid = false;
           context.reportError(
             new GraphQLError(
               'Stream directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.',
@@ -208,30 +221,38 @@ function forbidUnconditionalDeferStream({
     }
     if (selection.kind === 'FragmentSpread') {
       const fragmentName = selection.name.value;
-      if (visitedFragments.has(fragmentName)) {
+      if (
+        visitedFragments.has(fragmentName) ||
+        checkedFragments.has(fragmentName)
+      ) {
         continue;
       }
       visitedFragments.add(fragmentName);
       const fragment = context.getFragment(fragmentName);
       if (fragment) {
         parentNodes.push(selection);
-        forbidUnconditionalDeferStream({
-          context,
-          parentNodes,
-          selectionSet: fragment?.selectionSet,
-          visitedFragments,
-        });
+        valid =
+          forbidUnconditionalDeferStream({
+            context,
+            checkedFragments,
+            parentNodes,
+            selectionSet: fragment.selectionSet,
+            visitedFragments,
+          }) && valid;
         parentNodes.pop();
       }
     } else if (selection.selectionSet) {
-      forbidUnconditionalDeferStream({
-        context,
-        selectionSet: selection.selectionSet,
-        parentNodes,
-        visitedFragments,
-      });
+      valid =
+        forbidUnconditionalDeferStream({
+          context,
+          checkedFragments,
+          selectionSet: selection.selectionSet,
+          parentNodes,
+          visitedFragments,
+        }) && valid;
     }
   }
+  return valid;
 }
 
 // - For each {selection} in {selectionSet}:
