@@ -6,6 +6,7 @@ import { isRequiredArgument, isType } from "../../type/definition.mjs";
 import { specifiedDirectives } from "../../type/directives.mjs";
 import { typeFromAST } from "../../utilities/typeFromAST.mjs";
 export function ProvidedRequiredArgumentsRule(context) {
+    const requiredArgsByFragment = new Map();
     return {
         ...ProvidedRequiredArgumentsOnDirectivesRule(context),
         Field: {
@@ -28,10 +29,14 @@ export function ProvidedRequiredArgumentsRule(context) {
                 if (!fragmentSignature) {
                     return false;
                 }
+                let requiredArgs = requiredArgsByFragment.get(fragmentSignature);
+                if (!requiredArgs) {
+                    requiredArgs = [...fragmentSignature.variableDefinitions].filter(([, definition]) => isRequiredArgumentNode(definition));
+                    requiredArgsByFragment.set(fragmentSignature, requiredArgs);
+                }
                 const providedArgs = new Set(spreadNode.arguments?.map((arg) => arg.name.value));
-                for (const [varName, variableDefinition,] of fragmentSignature.variableDefinitions) {
-                    if (!providedArgs.has(varName) &&
-                        isRequiredArgumentNode(variableDefinition)) {
+                for (const [varName, variableDefinition] of requiredArgs) {
+                    if (!providedArgs.has(varName)) {
                         const type = typeFromAST(context.getSchema(), variableDefinition.type);
                         const argTypeStr = inspect(type);
                         context.reportError(new GraphQLError(`Fragment "${spreadNode.name.value}" argument "${varName}" of type "${argTypeStr}" is required, but it was not provided.`, { nodes: spreadNode }));

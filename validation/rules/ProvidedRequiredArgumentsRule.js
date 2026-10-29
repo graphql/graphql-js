@@ -10,6 +10,7 @@ const definition_ts_1 = require("../../type/definition.js");
 const directives_ts_1 = require("../../type/directives.js");
 const typeFromAST_ts_1 = require("../../utilities/typeFromAST.js");
 function ProvidedRequiredArgumentsRule(context) {
+    const requiredArgsByFragment = new Map();
     return {
         ...ProvidedRequiredArgumentsOnDirectivesRule(context),
         Field: {
@@ -32,10 +33,14 @@ function ProvidedRequiredArgumentsRule(context) {
                 if (!fragmentSignature) {
                     return false;
                 }
+                let requiredArgs = requiredArgsByFragment.get(fragmentSignature);
+                if (!requiredArgs) {
+                    requiredArgs = [...fragmentSignature.variableDefinitions].filter(([, definition]) => isRequiredArgumentNode(definition));
+                    requiredArgsByFragment.set(fragmentSignature, requiredArgs);
+                }
                 const providedArgs = new Set(spreadNode.arguments?.map((arg) => arg.name.value));
-                for (const [varName, variableDefinition,] of fragmentSignature.variableDefinitions) {
-                    if (!providedArgs.has(varName) &&
-                        isRequiredArgumentNode(variableDefinition)) {
+                for (const [varName, variableDefinition] of requiredArgs) {
+                    if (!providedArgs.has(varName)) {
                         const type = (0, typeFromAST_ts_1.typeFromAST)(context.getSchema(), variableDefinition.type);
                         const argTypeStr = (0, inspect_ts_1.inspect)(type);
                         context.reportError(new GraphQLError_ts_1.GraphQLError(`Fragment "${spreadNode.name.value}" argument "${varName}" of type "${argTypeStr}" is required, but it was not provided.`, { nodes: spreadNode }));
