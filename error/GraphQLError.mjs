@@ -1,5 +1,5 @@
 import { isObjectLike } from "../jsutils/isObjectLike.mjs";
-import { getLocation } from "../language/location.mjs";
+import { getLocations } from "../language/location.mjs";
 import { printLocation, printSourceLocation, } from "../language/printLocation.mjs";
 export class GraphQLError extends Error {
     constructor(message, options = {}) {
@@ -20,8 +20,8 @@ export class GraphQLError extends Error {
         this.positions = positions ?? nodeLocations?.map((loc) => loc.start);
         this.locations =
             positions && source
-                ? positions.map((pos) => getLocation(source, pos))
-                : nodeLocations?.map((loc) => getLocation(loc.source, loc.start));
+                ? getLocations(positions.map((start) => ({ source, start })))
+                : nodeLocations && getLocations(nodeLocations);
         const originalExtensions = isObjectLike(underlyingError?.extensions)
             ? underlyingError.extensions
             : undefined;

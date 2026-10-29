@@ -23,8 +23,8 @@ class GraphQLError extends Error {
         this.positions = positions ?? nodeLocations?.map((loc) => loc.start);
         this.locations =
             positions && source
-                ? positions.map((pos) => (0, location_ts_1.getLocation)(source, pos))
-                : nodeLocations?.map((loc) => (0, location_ts_1.getLocation)(loc.source, loc.start));
+                ? (0, location_ts_1.getLocations)(positions.map((start) => ({ source, start })))
+                : nodeLocations && (0, location_ts_1.getLocations)(nodeLocations);
         const originalExtensions = (0, isObjectLike_ts_1.isObjectLike)(underlyingError?.extensions)
             ? underlyingError.extensions
             : undefined;

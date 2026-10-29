@@ -22,3 +22,8 @@ export interface SourceLocation {
  * ```
  */
 export declare function getLocation(source: Source, position: number): SourceLocation;
+/** @internal */
+export declare function getLocations(locations: ReadonlyArray<{
+    source: Source;
+    start: number;
+}>): Array<SourceLocation>;
