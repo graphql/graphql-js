@@ -301,15 +301,9 @@ export function extendSchemaImpl(
           astNode: schemaDef ?? config.astNode,
           extensionASTNodes: config.extensionASTNodes.concat(schemaExtensions),
           assumeValid: options?.assumeValid ?? false,
-          experimentalAllowEmptyObjectTypes:
-            options?.experimentalAllowEmptyObjectTypes ??
-            config.experimentalAllowEmptyObjectTypes,
-          experimentalAllowEmptyAbstractTypes:
-            options?.experimentalAllowEmptyAbstractTypes ??
-            config.experimentalAllowEmptyAbstractTypes,
-          experimentalAllowEmptyInputObjectTypes:
-            options?.experimentalAllowEmptyInputObjectTypes ??
-            config.experimentalAllowEmptyInputObjectTypes,
+          experimentalAllowEmptyTypes:
+            options?.experimentalAllowEmptyTypes ??
+            config.experimentalAllowEmptyTypes,
         };
       },
       [SchemaElementKind.INPUT_OBJECT]: (config) => {
