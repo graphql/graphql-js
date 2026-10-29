@@ -8,7 +8,7 @@ import { suggestionList } from "../jsutils/suggestionList.mjs";
 import { ensureGraphQLError } from "../error/ensureGraphQLError.mjs";
 import { GraphQLError } from "../error/GraphQLError.mjs";
 import { Kind } from "../language/kinds.mjs";
-import { print } from "../language/printer.mjs";
+import { printForError as print } from "../language/printer.mjs";
 import { assertLeafType, isInputObjectType, isListType, isNonNullType, isRequiredInputField, } from "../type/definition.mjs";
 import { replaceVariables } from "./replaceVariables.mjs";
 export function validateInputValue(inputValue, type, onError, hideSuggestions) {

@@ -1,12 +1,15 @@
 import { printBlockString } from "./blockString.mjs";
 import { printString } from "./printString.mjs";
 import { visit } from "./visitor.mjs";
-export function print(ast) {
-    return render(visit(ast, printDocASTReducer));
+export function print(ast, options) {
+    return render(visit(ast, printDocASTReducer), options?.maxIndentDepth ?? Infinity);
+}
+export function printForError(ast) {
+    return print(ast, { maxIndentDepth: 100 });
 }
 const MAX_LINE_LENGTH = 80;
 class PrintBuffer {
-    constructor(value = '') {
+    constructor(value = '', isBlockString = false) {
         this.next = undefined;
         this.tail = this;
         this.indentBefore = false;
@@ -14,6 +17,7 @@ class PrintBuffer {
         this.length = value.length;
         this.lines = value.includes('\n') ? value.split('\n') : [value];
         this.newlines = this.lines.length - 1;
+        this.isBlockString = isBlockString;
     }
     append(result) {
         if (result.length === 0) {
@@ -37,27 +41,32 @@ class PrintBuffer {
     }
 }
 const EMPTY = new PrintBuffer();
-function render(buffer) {
+function render(buffer, maxDepth) {
     const output = [];
     let text = '';
+    let depth = 0;
     let indentation = '';
     let part = buffer;
     while (part !== undefined) {
         const lines = part.lines;
         if (part.indentBefore) {
-            indentation += '  ';
-            text += '  ';
+            if (depth < maxDepth) {
+                indentation += '  ';
+                text += '  ';
+            }
+            depth++;
         }
         text += lines[0];
         if (lines.length > 1) {
-            const newline = '\n' + indentation;
+            const newline = !part.isBlockString && depth >= maxDepth ? ' ' : '\n' + indentation;
             for (let i = 1; i < lines.length; i++) {
                 output.push(text);
                 text = newline + lines[i];
             }
         }
         if (part.dedentAfter) {
-            indentation = indentation.slice(0, -2);
+            depth--;
+            indentation = indentation.slice(0, depth * 2);
         }
         part = part.next;
     }
@@ -149,7 +158,7 @@ const printDocASTReducer = {
     IntValue: { leave: ({ value }) => new PrintBuffer(value) },
     FloatValue: { leave: ({ value }) => new PrintBuffer(value) },
     StringValue: {
-        leave: ({ value, block: isBlockString }) => new PrintBuffer(isBlockString === true ? printBlockString(value) : printString(value)),
+        leave: ({ value, block: isBlockString }) => new PrintBuffer(isBlockString === true ? printBlockString(value) : printString(value), isBlockString === true),
     },
     BooleanValue: {
         leave: ({ value }) => new PrintBuffer(value ? 'true' : 'false'),

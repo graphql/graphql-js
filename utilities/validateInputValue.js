@@ -159,7 +159,7 @@ function validateInputLiteralImpl(context, valueNode, type, hideSuggestions, pat
     }
     else if ((0, definition_ts_1.isInputObjectType)(type)) {
         if (valueNode.kind !== kinds_ts_1.Kind.OBJECT) {
-            reportInvalidLiteral(context.onError, `Expected value of type "${type}" to be an object, found: ${(0, printer_ts_1.print)(valueNode)}.`, valueNode, path);
+            reportInvalidLiteral(context.onError, `Expected value of type "${type}" to be an object, found: ${(0, printer_ts_1.printForError)(valueNode)}.`, valueNode, path);
             return;
         }
         const fieldDefs = type.getFields();
@@ -168,7 +168,7 @@ function validateInputLiteralImpl(context, valueNode, type, hideSuggestions, pat
             const fieldNode = fieldNodes[field.name];
             if (fieldNode === undefined) {
                 if ((0, definition_ts_1.isRequiredInputField)(field)) {
-                    reportInvalidLiteral(context.onError, `Expected value of type "${type}" to include required field "${field.name}", found: ${(0, printer_ts_1.print)(valueNode)}.`, valueNode, path);
+                    reportInvalidLiteral(context.onError, `Expected value of type "${type}" to include required field "${field.name}", found: ${(0, printer_ts_1.printForError)(valueNode)}.`, valueNode, path);
                 }
             }
             else {
@@ -200,7 +200,7 @@ function validateInputLiteralImpl(context, valueNode, type, hideSuggestions, pat
                 const suggestion = hideSuggestions
                     ? ''
                     : (0, didYouMean_ts_1.didYouMean)((0, suggestionList_ts_1.suggestionList)(fieldName, Object.keys(fieldDefs)));
-                reportInvalidLiteral(context.onError, `Expected value of type "${type}" not to include unknown field "${fieldName}"${suggestion ? `.${suggestion} Found` : ', found'}: ${(0, printer_ts_1.print)(valueNode)}.`, fieldNode, path);
+                reportInvalidLiteral(context.onError, `Expected value of type "${type}" not to include unknown field "${fieldName}"${suggestion ? `.${suggestion} Found` : ', found'}: ${(0, printer_ts_1.printForError)(valueNode)}.`, fieldNode, path);
             }
             else {
                 knownFields.push(fieldNode);
@@ -238,7 +238,7 @@ function validateInputLiteralImpl(context, valueNode, type, hideSuggestions, pat
         if (result === undefined) {
             reportInvalidLiteral(context.onError, `Expected value of type "${type}"${caughtError != null
                 ? `, but encountered error "${getCaughtErrorMessage(caughtError)}"; found`
-                : ', found'}: ${(0, printer_ts_1.print)(valueNode)}.`, valueNode, path, (0, ensureGraphQLError_ts_1.ensureGraphQLError)(caughtError));
+                : ', found'}: ${(0, printer_ts_1.printForError)(valueNode)}.`, valueNode, path, (0, ensureGraphQLError_ts_1.ensureGraphQLError)(caughtError));
         }
     }
 }

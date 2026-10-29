@@ -682,13 +682,13 @@ class GraphQLEnumType {
     }
     coerceInputLiteral(valueNode, hideSuggestions) {
         if (valueNode.kind !== kinds_ts_1.Kind.ENUM) {
-            const valueStr = (0, printer_ts_1.print)(valueNode);
+            const valueStr = (0, printer_ts_1.printForError)(valueNode);
             throw new GraphQLError_ts_1.GraphQLError(`Enum "${this.name}" cannot represent non-enum value: ${valueStr}.` +
                 (hideSuggestions ? '' : didYouMeanEnumValue(this, valueStr)), { nodes: valueNode });
         }
         const enumValue = this.getValue(valueNode.value);
         if (enumValue == null) {
-            const valueStr = (0, printer_ts_1.print)(valueNode);
+            const valueStr = (0, printer_ts_1.printForError)(valueNode);
             throw new GraphQLError_ts_1.GraphQLError(`Value "${valueStr}" does not exist in "${this.name}" enum.` +
                 (hideSuggestions ? '' : didYouMeanEnumValue(this, valueStr)), { nodes: valueNode });
         }

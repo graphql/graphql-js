@@ -2,7 +2,7 @@ import { inspect } from "../jsutils/inspect.mjs";
 import { isObjectLike } from "../jsutils/isObjectLike.mjs";
 import { GraphQLError } from "../error/GraphQLError.mjs";
 import { Kind } from "../language/kinds.mjs";
-import { print } from "../language/printer.mjs";
+import { printForError as print } from "../language/printer.mjs";
 import { defaultScalarValueToLiteral } from "../utilities/valueToLiteral.mjs";
 import { GraphQLScalarType } from "./definition.mjs";
 export const GRAPHQL_MAX_INT = 2147483647;

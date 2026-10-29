@@ -41,7 +41,7 @@ exports.GraphQLInt = new definition_ts_1.GraphQLScalarType({
     },
     coerceInputLiteral(valueNode) {
         if (valueNode.kind !== kinds_ts_1.Kind.INT) {
-            throw new GraphQLError_ts_1.GraphQLError(`Int cannot represent non-integer value: ${(0, printer_ts_1.print)(valueNode)}`, { nodes: valueNode });
+            throw new GraphQLError_ts_1.GraphQLError(`Int cannot represent non-integer value: ${(0, printer_ts_1.printForError)(valueNode)}`, { nodes: valueNode });
         }
         const num = parseInt(valueNode.value, 10);
         if (num > exports.GRAPHQL_MAX_INT || num < exports.GRAPHQL_MIN_INT) {
@@ -88,7 +88,7 @@ exports.GraphQLFloat = new definition_ts_1.GraphQLScalarType({
     },
     coerceInputLiteral(valueNode) {
         if (valueNode.kind !== kinds_ts_1.Kind.FLOAT && valueNode.kind !== kinds_ts_1.Kind.INT) {
-            throw new GraphQLError_ts_1.GraphQLError(`Float cannot represent non numeric value: ${(0, printer_ts_1.print)(valueNode)}`, { nodes: valueNode });
+            throw new GraphQLError_ts_1.GraphQLError(`Float cannot represent non numeric value: ${(0, printer_ts_1.printForError)(valueNode)}`, { nodes: valueNode });
         }
         return parseFloat(valueNode.value);
     },
@@ -126,7 +126,7 @@ exports.GraphQLString = new definition_ts_1.GraphQLScalarType({
     },
     coerceInputLiteral(valueNode) {
         if (valueNode.kind !== kinds_ts_1.Kind.STRING) {
-            throw new GraphQLError_ts_1.GraphQLError(`String cannot represent a non string value: ${(0, printer_ts_1.print)(valueNode)}`, { nodes: valueNode });
+            throw new GraphQLError_ts_1.GraphQLError(`String cannot represent a non string value: ${(0, printer_ts_1.printForError)(valueNode)}`, { nodes: valueNode });
         }
         return valueNode.value;
     },
@@ -161,7 +161,7 @@ exports.GraphQLBoolean = new definition_ts_1.GraphQLScalarType({
     },
     coerceInputLiteral(valueNode) {
         if (valueNode.kind !== kinds_ts_1.Kind.BOOLEAN) {
-            throw new GraphQLError_ts_1.GraphQLError(`Boolean cannot represent a non boolean value: ${(0, printer_ts_1.print)(valueNode)}`, { nodes: valueNode });
+            throw new GraphQLError_ts_1.GraphQLError(`Boolean cannot represent a non boolean value: ${(0, printer_ts_1.printForError)(valueNode)}`, { nodes: valueNode });
         }
         return valueNode.value;
     },
@@ -203,7 +203,7 @@ exports.GraphQLID = new definition_ts_1.GraphQLScalarType({
     coerceInputLiteral(valueNode) {
         if (valueNode.kind !== kinds_ts_1.Kind.STRING && valueNode.kind !== kinds_ts_1.Kind.INT) {
             throw new GraphQLError_ts_1.GraphQLError('ID cannot represent a non-string and non-integer value: ' +
-                (0, printer_ts_1.print)(valueNode), { nodes: valueNode });
+                (0, printer_ts_1.printForError)(valueNode), { nodes: valueNode });
         }
         return valueNode.value;
     },
