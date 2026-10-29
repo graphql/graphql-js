@@ -59,6 +59,7 @@ function toNodes(fieldDetailsList: FieldDetailsList): ReadonlyArray<FieldNode> {
 export function SingleFieldSubscriptionsRule(
   context: ValidationContext,
 ): ASTVisitor {
+  let fragments: ObjMap<FragmentDetails> | undefined;
   return {
     OperationDefinition(node: OperationDefinitionNode) {
       if (node.operation === 'subscription') {
@@ -67,11 +68,12 @@ export function SingleFieldSubscriptionsRule(
         if (subscriptionType) {
           const operationName = node.name ? node.name.value : null;
           const variableValues: VariableValues = Object.create(null);
-          const document = context.getDocument();
-          const fragments: ObjMap<FragmentDetails> = Object.create(null);
-          for (const definition of document.definitions) {
-            if (definition.kind === Kind.FRAGMENT_DEFINITION) {
-              fragments[definition.name.value] = { definition };
+          if (!fragments) {
+            fragments = Object.create(null) as ObjMap<FragmentDetails>;
+            for (const definition of context.getDocument().definitions) {
+              if (definition.kind === Kind.FRAGMENT_DEFINITION) {
+                fragments[definition.name.value] = { definition };
+              }
             }
           }
           const { groupedFieldSet, forbiddenDirectiveInstances } =
