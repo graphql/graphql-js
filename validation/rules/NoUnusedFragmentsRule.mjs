@@ -1,12 +1,10 @@
 import { GraphQLError } from "../../error/GraphQLError.mjs";
 export function NoUnusedFragmentsRule(context) {
-    const fragmentNameUsed = new Set();
+    const operations = [];
     const fragmentDefs = [];
     return {
         OperationDefinition(operation) {
-            for (const fragment of context.getRecursivelyReferencedFragments(operation)) {
-                fragmentNameUsed.add(fragment.name.value);
-            }
+            operations.push(operation);
             return false;
         },
         FragmentDefinition(node) {
@@ -15,6 +13,9 @@ export function NoUnusedFragmentsRule(context) {
         },
         Document: {
             leave() {
+                const fragmentNameUsed = new Set(context
+                    .getRecursivelyReferencedFragmentsForOperations(operations)
+                    .map((fragment) => fragment.name.value));
                 for (const fragmentDef of fragmentDefs) {
                     const fragName = fragmentDef.name.value;
                     if (!fragmentNameUsed.has(fragName)) {

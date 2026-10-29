@@ -36,6 +36,7 @@ export declare class ASTValidationContext {
     getFragment(name: string): Maybe<FragmentDefinitionNode>;
     getFragmentSpreads(node: SelectionSetNode): ReadonlyArray<FragmentSpreadNode>;
     getRecursivelyReferencedFragments(operation: OperationDefinitionNode): ReadonlyArray<FragmentDefinitionNode>;
+    getRecursivelyReferencedFragmentsForOperations(operations: ReadonlyArray<OperationDefinitionNode>): ReadonlyArray<FragmentDefinitionNode>;
 }
 /** @internal */
 export type ASTValidationRule = (context: ASTValidationContext) => ASTVisitor;
