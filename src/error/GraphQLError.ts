@@ -5,7 +5,7 @@ import type { Maybe } from '../jsutils/Maybe.ts';
 
 import type { ASTNode, Location } from '../language/ast.ts';
 import type { SourceLocation } from '../language/location.ts';
-import { getLocation } from '../language/location.ts';
+import { getLocations } from '../language/location.ts';
 import {
   printLocation,
   printSourceLocation,
@@ -189,8 +189,8 @@ export class GraphQLError extends Error {
 
     this.locations =
       positions && source
-        ? positions.map((pos) => getLocation(source, pos))
-        : nodeLocations?.map((loc) => getLocation(loc.source, loc.start));
+        ? getLocations(positions.map((start) => ({ source, start })))
+        : nodeLocations && getLocations(nodeLocations);
 
     const originalExtensions = isObjectLike(underlyingError?.extensions)
       ? underlyingError.extensions
