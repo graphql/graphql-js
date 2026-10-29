@@ -1067,6 +1067,9 @@ function doTypesConflict(
   type1: GraphQLOutputType,
   type2: GraphQLOutputType,
 ): boolean {
+  if (type1 === type2) {
+    return false;
+  }
   if (isListType(type1)) {
     return isListType(type2)
       ? doTypesConflict(type1.ofType, type2.ofType)
