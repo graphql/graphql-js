@@ -275,7 +275,7 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
     const selectionSet1 = node1.selectionSet;
     const selectionSet2 = node2.selectionSet;
     if (selectionSet1 && selectionSet2) {
-        const conflicts = findConflictsBetweenSubSelectionSets(validationContext, ruleContext, areMutuallyExclusive, getNamedType(type1), selectionSet1, scope1, getNamedType(type2), selectionSet2, scope2);
+        const conflicts = findConflictsBetweenSubSelectionSets(validationContext, ruleContext, areMutuallyExclusive, fieldInfo1.namedType, selectionSet1, scope1, fieldInfo2.namedType, selectionSet2, scope2);
         return subfieldConflicts(conflicts, responseName, node1, node2);
     }
 }
@@ -285,6 +285,7 @@ function getFieldInfo(fieldDetails) {
         const stream = node.directives?.find((directive) => directive.name.value === 'stream');
         fieldDetails.info = {
             comparisons: new Map(),
+            namedType: getNamedType(fieldDetails.definition?.type),
             arguments: getArgumentInfo(node.arguments),
             hasStream: stream !== undefined,
             streamArguments: getArgumentInfo(stream?.arguments),
