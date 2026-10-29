@@ -1,3 +1,4 @@
+import { AccumulatorMap } from "../jsutils/AccumulatorMap.js";
 import type { ObjMap, ReadOnlyObjMap } from "../jsutils/ObjMap.js";
 import type { DirectiveNode, FieldNode, FragmentDefinitionNode, SelectionSetNode, ValueNode } from "../language/ast.js";
 import type { GraphQLObjectType } from "../type/definition.js";
@@ -36,6 +37,17 @@ export interface FragmentDetails {
     definition: FragmentDefinitionNode;
     variableSignatures?: ObjMap<GraphQLVariableSignature> | undefined;
 }
+type VisitedFragmentNames = Map<string, Set<DirectiveNode | null>>;
+interface CollectFieldsContext {
+    schema: GraphQLSchema;
+    fragments: ObjMap<FragmentDetails>;
+    variableValues: VariableValues;
+    runtimeType: GraphQLObjectType;
+    visitedFragmentNames: VisitedFragmentNames;
+    hideSuggestions: boolean;
+    forbiddenDirectiveInstances: Array<DirectiveNode>;
+    forbidSkipAndInclude: boolean;
+}
 /**
  * Given a selectionSet, collects all of the fields and returns them.
  *
@@ -45,7 +57,7 @@ export interface FragmentDetails {
  *
  * @internal
  */
-export declare function collectFields(schema: GraphQLSchema, fragments: ObjMap<FragmentDetails>, variableValues: VariableValues, runtimeType: GraphQLObjectType, selectionSet: SelectionSetNode, hideSuggestions: boolean, forbidSkipAndInclude?: boolean): {
+export declare function collectFields(schema: GraphQLSchema, fragments: ObjMap<FragmentDetails>, variableValues: VariableValues, runtimeType: GraphQLObjectType, selectionSet: SelectionSetNode, hideSuggestions: boolean, forbidSkipAndInclude?: boolean, visit?: typeof visitSelectionSets): {
     groupedFieldSet: GroupedFieldSet;
     newDeferUsages: ReadonlyArray<DeferUsage>;
     forbiddenDirectiveInstances: ReadonlyArray<DirectiveNode>;
@@ -64,3 +76,6 @@ export declare function collectSubfields(schema: GraphQLSchema, fragments: ObjMa
     groupedFieldSet: GroupedFieldSet;
     newDeferUsages: ReadonlyArray<DeferUsage>;
 };
+/** @internal */
+export declare function visitSelectionSets(context: CollectFieldsContext, selectionSet: SelectionSetNode, groupedFieldSet: AccumulatorMap<string, FieldDetails>, newDeferUsages: Array<DeferUsage>, deferUsage?: DeferUsage, fragmentVariableValues?: FragmentVariableValues, recurse?: typeof visitSelectionSets): void;
+export {};

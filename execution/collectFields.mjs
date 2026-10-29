@@ -4,7 +4,7 @@ import { isAbstractType } from "../type/definition.mjs";
 import { GraphQLDeferDirective, GraphQLIncludeDirective, GraphQLSkipDirective, } from "../type/directives.mjs";
 import { typeFromAST } from "../utilities/typeFromAST.mjs";
 import { getArgumentValues, getFragmentVariableValues } from "./values.mjs";
-export function collectFields(schema, fragments, variableValues, runtimeType, selectionSet, hideSuggestions, forbidSkipAndInclude = false) {
+export function collectFields(schema, fragments, variableValues, runtimeType, selectionSet, hideSuggestions, forbidSkipAndInclude = false, visit = visitSelectionSets) {
     const groupedFieldSet = new AccumulatorMap();
     const newDeferUsages = [];
     const context = {
@@ -17,7 +17,7 @@ export function collectFields(schema, fragments, variableValues, runtimeType, se
         forbiddenDirectiveInstances: [],
         forbidSkipAndInclude,
     };
-    collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsages);
+    visit(context, selectionSet, groupedFieldSet, newDeferUsages);
     return {
         groupedFieldSet,
         newDeferUsages,
@@ -41,7 +41,7 @@ export function collectSubfields(schema, fragments, variableValues, returnType, 
         const selectionSet = fieldDetail.node.selectionSet;
         if (selectionSet) {
             const { deferUsage, fragmentVariableValues } = fieldDetail;
-            collectFieldsImpl(context, selectionSet, subGroupedFieldSet, newDeferUsages, deferUsage, fragmentVariableValues);
+            visitSelectionSets(context, selectionSet, subGroupedFieldSet, newDeferUsages, deferUsage, fragmentVariableValues);
         }
     }
     return {
@@ -49,7 +49,7 @@ export function collectSubfields(schema, fragments, variableValues, returnType, 
         newDeferUsages,
     };
 }
-function collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsages, deferUsage, fragmentVariableValues) {
+export function visitSelectionSets(context, selectionSet, groupedFieldSet, newDeferUsages, deferUsage, fragmentVariableValues, recurse = visitSelectionSets) {
     const { schema, fragments, variableValues, runtimeType, visitedFragmentNames, hideSuggestions, } = context;
     for (const selection of selectionSet.selections) {
         switch (selection.kind) {
@@ -71,11 +71,11 @@ function collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsage
                 }
                 const newDeferUsage = getDeferUsage(variableValues, fragmentVariableValues, selection, deferUsage);
                 if (!newDeferUsage) {
-                    collectFieldsImpl(context, selection.selectionSet, groupedFieldSet, newDeferUsages, deferUsage, fragmentVariableValues);
+                    recurse(context, selection.selectionSet, groupedFieldSet, newDeferUsages, deferUsage, fragmentVariableValues, recurse);
                 }
                 else {
                     newDeferUsages.push(newDeferUsage);
-                    collectFieldsImpl(context, selection.selectionSet, groupedFieldSet, newDeferUsages, newDeferUsage, fragmentVariableValues);
+                    recurse(context, selection.selectionSet, groupedFieldSet, newDeferUsages, newDeferUsage, fragmentVariableValues, recurse);
                 }
                 break;
             }
@@ -110,7 +110,7 @@ function collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsage
                 if (fragmentVariableSignatures) {
                     newFragmentVariableValues = getFragmentVariableValues(selection, fragmentVariableSignatures, variableValues, fragmentVariableValues, hideSuggestions);
                 }
-                collectFieldsImpl(context, fragment.definition.selectionSet, groupedFieldSet, newDeferUsages, maybeNewDeferUsage, newFragmentVariableValues);
+                recurse(context, fragment.definition.selectionSet, groupedFieldSet, newDeferUsages, maybeNewDeferUsage, newFragmentVariableValues, recurse);
                 break;
             }
         }

@@ -2,13 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.collectFields = collectFields;
 exports.collectSubfields = collectSubfields;
+exports.visitSelectionSets = visitSelectionSets;
 const AccumulatorMap_ts_1 = require("../jsutils/AccumulatorMap.js");
 const kinds_ts_1 = require("../language/kinds.js");
 const definition_ts_1 = require("../type/definition.js");
 const directives_ts_1 = require("../type/directives.js");
 const typeFromAST_ts_1 = require("../utilities/typeFromAST.js");
 const values_ts_1 = require("./values.js");
-function collectFields(schema, fragments, variableValues, runtimeType, selectionSet, hideSuggestions, forbidSkipAndInclude = false) {
+function collectFields(schema, fragments, variableValues, runtimeType, selectionSet, hideSuggestions, forbidSkipAndInclude = false, visit = visitSelectionSets) {
     const groupedFieldSet = new AccumulatorMap_ts_1.AccumulatorMap();
     const newDeferUsages = [];
     const context = {
@@ -21,7 +22,7 @@ function collectFields(schema, fragments, variableValues, runtimeType, selection
         forbiddenDirectiveInstances: [],
         forbidSkipAndInclude,
     };
-    collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsages);
+    visit(context, selectionSet, groupedFieldSet, newDeferUsages);
     return {
         groupedFieldSet,
         newDeferUsages,
@@ -45,7 +46,7 @@ function collectSubfields(schema, fragments, variableValues, returnType, fieldDe
         const selectionSet = fieldDetail.node.selectionSet;
         if (selectionSet) {
             const { deferUsage, fragmentVariableValues } = fieldDetail;
-            collectFieldsImpl(context, selectionSet, subGroupedFieldSet, newDeferUsages, deferUsage, fragmentVariableValues);
+            visitSelectionSets(context, selectionSet, subGroupedFieldSet, newDeferUsages, deferUsage, fragmentVariableValues);
         }
     }
     return {
@@ -53,7 +54,7 @@ function collectSubfields(schema, fragments, variableValues, returnType, fieldDe
         newDeferUsages,
     };
 }
-function collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsages, deferUsage, fragmentVariableValues) {
+function visitSelectionSets(context, selectionSet, groupedFieldSet, newDeferUsages, deferUsage, fragmentVariableValues, recurse = visitSelectionSets) {
     const { schema, fragments, variableValues, runtimeType, visitedFragmentNames, hideSuggestions, } = context;
     for (const selection of selectionSet.selections) {
         switch (selection.kind) {
@@ -75,11 +76,11 @@ function collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsage
                 }
                 const newDeferUsage = getDeferUsage(variableValues, fragmentVariableValues, selection, deferUsage);
                 if (!newDeferUsage) {
-                    collectFieldsImpl(context, selection.selectionSet, groupedFieldSet, newDeferUsages, deferUsage, fragmentVariableValues);
+                    recurse(context, selection.selectionSet, groupedFieldSet, newDeferUsages, deferUsage, fragmentVariableValues, recurse);
                 }
                 else {
                     newDeferUsages.push(newDeferUsage);
-                    collectFieldsImpl(context, selection.selectionSet, groupedFieldSet, newDeferUsages, newDeferUsage, fragmentVariableValues);
+                    recurse(context, selection.selectionSet, groupedFieldSet, newDeferUsages, newDeferUsage, fragmentVariableValues, recurse);
                 }
                 break;
             }
@@ -114,7 +115,7 @@ function collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsage
                 if (fragmentVariableSignatures) {
                     newFragmentVariableValues = (0, values_ts_1.getFragmentVariableValues)(selection, fragmentVariableSignatures, variableValues, fragmentVariableValues, hideSuggestions);
                 }
-                collectFieldsImpl(context, fragment.definition.selectionSet, groupedFieldSet, newDeferUsages, maybeNewDeferUsage, newFragmentVariableValues);
+                recurse(context, fragment.definition.selectionSet, groupedFieldSet, newDeferUsages, maybeNewDeferUsage, newFragmentVariableValues, recurse);
                 break;
             }
         }
