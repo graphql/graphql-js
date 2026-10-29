@@ -4,6 +4,15 @@ This directory contains integration tests for GraphQL.js across different enviro
 
 Tests are run via the main integration test suite in `resources/integration-test.ts`.
 
+Run all integration tests locally with `npm run check:integrations`. CI splits the
+projects across numbered shards. To run the first of eight shards locally, use:
+
+```sh
+INTEGRATION_TEST_SHARD=0 INTEGRATION_TEST_SHARD_COUNT=8 npm run check:integrations
+```
+
+Without these environment variables, every project runs.
+
 ## Test Structure
 
 ### Basic GraphQL.JS Functionality Tests

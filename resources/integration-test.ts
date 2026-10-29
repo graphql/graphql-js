@@ -1,3 +1,4 @@
+import assert from 'node:assert';
 import fs from 'node:fs';
 import { describe, it } from 'node:test';
 
@@ -7,6 +8,16 @@ import { localRepoPath, makeTmpDir, npm, readPackageJSON } from './utils.ts';
 // checks continue to verify backward compatibility behavior.
 const BUN_VERSION = '1.2.18';
 const DENO_VERSION = '2.4.1';
+
+const shardIndex = Number(process.env.INTEGRATION_TEST_SHARD ?? 0);
+const shardCount = Number(process.env.INTEGRATION_TEST_SHARD_COUNT ?? 1);
+assert(
+  Number.isInteger(shardIndex) &&
+    Number.isInteger(shardCount) &&
+    shardIndex >= 0 &&
+    shardIndex < shardCount,
+  'INTEGRATION_TEST_SHARD must be an integer between 0 and INTEGRATION_TEST_SHARD_COUNT - 1.',
+);
 
 describe('Integration Tests', () => {
   const { tmpDirPath } = makeTmpDir('graphql-js-integrationTmp');
@@ -25,7 +36,13 @@ describe('Integration Tests', () => {
     recursive: true,
   });
 
+  let projectIndex = 0;
+
   function testOnNodeProject(projectName: string) {
+    if (projectIndex++ % shardCount !== shardIndex) {
+      return;
+    }
+
     const projectPath = tmpDirPath(projectName);
     const packageJSON = readPackageJSON(projectPath);
 
