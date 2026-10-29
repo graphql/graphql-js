@@ -4,6 +4,7 @@ import { inspect } from '../jsutils/inspect.ts';
 import type { ASTNode } from './ast.ts';
 import { isNode, QueryDocumentKeys } from './ast.ts';
 import { Kind } from './kinds.ts';
+const allKinds = Object.values(Kind);
 /** A visitor defines the callbacks called during AST traversal. */
 export type ASTVisitor = EnterLeaveVisitor<ASTNode> | KindVisitor;
 type KindVisitor = {
@@ -252,7 +253,7 @@ export function visit(
   visitorKeys: ASTVisitorKeyMap = QueryDocumentKeys,
 ): any {
   const enterLeaveMap = new Map<Kind, EnterLeaveVisitor<ASTNode>>();
-  for (const kind of Object.values(Kind)) {
+  for (const kind of allKinds) {
     enterLeaveMap.set(kind, getEnterLeaveForKind(visitor, kind));
   }
   /* eslint-disable no-undef-init */
@@ -397,7 +398,7 @@ export function visitInParallel(
 ): ASTVisitor {
   const skipping = new Array(visitors.length).fill(null);
   const mergedVisitor = Object.create(null);
-  for (const kind of Object.values(Kind)) {
+  for (const kind of allKinds) {
     let hasVisitor = false;
     const enterList = new Array(visitors.length).fill(undefined);
     const leaveList = new Array(visitors.length).fill(undefined);
