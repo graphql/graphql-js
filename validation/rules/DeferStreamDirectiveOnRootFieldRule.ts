@@ -52,6 +52,7 @@ import type { ValidationContext } from '../ValidationContext.ts';
 export function DeferStreamDirectiveOnRootFieldRule(
   context: ValidationContext,
 ): ASTVisitor {
+  const checkedFragments = new Set<string>();
   return {
     OperationDefinition(node: OperationDefinitionNode) {
       if (node.operation !== 'subscription' && node.operation !== 'mutation') {
@@ -60,13 +61,21 @@ export function DeferStreamDirectiveOnRootFieldRule(
       const schema = context.getSchema();
       const rootType = schema.getRootType(node.operation);
       if (rootType) {
-        forbidDeferStream({
-          context,
-          operationType: node.operation,
-          rootType,
-          selectionSet: node.selectionSet,
-          visitedFragments: new Set(),
-        });
+        const visitedFragments = new Set<string>();
+        if (
+          forbidDeferStream({
+            context,
+            operationType: node.operation,
+            rootType,
+            checkedFragments,
+            selectionSet: node.selectionSet,
+            visitedFragments,
+          })
+        ) {
+          for (const name of visitedFragments) {
+            checkedFragments.add(name);
+          }
+        }
       }
     },
   };
@@ -75,21 +84,25 @@ function forbidDeferStream({
   context,
   operationType,
   rootType,
+  checkedFragments,
   selectionSet,
   visitedFragments,
 }: {
   context: ValidationContext;
   operationType: OperationTypeNode;
   rootType: GraphQLObjectType;
+  checkedFragments: Set<string>;
   selectionSet: SelectionSetNode;
   visitedFragments: Set<string>;
-}) {
+}): boolean {
+  let valid = true;
   for (const selection of selectionSet.selections) {
     if (selection.kind === 'Field') {
       const stream = selection.directives?.find(
         (d) => d.name.value === GraphQLStreamDirective.name,
       );
       if (stream) {
+        valid = false;
         context.reportError(
           new GraphQLError(
             `Stream directive cannot be used on root ${operationType} type "${rootType}".`,
@@ -107,6 +120,7 @@ function forbidDeferStream({
       if (fragment) {
         const defer = getDeferDirective(selection);
         if (defer !== undefined) {
+          valid = false;
           context.reportError(
             new GraphQLError(
               `Defer directive cannot be used on root ${operationType} type "${rootType}".`,
@@ -114,17 +128,22 @@ function forbidDeferStream({
             ),
           );
         }
-        forbidDeferStream({
-          context,
-          operationType,
-          rootType,
-          selectionSet: fragment.selectionSet,
-          visitedFragments,
-        });
+        if (!checkedFragments.has(fragmentName)) {
+          valid =
+            forbidDeferStream({
+              context,
+              operationType,
+              rootType,
+              checkedFragments,
+              selectionSet: fragment.selectionSet,
+              visitedFragments,
+            }) && valid;
+        }
       }
     } else if (selection.kind === 'InlineFragment') {
       const defer = getDeferDirective(selection);
       if (defer !== undefined) {
+        valid = false;
         context.reportError(
           new GraphQLError(
             `Defer directive cannot be used on root ${operationType} type "${rootType}".`,
@@ -132,15 +151,18 @@ function forbidDeferStream({
           ),
         );
       }
-      forbidDeferStream({
-        context,
-        operationType,
-        rootType,
-        selectionSet: selection.selectionSet,
-        visitedFragments,
-      });
+      valid =
+        forbidDeferStream({
+          context,
+          operationType,
+          rootType,
+          checkedFragments,
+          selectionSet: selection.selectionSet,
+          visitedFragments,
+        }) && valid;
     }
   }
+  return valid;
 }
 function getDeferDirective(fragment: FragmentSpreadNode | InlineFragmentNode) {
   return fragment.directives?.find(
