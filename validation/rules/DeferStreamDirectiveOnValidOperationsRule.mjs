@@ -72,12 +72,12 @@ function forbidUnconditionalDeferStream({ context, selectionSet, parentNodes, vi
         for (const directive of selection.directives ?? []) {
             if (directive.name.value === GraphQLDeferDirective.name) {
                 if (!ifArgumentCanBeFalse(directive)) {
-                    context.reportError(new GraphQLError('Defer directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.', { nodes: [directive, ...parentNodes] }));
+                    context.reportError(new GraphQLError('Defer directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.', { nodes: [directive, ...parentNodes.toReversed()] }));
                 }
             }
             else if (directive.name.value === GraphQLStreamDirective.name) {
                 if (!ifArgumentCanBeFalse(directive)) {
-                    context.reportError(new GraphQLError('Stream directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.', { nodes: [directive, ...parentNodes] }));
+                    context.reportError(new GraphQLError('Stream directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.', { nodes: [directive, ...parentNodes.toReversed()] }));
                 }
             }
         }
@@ -89,12 +89,14 @@ function forbidUnconditionalDeferStream({ context, selectionSet, parentNodes, vi
             visitedFragments.add(fragmentName);
             const fragment = context.getFragment(fragmentName);
             if (fragment) {
+                parentNodes.push(selection);
                 forbidUnconditionalDeferStream({
                     context,
-                    parentNodes: [selection, ...parentNodes],
+                    parentNodes,
                     selectionSet: fragment?.selectionSet,
                     visitedFragments,
                 });
+                parentNodes.pop();
             }
         }
         else if (selection.selectionSet) {
