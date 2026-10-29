@@ -400,6 +400,9 @@ function getValueInfo(ruleContext, value) {
     return valueInfo;
 }
 function doTypesConflict(type1, type2) {
+    if (type1 === type2) {
+        return false;
+    }
     if (isListType(type1)) {
         return isListType(type2)
             ? doTypesConflict(type1.ofType, type2.ofType)

@@ -403,6 +403,9 @@ function getValueInfo(ruleContext, value) {
     return valueInfo;
 }
 function doTypesConflict(type1, type2) {
+    if (type1 === type2) {
+        return false;
+    }
     if ((0, definition_ts_1.isListType)(type1)) {
         return (0, definition_ts_1.isListType)(type2)
             ? doTypesConflict(type1.ofType, type2.ofType)
