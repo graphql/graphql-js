@@ -268,9 +268,11 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
     const type1 = def1?.type;
     const type2 = def2?.type;
     if (type1 && type2 && doTypesConflict(type1, type2)) {
+        const type1String = (fieldInfo1.typeString ??= (0, inspect_ts_1.inspect)(type1));
+        const type2String = (fieldInfo2.typeString ??= (0, inspect_ts_1.inspect)(type2));
         return {
             responseName,
-            reason: `they return conflicting types "${(0, inspect_ts_1.inspect)(type1)}" and "${(0, inspect_ts_1.inspect)(type2)}"`,
+            reason: `they return conflicting types "${type1String}" and "${type2String}"`,
             fields1: [node1],
             fields2: [node2],
         };
