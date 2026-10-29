@@ -758,13 +758,13 @@ export class TypeInfo {
         break;
       }
       case Kind.LIST: {
-        const listType: unknown = getNullableType(this.getInputType());
-        const itemType: unknown = isListType(listType)
-          ? listType.ofType
-          : undefined;
+        const inputType = this.getInputType();
+        const listType = inputType && getNullableType(inputType);
         // List positions never have a default value.
         this._defaultValueStack.push(undefined);
-        this._inputTypeStack.push(isInputType(itemType) ? itemType : undefined);
+        this._inputTypeStack.push(
+          listType && isListType(listType) ? listType.ofType : undefined,
+        );
         break;
       }
       case Kind.OBJECT_FIELD: {
