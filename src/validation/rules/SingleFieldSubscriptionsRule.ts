@@ -8,11 +8,16 @@ import type { FieldNode, OperationDefinitionNode } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
 
+import { GraphQLDeferDirective } from '../../type/directives.ts';
+
 import type {
   FieldDetailsList,
   FragmentDetails,
 } from '../../execution/collectFields.ts';
-import { collectFields } from '../../execution/collectFields.ts';
+import {
+  collectFields,
+  visitSelectionSets as visitSelectionSetsImpl,
+} from '../../execution/collectFields.ts';
 import type { VariableValues } from '../../execution/values.ts';
 
 import type { ValidationContext } from '../ValidationContext.ts';
@@ -67,6 +72,35 @@ export function SingleFieldSubscriptionsRule(
   context: ValidationContext,
 ): ASTVisitor {
   let fragments: ObjMap<FragmentDetails> | undefined;
+  // Reserve traversal and directive work before visiting each selection set.
+  const visitSelectionSets: typeof visitSelectionSetsImpl = (
+    visitContext,
+    selectionSet,
+    groupedFieldSet,
+    newDeferUsages,
+    ...[deferUsage, fragmentVariableValues]
+  ) => {
+    context.spendFragmentWork(selectionSet.selections.length);
+    for (const selection of selectionSet.selections) {
+      const directives = selection.directives;
+      if (directives !== undefined) {
+        context.spendFragmentWork(directives.length);
+        const defer = directives.find(
+          (directive) => directive.name.value === GraphQLDeferDirective.name,
+        );
+        context.spendFragmentWork(defer?.arguments?.length ?? 0);
+      }
+    }
+    visitSelectionSetsImpl(
+      visitContext,
+      selectionSet,
+      groupedFieldSet,
+      newDeferUsages,
+      deferUsage,
+      fragmentVariableValues,
+      visitSelectionSets,
+    );
+  };
   return {
     OperationDefinition(node: OperationDefinitionNode) {
       if (node.operation === 'subscription') {
@@ -95,6 +129,7 @@ export function SingleFieldSubscriptionsRule(
               node.selectionSet,
               context.hideSuggestions,
               true,
+              visitSelectionSets,
             );
           if (forbiddenDirectiveInstances.length > 0) {
             context.reportError(
