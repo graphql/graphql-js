@@ -2,18 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DeferStreamDirectiveOnRootFieldRule = DeferStreamDirectiveOnRootFieldRule;
 const GraphQLError_ts_1 = require("../../error/GraphQLError.js");
-const kinds_ts_1 = require("../../language/kinds.js");
 const directives_ts_1 = require("../../type/directives.js");
 function DeferStreamDirectiveOnRootFieldRule(context) {
     return {
         OperationDefinition(node) {
-            const document = context.getDocument();
-            const fragments = new Map();
-            for (const definition of document.definitions) {
-                if (definition.kind === kinds_ts_1.Kind.FRAGMENT_DEFINITION) {
-                    fragments.set(definition.name.value, definition);
-                }
-            }
             if (node.operation !== 'subscription' && node.operation !== 'mutation') {
                 return;
             }
@@ -24,7 +16,6 @@ function DeferStreamDirectiveOnRootFieldRule(context) {
                     context,
                     operationType: node.operation,
                     rootType,
-                    fragments,
                     selectionSet: node.selectionSet,
                     visitedFragments: new Set(),
                 });
@@ -32,7 +23,7 @@ function DeferStreamDirectiveOnRootFieldRule(context) {
         },
     };
 }
-function forbidDeferStream({ context, operationType, rootType, fragments, selectionSet, visitedFragments, }) {
+function forbidDeferStream({ context, operationType, rootType, selectionSet, visitedFragments, }) {
     for (const selection of selectionSet.selections) {
         if (selection.kind === 'Field') {
             const stream = selection.directives?.find((d) => d.name.value === directives_ts_1.GraphQLStreamDirective.name);
@@ -46,7 +37,7 @@ function forbidDeferStream({ context, operationType, rootType, fragments, select
                 continue;
             }
             visitedFragments.add(fragmentName);
-            const fragment = fragments.get(fragmentName);
+            const fragment = context.getFragment(fragmentName);
             if (fragment) {
                 const defer = getDeferDirective(selection);
                 if (defer !== undefined) {
@@ -56,7 +47,6 @@ function forbidDeferStream({ context, operationType, rootType, fragments, select
                     context,
                     operationType,
                     rootType,
-                    fragments,
                     selectionSet: fragment.selectionSet,
                     visitedFragments,
                 });
@@ -71,7 +61,6 @@ function forbidDeferStream({ context, operationType, rootType, fragments, select
                 context,
                 operationType,
                 rootType,
-                fragments,
                 selectionSet: selection.selectionSet,
                 visitedFragments,
             });

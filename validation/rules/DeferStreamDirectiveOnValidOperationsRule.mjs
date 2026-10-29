@@ -49,17 +49,9 @@ export function DeferStreamDirectiveOnValidOperationsRule(context) {
             if (operation.operation !== OperationTypeNode.SUBSCRIPTION) {
                 return;
             }
-            const document = context.getDocument();
-            const fragments = new Map();
-            for (const definition of document.definitions) {
-                if (definition.kind === Kind.FRAGMENT_DEFINITION) {
-                    fragments.set(definition.name.value, definition);
-                }
-            }
             const visitedFragments = new Set();
             forbidUnconditionalDeferStream({
                 context,
-                fragments,
                 selectionSet: operation.selectionSet,
                 parentNodes: [],
                 visitedFragments,
@@ -67,7 +59,7 @@ export function DeferStreamDirectiveOnValidOperationsRule(context) {
         },
     };
 }
-function forbidUnconditionalDeferStream({ context, fragments, selectionSet, parentNodes, visitedFragments, }) {
+function forbidUnconditionalDeferStream({ context, selectionSet, parentNodes, visitedFragments, }) {
     for (const selection of selectionSet.selections) {
         const skip = selection.directives?.find((d) => d.name.value === GraphQLSkipDirective.name);
         if (skip && canBeSkippedViaSkipDirective(skip)) {
@@ -95,11 +87,10 @@ function forbidUnconditionalDeferStream({ context, fragments, selectionSet, pare
                 continue;
             }
             visitedFragments.add(fragmentName);
-            const fragment = fragments.get(fragmentName);
+            const fragment = context.getFragment(fragmentName);
             if (fragment) {
                 forbidUnconditionalDeferStream({
                     context,
-                    fragments,
                     parentNodes: [selection, ...parentNodes],
                     selectionSet: fragment?.selectionSet,
                     visitedFragments,
@@ -109,7 +100,6 @@ function forbidUnconditionalDeferStream({ context, fragments, selectionSet, pare
         else if (selection.selectionSet) {
             forbidUnconditionalDeferStream({
                 context,
-                fragments,
                 selectionSet: selection.selectionSet,
                 parentNodes,
                 visitedFragments,
