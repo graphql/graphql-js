@@ -1,6 +1,9 @@
 /** @category Validation Rules */
 import { GraphQLError } from '../../error/GraphQLError.ts';
-import type { FragmentDefinitionNode } from '../../language/ast.ts';
+import type {
+  FragmentDefinitionNode,
+  OperationDefinitionNode,
+} from '../../language/ast.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
 import type { ASTValidationContext } from '../ValidationContext.ts';
 /**
@@ -41,15 +44,11 @@ import type { ASTValidationContext } from '../ValidationContext.ts';
 export function NoUnusedFragmentsRule(
   context: ASTValidationContext,
 ): ASTVisitor {
-  const fragmentNameUsed = new Set<string>();
+  const operations: Array<OperationDefinitionNode> = [];
   const fragmentDefs: Array<FragmentDefinitionNode> = [];
   return {
     OperationDefinition(operation) {
-      for (const fragment of context.getRecursivelyReferencedFragments(
-        operation,
-      )) {
-        fragmentNameUsed.add(fragment.name.value);
-      }
+      operations.push(operation);
       return false;
     },
     FragmentDefinition(node) {
@@ -58,6 +57,11 @@ export function NoUnusedFragmentsRule(
     },
     Document: {
       leave() {
+        const fragmentNameUsed = new Set(
+          context
+            .getRecursivelyReferencedFragmentsForOperations(operations)
+            .map((fragment) => fragment.name.value),
+        );
         for (const fragmentDef of fragmentDefs) {
           const fragName = fragmentDef.name.value;
           if (!fragmentNameUsed.has(fragName)) {
