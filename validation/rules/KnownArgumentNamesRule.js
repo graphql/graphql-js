@@ -45,13 +45,13 @@ function KnownArgumentNamesOnDirectivesRule(context) {
         ? schema.getDirectives()
         : directives_ts_1.specifiedDirectives;
     for (const directive of definedDirectives) {
-        directiveArgs.set(directive.name, directive.args.map((arg) => arg.name));
+        directiveArgs.set(directive.name, new Set(directive.args.map((arg) => arg.name)));
     }
     const astDefinitions = context.getDocument().definitions;
     for (const def of astDefinitions) {
         if (def.kind === kinds_ts_1.Kind.DIRECTIVE_DEFINITION) {
             const argsNodes = def.arguments ?? [];
-            directiveArgs.set(def.name.value, argsNodes.map((arg) => arg.name.value));
+            directiveArgs.set(def.name.value, new Set(argsNodes.map((arg) => arg.name.value)));
         }
     }
     return {
@@ -61,10 +61,10 @@ function KnownArgumentNamesOnDirectivesRule(context) {
             if (directiveNode.arguments != null && knownArgs != null) {
                 for (const argNode of directiveNode.arguments) {
                     const argName = argNode.name.value;
-                    if (!knownArgs.includes(argName)) {
+                    if (!knownArgs.has(argName)) {
                         const suggestions = context.hideSuggestions
                             ? []
-                            : (0, suggestionList_ts_1.suggestionList)(argName, knownArgs);
+                            : (0, suggestionList_ts_1.suggestionList)(argName, [...knownArgs]);
                         context.reportError(new GraphQLError_ts_1.GraphQLError(`Unknown argument "${argName}" on directive "@${directiveName}".` +
                             (context.hideSuggestions ? '' : (0, didYouMean_ts_1.didYouMean)(suggestions)), { nodes: argNode }));
                     }
