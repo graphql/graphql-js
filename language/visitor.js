@@ -8,10 +8,11 @@ const devAssert_ts_1 = require("../jsutils/devAssert.js");
 const inspect_ts_1 = require("../jsutils/inspect.js");
 const ast_ts_1 = require("./ast.js");
 const kinds_ts_1 = require("./kinds.js");
+const allKinds = Object.values(kinds_ts_1.Kind);
 exports.BREAK = Object.freeze({});
 function visit(root, visitor, visitorKeys = ast_ts_1.QueryDocumentKeys) {
     const enterLeaveMap = new Map();
-    for (const kind of Object.values(kinds_ts_1.Kind)) {
+    for (const kind of allKinds) {
         enterLeaveMap.set(kind, getEnterLeaveForKind(visitor, kind));
     }
     let stack = undefined;
@@ -124,7 +125,7 @@ function visit(root, visitor, visitorKeys = ast_ts_1.QueryDocumentKeys) {
 function visitInParallel(visitors) {
     const skipping = new Array(visitors.length).fill(null);
     const mergedVisitor = Object.create(null);
-    for (const kind of Object.values(kinds_ts_1.Kind)) {
+    for (const kind of allKinds) {
         let hasVisitor = false;
         const enterList = new Array(visitors.length).fill(undefined);
         const leaveList = new Array(visitors.length).fill(undefined);
