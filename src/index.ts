@@ -447,6 +447,8 @@ export {
   coerceInputValue,
   // Concatenates multiple AST together.
   concatAST,
+  // Merges multiple AST documents, combining selection sets and deduplicating fields.
+  mergeAST,
   // Separates an AST into an AST per Operation.
   separateOperations,
   // Strips characters that are not significant to the validity or execution of a GraphQL document.
@@ -498,4 +500,5 @@ export type {
   TypedQueryDocumentNode,
   // Schema Coordinates
   ResolvedSchemaElement,
+  MergeASTOptions,
 } from './utilities/index';
