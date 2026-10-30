@@ -35,6 +35,8 @@ import {
 import { isIntrospectionType } from '../type/introspection';
 import { isSpecifiedScalarType } from '../type/scalars';
 import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLCapability, GraphQLService } from '../type/service';
+import { isBuiltInService } from '../type/service';
 
 import { astFromValue } from './astFromValue';
 
@@ -102,13 +104,21 @@ function printFilteredSchema(
   const directives = schema.getDirectives().filter(directiveFilter);
   const types = Object.values(schema.getTypeMap()).filter(typeFilter);
 
-  return [
+  const parts = [
     printSchemaDefinition(schema),
     ...directives.map((directive) => printDirective(directive)),
     ...types.map((type) => printType(type)),
-  ]
-    .filter(Boolean)
-    .join('\n\n');
+  ];
+
+  // Only print service if it's not the built-in service.
+  // This is important because when representing a remote schema locally,
+  // we should not advertise capabilities that the remote server may not support.
+  const service = schema.getService();
+  if (!isBuiltInService(service)) {
+    parts.push(printService(service));
+  }
+
+  return parts.filter(Boolean).join('\n\n');
 }
 
 function printSchemaDefinition(schema: GraphQLSchema): Maybe<string> {
@@ -395,4 +405,28 @@ function printDescription(
     indentation && !firstInBlock ? '\n' + indentation : indentation;
 
   return prefix + blockString.replace(/\n/g, '\n' + indentation) + '\n';
+}
+
+function printService(service: GraphQLService): string {
+  const capabilities = service.capabilities.map((cap, i) =>
+    printCapability(cap, !i),
+  );
+  return printDescription(service) + 'service' + printBlock(capabilities);
+}
+
+function printCapability(
+  capability: GraphQLCapability,
+  firstInBlock: boolean,
+): string {
+  let result =
+    printDescription(capability, '  ', firstInBlock) +
+    '  capability ' +
+    capability.identifier;
+
+  if (capability.value != null) {
+    const astValue = print({ kind: Kind.STRING, value: capability.value });
+    result += '(' + astValue + ')';
+  }
+
+  return result;
 }

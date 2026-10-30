@@ -33,6 +33,7 @@ import {
 import type { GraphQLDirective } from '../type/directives';
 import {
   SchemaMetaFieldDef,
+  ServiceMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
 } from '../type/introspection';
@@ -728,6 +729,12 @@ function getFieldDef(
   }
   if (name === TypeMetaFieldDef.name && schema.getQueryType() === parentType) {
     return TypeMetaFieldDef;
+  }
+  if (
+    name === ServiceMetaFieldDef.name &&
+    schema.getQueryType() === parentType
+  ) {
+    return ServiceMetaFieldDef;
   }
   if (name === TypeNameMetaFieldDef.name && isCompositeType(parentType)) {
     return TypeNameMetaFieldDef;

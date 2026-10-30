@@ -94,6 +94,9 @@ export type {
   EnumValueDefinitionNode,
   InputObjectTypeDefinitionNode,
   DirectiveDefinitionNode,
+  ServiceDefinitionNode,
+  ServiceEntryNode,
+  ServiceCapabilityNode,
   TypeSystemExtensionNode,
   SchemaExtensionNode,
   TypeExtensionNode,
@@ -104,6 +107,7 @@ export type {
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
   DirectiveExtensionNode,
+  ServiceExtensionNode,
   // Schema Coordinates
   SchemaCoordinateNode,
   TypeCoordinateNode,

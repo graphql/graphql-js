@@ -38,6 +38,7 @@ describe('AST node predicates', () => {
       'EnumTypeDefinition',
       'InputObjectTypeDefinition',
       'DirectiveDefinition',
+      'ServiceDefinition',
       'SchemaExtension',
       'DirectiveExtension',
       'ScalarTypeExtension',
@@ -46,6 +47,7 @@ describe('AST node predicates', () => {
       'UnionTypeExtension',
       'EnumTypeExtension',
       'InputObjectTypeExtension',
+      'ServiceExtension',
     ]);
   });
 
@@ -107,6 +109,7 @@ describe('AST node predicates', () => {
       'EnumTypeDefinition',
       'InputObjectTypeDefinition',
       'DirectiveDefinition',
+      'ServiceDefinition',
     ]);
   });
 
@@ -131,6 +134,7 @@ describe('AST node predicates', () => {
       'UnionTypeExtension',
       'EnumTypeExtension',
       'InputObjectTypeExtension',
+      'ServiceExtension',
     ]);
   });
 

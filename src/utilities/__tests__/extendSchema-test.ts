@@ -271,6 +271,38 @@ describe('extendSchema', () => {
     `);
   });
 
+  it('extends inputs with recursive field defaults', () => {
+    const schema = buildSchema(`
+      type Query {
+        someInput(arg: PersonInput): String
+      }
+
+      input PersonInput {
+        parent: PersonInput
+      }
+    `);
+    const extensionSDL = dedent`
+      extend input PersonInput {
+        ancestor: PersonInput = {parent: null}
+      }
+    `;
+    const extendedSchema = extendSchema(schema, parse(extensionSDL));
+    const personInput = assertInputObjectType(
+      extendedSchema.getType('PersonInput'),
+    );
+
+    expect(personInput.getFields().ancestor.defaultValue).to.deep.equal({
+      parent: null,
+    });
+    expect(validateSchema(extendedSchema)).to.deep.equal([]);
+    expectSchemaChanges(schema, extendedSchema).to.equal(dedent`
+      input PersonInput {
+        parent: PersonInput
+        ancestor: PersonInput = {parent: null}
+      }
+    `);
+  });
+
   it('extends scalars by adding new directives', () => {
     const schema = buildSchema(`
       type Query {
