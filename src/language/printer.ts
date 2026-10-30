@@ -163,10 +163,13 @@ const printDocASTReducer: ASTReducer<PrintBuffer> = {
         ),
       ]);
 
-      // Anonymous queries with no directives or variable definitions can use
-      // the query short form.
+      // Only use the query short form if the source used it. Anonymous
+      // queries with no description, directives or variable definitions can
+      // use it.
       return join([
-        node.operation === 'query' && prefix.length === node.operation.length
+        node.shorthand === true &&
+        node.operation === 'query' &&
+        prefix.length === node.operation.length
           ? ''
           : join([prefix, ' ']),
         node.selectionSet,
