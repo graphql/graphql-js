@@ -43,6 +43,8 @@ import { cancellablePromise } from './cancellablePromise.ts';
 import type { FieldDetailsList, FragmentDetails } from './collectFields.ts';
 import { collectFields } from './collectFields.ts';
 import { createSharedExecutionContext } from './createSharedExecutionContext.ts';
+import type { GraphQLErrorBehavior } from './ErrorBehavior.ts';
+import { isErrorBehavior } from './ErrorBehavior.ts';
 import type {
   ExecutionArgs,
   ValidatedExecutionArgs,
@@ -732,6 +734,7 @@ export function validateExecutionArgs(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
+    onError,
     abortSignal: externalAbortSignal,
     enableEarlyExecution,
     hooks,
@@ -740,6 +743,16 @@ export function validateExecutionArgs(
 
   // If the schema used for execution is invalid, throw an error.
   assertValidSchema(schema);
+
+  if (onError != null && !isErrorBehavior(onError)) {
+    return [
+      new GraphQLError(
+        `"onError" must be one of "NULL", "PROPAGATE", or "HALT", but got: ${inspect(
+          onError,
+        )}.`,
+      ),
+    ];
+  }
 
   let operation: OperationDefinitionNode | undefined;
   const fragmentDefinitions: ObjMap<FragmentDefinitionNode> =
@@ -836,10 +849,12 @@ export function validateExecutionArgs(
     return variableValuesOrErrors.errors;
   }
 
-  const errorPropagation = !operation.directives?.find(
+  const disablesErrorPropagation = operation.directives?.some(
     (directive) =>
       directive.name.value === GraphQLDisableErrorPropagationDirective.name,
   );
+  const errorBehavior: GraphQLErrorBehavior =
+    onError ?? (disablesErrorPropagation ? 'NULL' : 'PROPAGATE');
 
   return {
     schema,
@@ -854,7 +869,7 @@ export function validateExecutionArgs(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     hideSuggestions,
-    errorPropagation,
+    errorBehavior,
     externalAbortSignal: externalAbortSignal ?? undefined,
     enableEarlyExecution: enableEarlyExecution === true,
     hooks: hooks ?? undefined,
