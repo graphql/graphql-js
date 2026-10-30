@@ -278,6 +278,21 @@ describe('Visitor', () => {
     expect(didVisitAddedField).to.equal(true);
   });
 
+  it('visits children when an entered node is replaced by an array', () => {
+    const visited: Array<string> = [];
+    visit(parse('{ original }'), {
+      Field() {
+        return Object.assign([{ kind: Kind.NAME, value: 'replacement' }], {
+          kind: Kind.NAME,
+        });
+      },
+      Name(node) {
+        visited.push(node.value);
+      },
+    });
+    expect(visited).to.deep.equal(['replacement']);
+  });
+
   it('allows skipping a sub-tree', () => {
     const visited: Array<any> = [];
 
