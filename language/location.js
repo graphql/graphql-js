@@ -5,9 +5,21 @@ exports.getLocations = getLocations;
 const AccumulatorMap_ts_1 = require("../jsutils/AccumulatorMap.js");
 const LineRegExp = /\r\n|[\n\r]/g;
 function getLocation(source, position) {
-    return getLocations([{ source, start: position }])[0];
+    const matches = source.body.matchAll(LineRegExp);
+    let match = matches.next().value;
+    let line = 1;
+    let lastLineStart = 0;
+    while (match !== undefined && match.index < position) {
+        lastLineStart = match.index + match[0].length;
+        line++;
+        match = matches.next().value;
+    }
+    return { line, column: position + 1 - lastLineStart };
 }
 function getLocations(locations) {
+    if (locations.length < 2) {
+        return locations.map(({ source, start }) => getLocation(source, start));
+    }
     const bySource = new AccumulatorMap_ts_1.AccumulatorMap();
     locations.forEach(({ source, start }, index) => {
         bySource.add(source, {

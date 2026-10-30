@@ -1,9 +1,21 @@
 import { AccumulatorMap } from "../jsutils/AccumulatorMap.mjs";
 const LineRegExp = /\r\n|[\n\r]/g;
 export function getLocation(source, position) {
-    return getLocations([{ source, start: position }])[0];
+    const matches = source.body.matchAll(LineRegExp);
+    let match = matches.next().value;
+    let line = 1;
+    let lastLineStart = 0;
+    while (match !== undefined && match.index < position) {
+        lastLineStart = match.index + match[0].length;
+        line++;
+        match = matches.next().value;
+    }
+    return { line, column: position + 1 - lastLineStart };
 }
 export function getLocations(locations) {
+    if (locations.length < 2) {
+        return locations.map(({ source, start }) => getLocation(source, start));
+    }
     const bySource = new AccumulatorMap();
     locations.forEach(({ source, start }, index) => {
         bySource.add(source, {
