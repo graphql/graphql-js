@@ -7,6 +7,7 @@ import { GraphQLError } from '../../error/GraphQLError.ts';
 
 import type {
   ArgumentNode,
+  DirectiveNode,
   FieldNode,
   FragmentArgumentNode,
   FragmentDefinitionNode,
@@ -170,12 +171,13 @@ interface FieldDetails {
   node: FieldNode;
   definition: Maybe<GraphQLField<unknown, unknown>>;
   info?: FieldInfo;
+  isSimpleLeaf: boolean;
+  streamDirective: DirectiveNode | undefined;
 }
 interface FieldInfo {
   comparisons: Map<FieldInfo, FieldComparison>;
   namedType: Maybe<GraphQLNamedType>;
   arguments: ArgumentInfo | undefined;
-  hasStream: boolean;
   streamArguments: ArgumentInfo | undefined;
   typeString?: string;
 }
@@ -850,11 +852,13 @@ function findConflict(
     parentType: parentType1,
     node: node1,
     definition: def1,
+    streamDirective: streamDirective1,
   } = fieldDetails1;
   const {
     parentType: parentType2,
     node: node2,
     definition: def2,
+    streamDirective: streamDirective2,
   } = fieldDetails2;
 
   // If it is known that two fields could not possibly apply at the same
@@ -873,6 +877,14 @@ function findConflict(
 
   // Count attempted field pairs, including pairs skipped by type exclusivity.
   spendComplexityBudget(ruleContext, 2);
+  if (
+    fieldDetails1.isSimpleLeaf &&
+    fieldDetails2.isSimpleLeaf &&
+    def1?.type === def2?.type &&
+    node1.name.value === node2.name.value
+  ) {
+    return;
+  }
   const fieldInfo1 = getFieldInfo(fieldDetails1);
   const fieldInfo2 = getFieldInfo(fieldDetails2);
   let comparison = fieldInfo1.comparisons.get(fieldInfo2);
@@ -912,9 +924,9 @@ function findConflict(
     }
   }
 
-  if (fieldInfo1.hasStream || fieldInfo2.hasStream) {
+  if (streamDirective1 || streamDirective2) {
     let reason = 'they have overlapping stream directives';
-    if (fieldInfo1.hasStream && fieldInfo2.hasStream) {
+    if (streamDirective1 && streamDirective2) {
       const comparedArguments = (comparison.streamArguments ??=
         compareArguments(
           ruleContext,
@@ -968,20 +980,12 @@ function findConflict(
 
 // Prepare argument and directive lookups only when a field overlaps.
 function getFieldInfo(fieldDetails: FieldDetails): FieldInfo {
-  if (fieldDetails.info === undefined) {
-    const node = fieldDetails.node;
-    const stream = node.directives?.find(
-      (directive) => directive.name.value === 'stream',
-    );
-    fieldDetails.info = {
-      comparisons: new Map(),
-      namedType: getNamedType(fieldDetails.definition?.type),
-      arguments: getArgumentInfo(node.arguments),
-      hasStream: stream !== undefined,
-      streamArguments: getArgumentInfo(stream?.arguments),
-    };
-  }
-  return fieldDetails.info;
+  return (fieldDetails.info ??= {
+    comparisons: new Map(),
+    namedType: getNamedType(fieldDetails.definition?.type),
+    arguments: getArgumentInfo(fieldDetails.node.arguments),
+    streamArguments: getArgumentInfo(fieldDetails.streamDirective?.arguments),
+  });
 }
 
 function getArgumentInfo(
@@ -1246,10 +1250,18 @@ function collectFieldsImpl(
           fieldDetailsList = [];
           groupedFieldSet.set(responseName, fieldDetailsList);
         }
+        const streamDirective = selection.directives?.find(
+          (directive) => directive.name.value === 'stream',
+        );
         fieldDetailsList.push({
           parentType,
           node: selection,
           definition: fieldDef,
+          isSimpleLeaf:
+            (selection.arguments?.length ?? 0) === 0 &&
+            !selection.selectionSet &&
+            streamDirective === undefined,
+          streamDirective,
         });
         break;
       }
