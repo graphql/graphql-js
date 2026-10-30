@@ -312,7 +312,8 @@ export function visit(
       path.push(key);
     }
     let result;
-    if (!Array.isArray(node)) {
+    let nodeIsArray = Array.isArray(node);
+    if (!nodeIsArray) {
       if (!isNode(node))
         devAssert(false, `Invalid AST Node: ${inspect(node)}.`);
       const visitFn = isLeaving
@@ -332,6 +333,7 @@ export function visit(
         if (!isLeaving) {
           if (isNode(result)) {
             node = result;
+            nodeIsArray = Array.isArray(node);
           } else {
             path.pop();
             continue;
@@ -346,7 +348,7 @@ export function visit(
       path.pop();
     } else {
       stack = { inArray, index, keys, edits, prev: stack };
-      inArray = Array.isArray(node);
+      inArray = nodeIsArray;
       keys = inArray ? node : ((visitorKeys as any)[node.kind] ?? []);
       index = -1;
       edits = undefined;
