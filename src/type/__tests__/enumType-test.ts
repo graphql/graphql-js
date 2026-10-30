@@ -250,6 +250,7 @@ describe('Type System: Enum Values', () => {
           message: 'Enum "Color" cannot represent value: "GREEN"',
           locations: [{ line: 1, column: 3 }],
           path: ['colorEnum'],
+          pathNonNull: [false],
         },
       ],
     });
@@ -450,6 +451,7 @@ describe('Type System: Enum Values', () => {
             'Enum "Complex" cannot represent value: { someRandomValue: 123 }',
           locations: [{ line: 6, column: 9 }],
           path: ['bad'],
+          pathNonNull: [false],
         },
       ],
     });

@@ -159,7 +159,7 @@ function validateInputValueImpl(
           type.ofType,
           onError,
           hideSuggestions,
-          addPath(path, index++, undefined),
+          addPath(path, index++, undefined, false),
         );
       }
     }
@@ -195,7 +195,7 @@ function validateInputValueImpl(
           field.type,
           onError,
           hideSuggestions,
-          addPath(path, field.name, type.name),
+          addPath(path, field.name, type.name, false),
         );
       }
     }
@@ -237,7 +237,7 @@ function validateInputValueImpl(
         reportInvalidValue(
           onError,
           getOneOfInputObjectErrorMessage(type),
-          addPath(path, field, type.name),
+          addPath(path, field, type.name, false),
         );
       }
     }
@@ -467,7 +467,7 @@ function validateInputLiteralImpl(
           itemNode,
           type.ofType,
           hideSuggestions,
-          addPath(path, index++, undefined),
+          addPath(path, index++, undefined, false),
         );
       }
     }
@@ -535,7 +535,7 @@ function validateInputLiteralImpl(
           fieldValueNode,
           field.type,
           hideSuggestions,
-          addPath(path, field.name, type.name),
+          addPath(path, field.name, type.name, false),
         );
       }
     }
@@ -581,7 +581,7 @@ function validateInputLiteralImpl(
           context.onError,
           getOneOfInputObjectErrorMessage(type),
           valueNode,
-          addPath(path, fieldName, undefined),
+          addPath(path, fieldName, undefined, false),
         );
       }
     }

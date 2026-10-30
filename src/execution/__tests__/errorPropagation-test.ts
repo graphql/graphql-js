@@ -47,6 +47,7 @@ describe('Execute: handles errors', () => {
       errors: [
         {
           message: 'bar',
+          pathNonNull: [true],
           path: ['foo'],
           locations: [{ line: 3, column: 9 }],
         },
@@ -65,6 +66,7 @@ describe('Execute: handles errors', () => {
       errors: [
         {
           message: 'bar',
+          pathNonNull: [true],
           path: ['foo'],
           locations: [{ line: 3, column: 9 }],
         },
