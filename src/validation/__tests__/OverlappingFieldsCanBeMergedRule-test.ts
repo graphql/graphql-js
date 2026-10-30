@@ -312,6 +312,7 @@ describe('Validate: Overlapping fields can be merged', () => {
     // may have the same desired effect of including or skipping a field.
     expectValid(`
       fragment differentDirectivesWithDifferentAliases on Dog {
+        name
         name @include(if: true)
         name @include(if: false)
       }
