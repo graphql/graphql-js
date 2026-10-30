@@ -273,7 +273,7 @@ export function visit(
   let inArray = Array.isArray(root);
   let keys: any = [root];
   let index = -1;
-  let edits = [];
+  let edits: Array<any> | undefined;
   let node: any = root;
   let key: any = undefined;
   let parent: any = undefined;
@@ -284,12 +284,12 @@ export function visit(
   do {
     index++;
     const isLeaving = index === keys.length;
-    const isEdited = isLeaving && edits.length !== 0;
+    const isEdited = isLeaving && edits !== undefined;
     if (isLeaving) {
       key = ancestors.length === 0 ? undefined : path[path.length - 1];
       node = parent;
       parent = ancestors.pop();
-      if (isEdited) {
+      if (edits !== undefined) {
         if (inArray) {
           node = node.slice();
 
@@ -346,7 +346,7 @@ export function visit(
           continue;
         }
       } else if (result !== undefined) {
-        edits.push(key, result);
+        (edits ??= []).push(key, result);
         if (!isLeaving) {
           if (isNode(result)) {
             node = result;
@@ -359,7 +359,7 @@ export function visit(
     }
 
     if (result === undefined && isEdited) {
-      edits.push(key, node);
+      (edits ??= []).push(key, node);
     }
 
     if (isLeaving) {
@@ -369,7 +369,7 @@ export function visit(
       inArray = Array.isArray(node);
       keys = inArray ? node : ((visitorKeys as any)[node.kind] ?? []);
       index = -1;
-      edits = [];
+      edits = undefined;
       if (parent != null) {
         ancestors.push(parent);
       }
@@ -377,7 +377,7 @@ export function visit(
     }
   } while (stack !== undefined);
 
-  if (edits.length !== 0) {
+  if (edits !== undefined) {
     // New root
     return edits.at(-1);
   }
