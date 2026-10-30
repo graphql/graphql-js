@@ -10,22 +10,25 @@ const scalars_ts_1 = require("../../type/scalars.js");
 function KnownTypeNamesRule(context) {
     const { definitions } = context.getDocument();
     const existingTypesMap = context.getSchema()?.getTypeMap() ?? {};
-    const typeNames = new Set([
-        ...Object.keys(existingTypesMap),
-        ...definitions.filter(predicates_ts_1.isTypeDefinitionNode).map((def) => def.name.value),
-    ]);
+    let definedTypeNames;
+    let typeNames;
     return {
         NamedType(node, _1, parent, _2, ancestors) {
             const typeName = node.name.value;
-            if (!typeNames.has(typeName)) {
+            if (!Object.hasOwn(existingTypesMap, typeName) &&
+                !(definedTypeNames ??= new Set(definitions.filter(predicates_ts_1.isTypeDefinitionNode).map((def) => def.name.value))).has(typeName)) {
                 const definitionNode = ancestors[2] ?? parent;
                 const isSDL = definitionNode != null && isSDLNode(definitionNode);
                 if (isSDL && standardTypeNames.has(typeName)) {
                     return;
                 }
-                const suggestedTypes = context.hideSuggestions
-                    ? []
-                    : (0, suggestionList_ts_1.suggestionList)(typeName, isSDL ? [...standardTypeNames, ...typeNames] : [...typeNames]);
+                let suggestedTypes = [];
+                if (!context.hideSuggestions) {
+                    typeNames ??= [
+                        ...new Set([...Object.keys(existingTypesMap), ...definedTypeNames]),
+                    ];
+                    suggestedTypes = (0, suggestionList_ts_1.suggestionList)(typeName, isSDL ? [...standardTypeNames, ...typeNames] : typeNames);
+                }
                 context.reportError(new GraphQLError_ts_1.GraphQLError(`Unknown type "${typeName}".` + (0, didYouMean_ts_1.didYouMean)(suggestedTypes), { nodes: node }));
             }
         },
