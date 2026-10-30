@@ -60,27 +60,35 @@ export function KnownTypeNamesRule(
   const { definitions } = context.getDocument();
   const existingTypesMap = context.getSchema()?.getTypeMap() ?? {};
 
-  const typeNames = new Set([
-    ...Object.keys(existingTypesMap),
-    ...definitions.filter(isTypeDefinitionNode).map((def) => def.name.value),
-  ]);
+  const definedTypeNames = new Set(
+    definitions.filter(isTypeDefinitionNode).map((def) => def.name.value),
+  );
+  let typeNames: Set<string> | undefined;
 
   return {
     NamedType(node, _1, parent, _2, ancestors) {
       const typeName = node.name.value;
-      if (!typeNames.has(typeName)) {
+      if (
+        !Object.hasOwn(existingTypesMap, typeName) &&
+        !definedTypeNames.has(typeName)
+      ) {
         const definitionNode = ancestors[2] ?? parent;
         const isSDL = definitionNode != null && isSDLNode(definitionNode);
         if (isSDL && standardTypeNames.has(typeName)) {
           return;
         }
 
-        const suggestedTypes = context.hideSuggestions
-          ? []
-          : suggestionList(
-              typeName,
-              isSDL ? [...standardTypeNames, ...typeNames] : [...typeNames],
-            );
+        let suggestedTypes: Array<string> = [];
+        if (!context.hideSuggestions) {
+          typeNames ??= new Set([
+            ...Object.keys(existingTypesMap),
+            ...definedTypeNames,
+          ]);
+          suggestedTypes = suggestionList(
+            typeName,
+            isSDL ? [...standardTypeNames, ...typeNames] : [...typeNames],
+          );
+        }
         context.reportError(
           new GraphQLError(
             `Unknown type "${typeName}".` + didYouMean(suggestedTypes),
