@@ -121,6 +121,9 @@ function getFragmentVariableValues(fragmentSpreadNode, fragmentSignatures, varia
 }
 function getArgumentValues(def, node, variableValues, fragmentVariableValues, hideSuggestions) {
     const coercedValues = Object.create(null);
+    if (def.args.length === 0) {
+        return coercedValues;
+    }
     const argumentNodes = node.arguments ?? [];
     const argNodeMap = new Map(argumentNodes.map((arg) => [arg.name.value, arg]));
     for (const argDef of def.args) {
