@@ -16,7 +16,7 @@ function ProvidedRequiredArgumentsRule(context) {
         Field: {
             leave(fieldNode) {
                 const fieldDef = context.getFieldDef();
-                if (!fieldDef) {
+                if (!fieldDef || fieldDef.args.length === 0) {
                     return false;
                 }
                 const providedArgs = new Set(fieldNode.arguments?.map((arg) => arg.name.value));
