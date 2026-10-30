@@ -129,6 +129,20 @@ export interface ParseOptions {
   /**
    * EXPERIMENTAL:
    *
+   * If enabled, the parser accepts an empty set of braces as an input fields
+   * definition, as proposed in https://github.com/graphql/graphql-spec/pull/1249
+   *
+   * ```graphql
+   * input Empty {}
+   * ```
+   *
+   * This is equivalent to omitting the braces entirely (`input Empty`).
+   */
+  experimentalAllowEmptyInputObjectTypes?: boolean | undefined;
+
+  /**
+   * EXPERIMENTAL:
+   *
    * If enabled, the parser will understand and parse fragment variable definitions
    * and arguments on fragment spreads. Fragment variable definitions will be represented
    * in the `variableDefinitions` field of the FragmentDefinitionNode.
@@ -1457,9 +1471,25 @@ export class Parser {
    * InputFieldsDefinition : { InputValueDefinition+ }
    * ```
    *
+   * With `experimentalAllowEmptyInputObjectTypes`:
+   *
+   * ```
+   * InputFieldsDefinition : { InputValueDefinition* }
+   * ```
+   *
    * @internal
    */
   parseInputFieldsDefinition(): Array<InputValueDefinitionNode> | undefined {
+    if (
+      this._options.experimentalAllowEmptyInputObjectTypes === true &&
+      this.peek(TokenKind.BRACE_L)
+    ) {
+      return this.any(
+        TokenKind.BRACE_L,
+        this.parseInputValueDef,
+        TokenKind.BRACE_R,
+      );
+    }
     return this.optionalMany(
       TokenKind.BRACE_L,
       this.parseInputValueDef,

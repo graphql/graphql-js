@@ -229,6 +229,8 @@ export class GraphQLSchema {
 
   /** Whether this schema instance skips validation checks. */
   assumeValid: boolean;
+  /** Whether input object types are allowed to define no fields. */
+  experimentalAllowEmptyInputObjectTypes: boolean;
   /**
    * Cached schema validation errors, if validation has already run.
    * @private
@@ -345,6 +347,8 @@ export class GraphQLSchema {
     this.assumeValid = config.assumeValid ?? false;
     // Used as a cache for validateSchema().
     this.__validationErrors = config.assumeValid === true ? [] : undefined;
+    this.experimentalAllowEmptyInputObjectTypes =
+      config.experimentalAllowEmptyInputObjectTypes ?? false;
 
     this.description = config.description;
     this.extensions = toObjMapWithSymbols(config.extensions);
@@ -886,6 +890,8 @@ export class GraphQLSchema {
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
       assumeValid: this.assumeValid,
+      experimentalAllowEmptyInputObjectTypes:
+        this.experimentalAllowEmptyInputObjectTypes,
     };
   }
 }
@@ -904,6 +910,19 @@ export interface GraphQLSchemaValidationOptions {
    * @internal
    */
   assumeValid?: boolean | undefined;
+
+  /**
+   * EXPERIMENTAL:
+   *
+   * If enabled, input object types are allowed to define no fields, as
+   * proposed in https://github.com/graphql/graphql-spec/pull/1249
+   *
+   * OneOf input object types must still define one or more fields, because an
+   * empty OneOf input object can never be given a valid value.
+   *
+   * Default: false
+   */
+  experimentalAllowEmptyInputObjectTypes?: boolean | undefined;
 }
 
 /** Configuration used to construct a GraphQLSchema. */
@@ -936,6 +955,7 @@ export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
   extensions: Readonly<GraphQLSchemaExtensions>;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
   assumeValid: boolean;
+  experimentalAllowEmptyInputObjectTypes: boolean;
 }
 
 function collectReferencedTypes(

@@ -890,6 +890,85 @@ describe('Type System: Input Objects must have fields', () => {
     ]);
   });
 
+  it('accepts an Input Object type with no fields when experimentalAllowEmptyInputObjectTypes is enabled', () => {
+    const schema = buildSchema(
+      `
+      type Query {
+        field(arg: SomeInputObject): String
+      }
+
+      input SomeInputObject
+    `,
+      { experimentalAllowEmptyInputObjectTypes: true },
+    );
+    expect(schema.experimentalAllowEmptyInputObjectTypes).to.equal(true);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+
+    const manualSchema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          field: {
+            type: GraphQLString,
+            args: {
+              arg: {
+                type: new GraphQLInputObjectType({
+                  name: 'SomeInputObject',
+                  fields: {},
+                }),
+              },
+            },
+          },
+        },
+      }),
+      experimentalAllowEmptyInputObjectTypes: true,
+    });
+    expectJSON(validateSchema(manualSchema)).toDeepEqual([]);
+
+    const extendedSchema = extendSchema(
+      schema,
+      parse('input AnotherInputObject'),
+    );
+    expect(extendedSchema.experimentalAllowEmptyInputObjectTypes).to.equal(
+      true,
+    );
+    expectJSON(validateSchema(extendedSchema)).toDeepEqual([]);
+  });
+
+  it('accepts an Input Object type with empty braces when experimentalAllowEmptyInputObjectTypes is enabled', () => {
+    const schema = buildSchema(
+      `
+      type Query {
+        field(arg: SomeInputObject): String
+      }
+
+      input SomeInputObject {}
+    `,
+      { experimentalAllowEmptyInputObjectTypes: true },
+    );
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('rejects a OneOf Input Object type with no fields even when experimentalAllowEmptyInputObjectTypes is enabled', () => {
+    const schema = buildSchema(
+      `
+      type Query {
+        field(arg: SomeInputObject): String
+      }
+
+      input SomeInputObject @oneOf
+    `,
+      { experimentalAllowEmptyInputObjectTypes: true },
+    );
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Input Object type SomeInputObject must define one or more fields.',
+        locations: [{ line: 6, column: 7 }],
+      },
+    ]);
+  });
+
   it('accepts an Input Object with breakable circular reference', () => {
     const schema = buildSchema(`
       type Query {

@@ -727,7 +727,15 @@ function validateInputFields(
 ): void {
   const fields = Object.values(inputObj.getFields());
 
-  if (fields.length === 0) {
+  // Input Objects must define one or more fields, unless empty input object
+  // types are explicitly allowed. OneOf Input Objects must always define one or
+  // more fields, because an empty OneOf Input Object has no valid value.
+  if (
+    fields.length === 0 &&
+    !(
+      context.schema.experimentalAllowEmptyInputObjectTypes && !inputObj.isOneOf
+    )
+  ) {
     context.reportError(
       `Input Object type ${inputObj} must define one or more fields.`,
       [inputObj.astNode, ...inputObj.extensionASTNodes],
