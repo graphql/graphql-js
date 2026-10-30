@@ -62,7 +62,7 @@ describe('promiseForObject', () => {
     });
   });
 
-  it('passes non-native thenables to promiseAll', async () => {
+  it('passes non-native thenable to promiseAll', async () => {
     const { calls, promiseAll } = spyingPromiseAll();
     const thenable = {
       then(resolve: (value: string) => void) {
