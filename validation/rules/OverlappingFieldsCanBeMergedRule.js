@@ -39,6 +39,10 @@ function OverlappingFieldsCanBeMergedRule(validationContext) {
             if (parent && 'kind' in parent && parent.kind === kinds_ts_1.Kind.INLINE_FRAGMENT) {
                 return;
             }
+            if (selectionSet.selections.length <= 1 &&
+                selectionSet.selections[0]?.kind !== kinds_ts_1.Kind.INLINE_FRAGMENT) {
+                return;
+            }
             const conflicts = findConflictsWithinSelectionSet(validationContext, ruleContext, validationContext.getParentType(), selectionSet, fragmentScope);
             for (const { responseName, reason, fields1, fields2 } of conflicts) {
                 validationContext.reportError(new GraphQLError_ts_1.GraphQLError(`Fields "${maybeAbbreviate(responseName)}" conflict because ${reason}. Use different aliases on the fields to fetch both if this was intentional.`, { nodes: fields1.concat(fields2) }));
