@@ -476,6 +476,7 @@ export {
   UniqueArgumentDefinitionNamesRule,
   UniqueDirectiveNamesRule,
   PossibleTypeExtensionsRule,
+  NoDirectiveDefinitionCyclesRule,
   // Custom validation rules
   NoDeprecatedCustomRule,
   NoSchemaIntrospectionCustomRule,
