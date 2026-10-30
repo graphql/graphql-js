@@ -280,7 +280,9 @@ export function visit(
         if (inArray) {
           node = node.slice();
           let editOffset = 0;
-          for (const [editKey, editValue] of edits) {
+          for (let editIndex = 0; editIndex < edits.length; editIndex += 2) {
+            const editKey = edits[editIndex];
+            const editValue = edits[editIndex + 1];
             const arrayKey = editKey - editOffset;
             if (editValue === null) {
               node.splice(arrayKey, 1);
@@ -291,8 +293,8 @@ export function visit(
           }
         } else {
           node = { ...node };
-          for (const [editKey, editValue] of edits) {
-            node[editKey] = editValue;
+          for (let editIndex = 0; editIndex < edits.length; editIndex += 2) {
+            node[edits[editIndex]] = edits[editIndex + 1];
           }
         }
       }
@@ -326,7 +328,7 @@ export function visit(
           continue;
         }
       } else if (result !== undefined) {
-        edits.push([key, result]);
+        edits.push(key, result);
         if (!isLeaving) {
           if (isNode(result)) {
             node = result;
@@ -338,7 +340,7 @@ export function visit(
       }
     }
     if (result === undefined && isEdited) {
-      edits.push([key, node]);
+      edits.push(key, node);
     }
     if (isLeaving) {
       path.pop();
@@ -356,7 +358,7 @@ export function visit(
   } while (stack !== undefined);
   if (edits.length !== 0) {
     // New root
-    return edits.at(-1)[1];
+    return edits.at(-1);
   }
   return root;
 }
