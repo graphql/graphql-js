@@ -10,7 +10,6 @@ import { memoize3 } from '../jsutils/memoize3.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
 import type { Path } from '../jsutils/Path.ts';
 import { addPath, pathToArray } from '../jsutils/Path.ts';
-import { promiseForObject } from '../jsutils/promiseForObject.ts';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
 import { promiseReduce } from '../jsutils/promiseReduce.ts';
 
@@ -538,7 +537,8 @@ export class Executor<
     positionContext: TPositionContext | undefined,
   ): PromiseOrValue<ObjMap<unknown>> {
     const results = Object.create(null);
-    let containsPromise = false;
+    let promiseKeys: Array<string> | undefined;
+    let promises: Array<Promise<unknown>> | undefined;
     const tracingChannel = shouldTrace(resolveChannel)
       ? resolveChannel
       : undefined;
@@ -558,28 +558,37 @@ export class Executor<
         if (result !== undefined) {
           results[responseName] = result;
           if (isPromise(result)) {
-            containsPromise = true;
+            if (promiseKeys === undefined || promises === undefined) {
+              promiseKeys = [responseName];
+              promises = [result];
+            } else {
+              promiseKeys.push(responseName);
+              promises.push(result);
+            }
           }
         }
       }
     } catch (error) {
-      if (containsPromise) {
-        this.sharedExecutionContext.asyncWorkTracker.addValues(
-          Object.values(results),
-        );
+      if (promises !== undefined) {
+        this.sharedExecutionContext.asyncWorkTracker.addValues(promises);
       }
       throw error;
     }
 
-    // If there are no promises, we can just return the object and any incrementalDataRecords
-    if (!containsPromise) {
+    // If there are no promises, we can just return the object
+    if (promiseKeys === undefined || promises === undefined) {
       return results;
     }
 
-    // Otherwise, results is a map from field name to the result of resolving that
-    // field, which is possibly a promise. Return a promise that will return this
-    // same map, but with any promises replaced with the values they resolved to.
-    return promiseForObject(results, this.promiseAll);
+    // Otherwise, return a promise for the same results map with each pending
+    // promise replaced by its resolved value (keys already exist, so order is
+    // preserved).
+    return this.promiseAll(promises).then((resolved) => {
+      for (let i = 0; i < resolved.length; i++) {
+        results[promiseKeys[i]] = resolved[i];
+      }
+      return results;
+    });
   }
 
   /**
