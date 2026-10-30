@@ -49,6 +49,20 @@ describe('printSourceLocation', () => {
     `);
   });
 
+  it('prints minified locations at 80-character boundaries', () => {
+    const source = new Source('a'.repeat(80) + 'b'.repeat(80) + 'c'.repeat(40));
+
+    for (const [column, nextLine] of [
+      [80, 'b'.repeat(80)],
+      [160, 'c'.repeat(40)],
+    ] as const) {
+      const result = printSourceLocation(source, { line: 1, column });
+      const lines = result.split('\n');
+      expect(lines.at(-2)).to.equal(`  | ${' '.repeat(79)}^`);
+      expect(lines.at(-1)).to.equal(`  | ${nextLine}`);
+    }
+  });
+
   it('prints single digit line number with no padding', () => {
     const result = printSourceLocation(
       new Source('*', 'Test', { line: 9, column: 1 }),
