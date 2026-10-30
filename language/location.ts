@@ -24,7 +24,16 @@ export interface SourceLocation {
  * ```
  */
 export function getLocation(source: Source, position: number): SourceLocation {
-  return getLocations([{ source, start: position }])[0];
+  const matches = source.body.matchAll(LineRegExp);
+  let match = matches.next().value;
+  let line = 1;
+  let lastLineStart = 0;
+  while (match !== undefined && match.index < position) {
+    lastLineStart = match.index + match[0].length;
+    line++;
+    match = matches.next().value;
+  }
+  return { line, column: position + 1 - lastLineStart };
 }
 /** @internal */
 export function getLocations(
@@ -33,6 +42,9 @@ export function getLocations(
     start: number;
   }>,
 ): Array<SourceLocation> {
+  if (locations.length < 2) {
+    return locations.map(({ source, start }) => getLocation(source, start));
+  }
   const bySource = new AccumulatorMap<
     Source,
     {
