@@ -66,7 +66,7 @@ export function ProvidedRequiredArgumentsRule(
       // Validate on leave to allow for deeper errors to appear first.
       leave(fieldNode) {
         const fieldDef = context.getFieldDef();
-        if (!fieldDef) {
+        if (!fieldDef || fieldDef.args.length === 0) {
           return false;
         }
         const providedArgs = new Set(
