@@ -121,6 +121,12 @@ export function OverlappingFieldsCanBeMergedRule(
       if (parent && 'kind' in parent && parent.kind === Kind.INLINE_FRAGMENT) {
         return;
       }
+      if (
+        selectionSet.selections.length <= 1 &&
+        selectionSet.selections[0]?.kind !== Kind.INLINE_FRAGMENT
+      ) {
+        return;
+      }
       const conflicts = findConflictsWithinSelectionSet(
         validationContext,
         ruleContext,
