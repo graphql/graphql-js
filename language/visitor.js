@@ -72,7 +72,8 @@ function visit(root, visitor, visitorKeys = ast_ts_1.QueryDocumentKeys) {
             path.push(key);
         }
         let result;
-        if (!Array.isArray(node)) {
+        let nodeIsArray = Array.isArray(node);
+        if (!nodeIsArray) {
             if (!((0, ast_ts_1.isNode)(node)))
                 (0, devAssert_ts_1.devAssert)(false, `Invalid AST Node: ${(0, inspect_ts_1.inspect)(node)}.`);
             const visitFn = isLeaving
@@ -93,6 +94,7 @@ function visit(root, visitor, visitorKeys = ast_ts_1.QueryDocumentKeys) {
                 if (!isLeaving) {
                     if ((0, ast_ts_1.isNode)(result)) {
                         node = result;
+                        nodeIsArray = Array.isArray(node);
                     }
                     else {
                         path.pop();
@@ -109,7 +111,7 @@ function visit(root, visitor, visitorKeys = ast_ts_1.QueryDocumentKeys) {
         }
         else {
             stack = { inArray, index, keys, edits, prev: stack };
-            inArray = Array.isArray(node);
+            inArray = nodeIsArray;
             keys = inArray ? node : (visitorKeys[node.kind] ?? []);
             index = -1;
             edits = undefined;
