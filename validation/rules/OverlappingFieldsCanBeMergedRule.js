@@ -221,13 +221,19 @@ function getOverlappingFields(ruleContext, collectFieldsResult1, collectFieldsRe
     return overlappingFields;
 }
 function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExclusive, responseName, fieldDetails1, scope1, fieldDetails2, scope2) {
-    const { parentType: parentType1, node: node1, definition: def1, } = fieldDetails1;
-    const { parentType: parentType2, node: node2, definition: def2, } = fieldDetails2;
+    const { parentType: parentType1, node: node1, definition: def1, streamDirective: streamDirective1, } = fieldDetails1;
+    const { parentType: parentType2, node: node2, definition: def2, streamDirective: streamDirective2, } = fieldDetails2;
     const areMutuallyExclusive = parentFieldsAreMutuallyExclusive ||
         (parentType1 !== parentType2 &&
             (0, definition_ts_1.isObjectType)(parentType1) &&
             (0, definition_ts_1.isObjectType)(parentType2));
     spendComplexityBudget(ruleContext, 2);
+    if (fieldDetails1.isSimpleLeaf &&
+        fieldDetails2.isSimpleLeaf &&
+        def1?.type === def2?.type &&
+        node1.name.value === node2.name.value) {
+        return;
+    }
     const fieldInfo1 = getFieldInfo(fieldDetails1);
     const fieldInfo2 = getFieldInfo(fieldDetails2);
     let comparison = fieldInfo1.comparisons.get(fieldInfo2);
@@ -257,9 +263,9 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
             };
         }
     }
-    if (fieldInfo1.hasStream || fieldInfo2.hasStream) {
+    if (streamDirective1 || streamDirective2) {
         let reason = 'they have overlapping stream directives';
-        if (fieldInfo1.hasStream && fieldInfo2.hasStream) {
+        if (streamDirective1 && streamDirective2) {
             const comparedArguments = (comparison.streamArguments ??=
                 compareArguments(ruleContext, fieldInfo1.streamArguments, fieldInfo2.streamArguments));
             if (sameArguments(ruleContext, comparedArguments, scope1, scope2)) {
@@ -289,18 +295,12 @@ function findConflict(validationContext, ruleContext, parentFieldsAreMutuallyExc
     }
 }
 function getFieldInfo(fieldDetails) {
-    if (fieldDetails.info === undefined) {
-        const node = fieldDetails.node;
-        const stream = node.directives?.find((directive) => directive.name.value === 'stream');
-        fieldDetails.info = {
-            comparisons: new Map(),
-            namedType: (0, definition_ts_1.getNamedType)(fieldDetails.definition?.type),
-            arguments: getArgumentInfo(node.arguments),
-            hasStream: stream !== undefined,
-            streamArguments: getArgumentInfo(stream?.arguments),
-        };
-    }
-    return fieldDetails.info;
+    return (fieldDetails.info ??= {
+        comparisons: new Map(),
+        namedType: (0, definition_ts_1.getNamedType)(fieldDetails.definition?.type),
+        arguments: getArgumentInfo(fieldDetails.node.arguments),
+        streamArguments: getArgumentInfo(fieldDetails.streamDirective?.arguments),
+    });
 }
 function getArgumentInfo(args) {
     if (args === undefined || args.length === 0) {
@@ -473,10 +473,15 @@ function collectFieldsImpl(validationContext, parentType, selectionSet, groupedF
                     fieldDetailsList = [];
                     groupedFieldSet.set(responseName, fieldDetailsList);
                 }
+                const streamDirective = selection.directives?.find((directive) => directive.name.value === 'stream');
                 fieldDetailsList.push({
                     parentType,
                     node: selection,
                     definition: fieldDef,
+                    isSimpleLeaf: (selection.arguments?.length ?? 0) === 0 &&
+                        !selection.selectionSet &&
+                        streamDirective === undefined,
+                    streamDirective,
                 });
                 break;
             }
