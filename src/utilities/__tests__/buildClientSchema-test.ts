@@ -66,6 +66,93 @@ describe('Type System: build schema from introspection', () => {
     expect(cycleIntrospection(sdl)).to.equal(sdl);
   });
 
+  it('builds a schema with an empty object type', () => {
+    const sdl = dedent`
+      type Query {
+        empty: Empty
+      }
+
+      type Empty
+    `;
+    const serverSchema = buildSchema(sdl, {
+      experimentalAllowEmptyTypes: true,
+    });
+    const introspection = introspectionFromSchema(serverSchema);
+    const clientSchema = buildClientSchema(introspection, {
+      experimentalAllowEmptyTypes: true,
+    });
+
+    expect(clientSchema.experimentalAllowEmptyTypes).to.equal(true);
+    expect(printSchema(clientSchema)).to.equal(sdl);
+    expect(
+      graphqlSync({
+        schema: clientSchema,
+        source: '{ empty { __typename } }',
+        rootValue: { empty: {} },
+      }),
+    ).to.deep.equal({ data: { empty: { __typename: 'Empty' } } });
+  });
+
+  it('builds a schema with an empty interface type', () => {
+    const sdl = dedent`
+      type Query {
+        empty: Empty
+      }
+
+      interface Empty
+
+      type Impl implements Empty {
+        field: String
+      }
+    `;
+    const serverSchema = buildSchema(sdl, {
+      experimentalAllowEmptyTypes: true,
+    });
+    const introspection = introspectionFromSchema(serverSchema);
+    const clientSchema = buildClientSchema(introspection, {
+      experimentalAllowEmptyTypes: true,
+    });
+
+    expect(clientSchema.experimentalAllowEmptyTypes).to.equal(true);
+    expect(printSchema(clientSchema)).to.equal(sdl);
+    expect(
+      graphqlSync({
+        schema: clientSchema,
+        source: '{ empty { __typename ... on Impl { field } } }',
+        rootValue: { empty: { __typename: 'Impl', field: 'value' } },
+      }),
+    ).to.deep.equal({
+      data: { empty: { __typename: 'Impl', field: 'value' } },
+    });
+  });
+
+  it('builds a schema with an empty input object type', () => {
+    const sdl = dedent`
+      type Query {
+        field(arg: Empty): String
+      }
+
+      input Empty
+    `;
+    const serverSchema = buildSchema(sdl, {
+      experimentalAllowEmptyTypes: true,
+    });
+    const introspection = introspectionFromSchema(serverSchema);
+    const clientSchema = buildClientSchema(introspection, {
+      experimentalAllowEmptyTypes: true,
+    });
+
+    expect(clientSchema.experimentalAllowEmptyTypes).to.equal(true);
+    expect(printSchema(clientSchema)).to.equal(sdl);
+    expect(
+      graphqlSync({
+        schema: clientSchema,
+        source: '{ field(arg: {}) }',
+        rootValue: { field: 'ok' },
+      }),
+    ).to.deep.equal({ data: { field: 'ok' } });
+  });
+
   it('builds a schema without the query type', () => {
     const sdl = dedent`
       type Query {

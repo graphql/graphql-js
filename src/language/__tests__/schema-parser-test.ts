@@ -110,6 +110,109 @@ describe('Schema Parser', () => {
     });
   });
 
+  it('rejects empty fields definition by default', () => {
+    expectSyntaxError('type Hello {}').to.deep.equal({
+      message: 'Syntax Error: Expected Name, found "}".',
+      locations: [{ line: 1, column: 13 }],
+    });
+  });
+
+  it('parses empty fields definition with experimentalAllowEmptyTypes', () => {
+    const doc = parse('type Hello {}', {
+      experimentalAllowEmptyTypes: true,
+    });
+
+    expectJSON(doc).toDeepEqual({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'ObjectTypeDefinition',
+          name: nameNode('Hello', { start: 5, end: 10 }),
+          description: undefined,
+          interfaces: undefined,
+          directives: undefined,
+          fields: [],
+          loc: { start: 0, end: 13 },
+        },
+      ],
+      loc: { start: 0, end: 13 },
+    });
+  });
+
+  it('parses empty fields definition on interfaces and extensions with experimentalAllowEmptyTypes', () => {
+    const doc = parse('interface Hello {} extend type World {}', {
+      experimentalAllowEmptyTypes: true,
+    });
+
+    expectJSON(doc).toDeepNestedProperty('definitions[0].fields', []);
+    expectJSON(doc).toDeepNestedProperty('definitions[1].fields', []);
+  });
+
+  it('rejects empty interface fields definition by default', () => {
+    expectSyntaxError('interface Hello {}').to.deep.equal({
+      message: 'Syntax Error: Expected Name, found "}".',
+      locations: [{ line: 1, column: 18 }],
+    });
+  });
+
+  it('parses empty interface fields definition with experimentalAllowEmptyTypes', () => {
+    const doc = parse('interface Hello {}', {
+      experimentalAllowEmptyTypes: true,
+    });
+
+    expectJSON(doc).toDeepEqual({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'InterfaceTypeDefinition',
+          name: nameNode('Hello', { start: 10, end: 15 }),
+          description: undefined,
+          interfaces: undefined,
+          directives: undefined,
+          fields: [],
+          loc: { start: 0, end: 18 },
+        },
+      ],
+      loc: { start: 0, end: 18 },
+    });
+  });
+
+  it('rejects empty input fields definition by default', () => {
+    expectSyntaxError('input Hello {}').to.deep.equal({
+      message: 'Syntax Error: Expected Name, found "}".',
+      locations: [{ line: 1, column: 14 }],
+    });
+  });
+
+  it('parses empty input fields definition with experimentalAllowEmptyTypes', () => {
+    const doc = parse('input Hello {}', {
+      experimentalAllowEmptyTypes: true,
+    });
+
+    expectJSON(doc).toDeepEqual({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'InputObjectTypeDefinition',
+          name: nameNode('Hello', { start: 6, end: 11 }),
+          description: undefined,
+          directives: undefined,
+          fields: [],
+          loc: { start: 0, end: 14 },
+        },
+      ],
+      loc: { start: 0, end: 14 },
+    });
+  });
+
+  it('parses empty input fields definition on extensions with experimentalAllowEmptyTypes', () => {
+    const doc = parse('extend input Hello {}', {
+      experimentalAllowEmptyTypes: true,
+    });
+
+    expectJSON(doc).toDeepNestedProperty('definitions[0].fields', []);
+  });
+
   it('parses type with description string', () => {
     const doc = parse(dedent`
       "Description"

@@ -476,8 +476,9 @@ function validateFields(
 ): void {
   const fields = Object.values(type.getFields());
 
-  // Objects and Interfaces both must define one or more fields.
-  if (fields.length === 0) {
+  // Objects and Interfaces both must define one or more fields, unless empty
+  // types are explicitly allowed.
+  if (fields.length === 0 && !context.schema.experimentalAllowEmptyTypes) {
     context.reportError(`Type ${type} must define one or more fields.`, [
       type.astNode,
       ...type.extensionASTNodes,
@@ -675,7 +676,7 @@ function validateUnionMembers(
 ): void {
   const memberTypes = union.getTypes();
 
-  if (memberTypes.length === 0) {
+  if (memberTypes.length === 0 && !context.schema.experimentalAllowEmptyTypes) {
     context.reportError(
       `Union type ${union} must define one or more member types.`,
       [union.astNode, ...union.extensionASTNodes],
@@ -727,7 +728,13 @@ function validateInputFields(
 ): void {
   const fields = Object.values(inputObj.getFields());
 
-  if (fields.length === 0) {
+  // Input Objects must define one or more fields, unless empty input object
+  // types are explicitly allowed. OneOf Input Objects must always define one or
+  // more fields, because an empty OneOf Input Object has no valid value.
+  if (
+    fields.length === 0 &&
+    !(context.schema.experimentalAllowEmptyTypes && !inputObj.isOneOf)
+  ) {
     context.reportError(
       `Input Object type ${inputObj} must define one or more fields.`,
       [inputObj.astNode, ...inputObj.extensionASTNodes],

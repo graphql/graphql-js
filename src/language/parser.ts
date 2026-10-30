@@ -167,6 +167,23 @@ export interface ParseOptions {
    * @internal
    */
   lexer?: LexerInterface | undefined;
+
+  /**
+   * EXPERIMENTAL:
+   *
+   * If enabled, the parser accepts an empty set of braces as a fields
+   * definition or an input fields definition, as proposed in
+   * https://github.com/graphql/graphql-spec/pull/1228,
+   * https://github.com/graphql/graphql-spec/pull/1229 and
+   * https://github.com/graphql/graphql-spec/pull/1249
+   *
+   * ```graphql
+   * type Empty {}
+   * interface Empty {}
+   * input Empty {}
+   * ```
+   */
+  experimentalAllowEmptyTypes?: boolean | undefined;
 }
 
 /**
@@ -1220,9 +1237,25 @@ export class Parser {
    * FieldsDefinition : { FieldDefinition+ }
    * ```
    *
+   * With `experimentalAllowEmptyTypes`:
+   *
+   * ```
+   * FieldsDefinition : { FieldDefinition* }
+   * ```
+   *
    * @internal
    */
   parseFieldsDefinition(): Array<FieldDefinitionNode> | undefined {
+    if (
+      this._options.experimentalAllowEmptyTypes === true &&
+      this.peek(TokenKind.BRACE_L)
+    ) {
+      return this.any(
+        TokenKind.BRACE_L,
+        this.parseFieldDefinition,
+        TokenKind.BRACE_R,
+      );
+    }
     return this.optionalMany(
       TokenKind.BRACE_L,
       this.parseFieldDefinition,
@@ -1457,9 +1490,25 @@ export class Parser {
    * InputFieldsDefinition : { InputValueDefinition+ }
    * ```
    *
+   * With `experimentalAllowEmptyTypes`:
+   *
+   * ```
+   * InputFieldsDefinition : { InputValueDefinition* }
+   * ```
+   *
    * @internal
    */
   parseInputFieldsDefinition(): Array<InputValueDefinitionNode> | undefined {
+    if (
+      this._options.experimentalAllowEmptyTypes === true &&
+      this.peek(TokenKind.BRACE_L)
+    ) {
+      return this.any(
+        TokenKind.BRACE_L,
+        this.parseInputValueDef,
+        TokenKind.BRACE_R,
+      );
+    }
     return this.optionalMany(
       TokenKind.BRACE_L,
       this.parseInputValueDef,
