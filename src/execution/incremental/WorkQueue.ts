@@ -134,6 +134,7 @@ interface StreamFailureEvent<
 type GraphEvent<T, I, G extends Group<G>, S extends Stream<T, I, G, S>> =
   | TaskSuccessGraphEvent<T, I, G, S>
   | TaskFailureGraphEvent<T, I, G, S>
+  | GroupFailureEvent<G>
   | StreamItemsEvent<T, I, G, S>
   | StreamSuccessEvent<T, I, G, S>
   | StreamFailureEvent<T, I, G, S>;
@@ -162,7 +163,7 @@ interface GroupSuccessEvent<
 interface GroupFailureEvent<G extends Group<G>> {
   kind: 'GROUP_FAILURE';
   group: G;
-  error: unknown;
+  errors: ReadonlyArray<unknown>;
 }
 
 interface StreamValuesEvent<
@@ -465,6 +466,24 @@ export function createWorkQueue<
   function startGroup(group: G): void {
     const groupNode = groupNodes.get(group);
     if (groupNode) {
+      const errors: Array<unknown> = [];
+      for (const task of groupNode.tasks) {
+        // Collect any errors for already started tasks within this group.
+        if (taskNodes.has(task)) {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            task.computation.result();
+          } catch (error) {
+            errors.push(error);
+          }
+        }
+      }
+      if (errors.length > 0) {
+        // Remove the group now so queued task failures cannot complete it again.
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        pushGraphEvent(finishGroupFailure(group, groupNode, errors));
+        return;
+      }
       for (const task of groupNode.tasks) {
         startTask(task);
       }
@@ -472,20 +491,15 @@ export function createWorkQueue<
   }
 
   function startTask(task: Task<T, I, G, S>): void {
-    const alreadyStarted = taskNodes.has(task);
-    if (!alreadyStarted) {
-      taskNodes.set(task, {
-        value: undefined,
-        childStreams: [],
-      });
+    if (taskNodes.has(task)) {
+      return;
     }
+    taskNodes.set(task, {
+      value: undefined,
+      childStreams: [],
+    });
     try {
       const result = task.computation.result();
-      if (alreadyStarted) {
-        // Pending tasks already have a result handler. Successful results are
-        // handled once for all owning groups, including those not yet started.
-        return;
-      }
       if (isPromise(result)) {
         result.then(
           (resolved) => {
@@ -538,6 +552,9 @@ export function createWorkQueue<
           break;
         case 'TASK_FAILURE':
           workQueueEvents.push(...taskFailure(graphEvent));
+          break;
+        case 'GROUP_FAILURE':
+          workQueueEvents.push(graphEvent);
           break;
         case 'STREAM_ITEMS':
           workQueueEvents.push(...streamItems(graphEvent));
@@ -634,7 +651,7 @@ export function createWorkQueue<
     for (const group of task.groups) {
       const groupNode = groupNodes.get(group);
       if (groupNode && rootGroups.has(group)) {
-        groupFailureEvents.push(finishGroupFailure(group, groupNode, error));
+        groupFailureEvents.push(finishGroupFailure(group, groupNode, [error]));
       }
     }
     return groupFailureEvents;
@@ -722,10 +739,10 @@ export function createWorkQueue<
   function finishGroupFailure(
     group: G,
     groupNode: GroupNode<T, I, G, S>,
-    error: unknown,
+    errors: ReadonlyArray<unknown>,
   ): GroupFailureEvent<G> {
     removeGroup(group, groupNode);
-    return { kind: 'GROUP_FAILURE', group, error };
+    return { kind: 'GROUP_FAILURE', group, errors };
   }
 
   function removeGroup(group: G, groupNode: GroupNode<T, I, G, S>): void {
