@@ -73,9 +73,17 @@ describe('Printer: Query document', () => {
   });
 
   it('correctly prints non-query operations without name', () => {
-    const queryASTShorthanded = parse('query { id, name }');
+    const queryASTShorthanded = parse('{ id, name }');
     expect(print(queryASTShorthanded)).to.equal(dedent`
       {
+        id
+        name
+      }
+    `);
+
+    const queryAST = parse('query { id, name }');
+    expect(print(queryAST)).to.equal(dedent`
+      query {
         id
         name
       }
@@ -283,6 +291,47 @@ describe('Printer: Query document', () => {
     `);
   });
 
+  it('keeps the query keyword after a definition without a body', () => {
+    // See https://github.com/graphql/graphql-js/issues/4901
+    const sources = [
+      'type A\n\nquery { a: b }',
+      'interface A\n\nquery { a: b }',
+      'input A\n\nquery { a: b }',
+      'enum A\n\nquery { a }',
+      'extend type A @d\n\nquery { a: b }',
+      'extend schema @d\n\nquery { query: b }',
+    ];
+    for (const source of sources) {
+      const ast = parse(source);
+      const printed = print(ast);
+      expect(printed).to.match(/\n\nquery {/);
+      expect(parse(printed).definitions.map((def) => def.kind)).to.deep.equal(
+        ast.definitions.map((def) => def.kind),
+      );
+    }
+  });
+
+  it('prints the query keyword when a shorthand query has a name, variables or directives', () => {
+    const ast = parse('{ id }', { noLocation: true });
+    const operation = ast.definitions[0];
+    expect(operation).to.have.property('shorthand', true);
+    expect(
+      print({
+        ...ast,
+        definitions: [
+          {
+            ...operation,
+            name: { kind: Kind.NAME, value: 'Q' },
+          } as typeof operation,
+        ],
+      }),
+    ).to.equal(dedent`
+      query Q {
+        id
+      }
+    `);
+  });
+
   it('prints kitchen sink without altering ast', () => {
     const ast = parse(kitchenSinkQuery, { noLocation: true });
 
@@ -358,7 +407,7 @@ describe('Printer: Query document', () => {
         query
       }
 
-      {
+      query {
         __typename
       }
     `),
