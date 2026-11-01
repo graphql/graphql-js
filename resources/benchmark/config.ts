@@ -30,6 +30,7 @@ export const timingCommandArgsByRuntime = {
 
 export const memoryCommandArgsByRuntime = {
   node: [
+    '--expose-gc',
     '--no-concurrent-sweeping',
     '--no-minor-gc-task',
     '--min-semi-space-size=1280', // 1.25GB
@@ -41,6 +42,6 @@ export const memoryCommandArgsByRuntime = {
     '--allow-read',
     '--allow-env',
     '--allow-write',
-    '--v8-flags=--no-concurrent-sweeping,--no-minor-gc-task,--min-semi-space-size=1280,--max-semi-space-size=1280',
+    '--v8-flags=--expose-gc,--no-concurrent-sweeping,--no-minor-gc-task,--min-semi-space-size=1280,--max-semi-space-size=1280',
   ],
 } as const;
