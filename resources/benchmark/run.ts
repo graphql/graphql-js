@@ -205,7 +205,7 @@ export function collectMemorySamples(
     ++sampleIndex
   ) {
     const sample = sampleMemoryModule(modulePath, runtime);
-    assert(sample > 0);
+    assert(Number.isFinite(sample) && sample >= 0);
     samples.push(sample);
   }
   return samples;
