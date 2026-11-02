@@ -44,6 +44,18 @@ describe('Printer: Query document', () => {
     expect(print(ast)).to.equal('foo');
   });
 
+  it('prints shared frozen nodes without modifying them', () => {
+    const name = Object.freeze({ kind: Kind.NAME, value: 'field' } as const);
+    const field = Object.freeze({ kind: Kind.FIELD, name } as const);
+    const ast = Object.freeze({
+      kind: Kind.SELECTION_SET,
+      selections: Object.freeze([field, field]),
+    } as const);
+
+    expect(print(ast)).to.equal('{\n  field\n  field\n}');
+    expect(print(ast, { maxIndentDepth: 0 })).to.equal('{ field field }');
+  });
+
   it('prints empty selection sets', () => {
     const ast = parse('{ foo { } bar { ... on Baz { } } }', {
       allowEmptySelectionSets: true,
