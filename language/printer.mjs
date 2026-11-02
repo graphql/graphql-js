@@ -345,8 +345,11 @@ const printDocASTReducer = {
     },
 };
 function join(maybeArray, separator = '') {
+    if (maybeArray == null || maybeArray.length === 0) {
+        return EMPTY;
+    }
     let result = EMPTY;
-    for (const item of maybeArray ?? []) {
+    for (const item of maybeArray) {
         if (item === undefined || item.length === 0) {
             continue;
         }
@@ -354,14 +357,17 @@ function join(maybeArray, separator = '') {
             result = typeof item === 'string' ? new PrintBuffer(item) : item;
         }
         else {
-            result.append(separator).append(item);
+            if (separator !== '') {
+                result.append(separator);
+            }
+            result.append(item);
         }
     }
     return result;
 }
-function joinedLength(maybeArray, separator) {
+function joinedLength(array, separator) {
     let length = 0;
-    for (const item of maybeArray ?? []) {
+    for (const item of array) {
         if (item.length !== 0) {
             length += (length === 0 ? 0 : separator.length) + item.length;
         }
@@ -373,13 +379,18 @@ function block(array) {
 }
 function wrap(start, maybeBuffer, end = '') {
     return maybeBuffer != null && maybeBuffer.length !== 0
-        ? new PrintBuffer(start).append(maybeBuffer).append(end)
+        ? start === ''
+            ? maybeBuffer.append(end)
+            : new PrintBuffer(start).append(maybeBuffer).append(end)
         : EMPTY;
 }
 function hasMultilineItems(maybeArray) {
     return maybeArray?.some((result) => result.newlines !== 0) ?? false;
 }
 function wrappedLineAndArgs(prefix, args) {
+    if (args == null || args.length === 0) {
+        return prefix;
+    }
     return join([
         prefix,
         prefix.length + joinedLength(args, ', ') + 2 > MAX_LINE_LENGTH
