@@ -47,6 +47,8 @@ export function MaxIntrospectionDepthRule(
 ): ASTVisitor {
   const checkedFragments: { [key: string]: number | undefined } =
     Object.create(null);
+  const exceededFragments: { [key: string]: number | undefined } =
+    Object.create(null);
   /**
    * Counts the depth of list fields in "__Type" recursively and
    * returns `true` if the limit has been reached.
@@ -62,6 +64,10 @@ export function MaxIntrospectionDepthRule(
   ): boolean {
     if (node.kind === Kind.FRAGMENT_SPREAD) {
       const fragmentName = node.name.value;
+      const exceededEntryDepth = exceededFragments[fragmentName];
+      if (exceededEntryDepth !== undefined && exceededEntryDepth <= depth) {
+        return true;
+      }
       const visitedEntryDepth = visitedFragments[fragmentName];
       const checkedEntryDepth = checkedFragments[fragmentName];
       if (
@@ -77,11 +83,12 @@ export function MaxIntrospectionDepthRule(
       }
 
       visitedFragments[fragmentName] = depth;
+      // Record the result as soon as the check completes, so that later checks
+      // reuse it even when this introspection field exceeds the limit.
       if (checkDepth(fragment, visitedFragments, depth)) {
+        exceededFragments[fragmentName] = depth;
         return true;
       }
-      // Record the check as soon as it completes, so that it is reused even
-      // when the limit is exceeded elsewhere under the same introspection field.
       checkedFragments[fragmentName] = depth;
       return false;
     }
