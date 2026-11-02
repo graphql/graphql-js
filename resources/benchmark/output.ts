@@ -105,6 +105,9 @@ export function printPairedComparisons(
   }
 }
 function beautifyBytes(bytes: number): string {
+  if (bytes === 0) {
+    return '0 Bytes';
+  }
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log2(bytes) / 10);
   return beautifyNumber(bytes / 2 ** (i * 10)) + ' ' + sizes[i];
