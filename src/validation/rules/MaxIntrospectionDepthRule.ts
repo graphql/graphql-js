@@ -77,7 +77,13 @@ export function MaxIntrospectionDepthRule(
       }
 
       visitedFragments[fragmentName] = depth;
-      return checkDepth(fragment, visitedFragments, depth);
+      if (checkDepth(fragment, visitedFragments, depth)) {
+        return true;
+      }
+      // Record the check as soon as it completes, so that it is reused even
+      // when the limit is exceeded elsewhere under the same introspection field.
+      checkedFragments[fragmentName] = depth;
+      return false;
     }
 
     if (
@@ -118,9 +124,6 @@ export function MaxIntrospectionDepthRule(
             }),
           );
           return false;
-        }
-        for (const name of Object.keys(visitedFragments)) {
-          checkedFragments[name] = visitedFragments[name];
         }
       }
     },

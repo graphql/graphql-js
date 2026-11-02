@@ -578,4 +578,31 @@ describe('Validate: Max introspection nodes rule', () => {
       },
     ]);
   });
+
+  it('reuses fragment checks from fields exceeding the depth', () => {
+    expectErrors(`
+      {
+        first: __type(name: "Query") {
+          ...Fields
+          fields { fields { fields { name } } }
+        }
+        second: __type(name: "Query") { ...Fields }
+        third: __type(name: "Query") { interfaces { interfaces { ...Fields } } }
+      }
+      fragment Fields on __Type {
+        fields {
+          name
+        }
+      }
+    `).toDeepEqual([
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [{ line: 3, column: 9 }],
+      },
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [{ line: 8, column: 9 }],
+      },
+    ]);
+  });
 });
