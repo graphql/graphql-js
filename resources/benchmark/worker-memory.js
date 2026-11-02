@@ -16,6 +16,7 @@ runWorker(async () => {
 async function measureMemoryUsage(benchmark) {
   await runIterations(benchmark, memoryWarmupIterations);
 
+  globalThis.gc();
   const memBaseline = process.memoryUsage().heapUsed;
   await runIterations(benchmark, memorySampleIterations);
   return (
