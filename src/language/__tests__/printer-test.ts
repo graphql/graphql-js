@@ -5,6 +5,7 @@ import { expect } from 'chai';
 import { dedent, dedentString } from '../../__testUtils__/dedent.ts';
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.ts';
 
+import { OperationTypeNode } from '../ast.ts';
 import { Kind } from '../kinds.ts';
 import { parse, parseSchemaCoordinate, parseValue } from '../parser.ts';
 import { print, printForError } from '../printer.ts';
@@ -342,6 +343,33 @@ describe('Printer: Query document', () => {
         id
       }
     `);
+  });
+
+  it('ignores shorthand for mutation and subscription operations', () => {
+    const ast = parse('{ id }', { noLocation: true });
+    const operation = ast.definitions[0];
+    expect(operation).to.have.property('shorthand', true);
+
+    for (const operationType of [
+      OperationTypeNode.MUTATION,
+      OperationTypeNode.SUBSCRIPTION,
+    ]) {
+      expect(
+        print({
+          ...ast,
+          definitions: [
+            {
+              ...operation,
+              operation: operationType,
+            } as typeof operation,
+          ],
+        }),
+      ).to.equal(dedent`
+        ${operationType} {
+          id
+        }
+      `);
+    }
   });
 
   it('prints kitchen sink without altering ast', () => {
