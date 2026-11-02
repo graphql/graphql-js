@@ -1,5 +1,7 @@
 import { describe, it } from 'node:test';
 
+import { expect } from 'chai';
+
 import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery.ts';
 
 import { MaxIntrospectionDepthRule } from '../rules/MaxIntrospectionDepthRule.ts';
@@ -580,28 +582,66 @@ describe('Validate: Max introspection nodes rule', () => {
   });
 
   it('reuses fragment checks from fields exceeding the depth', () => {
-    expectErrors(`
+    const lookedUpFragments: Array<string> = [];
+    expectValidationErrors(
+      (context) =>
+        // eslint-disable-next-line new-cap
+        MaxIntrospectionDepthRule(
+          Object.assign(Object.create(context), {
+            getFragment(name: string) {
+              lookedUpFragments.push(name);
+              return context.getFragment(name);
+            },
+          }),
+        ),
+      `
       {
         first: __type(name: "Query") {
-          ...Fields
+          ...Shared
           fields { fields { fields { name } } }
         }
-        second: __type(name: "Query") { ...Fields }
-        third: __type(name: "Query") { interfaces { interfaces { ...Fields } } }
-      }
-      fragment Fields on __Type {
-        fields {
-          name
+        second: __type(name: "Query") {
+          ...Shared
+          fields { fields { fields { name } } }
         }
       }
-    `).toDeepEqual([
+      fragment Shared on __Type {
+        ...Leaf
+      }
+      fragment Leaf on __Type {
+        name
+      }
+    `,
+    ).toDeepEqual([
       {
         message: 'Maximum introspection depth exceeded',
         locations: [{ line: 3, column: 9 }],
       },
       {
         message: 'Maximum introspection depth exceeded',
-        locations: [{ line: 8, column: 9 }],
+        locations: [{ line: 7, column: 9 }],
+      },
+    ]);
+    expect(lookedUpFragments).to.deep.equal(['Shared', 'Leaf']);
+  });
+
+  it('reuses fragment checks completed inside a fragment cycle', () => {
+    expectErrors(`
+      {
+        first: __type(name: "Query") { ...Outer }
+        second: __type(name: "Query") { ...Inner }
+      }
+      fragment Outer on __Type {
+        ...Inner
+        fields { fields { fields { name } } }
+      }
+      fragment Inner on __Type {
+        ...Outer
+      }
+    `).toDeepEqual([
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [{ line: 3, column: 9 }],
       },
     ]);
   });
