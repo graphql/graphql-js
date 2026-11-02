@@ -103,7 +103,7 @@ class PrintBuffer {
 const EMPTY = new PrintBuffer();
 
 function render(buffer: PrintBuffer, maxDepth: number): string {
-  const output: Array<string> = [];
+  let output = '';
   let text = '';
   let depth = 0;
   let indentation = '';
@@ -124,7 +124,7 @@ function render(buffer: PrintBuffer, maxDepth: number): string {
       const newline =
         !part.isBlockString && depth >= maxDepth ? ' ' : '\n' + indentation;
       for (let i = 1; i < lines.length; i++) {
-        output.push(text);
+        output += text;
         text = newline + lines[i];
       }
     }
@@ -134,8 +134,7 @@ function render(buffer: PrintBuffer, maxDepth: number): string {
     }
     part = part.next;
   }
-  output.push(text);
-  return output.join('');
+  return output + text;
 }
 
 const printDocASTReducer: ASTReducer<PrintBuffer> = {
