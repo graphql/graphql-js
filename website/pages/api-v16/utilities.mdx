@@ -82,6 +82,76 @@ Creates a TypeInfo instance.
   </tbody>
 </table>
 
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Track field types during a visitWithTypeInfo traversal.
+import { parse, visit } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const typeInfo = new TypeInfo(schema);
+const seenTypes: Array<string> = [];
+
+visit(
+  parse('{ greeting }'),
+  visitWithTypeInfo(typeInfo, {
+    Field: () => {
+      seenTypes.push(String(typeInfo.getType()));
+    },
+  }),
+);
+
+seenTypes; // => ['String']
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant starts from an initial type and supplies a field definition resolver.
+import { Kind } from 'graphql/language';
+import { GraphQLString } from 'graphql/type';
+import { buildSchema, TypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const typeInfo = new TypeInfo(schema, schema.getQueryType(), () => ({
+  name: 'virtualGreeting',
+  description: undefined,
+  type: GraphQLString,
+  args: [],
+  resolve: undefined,
+  subscribe: undefined,
+  deprecationReason: undefined,
+  extensions: Object.create(null),
+  astNode: undefined,
+}));
+
+typeInfo.enter({
+  kind: Kind.SELECTION_SET,
+  selections: [],
+});
+typeInfo.enter({
+  kind: Kind.FIELD,
+  name: { kind: Kind.NAME, value: 'ignored' },
+});
+
+typeInfo.getFieldDef()?.name; // => 'virtualGreeting'
+String(typeInfo.getType()); // => 'String'
+```
+
 ##### getType()
 
 Returns the current output type at this point in traversal.

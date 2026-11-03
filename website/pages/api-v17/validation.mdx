@@ -83,6 +83,36 @@ Creates a ValidationContext instance.
 
 <hr className="api-subsection-divider" />
 
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse } from 'graphql/language';
+import { GraphQLError } from 'graphql/error';
+import { buildSchema, TypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const document = parse('{ greeting }');
+const errors: Array<GraphQLError> = [];
+const context = new ValidationContext(
+  schema,
+  document,
+  new TypeInfo(schema),
+  (error) => errors.push(error),
+);
+
+context.reportError(new GraphQLError('Example validation error.'));
+
+context.getSchema(); // => schema
+errors[0].message; // => 'Example validation error.'
+```
+
+<hr className="api-subsection-divider" />
+
 ##### <span className="api-deprecated-title">Constructor</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
 Creates a ValidationContext instance using the legacy positional options.
@@ -131,6 +161,27 @@ Creates a ValidationContext instance using the legacy positional options.
     </tr>
   </tbody>
 </table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse } from 'graphql/language';
+import { buildSchema, TypeInfo } from 'graphql/utilities';
+import { ValidationContext } from 'graphql/validation';
+
+const schema = buildSchema('type Query { greeting: String }');
+const context = new ValidationContext(
+  schema,
+  parse('{ greeting }'),
+  new TypeInfo(schema),
+  () => {},
+  true,
+);
+
+context.hideSuggestions; // => true
+```
 
 ##### getSchema()
 
