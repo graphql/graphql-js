@@ -1,3 +1,4 @@
+import { SetMap } from '../jsutils/SetMap';
 import type { ObjMap } from '../jsutils/ObjMap';
 
 import type { GraphQLError } from '../error/GraphQLError';
@@ -45,8 +46,8 @@ export class ASTValidationContext {
   _onError: (err: GraphQLError) => void;
   _fragments: ?ObjMap<FragmentDefinitionNode>;
   _fragmentSpreads: Map<SelectionSetNode, $ReadOnlyArray<FragmentSpreadNode>>;
-  _recursivelyReferencedFragments: Map<
-    OperationDefinitionNode,
+  _recursivelyReferencedFragments: SetMap<
+    string,
     $ReadOnlyArray<FragmentDefinitionNode>,
   >;
 
@@ -54,7 +55,7 @@ export class ASTValidationContext {
     this._ast = ast;
     this._fragments = undefined;
     this._fragmentSpreads = new Map();
-    this._recursivelyReferencedFragments = new Map();
+    this._recursivelyReferencedFragments = new SetMap();
     this._onError = onError;
   }
 
@@ -107,17 +108,22 @@ export class ASTValidationContext {
   getRecursivelyReferencedFragments(
     operation: OperationDefinitionNode,
   ): $ReadOnlyArray<FragmentDefinitionNode> {
-    let fragments = this._recursivelyReferencedFragments.get(operation);
+    const fragmentNames = new Set(
+      this.getFragmentSpreads(operation.selectionSet).map(
+        (spread) => spread.name.value,
+      ),
+    );
+    let fragments = this._recursivelyReferencedFragments.get(fragmentNames);
     if (!fragments) {
       fragments = [];
-      const collectedNames = Object.create(null);
+      const collectedNames: Set<string> = new Set();
       const nodesToVisit: Array<SelectionSetNode> = [operation.selectionSet];
-      while (nodesToVisit.length !== 0) {
-        const node = nodesToVisit.pop();
+      let node: SelectionSetNode | void;
+      while ((node = nodesToVisit.pop())) {
         for (const spread of this.getFragmentSpreads(node)) {
           const fragName = spread.name.value;
-          if (collectedNames[fragName] !== true) {
-            collectedNames[fragName] = true;
+          if (!collectedNames.has(fragName)) {
+            collectedNames.add(fragName);
             const fragment = this.getFragment(fragName);
             if (fragment) {
               fragments.push(fragment);
@@ -126,7 +132,7 @@ export class ASTValidationContext {
           }
         }
       }
-      this._recursivelyReferencedFragments.set(operation, fragments);
+      this._recursivelyReferencedFragments.set(fragmentNames, fragments);
     }
     return fragments;
   }
