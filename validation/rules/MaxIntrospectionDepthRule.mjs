@@ -3,9 +3,14 @@ import { Kind } from "../../language/kinds.mjs";
 const MAX_LISTS_DEPTH = 3;
 export function MaxIntrospectionDepthRule(context) {
     const checkedFragments = Object.create(null);
+    const exceededFragments = Object.create(null);
     function checkDepth(node, visitedFragments, depth = 0) {
         if (node.kind === Kind.FRAGMENT_SPREAD) {
             const fragmentName = node.name.value;
+            const exceededEntryDepth = exceededFragments[fragmentName];
+            if (exceededEntryDepth !== undefined && exceededEntryDepth <= depth) {
+                return true;
+            }
             const visitedEntryDepth = visitedFragments[fragmentName];
             const checkedEntryDepth = checkedFragments[fragmentName];
             if ((visitedEntryDepth !== undefined && visitedEntryDepth >= depth) ||
@@ -17,7 +22,12 @@ export function MaxIntrospectionDepthRule(context) {
                 return false;
             }
             visitedFragments[fragmentName] = depth;
-            return checkDepth(fragment, visitedFragments, depth);
+            if (checkDepth(fragment, visitedFragments, depth)) {
+                exceededFragments[fragmentName] = depth;
+                return true;
+            }
+            checkedFragments[fragmentName] = depth;
+            return false;
         }
         if (node.kind === Kind.FIELD &&
             (node.name.value === 'fields' ||
@@ -47,9 +57,6 @@ export function MaxIntrospectionDepthRule(context) {
                         nodes: [node],
                     }));
                     return false;
-                }
-                for (const name of Object.keys(visitedFragments)) {
-                    checkedFragments[name] = visitedFragments[name];
                 }
             }
         },
