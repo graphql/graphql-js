@@ -25,13 +25,24 @@ export interface SourceLocation {
  * ```
  */
 export function getLocation(source: Source, position: number): SourceLocation {
-  return getLocations([{ source, start: position }])[0];
+  const lineRegexp = /\r\n|[\n\r]/g;
+  let line = 1;
+  let column = position + 1;
+  let match;
+  while ((match = lineRegexp.exec(source.body)) && match.index < position) {
+    line++;
+    column = position + 1 - (match.index + match[0].length);
+  }
+  return { line, column };
 }
 
 /** @internal */
 export function getLocations(
   locations: ReadonlyArray<{ source: Source; start: number }>,
 ): Array<SourceLocation> {
+  if (locations.length < 2) {
+    return locations.map(({ source, start }) => getLocation(source, start));
+  }
   const bySource = new Map<
     Source,
     Array<{ position: number; index: number }>
