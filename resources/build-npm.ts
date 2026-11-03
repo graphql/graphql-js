@@ -191,9 +191,11 @@ function emitTSFiles(options: {
       }
 
       if (filepath.match(/.js.map$/)) {
+        const sourceMap = JSON.parse(body);
+        sourceMap.file = sourceMap.file.replace(/\.js$/, extension);
         writeGeneratedFile(
           filepath.replace(/.js.map$/, extension + '.map'),
-          body,
+          JSON.stringify(sourceMap),
         );
         return;
       }
