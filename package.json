@@ -46,7 +46,7 @@
     "check:integrations": "npm run build:npm && npm run build:deno && mocha --full-trace integrationTests/*-test.js",
     "build:npm": "node resources/build-npm.js",
     "build:deno": "node resources/build-deno.js",
-    "testonly:examples": "mocha --require ./resources/ts-register.js resources/test-examples.js",
+    "testonly:examples": "mocha --node-option experimental-vm-modules --require ./resources/ts-register.js resources/test-examples.ts",
     "check:examples": "npm run testonly:examples",
     "prettier:examples": "node -r ./resources/ts-register.js resources/prettier-examples.ts --write",
     "prettier:examples:check": "node -r ./resources/ts-register.js resources/prettier-examples.ts --check"

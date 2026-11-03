@@ -80,8 +80,8 @@ Run `npm run check:examples` to execute all JavaScript and TypeScript fences und
 JSDoc `@example` tags in `src`. No package build is needed. CI runs the same check
 alongside the other lint checks.
 
-Each fence runs separately: include its imports and setup. The runner rewrites
-imports and assertion comments, transpiles examples with TypeScript, and executes
+Each fence runs separately: include its imports and setup. The TypeScript runner uses the shared JSDoc Markdown parser, validates original
+module syntax, rewrites imports and assertion comments, and executes
 them in memory using Mocha and the existing Babel source loader. Imports from `graphql` resolve directly to the
 source in `src`.
 It checks runtime behavior, not TypeScript types. GraphQL fences are not executed.

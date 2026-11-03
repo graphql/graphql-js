@@ -1,14 +1,18 @@
-'use strict';
+import { strict as assert } from 'assert';
+import fs from 'fs';
+import { it } from 'mocha';
+import path from 'path';
+import ts from 'typescript';
+import vm from 'vm';
 
-const assert = require('assert').strict;
-const fs = require('fs');
-const path = require('path');
-const vm = require('vm');
+import type { SourceEdit } from './jsdoc-examples';
+import { applyEdits, extractJSDocExamples } from './jsdoc-examples';
 
-const { it } = require('mocha');
-const ts = require('typescript');
-
-const { applyEdits } = require('./jsdoc-examples.ts');
+interface Example {
+  filename: string;
+  line: number;
+  code: string;
+}
 
 const root = path.join(__dirname, '..');
 
@@ -45,10 +49,10 @@ ${javascript.replace(/^#![^\r\n]*/, '')}
   });
 }
 
-function findExamples() {
-  const examples = [];
-  const names = [];
-  function walk(directory) {
+function findExamples(): Array<Example> {
+  const examples: Array<Example> = [];
+  const names: Array<string> = [];
+  function walk(directory: string): void {
     for (const entry of fs.readdirSync(path.join(root, 'src', directory), {
       withFileTypes: true,
     })) {
@@ -61,7 +65,7 @@ function findExamples() {
     }
   }
   walk('');
-  for (const name of names.sort()) {
+  for (const name of names.sort((a, b) => a.localeCompare(b))) {
     if (name.endsWith('.ts')) {
       const filename = path.join('src', name);
       const text = fs.readFileSync(path.join(root, filename), 'utf8');
@@ -71,70 +75,26 @@ function findExamples() {
   return examples;
 }
 
-function extractExamples(text, filename) {
-  const source = ts.createSourceFile(
-    filename,
+function extractExamples(text: string, filename: string): Array<Example> {
+  const examples: Array<Example> = [];
+  for (const { code, line, language, metadata } of extractJSDocExamples(
     text,
-    ts.ScriptTarget.Latest,
-    true,
-  );
-  const comments = new Map();
-  function visit(node) {
-    for (const comment of node.jsDoc || []) {
-      comments.set(comment.pos, comment);
+    filename,
+  )) {
+    if (!['ts', 'typescript', 'js', 'javascript'].includes(language)) {
+      continue;
     }
-    ts.forEachChild(node, visit);
-  }
-  visit(source);
-
-  const examples = [];
-  for (const comment of [...comments.values()].sort((a, b) => a.pos - b.pos)) {
-    // Read the full comment: GraphQL directives inside fences can resemble tags.
-    const lines = text
-      .slice(comment.pos, comment.end)
-      .split(/\r?\n/)
-      .map((line) => line.replace(/^\s*\* ?/, ''));
-    const firstLine =
-      source.getLineAndCharacterOfPosition(comment.pos).line + 1;
-    let inExample = false;
-    for (let lineIndex = 1; lineIndex < lines.length; lineIndex++) {
-      const content = lines[lineIndex];
-      if (/^@\w/.test(content)) {
-        inExample = /^@example\b/.test(content);
-      }
-      const fence = /^\s*```([^\s`]*)\s*(.*)$/.exec(content);
-      if (!fence) {
-        continue;
-      }
-      const [, language, metadata] = fence;
-      const codeStart = lineIndex + 1;
-      while (++lineIndex < lines.length && lines[lineIndex].trim() !== '```') {
-        // Skip the whole fence, including languages that are not executable.
-      }
-      const line = firstLine + codeStart;
-      assert(lineIndex < lines.length, `${filename}:${line}: unclosed fence`);
-      if (
-        !inExample ||
-        !['ts', 'typescript', 'js', 'javascript'].includes(language)
-      ) {
-        continue;
-      }
-      assert.equal(
-        metadata,
-        '',
-        `${filename}:${line}: unsupported example metadata`,
-      );
-      examples.push({
-        filename,
-        line,
-        code: lines.slice(codeStart, lineIndex).join('\n'),
-      });
-    }
+    assert.equal(
+      metadata,
+      '',
+      `${filename}:${line}: unsupported example metadata`,
+    );
+    examples.push({ filename, line, code: code.replace(/^\uFEFF/, '') });
   }
   return examples;
 }
 
-function parseExample(example) {
+function parseExample(example: Example): ts.SourceFile {
   const source = ts.createSourceFile(
     'example.ts',
     example.code,
@@ -142,11 +102,15 @@ function parseExample(example) {
     true,
   );
   assert.equal(
-    source.parseDiagnostics.length,
+    (
+      source as ts.SourceFile & {
+        parseDiagnostics: ReadonlyArray<ts.Diagnostic>;
+      }
+    ).parseDiagnostics.length,
     0,
     `${example.filename}:${example.line}: invalid example syntax`,
   );
-  function checkReturn(node) {
+  function checkReturn(node: ts.Node): void {
     assert(
       !ts.isReturnStatement(node),
       'Top-level return is not allowed in examples',
@@ -156,40 +120,63 @@ function parseExample(example) {
     }
   }
   checkReturn(source);
+  const javascript = ts.transpileModule(example.code, {
+    compilerOptions: {
+      target: ts.ScriptTarget.ES2019,
+      module: ts.ModuleKind.ESNext,
+    },
+  }).outputText;
+  assert.doesNotThrow(
+    () =>
+      new vm.SourceTextModule(javascript, {
+        identifier: `${example.filename}:${example.line}`,
+      }),
+    `${example.filename}:${example.line}: invalid example syntax`,
+  );
   return source;
 }
 
 // TypeScript can erase imports; validate runtime imports and re-exports first.
-function validateImports(source) {
+function validateImports(source: ts.SourceFile): void {
   for (const statement of source.statements) {
     if (
-      (!ts.isImportDeclaration(statement) &&
-        !ts.isExportDeclaration(statement)) ||
-      !statement.moduleSpecifier ||
-      statement.isTypeOnly ||
-      (statement.importClause && statement.importClause.isTypeOnly)
+      !ts.isImportDeclaration(statement) &&
+      !ts.isExportDeclaration(statement)
     ) {
       continue;
     }
-    const clause = statement.importClause;
-    const bindings = clause ? clause.namedBindings : statement.exportClause;
-    const named =
-      bindings && (ts.isNamedImports(bindings) || ts.isNamedExports(bindings));
+    const clause = ts.isImportDeclaration(statement)
+      ? statement.importClause
+      : undefined;
     if (
-      named &&
-      bindings.elements.length > 0 &&
-      bindings.elements.every((binding) => binding.isTypeOnly) &&
-      !(clause && clause.name)
+      !statement.moduleSpecifier ||
+      (ts.isExportDeclaration(statement) && statement.isTypeOnly) ||
+      clause?.isTypeOnly
     ) {
       continue;
     }
+    const bindings = ts.isExportDeclaration(statement)
+      ? statement.exportClause
+      : clause?.namedBindings;
+    const named =
+      bindings && (ts.isNamedImports(bindings) || ts.isNamedExports(bindings))
+        ? [...bindings.elements]
+        : [];
+    if (
+      named.length > 0 &&
+      named.every((binding) => binding.isTypeOnly) &&
+      !clause?.name
+    ) {
+      continue;
+    }
+    assert(ts.isStringLiteral(statement.moduleSpecifier));
     const specifier = statement.moduleSpecifier.text;
     const target = resolveSourceImport(specifier);
-    // eslint-disable-next-line node/global-require, import/no-dynamic-require -- Load the same source module as the example.
+    // eslint-disable-next-line node/global-require, import/no-dynamic-require, @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports -- Load the same source module as the example.
     const module = require(target === undefined ? specifier : target);
-    const checkBinding = (name) => {
+    const checkBinding = (name: string) => {
       // CommonJS modules supply a synthetic default through esModuleInterop.
-      if (name === 'default' && !(module && module.__esModule)) {
+      if (name === 'default' && !module?.__esModule) {
         return;
       }
       assert(
@@ -197,22 +184,20 @@ function validateImports(source) {
         `${specifier} does not export ${name}`,
       );
     };
-    if (clause && clause.name) {
+    if (clause?.name) {
       checkBinding('default');
     }
-    if (named) {
-      for (const binding of bindings.elements) {
-        if (!binding.isTypeOnly) {
-          checkBinding((binding.propertyName || binding.name).text);
-        }
+    for (const binding of named) {
+      if (!binding.isTypeOnly) {
+        checkBinding((binding.propertyName ?? binding.name).text);
       }
     }
   }
 }
 
-function getImportEdits(source) {
-  const edits = [];
-  function visit(node) {
+function getImportEdits(source: ts.SourceFile): Array<SourceEdit> {
+  const edits: Array<SourceEdit> = [];
+  function visit(node: ts.Node): void {
     const specifier =
       ts.isImportDeclaration(node) || ts.isExportDeclaration(node)
         ? node.moduleSpecifier
@@ -237,7 +222,7 @@ function getImportEdits(source) {
 }
 
 // Package imports in documentation run against this checkout's TypeScript source.
-function resolveSourceImport(specifier) {
+function resolveSourceImport(specifier: string): string | undefined {
   // Node 12 supports these built-in modules without the node: require prefix.
   if (specifier.startsWith('node:')) {
     return specifier.slice('node:'.length);
@@ -258,10 +243,10 @@ function resolveSourceImport(specifier) {
   return target;
 }
 
-function getAssertionEdits(source, example) {
+function getAssertionEdits(source: ts.SourceFile, example: Example) {
   const { code, filename, line: firstLine } = example;
-  const assertionEdits = [];
-  const locations = [];
+  const assertionEdits: Array<SourceEdit> = [];
+  const locations: Array<string> = [];
   const nodes = [...walkSyntax(source)];
   // Inspect actual comments, not strings that happen to contain "// =>".
   const annotationPositions = new Set(
@@ -289,7 +274,7 @@ function getAssertionEdits(source, example) {
   ) {
     runtimeName += '_';
   }
-  function location(position) {
+  function location(position: number): string {
     const { line } = source.getLineAndCharacterOfPosition(position);
     return `${filename}:${firstLine + line}`;
   }
@@ -365,13 +350,15 @@ function getAssertionEdits(source, example) {
       });
     }
   }
+
   // Reject misplaced or malformed annotations instead of silently skipping them.
   for (const position of annotationPositions) {
     assert.fail(`${location(position)}: unsupported example annotation`);
   }
   return { assertionEdits, locations, runtimeName };
 }
-function* walkSyntax(node) {
+
+function* walkSyntax(node: ts.Node): Generator<ts.Node> {
   yield node;
   // Include punctuation tokens to find comments in empty blocks and containers.
   for (const child of node.getChildren()) {
@@ -380,8 +367,12 @@ function* walkSyntax(node) {
     }
   }
 }
+
 // Both statement forms check a value; declarations must keep that value too.
-function getAnnotatedExpression(statement, location) {
+function getAnnotatedExpression(
+  statement: ts.ExpressionStatement | ts.VariableStatement,
+  location: string,
+): ts.Expression {
   if (ts.isExpressionStatement(statement)) {
     return statement.expression;
   }
@@ -395,7 +386,8 @@ function getAnnotatedExpression(statement, location) {
   assert(initializer, `${location}: annotated variables need an initializer`);
   return initializer;
 }
-function getBindingNames(name) {
+
+function getBindingNames(name: ts.BindingName): Array<string> {
   if (ts.isIdentifier(name)) {
     return [name.getText()];
   }
@@ -403,8 +395,13 @@ function getBindingNames(name) {
     ts.isOmittedExpression(element) ? [] : getBindingNames(element.name),
   );
 }
+
 // Add assertion code before and after the original expression.
-function getAssertionWrapper(comment, assertion, runtimeName) {
+function getAssertionWrapper(
+  comment: string,
+  assertion: string,
+  runtimeName: string,
+) {
   // Begin with an identifier or a block to preserve statement boundaries.
   // Start before evaluating the expression: a caught failure must leave a
   // pending check even if this assertion succeeded on an earlier invocation.
@@ -432,7 +429,12 @@ function getAssertionWrapper(comment, assertion, runtimeName) {
   }
   return undefined;
 }
-function addRuntimeChecks(code, locations, runtimeName) {
+
+function addRuntimeChecks(
+  code: string,
+  locations: ReadonlyArray<string>,
+  runtimeName: string,
+): string {
   const helper = path.join(root, 'resources/example-assertions.ts');
   const shebang = ts.getShebang(code) ?? '';
   return `${shebang}
