@@ -35,7 +35,7 @@ const MAX_LINE_LENGTH = 80;
 class PrintBuffer {
   length: number;
   newlines: number;
-  lines: $ReadOnlyArray<string>;
+  lines: string | $ReadOnlyArray<string>;
   next: PrintBuffer | void;
   tail: PrintBuffer | void;
   indentBefore: boolean;
@@ -48,8 +48,8 @@ class PrintBuffer {
     this.indentBefore = false;
     this.dedentAfter = false;
     this.length = value.length;
-    this.lines = value.includes('\n') ? value.split('\n') : [value];
-    this.newlines = this.lines.length - 1;
+    this.lines = value.includes('\n') ? value.split('\n') : value;
+    this.newlines = typeof this.lines === 'string' ? 0 : this.lines.length - 1;
     this.isBlockString = isBlockString;
   }
 
@@ -93,8 +93,10 @@ function render(buffer: PrintBuffer, maxDepth: number): string {
       }
       depth++;
     }
-    text += lines[0];
-    if (lines.length > 1) {
+    if (typeof lines === 'string') {
+      text += lines;
+    } else {
+      text += lines[0];
       const newline =
         !part.isBlockString && depth >= maxDepth ? ' ' : '\n' + indentation;
       for (let i = 1; i < lines.length; i++) {
