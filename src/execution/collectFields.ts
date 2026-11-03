@@ -36,6 +36,7 @@ export function collectFields(
   variableValues: { [variable: string]: unknown },
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
+  onSelectionSet?: (selectionSet: SelectionSetNode) => void,
 ): Map<string, ReadonlyArray<FieldNode>> {
   const fields = new Map();
   collectFieldsImpl(
@@ -46,6 +47,7 @@ export function collectFields(
     selectionSet,
     fields,
     new Set(),
+    onSelectionSet,
   );
   return fields;
 }
@@ -93,7 +95,9 @@ function collectFieldsImpl(
   selectionSet: SelectionSetNode,
   fields: Map<string, Array<FieldNode>>,
   visitedFragmentNames: Set<string>,
+  onSelectionSet?: (selectionSet: SelectionSetNode) => void,
 ): void {
+  onSelectionSet?.(selectionSet);
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case Kind.FIELD: {
@@ -124,6 +128,7 @@ function collectFieldsImpl(
           selection.selectionSet,
           fields,
           visitedFragmentNames,
+          onSelectionSet,
         );
         break;
       }
@@ -151,6 +156,7 @@ function collectFieldsImpl(
           fragment.selectionSet,
           fields,
           visitedFragmentNames,
+          onSelectionSet,
         );
         break;
       }
