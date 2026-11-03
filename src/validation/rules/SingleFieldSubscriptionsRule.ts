@@ -7,6 +7,7 @@ import { GraphQLError } from '../../error/GraphQLError';
 import type {
   FragmentDefinitionNode,
   OperationDefinitionNode,
+  SelectionSetNode,
 } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import type { ASTVisitor } from '../../language/visitor';
@@ -61,6 +62,23 @@ export function SingleFieldSubscriptionsRule(
   context: ValidationContext,
 ): ASTVisitor {
   let fragments: ObjMap<FragmentDefinitionNode> | undefined;
+  function reserveSelectionSetWork(selectionSet: SelectionSetNode): void {
+    context.spendFragmentWork(selectionSet.selections.length);
+    for (const selection of selectionSet.selections) {
+      const directives = selection.directives;
+      if (directives !== undefined) {
+        context.spendFragmentWork(directives.length);
+        for (const directive of directives) {
+          if (
+            directive.name.value === 'skip' ||
+            directive.name.value === 'include'
+          ) {
+            context.spendFragmentWork(directive.arguments?.length ?? 0);
+          }
+        }
+      }
+    }
+  }
   return {
     OperationDefinition(node: OperationDefinitionNode) {
       if (node.operation === 'subscription') {
@@ -73,7 +91,9 @@ export function SingleFieldSubscriptionsRule(
           } = Object.create(null);
           if (fragments === undefined) {
             fragments = Object.create(null) as ObjMap<FragmentDefinitionNode>;
-            for (const definition of context.getDocument().definitions) {
+            const definitions = context.getDocument().definitions;
+            context.spendFragmentWork(definitions.length);
+            for (const definition of definitions) {
               if (definition.kind === Kind.FRAGMENT_DEFINITION) {
                 fragments[definition.name.value] = definition;
               }
@@ -85,6 +105,7 @@ export function SingleFieldSubscriptionsRule(
             variableValues,
             subscriptionType,
             node.selectionSet,
+            reserveSelectionSetWork,
           );
           if (fields.size > 1) {
             const fieldSelectionLists = [...fields.values()];
