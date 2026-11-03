@@ -28,7 +28,7 @@ import { valueToLiteral } from './valueToLiteral.ts';
  * @example
  * ```ts
  * import assert from 'node:assert';
- * import { parse, parseValue, print } from 'graphql/language';
+ * import { parse, parseValue, print, Kind } from 'graphql/language';
  * import { getVariableValues } from 'graphql/execution';
  * import { buildSchema, replaceVariables } from 'graphql/utilities';
  *
@@ -39,7 +39,8 @@ import { valueToLiteral } from './valueToLiteral.ts';
  * `);
  * const document = parse('query ($stars: Int = 5) { review(stars: $stars) }');
  * const operation = document.definitions[0];
- * const result = getVariableValues(schema, operation.variableDefinitions, {
+ * assert(operation.kind === Kind.OPERATION_DEFINITION);
+ * const result = getVariableValues(schema, operation.variableDefinitions ?? [], {
  *   stars: 4,
  * });
  *

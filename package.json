@@ -41,7 +41,7 @@
     "check:ts": "tsc --pretty",
     "check:deno": "npm run build:deno && deno publish --dry-run --allow-dirty --config denoDist/jsr.json",
     "testonly": "npm run node:test -- \"src/**/__tests__/**/*-test.ts\"",
-    "testonly:examples": "npm run node:test -- resources/test-examples.mjs",
+    "testonly:examples": "npm run node:test -- --experimental-vm-modules resources/test-examples.ts",
     "testonly:cover": "npm run node:test -- --experimental-test-coverage --test-coverage-include=\"src/**/*.ts\" --test-coverage-exclude=\"src/**/__tests__/**\" --test-coverage-exclude=\"**/*-test.ts\" --test-coverage-lines=100 --test-coverage-branches=100 --test-coverage-functions=100 \"src/**/__tests__/**/*-test.ts\"",
     "testonly:watch": "npm run node:test -- --watch \"src/**/__tests__/**/*-test.ts\"",
     "prettier": "prettier --cache --cache-strategy metadata --write --list-different .",

@@ -1225,9 +1225,19 @@ export default defineConfig(
     },
   },
   {
-    files: ['resources/integration-test.ts'],
+    files: ['resources/integration-test.ts', 'resources/test-examples.ts'],
     rules: {
       '@typescript-eslint/no-floating-promises': 'off',
+    },
+  },
+  {
+    files: ['resources/test-examples.ts'],
+    rules: {
+      // Example tests use native type stripping and --experimental-vm-modules.
+      'n/no-unsupported-features/node-builtins': [
+        'error',
+        { ignores: ['module.stripTypeScriptTypes', 'vm.SourceTextModule'] },
+      ],
     },
   },
   {

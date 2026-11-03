@@ -76,7 +76,7 @@ export interface GraphQLArgs
  *   schema,
  *   source: 'query SayHello($name: String!) { greeting(name: $name) }',
  *   rootValue: {
- *     greeting: ({ name }) => `Hello, ${name}!`,
+ *     greeting: ({ name }: { name: string }) => `Hello, ${name}!`,
  *   },
  *   variableValues: { name: 'Ada' },
  *   operationName: 'SayHello',
@@ -125,9 +125,9 @@ export interface GraphQLArgs
  *     greeting: String
  *   }
  * `);
- * const stages = [];
+ * const stages: Array<string> = [];
  * const abortController = new AbortController();
- * const harness = {
+ * const harness: typeof defaultHarness = {
  *   parse: (...args) => {
  *     stages.push('parse');
  *     return defaultHarness.parse(...args);
@@ -190,7 +190,7 @@ export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
  *   schema,
  *   source: 'query SayHello($name: String!) { greeting(name: $name) }',
  *   rootValue: {
- *     greeting: ({ name }) => `Hello, ${name}!`,
+ *     greeting: ({ name }: { name: string }) => `Hello, ${name}!`,
  *   },
  *   variableValues: { name: 'Ada' },
  *   operationName: 'SayHello',

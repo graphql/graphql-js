@@ -55,7 +55,8 @@ import { replaceVariables } from './replaceVariables.ts';
  *     stars: { type: new GraphQLNonNull(GraphQLInt) },
  *   },
  * });
- * const errors = [];
+ * const errors: Array<{ message: string; path: ReadonlyArray<string | number> }> =
+ *   [];
  *
  * validateInputValue({ stars: 'bad' }, ReviewInput, (error, path) => {
  *   errors.push({ message: error.message, path });
@@ -75,7 +76,7 @@ import { replaceVariables } from './replaceVariables.ts';
  *     comment: { type: GraphQLString },
  *   },
  * });
- * const errors = [];
+ * const errors: Array<string> = [];
  *
  * validateInputValue(
  *   { rating: 'extra field' },
@@ -311,7 +312,8 @@ function reportInvalidValue(
  *     stars: { type: new GraphQLNonNull(GraphQLInt) },
  *   },
  * });
- * const errors = [];
+ * const errors: Array<{ message: string; path: ReadonlyArray<string | number> }> =
+ *   [];
  *
  * validateInputLiteral(
  *   parseValue('{ stars: "bad" }'),
@@ -327,7 +329,7 @@ function reportInvalidValue(
  * ```ts
  * // This variant resolves variable references using VariableValues from getVariableValues().
  * import assert from 'node:assert';
- * import { parse, parseValue } from 'graphql/language';
+ * import { parse, parseValue, Kind } from 'graphql/language';
  * import { GraphQLInt } from 'graphql/type';
  * import { getVariableValues } from 'graphql/execution';
  * import { buildSchema, validateInputLiteral } from 'graphql/utilities';
@@ -339,13 +341,14 @@ function reportInvalidValue(
  * `);
  * const document = parse('query ($stars: Int = 5) { review(stars: $stars) }');
  * const operation = document.definitions[0];
- * const result = getVariableValues(schema, operation.variableDefinitions, {
+ * assert(operation.kind === Kind.OPERATION_DEFINITION);
+ * const result = getVariableValues(schema, operation.variableDefinitions ?? [], {
  *   stars: 4,
  * });
  *
  * assert('variableValues' in result);
  *
- * const errors = [];
+ * const errors: Array<string> = [];
  * validateInputLiteral(
  *   parseValue('$stars'),
  *   GraphQLInt,

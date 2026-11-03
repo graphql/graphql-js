@@ -85,7 +85,7 @@ export class TypeInfo {
    *   }
    * `);
    * const typeInfo = new TypeInfo(schema);
-   * const seenTypes = [];
+   * const seenTypes: Array<string> = [];
    *
    * visit(
    *   parse('{ greeting }'),
@@ -100,6 +100,7 @@ export class TypeInfo {
    * ```
    * @example
    * ```ts
+   * import assert from 'node:assert/strict';
    * // This variant starts from an initial type and supplies fragment signatures.
    * import { Kind, parse } from 'graphql/language';
    * import { buildSchema, TypeInfo } from 'graphql/utilities';
@@ -114,7 +115,9 @@ export class TypeInfo {
    *   { experimentalFragmentArguments: true },
    * );
    * const fragmentDefinition = fragmentDocument.definitions[0];
-   * const variableDefinition = fragmentDefinition.variableDefinitions[0];
+   * assert(fragmentDefinition.kind === Kind.FRAGMENT_DEFINITION);
+   * const variableDefinition = fragmentDefinition.variableDefinitions?.[0];
+   * assert(variableDefinition);
    * const typeInfo = new TypeInfo(schema, schema.getQueryType(), (name) =>
    *   name === 'GreetingFields'
    *     ? {
@@ -201,7 +204,7 @@ export class TypeInfo {
    *   }
    * `);
    * const typeInfo = new TypeInfo(schema);
-   * const fieldTypes = {};
+   * const fieldTypes: Record<string, string> = {};
    *
    * visit(
    *   parse('{ viewer { name } }'),
@@ -237,7 +240,7 @@ export class TypeInfo {
    *   }
    * `);
    * const typeInfo = new TypeInfo(schema);
-   * const parentTypes = {};
+   * const parentTypes: Record<string, string> = {};
    *
    * visit(
    *   parse('{ viewer { name } }'),
@@ -274,7 +277,7 @@ export class TypeInfo {
    *   }
    * `);
    * const typeInfo = new TypeInfo(schema);
-   * const inputTypes = {};
+   * const inputTypes: Record<string, string> = {};
    *
    * visit(
    *   parse('{ reviews(stars: 5, sort: OLDEST) }'),
@@ -312,7 +315,7 @@ export class TypeInfo {
    *   }
    * `);
    * const typeInfo = new TypeInfo(schema);
-   * const parentInputTypes = {};
+   * const parentInputTypes: Record<string, string> = {};
    *
    * visit(
    *   parse('{ reviews(filter: { stars: 5 }) }'),
@@ -376,7 +379,7 @@ export class TypeInfo {
    *   }
    * `);
    * const typeInfo = new TypeInfo(schema);
-   * let defaultLimit;
+   * let defaultLimit: unknown;
    *
    * visit(
    *   parse('{ reviews(limit: 5) }'),
@@ -387,8 +390,7 @@ export class TypeInfo {
    *   }),
    * );
    *
-   * defaultLimit.literal.kind; // => 'IntValue'
-   * defaultLimit.literal.value; // => '10'
+   * defaultLimit; // => schema.getQueryType()?.getFields().reviews.args[0].default
    * ```
    */
   getDefaultValue(): unknown {
@@ -638,6 +640,7 @@ export class TypeInfo {
    * @returns Nothing.
    * @example
    * ```ts
+   * import assert from 'node:assert/strict';
    * import { Kind, parse } from 'graphql/language';
    * import { buildSchema, TypeInfo } from 'graphql/utilities';
    *
@@ -648,6 +651,7 @@ export class TypeInfo {
    * `);
    * const document = parse('{ greeting }');
    * const operation = document.definitions[0];
+   * assert(operation.kind === Kind.OPERATION_DEFINITION);
    * const selectionSet = operation.selectionSet;
    * const field = selectionSet.selections[0];
    * const typeInfo = new TypeInfo(schema);
@@ -805,7 +809,8 @@ export class TypeInfo {
    * @returns Nothing.
    * @example
    * ```ts
-   * import { parse } from 'graphql/language';
+   * import assert from 'node:assert/strict';
+   * import { parse, Kind } from 'graphql/language';
    * import { buildSchema, TypeInfo } from 'graphql/utilities';
    *
    * const schema = buildSchema(`
@@ -815,6 +820,7 @@ export class TypeInfo {
    * `);
    * const document = parse('{ greeting }');
    * const operation = document.definitions[0];
+   * assert(operation.kind === Kind.OPERATION_DEFINITION);
    * const selectionSet = operation.selectionSet;
    * const field = selectionSet.selections[0];
    * const typeInfo = new TypeInfo(schema);
@@ -915,7 +921,7 @@ function getFragmentSignatures(
  *   }
  * `);
  * const typeInfo = new TypeInfo(schema);
- * const fields = [];
+ * const fields: Array<{ name: string; parentType: string; type: string }> = [];
  *
  * visit(
  *   parse('{ greeting }'),

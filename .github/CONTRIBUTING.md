@@ -111,16 +111,18 @@ change website API output must include the generated files.
 
 ### Executable API examples
 
-Run `npm run check:examples` to execute all JavaScript and TypeScript fences under
-JSDoc `@example` tags in `src`. No package build is needed. CI runs the same check
-on the latest supported Node.js version.
+Run `npm run check:examples` to execute JSDoc `@example` code fences in `src`
+against the built npm package. CI runs the same check on the latest supported
+Node.js version.
 
-Each fence is a separate ES module: include its imports and setup. The runner
-rewrites imports and assertion comments, strips types with Node, and executes
-the code directly in memory. Imports from `graphql` resolve directly to the
-source in `src`.
-It checks runtime behavior, not TypeScript types. GraphQL fences are not executed.
-Examples without expectations are smoke tests.
+Executable examples must use TypeScript, with a `ts` or `typescript` fence.
+Each fence is a separate ES module: include its imports and setup. All examples
+are type checked against the built package before execution, using the
+repository's TypeScript settings except `noUnusedLocals`. Examples must both
+type check and run successfully. Use optional chaining for optional values or
+`assert` to check and narrow required values, rather than non-null assertions.
+Only `graphql` and `gql` fences are excluded from execution. Examples without
+expectations are still type checked and run as smoke tests.
 
 Add a fenced example under `@example` in the API's JSDoc comment. Use trailing
 comments to describe expected results:
@@ -152,6 +154,7 @@ kind.toLowerCase(); // => 'document'
 
 Use one initialized variable declaration per annotation. Destructuring checks the
 whole initializer's result before assigning its properties to the variables.
+When an initializer is expected to throw, its variables are left `undefined`.
 
 Top-level `await` is supported. Inside an example fence, an async result can be
 checked like this:

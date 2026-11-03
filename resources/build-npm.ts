@@ -14,6 +14,7 @@ import type { PlatformConditionalExports } from './utils.ts';
 import {
   buildCJSDevModeStub,
   buildESMDevModeStub,
+  localRepoPath,
   prettify,
   readPackageJSON,
   readTSConfig,
@@ -26,9 +27,12 @@ const devTypeFiles = [
   ['.mts', '.mjs'],
 ] as const;
 
-console.log('\n./npmDist');
-await buildPackage('./npmDist');
-showDirStats('./npmDist');
+const outputDirectory = path.resolve(
+  process.argv[2] ?? localRepoPath('npmDist'),
+);
+console.log(`\n${outputDirectory}`);
+await buildPackage(outputDirectory);
+showDirStats(outputDirectory);
 
 async function buildPackage(outDir: string): Promise<void> {
   const devDir = path.join(outDir, '__dev__');
@@ -37,8 +41,8 @@ async function buildPackage(outDir: string): Promise<void> {
   fs.mkdirSync(outDir);
   fs.mkdirSync(devDir);
 
-  fs.copyFileSync('./LICENSE', `./${outDir}/LICENSE`);
-  fs.copyFileSync('./README.md', `./${outDir}/README.md`);
+  fs.copyFileSync(localRepoPath('LICENSE'), path.join(outDir, 'LICENSE'));
+  fs.copyFileSync(localRepoPath('README.md'), path.join(outDir, 'README.md'));
 
   const packageJSON = readPackageJSON();
 
@@ -86,12 +90,15 @@ async function buildPackage(outDir: string): Promise<void> {
       continue;
     }
 
-    const relativePathToProd = path.relative(prodFile, outDir);
+    const relativePathToProd = relativeModulePath(prodFile, outDir);
 
     const { name: innerName, ext: innerExt } = path.parse(name);
 
     if (innerExt === '.d') {
-      const relativePathAndName = path.relative(outDir, `${dir}/${innerName}`);
+      const relativePathAndName = relativeModulePath(
+        outDir,
+        `${dir}/${innerName}`,
+      );
 
       for (const [typeExt, targetExt] of devTypeFiles) {
         const line = `export * from '${relativePathToProd}/${relativePathAndName}${targetExt}';`;
@@ -103,7 +110,7 @@ async function buildPackage(outDir: string): Promise<void> {
       continue;
     }
 
-    const relativePathAndName = path.relative(outDir, `${dir}/${name}`);
+    const relativePathAndName = relativeModulePath(outDir, `${dir}/${name}`);
 
     writeGeneratedFile(
       path.join(devDir, path.relative(outDir, `${dir}/${name}.js`)),
@@ -122,7 +129,7 @@ async function buildPackage(outDir: string): Promise<void> {
     );
 
     if (base === 'index.js') {
-      const dirname = path.dirname(relativePathAndName);
+      const dirname = path.posix.dirname(relativePathAndName);
       packageJSON.exports[dirname === '.' ? dirname : `./${dirname}`] = {
         development: buildPlatformConditionalExports(
           './__dev__',
@@ -142,7 +149,7 @@ async function buildPackage(outDir: string): Promise<void> {
 
   packageJSON.sideEffects = ['__dev__/*'];
 
-  const packageJsonPath = `./${outDir}/package.json`;
+  const packageJsonPath = path.join(outDir, 'package.json');
   const prettified = await prettify(
     packageJsonPath,
     JSON.stringify(packageJSON),
@@ -161,7 +168,7 @@ function emitTSFiles(options: {
   emittedTSFiles: ReadonlyArray<string>;
 } {
   const { extension, ...rest } = options;
-  const rootFiles = ['src/index.ts'];
+  const rootFiles = [localRepoPath('src/index.ts')];
   const jsOptions = readTSConfig({
     ...rest,
     noEmit: false,
@@ -209,6 +216,7 @@ function emitTSFiles(options: {
   };
 
   const jsHost = ts.createCompilerHost(jsOptions);
+  jsHost.getCurrentDirectory = localRepoPath;
   jsHost.writeFile = writeFile;
   const jsProgram = ts.createProgram(rootFiles, jsOptions, jsHost);
   const jsResult = jsProgram.emit(undefined, undefined, undefined, undefined, {
@@ -217,6 +225,7 @@ function emitTSFiles(options: {
   });
 
   const dtsHost = ts.createCompilerHost(dtsOptions);
+  dtsHost.getCurrentDirectory = localRepoPath;
   dtsHost.writeFile = writeFile;
   const dtsProgram = ts.createProgram(rootFiles, dtsOptions, dtsHost);
   const dtsResult = dtsProgram.emit(
@@ -250,7 +259,7 @@ function buildPlatformConditionalExports(
   dir: string,
   name: string,
 ): PlatformConditionalExports {
-  const base = `./${path.join(dir, name)}`;
+  const base = `./${path.posix.join(dir, name)}`;
   return {
     module: `${base}.mjs`,
     bun: `${base}.mjs`,
@@ -259,4 +268,8 @@ function buildPlatformConditionalExports(
     require: `${base}.js`,
     default: `${base}.mjs`,
   };
+}
+
+function relativeModulePath(from: string, to: string): string {
+  return path.relative(from, to).split(path.sep).join('/');
 }
