@@ -319,6 +319,7 @@ async function batchCommitInfo(commits) {
             associatedPullRequests(first: 10) {
               nodes {
                 number
+                merged
                 repository {
                   nameWithOwner
                 }
@@ -387,7 +388,9 @@ function commitsInfoToPRs(commits) {
   const prs = {};
   for (const commit of commits) {
     const associatedPRs = commit.associatedPullRequests.nodes.filter(
-      (pr) => pr.repository.nameWithOwner === `${githubOrg}/${githubRepo}`,
+      (pr) =>
+        pr.merged &&
+        pr.repository.nameWithOwner === `${githubOrg}/${githubRepo}`,
     );
     if (associatedPRs.length === 0) {
       const match = / \(#(?<prNumber>[0-9]+)\)$/m.exec(commit.message);
