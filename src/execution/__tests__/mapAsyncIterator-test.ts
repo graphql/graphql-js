@@ -5,6 +5,30 @@ import { mapAsyncIterator } from '../mapAsyncIterator';
 
 /* eslint-disable @typescript-eslint/require-await */
 describe('mapAsyncIterator', () => {
+  for (const closeFails of [false, true]) {
+    it(`closes a source without throw, preserving the original error (close fails: ${closeFails})`, async () => {
+      let closed = false;
+      const source: AsyncIterableIterator<number> = {
+        next: async () => ({ value: 1, done: false }),
+        return: async () => {
+          closed = true;
+          if (closeFails) {
+            throw new Error('Close failed');
+          }
+          return { value: undefined, done: true };
+        },
+        [Symbol.asyncIterator]() {
+          return this;
+        },
+      };
+      const mapped = mapAsyncIterator(source, (value) => value);
+      const original = new Error('Original error');
+      const caught = await mapped.throw(original).catch((error) => error);
+      expect(caught).to.equal(original);
+      expect(closed).to.equal(true);
+    });
+  }
+
   it('maps over async generator', async () => {
     async function* source() {
       yield 1;
