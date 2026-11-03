@@ -52,4 +52,4 @@ function ignoreErrors(fn) {
     catch {
     }
 }
-//# sourceMappingURL=withConcurrentAbruptClose.js.map
+//# sourceMappingURL=withConcurrentAbruptClose.mjs.map

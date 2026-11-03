@@ -7,4 +7,4 @@ export const defaultHarness = {
     execute,
     subscribe,
 };
-//# sourceMappingURL=harness.js.map
+//# sourceMappingURL=harness.mjs.map

@@ -28,4 +28,4 @@ export function NoUnusedFragmentsRule(context) {
         },
     };
 }
-//# sourceMappingURL=NoUnusedFragmentsRule.js.map
+//# sourceMappingURL=NoUnusedFragmentsRule.mjs.map

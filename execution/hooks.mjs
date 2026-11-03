@@ -17,4 +17,4 @@ export function runAsyncWorkFinishedHook(validatedExecutionArgs, sharedExecution
     })
         .catch(() => undefined);
 }
-//# sourceMappingURL=hooks.js.map
+//# sourceMappingURL=hooks.mjs.map

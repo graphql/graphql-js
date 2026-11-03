@@ -20,4 +20,4 @@ export function UniqueDirectiveNamesRule(context) {
         },
     };
 }
-//# sourceMappingURL=UniqueDirectiveNamesRule.js.map
+//# sourceMappingURL=UniqueDirectiveNamesRule.mjs.map

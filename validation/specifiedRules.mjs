@@ -92,4 +92,4 @@ export const specifiedSDLRules = Object.freeze([
     UniqueInputFieldNamesRule,
     ProvidedRequiredArgumentsOnDirectivesRule,
 ]);
-//# sourceMappingURL=specifiedRules.js.map
+//# sourceMappingURL=specifiedRules.mjs.map

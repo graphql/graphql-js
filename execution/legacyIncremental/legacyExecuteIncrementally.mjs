@@ -10,4 +10,4 @@ export function legacyExecuteIncrementally(args) {
 export function legacyExecuteRootSelectionSet(validatedExecutionArgs) {
     return new BranchingIncrementalExecutor(validatedExecutionArgs).executeRootSelectionSet();
 }
-//# sourceMappingURL=legacyExecuteIncrementally.js.map
+//# sourceMappingURL=legacyExecuteIncrementally.mjs.map

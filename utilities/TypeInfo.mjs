@@ -274,4 +274,4 @@ export function visitWithTypeInfo(typeInfo, visitor) {
         },
     };
 }
-//# sourceMappingURL=TypeInfo.js.map
+//# sourceMappingURL=TypeInfo.mjs.map

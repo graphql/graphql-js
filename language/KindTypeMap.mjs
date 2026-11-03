@@ -1,2 +1,2 @@
 export {};
-//# sourceMappingURL=KindTypeMap.js.map
+//# sourceMappingURL=KindTypeMap.mjs.map

@@ -34,4 +34,4 @@ export function UniqueEnumValueNamesRule(context) {
         return false;
     }
 }
-//# sourceMappingURL=UniqueEnumValueNamesRule.js.map
+//# sourceMappingURL=UniqueEnumValueNamesRule.mjs.map

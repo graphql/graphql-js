@@ -3,4 +3,4 @@ export { createSourceEventStream, execute, executeRootSelectionSet, executeSubsc
 export { legacyExecuteIncrementally, legacyExecuteRootSelectionSet, } from "./legacyIncremental/legacyExecuteIncrementally.mjs";
 export { AbortedGraphQLExecutionError } from "./AbortedGraphQLExecutionError.mjs";
 export { getArgumentValues, getVariableValues, getDirectiveValues, } from "./values.mjs";
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=index.mjs.map

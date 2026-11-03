@@ -62,4 +62,4 @@ export function MaxIntrospectionDepthRule(context) {
         },
     };
 }
-//# sourceMappingURL=MaxIntrospectionDepthRule.js.map
+//# sourceMappingURL=MaxIntrospectionDepthRule.mjs.map

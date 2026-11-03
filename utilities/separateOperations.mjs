@@ -50,4 +50,4 @@ function collectDependencies(selectionSet) {
     });
     return dependencies;
 }
-//# sourceMappingURL=separateOperations.js.map
+//# sourceMappingURL=separateOperations.mjs.map

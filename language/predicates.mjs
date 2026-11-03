@@ -74,4 +74,4 @@ export function isSchemaCoordinateNode(node) {
         node.kind === Kind.DIRECTIVE_COORDINATE ||
         node.kind === Kind.DIRECTIVE_ARGUMENT_COORDINATE);
 }
-//# sourceMappingURL=predicates.js.map
+//# sourceMappingURL=predicates.mjs.map

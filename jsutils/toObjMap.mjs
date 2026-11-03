@@ -27,4 +27,4 @@ export function toObjMapWithSymbols(obj) {
     }
     return map;
 }
-//# sourceMappingURL=toObjMap.js.map
+//# sourceMappingURL=toObjMap.mjs.map

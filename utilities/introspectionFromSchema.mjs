@@ -18,4 +18,4 @@ export function introspectionFromSchema(schema, options) {
         invariant(false);
     return result.data;
 }
-//# sourceMappingURL=introspectionFromSchema.js.map
+//# sourceMappingURL=introspectionFromSchema.mjs.map

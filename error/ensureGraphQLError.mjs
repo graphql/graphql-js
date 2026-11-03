@@ -7,4 +7,4 @@ export function ensureGraphQLError(rawError) {
     const originalError = toError(rawError);
     return new GraphQLError(originalError.message, { originalError });
 }
-//# sourceMappingURL=ensureGraphQLError.js.map
+//# sourceMappingURL=ensureGraphQLError.mjs.map

@@ -16,4 +16,4 @@ export function getVariableSignature(schema, varDefNode) {
         default: defaultValue && { literal: defaultValue },
     };
 }
-//# sourceMappingURL=getVariableSignature.js.map
+//# sourceMappingURL=getVariableSignature.mjs.map

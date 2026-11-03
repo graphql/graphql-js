@@ -71,4 +71,4 @@ function getSuggestedFieldNames(type, fieldName) {
     }
     return [];
 }
-//# sourceMappingURL=FieldsOnCorrectTypeRule.js.map
+//# sourceMappingURL=FieldsOnCorrectTypeRule.mjs.map

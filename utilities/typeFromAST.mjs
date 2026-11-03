@@ -14,4 +14,4 @@ export function typeFromAST(schema, typeNode) {
             return schema.getType(typeNode.name.value);
     }
 }
-//# sourceMappingURL=typeFromAST.js.map
+//# sourceMappingURL=typeFromAST.mjs.map

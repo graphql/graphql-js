@@ -9,4 +9,4 @@ export function promiseForObject(object, promiseAll) {
         return resolvedObject;
     });
 }
-//# sourceMappingURL=promiseForObject.js.map
+//# sourceMappingURL=promiseForObject.mjs.map

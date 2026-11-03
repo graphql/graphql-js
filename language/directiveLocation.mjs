@@ -21,4 +21,4 @@ export const DirectiveLocation = {
     INPUT_FIELD_DEFINITION: 'INPUT_FIELD_DEFINITION',
     DIRECTIVE_DEFINITION: 'DIRECTIVE_DEFINITION',
 };
-//# sourceMappingURL=directiveLocation.js.map
+//# sourceMappingURL=directiveLocation.mjs.map

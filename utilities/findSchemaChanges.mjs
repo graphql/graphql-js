@@ -544,4 +544,4 @@ function diff(oldArray, newArray) {
     }
     return { added, persisted, removed };
 }
-//# sourceMappingURL=findSchemaChanges.js.map
+//# sourceMappingURL=findSchemaChanges.mjs.map

@@ -114,4 +114,4 @@ ${indent}}`;
     }
   `;
 }
-//# sourceMappingURL=getIntrospectionQuery.js.map
+//# sourceMappingURL=getIntrospectionQuery.mjs.map

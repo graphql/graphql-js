@@ -10,4 +10,4 @@ export function KnownOperationTypesRule(context) {
         },
     };
 }
-//# sourceMappingURL=KnownOperationTypesRule.js.map
+//# sourceMappingURL=KnownOperationTypesRule.mjs.map

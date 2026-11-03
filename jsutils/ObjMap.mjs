@@ -1,2 +1,2 @@
 export {};
-//# sourceMappingURL=ObjMap.js.map
+//# sourceMappingURL=ObjMap.mjs.map

@@ -5,4 +5,4 @@ export function keyMap(list, keyFn) {
     }
     return result;
 }
-//# sourceMappingURL=keyMap.js.map
+//# sourceMappingURL=keyMap.mjs.map

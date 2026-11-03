@@ -60,4 +60,4 @@ export function reduce(root, reducer) {
     } while (stack.length !== 0);
     return node;
 }
-//# sourceMappingURL=reducer.js.map
+//# sourceMappingURL=reducer.mjs.map

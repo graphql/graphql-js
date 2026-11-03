@@ -20,4 +20,4 @@ function getAbortReasonMessage(reason) {
     }
     return String(reason);
 }
-//# sourceMappingURL=AbortedGraphQLExecutionError.js.map
+//# sourceMappingURL=AbortedGraphQLExecutionError.mjs.map

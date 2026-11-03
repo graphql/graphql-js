@@ -51,4 +51,4 @@ function allowedVariableUsage(schema, varType, varDefaultValue, locationType, lo
     }
     return isTypeSubTypeOf(schema, varType, locationType);
 }
-//# sourceMappingURL=VariablesInAllowedPositionRule.js.map
+//# sourceMappingURL=VariablesInAllowedPositionRule.mjs.map

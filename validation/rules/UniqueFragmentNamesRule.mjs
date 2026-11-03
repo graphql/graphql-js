@@ -16,4 +16,4 @@ export function UniqueFragmentNamesRule(context) {
         },
     };
 }
-//# sourceMappingURL=UniqueFragmentNamesRule.js.map
+//# sourceMappingURL=UniqueFragmentNamesRule.mjs.map

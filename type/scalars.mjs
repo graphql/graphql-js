@@ -313,4 +313,4 @@ function coerceIDFromNumber(value) {
     }
     return String(value);
 }
-//# sourceMappingURL=scalars.js.map
+//# sourceMappingURL=scalars.mjs.map

@@ -43,4 +43,4 @@ export function getLocations(locations) {
     }
     return result;
 }
-//# sourceMappingURL=location.js.map
+//# sourceMappingURL=location.mjs.map

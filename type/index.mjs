@@ -5,4 +5,4 @@ export { isSpecifiedScalarType, specifiedScalarTypes, GraphQLInt, GraphQLFloat, 
 export { isIntrospectionType, introspectionTypes, __Schema, __Directive, __DirectiveLocation, __Type, __Field, __InputValue, __EnumValue, __TypeKind, TypeKind, SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef, } from "./introspection.mjs";
 export { validateSchema, assertValidSchema } from "./validate.mjs";
 export { assertName, assertEnumValueName } from "./assertName.mjs";
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=index.mjs.map

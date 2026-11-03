@@ -33,4 +33,4 @@ export let instanceOf = prodInstanceOf;
 export function enableDevInstanceOf() {
     instanceOf = devInstanceOf;
 }
-//# sourceMappingURL=instanceOf.js.map
+//# sourceMappingURL=instanceOf.mjs.map

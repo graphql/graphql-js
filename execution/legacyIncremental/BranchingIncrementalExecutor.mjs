@@ -58,4 +58,4 @@ function buildBranchingExecutionPlan(originalGroupedFieldSet, parentDeferUsages 
         newGroupedFieldSets,
     };
 }
-//# sourceMappingURL=BranchingIncrementalExecutor.js.map
+//# sourceMappingURL=BranchingIncrementalExecutor.mjs.map

@@ -46,4 +46,4 @@ function printPrefixedLines(lines) {
         .map(([prefix, line]) => prefix.padStart(padLen) + (line ? ' ' + line : ''))
         .join('\n');
 }
-//# sourceMappingURL=printLocation.js.map
+//# sourceMappingURL=printLocation.mjs.map

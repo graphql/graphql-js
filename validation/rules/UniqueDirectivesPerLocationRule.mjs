@@ -65,4 +65,4 @@ export function UniqueDirectivesPerLocationRule(context) {
         },
     };
 }
-//# sourceMappingURL=UniqueDirectivesPerLocationRule.js.map
+//# sourceMappingURL=UniqueDirectivesPerLocationRule.mjs.map

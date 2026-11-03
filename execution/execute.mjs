@@ -372,4 +372,4 @@ function assertEventStream(result) {
 function toNodes(fieldDetailsList) {
     return fieldDetailsList.map((fieldDetails) => fieldDetails.node);
 }
-//# sourceMappingURL=execute.js.map
+//# sourceMappingURL=execute.mjs.map

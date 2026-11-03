@@ -70,4 +70,4 @@ export function KnownArgumentNamesOnDirectivesRule(context) {
         },
     };
 }
-//# sourceMappingURL=KnownArgumentNamesRule.js.map
+//# sourceMappingURL=KnownArgumentNamesRule.mjs.map

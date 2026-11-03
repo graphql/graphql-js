@@ -226,4 +226,4 @@ export function buildClientSchema(introspection, options) {
         });
     }
 }
-//# sourceMappingURL=buildClientSchema.js.map
+//# sourceMappingURL=buildClientSchema.mjs.map

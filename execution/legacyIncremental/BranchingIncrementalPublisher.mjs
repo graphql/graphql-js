@@ -124,4 +124,4 @@ function buildIncrementalResult(originalIncrementalResult, label, errors) {
     }
     return incrementalResult;
 }
-//# sourceMappingURL=BranchingIncrementalPublisher.js.map
+//# sourceMappingURL=BranchingIncrementalPublisher.mjs.map

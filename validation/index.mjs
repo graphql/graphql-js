@@ -43,4 +43,4 @@ export { UniqueDirectiveNamesRule } from "./rules/UniqueDirectiveNamesRule.mjs";
 export { PossibleTypeExtensionsRule } from "./rules/PossibleTypeExtensionsRule.mjs";
 export { NoDeprecatedCustomRule } from "./rules/custom/NoDeprecatedCustomRule.mjs";
 export { NoSchemaIntrospectionCustomRule } from "./rules/custom/NoSchemaIntrospectionCustomRule.mjs";
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=index.mjs.map

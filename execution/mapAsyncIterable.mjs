@@ -29,4 +29,4 @@ async function* mapAsyncIterableImpl(iterable, mapFn) {
         yield result;
     }
 }
-//# sourceMappingURL=mapAsyncIterable.js.map
+//# sourceMappingURL=mapAsyncIterable.mjs.map

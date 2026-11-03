@@ -124,4 +124,4 @@ function forbidUnconditionalDeferStream({ context, checkedFragments, selectionSe
     }
     return valid;
 }
-//# sourceMappingURL=DeferStreamDirectiveOnValidOperationsRule.js.map
+//# sourceMappingURL=DeferStreamDirectiveOnValidOperationsRule.mjs.map

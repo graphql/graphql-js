@@ -19,4 +19,4 @@ function isValidValueNode(context, node, inputType) {
     }
     return false;
 }
-//# sourceMappingURL=ValuesOfCorrectTypeRule.js.map
+//# sourceMappingURL=ValuesOfCorrectTypeRule.mjs.map

@@ -19,4 +19,4 @@ export function ExecutableDefinitionsRule(context) {
         },
     };
 }
-//# sourceMappingURL=ExecutableDefinitionsRule.js.map
+//# sourceMappingURL=ExecutableDefinitionsRule.mjs.map

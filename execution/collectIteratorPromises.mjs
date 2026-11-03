@@ -16,4 +16,4 @@ export function collectIteratorPromises(iterator) {
         return promises;
     }
 }
-//# sourceMappingURL=collectIteratorPromises.js.map
+//# sourceMappingURL=collectIteratorPromises.mjs.map

@@ -48,4 +48,4 @@ export const MEMBER_COORDINATE = 'MemberCoordinate';
 export const ARGUMENT_COORDINATE = 'ArgumentCoordinate';
 export const DIRECTIVE_COORDINATE = 'DirectiveCoordinate';
 export const DIRECTIVE_ARGUMENT_COORDINATE = 'DirectiveArgumentCoordinate';
-//# sourceMappingURL=kinds_.js.map
+//# sourceMappingURL=kinds_.mjs.map

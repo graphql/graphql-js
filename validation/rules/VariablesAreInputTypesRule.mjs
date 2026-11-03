@@ -14,4 +14,4 @@ export function VariablesAreInputTypesRule(context) {
         },
     };
 }
-//# sourceMappingURL=VariablesAreInputTypesRule.js.map
+//# sourceMappingURL=VariablesAreInputTypesRule.mjs.map

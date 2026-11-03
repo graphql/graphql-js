@@ -18,4 +18,4 @@ export function NoUndefinedVariablesRule(context) {
         },
     };
 }
-//# sourceMappingURL=NoUndefinedVariablesRule.js.map
+//# sourceMappingURL=NoUndefinedVariablesRule.mjs.map

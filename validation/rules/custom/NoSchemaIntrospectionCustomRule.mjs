@@ -11,4 +11,4 @@ export function NoSchemaIntrospectionCustomRule(context) {
         },
     };
 }
-//# sourceMappingURL=NoSchemaIntrospectionCustomRule.js.map
+//# sourceMappingURL=NoSchemaIntrospectionCustomRule.mjs.map

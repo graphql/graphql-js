@@ -23,4 +23,4 @@ export function FragmentsOnCompositeTypesRule(context) {
         },
     };
 }
-//# sourceMappingURL=FragmentsOnCompositeTypesRule.js.map
+//# sourceMappingURL=FragmentsOnCompositeTypesRule.mjs.map

@@ -16,4 +16,4 @@ export function getOperationAST(documentAST, operationName) {
     }
     return operation;
 }
-//# sourceMappingURL=getOperationAST.js.map
+//# sourceMappingURL=getOperationAST.mjs.map

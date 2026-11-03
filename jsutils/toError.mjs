@@ -11,4 +11,4 @@ class NonErrorThrown extends Error {
         this.thrownValue = thrownValue;
     }
 }
-//# sourceMappingURL=toError.js.map
+//# sourceMappingURL=toError.mjs.map

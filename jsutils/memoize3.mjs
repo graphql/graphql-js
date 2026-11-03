@@ -20,4 +20,4 @@ export function memoize3(fn) {
         return fnResult;
     };
 }
-//# sourceMappingURL=memoize3.js.map
+//# sourceMappingURL=memoize3.mjs.map

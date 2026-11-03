@@ -104,4 +104,4 @@ export function resolveASTSchemaCoordinate(schema, schemaCoordinate) {
             return resolveDirectiveArgumentCoordinate(schema, schemaCoordinate);
     }
 }
-//# sourceMappingURL=resolveSchemaCoordinate.js.map
+//# sourceMappingURL=resolveSchemaCoordinate.mjs.map

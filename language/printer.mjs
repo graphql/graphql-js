@@ -316,4 +316,4 @@ function wrappedLineAndArgs(prefix, args) {
             : wrap('(', join(args, ', '), ')'),
     ]);
 }
-//# sourceMappingURL=printer.js.map
+//# sourceMappingURL=printer.mjs.map

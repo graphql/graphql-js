@@ -68,4 +68,4 @@ export function traceMixed(channel, contextInput, fn) {
         });
     });
 }
-//# sourceMappingURL=diagnostics.js.map
+//# sourceMappingURL=diagnostics.mjs.map

@@ -33,4 +33,4 @@ export function NoUnusedVariablesRule(context) {
         },
     };
 }
-//# sourceMappingURL=NoUnusedVariablesRule.js.map
+//# sourceMappingURL=NoUnusedVariablesRule.mjs.map

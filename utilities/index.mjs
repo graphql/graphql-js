@@ -21,4 +21,4 @@ export { stripIgnoredCharacters } from "./stripIgnoredCharacters.mjs";
 export { isEqualType, isTypeSubTypeOf, doTypesOverlap, } from "./typeComparators.mjs";
 export { BreakingChangeType, DangerousChangeType, SafeChangeType, findBreakingChanges, findDangerousChanges, findSchemaChanges, } from "./findSchemaChanges.mjs";
 export { resolveSchemaCoordinate, resolveASTSchemaCoordinate, } from "./resolveSchemaCoordinate.mjs";
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=index.mjs.map

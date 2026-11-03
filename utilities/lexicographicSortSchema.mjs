@@ -58,4 +58,4 @@ function sortBy(array, mapToKey) {
         return naturalCompare(key1, key2);
     });
 }
-//# sourceMappingURL=lexicographicSortSchema.js.map
+//# sourceMappingURL=lexicographicSortSchema.mjs.map

@@ -679,4 +679,4 @@ class PairSet {
         this._orderedPairSet.add(a, b, weaklyPresent);
     }
 }
-//# sourceMappingURL=OverlappingFieldsCanBeMergedRule.js.map
+//# sourceMappingURL=OverlappingFieldsCanBeMergedRule.mjs.map

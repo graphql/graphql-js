@@ -4,4 +4,4 @@ export function isPromise(value) {
 export function isPromiseLike(value) {
     return typeof value?.then === 'function';
 }
-//# sourceMappingURL=isPromise.js.map
+//# sourceMappingURL=isPromise.mjs.map

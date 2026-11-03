@@ -172,4 +172,4 @@ export function getDirectiveValues(directiveDef, node, variableValues, fragmentV
         return getArgumentValues(directiveDef, directiveNode, variableValues, fragmentVariableValues, hideSuggestions);
     }
 }
-//# sourceMappingURL=values.js.map
+//# sourceMappingURL=values.mjs.map

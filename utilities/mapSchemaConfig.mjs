@@ -236,4 +236,4 @@ const stdTypeMap = new Map([...specifiedScalarTypes, ...introspectionTypes].map(
     type.name,
     type,
 ]));
-//# sourceMappingURL=mapSchemaConfig.js.map
+//# sourceMappingURL=mapSchemaConfig.mjs.map

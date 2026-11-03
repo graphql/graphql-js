@@ -42,4 +42,4 @@ const DIGIT_9 = 57;
 function isDigit(code) {
     return !isNaN(code) && DIGIT_0 <= code && code <= DIGIT_9;
 }
-//# sourceMappingURL=naturalCompare.js.map
+//# sourceMappingURL=naturalCompare.mjs.map

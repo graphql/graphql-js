@@ -15,4 +15,4 @@ export function UniqueArgumentNamesRule(context) {
         }
     }
 }
-//# sourceMappingURL=UniqueArgumentNamesRule.js.map
+//# sourceMappingURL=UniqueArgumentNamesRule.mjs.map

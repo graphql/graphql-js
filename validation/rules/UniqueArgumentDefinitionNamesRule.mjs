@@ -31,4 +31,4 @@ export function UniqueArgumentDefinitionNamesRule(context) {
         return false;
     }
 }
-//# sourceMappingURL=UniqueArgumentDefinitionNamesRule.js.map
+//# sourceMappingURL=UniqueArgumentDefinitionNamesRule.mjs.map

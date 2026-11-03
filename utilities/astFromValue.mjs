@@ -84,4 +84,4 @@ export function astFromValue(value, type) {
     invariant(false, 'Unexpected input type: ' + inspect(type));
 }
 const integerStringRegExp = /^-?(?:0|[1-9][0-9]*)$/;
-//# sourceMappingURL=astFromValue.js.map
+//# sourceMappingURL=astFromValue.mjs.map

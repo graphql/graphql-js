@@ -71,4 +71,4 @@ export function SingleFieldSubscriptionsRule(context) {
         },
     };
 }
-//# sourceMappingURL=SingleFieldSubscriptionsRule.js.map
+//# sourceMappingURL=SingleFieldSubscriptionsRule.mjs.map

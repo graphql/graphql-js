@@ -23,4 +23,4 @@ export const TokenKind = {
     BLOCK_STRING: 'BlockString',
     COMMENT: 'Comment',
 };
-//# sourceMappingURL=tokenKind.js.map
+//# sourceMappingURL=tokenKind.mjs.map

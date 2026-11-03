@@ -42,4 +42,4 @@ export function cancellablePromise(promise, abortSignal) {
     });
     return withAbort.promise;
 }
-//# sourceMappingURL=cancellablePromise.js.map
+//# sourceMappingURL=cancellablePromise.mjs.map

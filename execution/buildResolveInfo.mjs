@@ -15,4 +15,4 @@ export function buildResolveInfo(validatedExecutionArgs, fieldDef, fieldNodes, p
         getAsyncHelpers,
     };
 }
-//# sourceMappingURL=buildResolveInfo.js.map
+//# sourceMappingURL=buildResolveInfo.mjs.map

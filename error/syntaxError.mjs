@@ -5,4 +5,4 @@ export function syntaxError(source, position, description) {
         positions: [position],
     });
 }
-//# sourceMappingURL=syntaxError.js.map
+//# sourceMappingURL=syntaxError.mjs.map

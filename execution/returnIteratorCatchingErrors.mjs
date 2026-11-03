@@ -5,4 +5,4 @@ export async function returnIteratorCatchingErrors(iterator) {
     catch {
     }
 }
-//# sourceMappingURL=returnIteratorCatchingErrors.js.map
+//# sourceMappingURL=returnIteratorCatchingErrors.mjs.map

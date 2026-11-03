@@ -406,4 +406,4 @@ function getSpecifiedByURL(node) {
 function isOneOf(node) {
     return Boolean(getDirectiveValues(GraphQLOneOfDirective, node));
 }
-//# sourceMappingURL=extendSchema.js.map
+//# sourceMappingURL=extendSchema.mjs.map

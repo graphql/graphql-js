@@ -54,4 +54,4 @@ export function doTypesOverlap(schema, typeA, typeB) {
     }
     return false;
 }
-//# sourceMappingURL=typeComparators.js.map
+//# sourceMappingURL=typeComparators.mjs.map

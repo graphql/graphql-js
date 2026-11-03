@@ -1020,4 +1020,4 @@ function getTokenDesc(token) {
 function getTokenKindDesc(kind) {
     return isPunctuatorTokenKind(kind) ? `"${kind}"` : kind;
 }
-//# sourceMappingURL=parser.js.map
+//# sourceMappingURL=parser.mjs.map

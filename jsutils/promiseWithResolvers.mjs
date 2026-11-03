@@ -7,4 +7,4 @@ export function promiseWithResolvers() {
     });
     return { promise, resolve, reject };
 }
-//# sourceMappingURL=promiseWithResolvers.js.map
+//# sourceMappingURL=promiseWithResolvers.mjs.map

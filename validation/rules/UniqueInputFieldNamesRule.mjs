@@ -28,4 +28,4 @@ export function UniqueInputFieldNamesRule(context) {
         },
     };
 }
-//# sourceMappingURL=UniqueInputFieldNamesRule.js.map
+//# sourceMappingURL=UniqueInputFieldNamesRule.mjs.map

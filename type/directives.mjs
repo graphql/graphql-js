@@ -184,4 +184,4 @@ export const specifiedDirectives = Object.freeze([
 export function isSpecifiedDirective(directive) {
     return specifiedDirectives.some(({ name }) => name === directive.name);
 }
-//# sourceMappingURL=directives.js.map
+//# sourceMappingURL=directives.mjs.map

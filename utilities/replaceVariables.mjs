@@ -66,4 +66,4 @@ export function replaceVariables(valueNode, variableValues, fragmentVariableValu
         }
     }
 }
-//# sourceMappingURL=replaceVariables.js.map
+//# sourceMappingURL=replaceVariables.mjs.map

@@ -402,4 +402,4 @@ export function createWorkQueue(initialWork) {
         taskNodes.delete(task);
     }
 }
-//# sourceMappingURL=WorkQueue.js.map
+//# sourceMappingURL=WorkQueue.mjs.map

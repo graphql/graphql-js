@@ -118,4 +118,4 @@ function isMissingVariable(valueNode, variables) {
         (variables?.[valueNode.name.value] === undefined ||
             !Object.hasOwn(variables, valueNode.name.value)));
 }
-//# sourceMappingURL=valueFromAST.js.map
+//# sourceMappingURL=valueFromAST.mjs.map

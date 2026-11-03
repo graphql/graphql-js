@@ -85,4 +85,4 @@ function forbidDeferStream({ context, operationType, rootType, checkedFragments,
 function getDeferDirective(fragment) {
     return fragment.directives?.find((d) => d.name.value === GraphQLDeferDirective.name);
 }
-//# sourceMappingURL=DeferStreamDirectiveOnRootFieldRule.js.map
+//# sourceMappingURL=DeferStreamDirectiveOnRootFieldRule.mjs.map

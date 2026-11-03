@@ -1,2 +1,2 @@
 export {};
-//# sourceMappingURL=PromiseOrValue.js.map
+//# sourceMappingURL=PromiseOrValue.mjs.map

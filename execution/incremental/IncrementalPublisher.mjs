@@ -196,4 +196,4 @@ export class IncrementalPublisher {
         };
     }
 }
-//# sourceMappingURL=IncrementalPublisher.js.map
+//# sourceMappingURL=IncrementalPublisher.mjs.map

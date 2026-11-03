@@ -5,4 +5,4 @@ export const versionInfo = Object.freeze({
     patch: 2,
     preReleaseTag: null,
 });
-//# sourceMappingURL=version.js.map
+//# sourceMappingURL=version.mjs.map

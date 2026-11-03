@@ -12,4 +12,4 @@ export function KnownFragmentNamesRule(context) {
         },
     };
 }
-//# sourceMappingURL=KnownFragmentNamesRule.js.map
+//# sourceMappingURL=KnownFragmentNamesRule.mjs.map

@@ -13,4 +13,4 @@ export function UniqueVariableNamesRule(context) {
         },
     };
 }
-//# sourceMappingURL=UniqueVariableNamesRule.js.map
+//# sourceMappingURL=UniqueVariableNamesRule.mjs.map

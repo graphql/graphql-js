@@ -1,2 +1,2 @@
 export {};
-//# sourceMappingURL=typedQueryDocumentNode.js.map
+//# sourceMappingURL=typedQueryDocumentNode.mjs.map

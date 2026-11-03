@@ -98,4 +98,4 @@ function extensionKindToTypeName(kind) {
             invariant(false, 'Unexpected kind: ' + inspect(kind));
     }
 }
-//# sourceMappingURL=PossibleTypeExtensionsRule.js.map
+//# sourceMappingURL=PossibleTypeExtensionsRule.mjs.map
