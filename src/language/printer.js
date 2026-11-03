@@ -1,17 +1,33 @@
+/** @category Printing */
+
 import type { ASTNode } from './ast';
-
-import { visit } from './visitor';
 import { printBlockString } from './blockString';
-
-/**
- * Converts an AST into a string, using one set of reasonable
- * formatting rules.
- */
-export function print(ast: ASTNode): string {
-  return render(visit(ast, printDocASTReducer));
-}
+import { visit } from './visitor';
 
 type Maybe<+T> = ?T;
+
+/**
+ * Converts an AST into a string. Indentation and inserted newlines can be
+ * limited with maxIndentDepth; the default is unlimited.
+ */
+declare function print(
+  ast: ASTNode,
+  options: { maxIndentDepth?: number, ... },
+): string;
+// eslint-disable-next-line no-redeclare
+declare function print(ast: ASTNode): string;
+// eslint-disable-next-line no-redeclare
+export function print(ast, options) {
+  return render(
+    visit(ast, printDocASTReducer),
+    options?.maxIndentDepth ?? Infinity,
+  );
+}
+
+/** @internal */
+export function printForError(ast: ASTNode): string {
+  return print(ast, { maxIndentDepth: 100 });
+}
 
 // The wrapping limit applies to total string length, including newlines.
 const MAX_LINE_LENGTH = 80;
@@ -24,8 +40,9 @@ class PrintBuffer {
   tail: PrintBuffer | void;
   indentBefore: boolean;
   dedentAfter: boolean;
+  isBlockString: boolean;
 
-  constructor(value = '') {
+  constructor(value = '', isBlockString = false) {
     this.next = undefined;
     this.tail = undefined;
     this.indentBefore = false;
@@ -33,6 +50,7 @@ class PrintBuffer {
     this.length = value.length;
     this.lines = value.includes('\n') ? value.split('\n') : [value];
     this.newlines = this.lines.length - 1;
+    this.isBlockString = isBlockString;
   }
 
   append(result: string | PrintBuffer): this {
@@ -60,27 +78,33 @@ class PrintBuffer {
 
 const EMPTY = new PrintBuffer();
 
-function render(buffer: PrintBuffer): string {
+function render(buffer: PrintBuffer, maxDepth: number): string {
   const output: Array<string> = [];
   let text = '';
+  let depth = 0;
   let indentation = '';
   let part: PrintBuffer | void = buffer;
   while (part !== undefined) {
     const lines = part.lines;
     if (part.indentBefore) {
-      indentation += '  ';
-      text += '  ';
+      if (depth < maxDepth) {
+        indentation += '  ';
+        text += '  ';
+      }
+      depth++;
     }
     text += lines[0];
     if (lines.length > 1) {
-      const newline = '\n' + indentation;
+      const newline =
+        !part.isBlockString && depth >= maxDepth ? ' ' : '\n' + indentation;
       for (let i = 1; i < lines.length; i++) {
         output.push(text);
         text = newline + lines[i];
       }
     }
     if (part.dedentAfter) {
-      indentation = indentation.slice(0, -2);
+      depth--;
+      indentation = indentation.slice(0, depth * 2);
     }
     part = part.next;
   }
@@ -180,6 +204,7 @@ const printDocASTReducer: any = {
         isBlockString === true
           ? printBlockString(value, key === 'description' ? '' : '  ')
           : JSON.stringify(value),
+        isBlockString === true,
       ),
   },
   BooleanValue: {
