@@ -164,7 +164,7 @@ export class ValidationContext extends ASTValidationContext {
   _typeInfo: TypeInfo;
   _variableUsages: Map<NodeWithSelectionSet, $ReadOnlyArray<VariableUsage>>;
   _recursiveVariableUsages: Map<
-    OperationDefinitionNode,
+    OperationDefinitionNode | $ReadOnlyArray<FragmentDefinitionNode>,
     $ReadOnlyArray<VariableUsage>,
   >;
 
@@ -214,10 +214,16 @@ export class ValidationContext extends ASTValidationContext {
   ): $ReadOnlyArray<VariableUsage> {
     let usages = this._recursiveVariableUsages.get(operation);
     if (!usages) {
-      usages = this.getVariableUsages(operation);
-      for (const frag of this.getRecursivelyReferencedFragments(operation)) {
-        usages = usages.concat(this.getVariableUsages(frag));
+      const fragments = this.getRecursivelyReferencedFragments(operation);
+      let fragmentUsages = this._recursiveVariableUsages.get(fragments);
+      if (!fragmentUsages) {
+        fragmentUsages = [];
+        for (const fragment of fragments) {
+          fragmentUsages.push(...this.getVariableUsages(fragment));
+        }
+        this._recursiveVariableUsages.set(fragments, fragmentUsages);
       }
+      usages = this.getVariableUsages(operation).concat(fragmentUsages);
       this._recursiveVariableUsages.set(operation, usages);
     }
     return usages;
