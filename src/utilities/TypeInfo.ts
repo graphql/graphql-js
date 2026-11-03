@@ -372,7 +372,7 @@ export class TypeInfo {
    *   }
    * `);
    * const typeInfo = new TypeInfo(schema);
-   * let defaultLimit;
+   * let defaultLimit: unknown;
    *
    * visit(
    *   parse('{ reviews(limit: 5) }'),

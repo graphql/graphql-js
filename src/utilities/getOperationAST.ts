@@ -20,7 +20,7 @@ import { Kind } from '../language/kinds';
  * const document = parse('query GetName { name }');
  * const operation = getOperationAST(document, 'GetName');
  *
- * operation.name.value; // => 'GetName'
+ * operation?.name?.value; // => 'GetName'
  * getOperationAST(document, 'Missing'); // => null
  * ```
  */

@@ -1558,7 +1558,7 @@ export function getNamedType(type: undefined | null): void;
  *
  * const inputArg = schema.getQueryType()?.getFields().review.args[0];
  *
- * getNamedType(inputArg?.type).toString(); // => 'ReviewInput'
+ * getNamedType(inputArg?.type)?.toString(); // => 'ReviewInput'
  * ```
  */
 export function getNamedType(type: GraphQLInputType): GraphQLNamedInputType;
@@ -1583,7 +1583,7 @@ export function getNamedType(type: GraphQLInputType): GraphQLNamedInputType;
  *
  * const usersField = schema.getQueryType()?.getFields().users;
  *
- * getNamedType(usersField?.type).toString(); // => 'User'
+ * getNamedType(usersField?.type)?.toString(); // => 'User'
  * ```
  */
 export function getNamedType(type: GraphQLOutputType): GraphQLNamedOutputType;
@@ -2687,20 +2687,22 @@ export interface GraphQLArgument {
  * @returns True when the argument is non-null and has no default value.
  * @example
  * ```ts
- * import {
- *   GraphQLInt,
- *   GraphQLNonNull,
- *   GraphQLString,
- *   isRequiredArgument,
- * } from 'graphql/type';
+ * import { GraphQLInt, GraphQLNonNull, GraphQLObjectType, GraphQLString, isRequiredArgument } from 'graphql/type';
  *
- * const requiredArgument = { name: 'id', type: new GraphQLNonNull(GraphQLInt) };
- * const optionalArgument = { name: 'name', type: GraphQLString };
- * const argumentWithDefault = {
- *   name: 'limit',
- *   type: new GraphQLNonNull(GraphQLInt),
- *   defaultValue: 10,
- * };
+ * const Query = new GraphQLObjectType({
+ *   name: 'Query',
+ *   fields: {
+ *     greeting: {
+ *       type: GraphQLString,
+ *       args: {
+ *         id: { type: new GraphQLNonNull(GraphQLInt) },
+ *         name: { type: GraphQLString },
+ *         limit: { type: new GraphQLNonNull(GraphQLInt), defaultValue: 10 },
+ *       },
+ *     },
+ *   },
+ * });
+ * const [requiredArgument, optionalArgument, argumentWithDefault] = Query.getFields().greeting.args;
  *
  * isRequiredArgument(requiredArgument); // => true
  * isRequiredArgument(optionalArgument); // => false
@@ -3115,9 +3117,8 @@ export class GraphQLUnionType {
    * @param config - Configuration describing this object.
    * @example
    * ```ts
-   * import { Kind } from 'graphql/language';
    * import assert from 'node:assert/strict';
-   * import { parse } from 'graphql/language';
+   * import { parse, Kind } from 'graphql/language';
    * import { GraphQLObjectType, GraphQLString, GraphQLUnionType } from 'graphql/type';
    *
    * const document = parse(`
@@ -3457,7 +3458,7 @@ export class GraphQLEnumType /* <T> */ {
    * Episode.description; // => 'A Star Wars film episode.'
    * Episode.serialize(5); // => 'EMPIRE'
    * Episode.parseValue('JEDI'); // => 6
-   * Episode.getValue('JEDI').deprecationReason; // => 'Use RETURN_OF_THE_JEDI.'
+   * Episode.getValue('JEDI')?.deprecationReason; // => 'Use RETURN_OF_THE_JEDI.'
    * Episode.extensions; // => { catalog: 'films' }
    * ```
    */
@@ -4248,20 +4249,17 @@ export interface GraphQLInputField {
  * @returns True when the input field is non-null and has no default value.
  * @example
  * ```ts
- * import {
- *   GraphQLInt,
- *   GraphQLNonNull,
- *   GraphQLString,
- *   isRequiredInputField,
- * } from 'graphql/type';
+ * import { GraphQLInputObjectType, GraphQLInt, GraphQLNonNull, GraphQLString, isRequiredInputField } from 'graphql/type';
  *
- * const requiredField = { name: 'id', type: new GraphQLNonNull(GraphQLInt) };
- * const optionalField = { name: 'name', type: GraphQLString };
- * const fieldWithDefault = {
- *   name: 'limit',
- *   type: new GraphQLNonNull(GraphQLInt),
- *   defaultValue: 10,
- * };
+ * const Input = new GraphQLInputObjectType({
+ *   name: 'Input',
+ *   fields: {
+ *     id: { type: new GraphQLNonNull(GraphQLInt) },
+ *     name: { type: GraphQLString },
+ *     limit: { type: new GraphQLNonNull(GraphQLInt), defaultValue: 10 },
+ *   },
+ * });
+ * const { id: requiredField, name: optionalField, limit: fieldWithDefault } = Input.getFields();
  *
  * isRequiredInputField(requiredField); // => true
  * isRequiredInputField(optionalField); // => false

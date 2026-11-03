@@ -74,7 +74,7 @@ import { valueFromAST } from './valueFromAST';
  *   assumeValid: true,
  * });
  *
- * clientSchema.getQueryType().name; // => 'Query'
+ * clientSchema.getQueryType()?.name; // => 'Query'
  * ```
  */
 export function buildClientSchema(

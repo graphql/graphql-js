@@ -320,8 +320,8 @@ export interface ExecutionArgs {
  *   },
  * });
  *
- * result.data.broken; // => null
- * result.errors[0].message; // => 'Resolver failed.'
+ * result.data?.broken; // => null
+ * result.errors?.[0].message; // => 'Resolver failed.'
  * ```
  * @example
  * ```ts
@@ -356,8 +356,8 @@ export interface ExecutionArgs {
  *   options: { maxCoercionErrors: 1 },
  * });
  *
- * result.errors.length; // => 2
- * result.errors[1].message; // matches /error limit reached/
+ * result.errors?.length; // => 2
+ * result.errors?.[1].message; // matches /error limit reached/
  * ```
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {

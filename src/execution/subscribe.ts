@@ -167,7 +167,7 @@ import { getArgumentValues } from './values';
  *
  * assert('errors' in result);
  *
- * result.errors[0].message; // => 'Schema is not configured to execute subscription operation.'
+ * result.errors?.[0].message; // => 'Schema is not configured to execute subscription operation.'
  * ```
  */
 export async function subscribe(

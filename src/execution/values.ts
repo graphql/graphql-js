@@ -56,10 +56,9 @@ export interface GetVariableValuesOptions {
  * @returns Coerced variable values, or request errors.
  * @example
  * ```ts
- * import { Kind } from 'graphql/language';
  * import assert from 'node:assert/strict';
  * // Coerce provided variables and apply operation defaults.
- * import { parse } from 'graphql/language';
+ * import { parse, Kind } from 'graphql/language';
  * import { buildSchema } from 'graphql/utilities';
  * import { getVariableValues } from 'graphql/execution';
  *
@@ -86,10 +85,9 @@ export interface GetVariableValuesOptions {
  * ```
  * @example
  * ```ts
- * import { Kind } from 'graphql/language';
  * import assert from 'node:assert/strict';
  * // This variant uses maxErrors to cap reported coercion errors.
- * import { parse } from 'graphql/language';
+ * import { parse, Kind } from 'graphql/language';
  * import { buildSchema } from 'graphql/utilities';
  * import { getVariableValues } from 'graphql/execution';
  *
@@ -118,8 +116,8 @@ export interface GetVariableValuesOptions {
  *   { maxErrors: 1 },
  * );
  *
- * result.errors.length; // => 2
- * result.errors[1].message; // matches /error limit reached/
+ * result.errors?.length; // => 2
+ * result.errors?.[1].message; // matches /error limit reached/
  * ```
  */
 export function getVariableValues(
@@ -240,10 +238,9 @@ function coerceVariableValues(
  * @returns Coerced argument values keyed by argument name.
  * @example
  * ```ts
- * import { Kind } from 'graphql/language';
  * import assert from 'node:assert/strict';
  * // Read literal argument values and defaults.
- * import { parse } from 'graphql/language';
+ * import { parse, Kind } from 'graphql/language';
  * import { buildSchema } from 'graphql/utilities';
  * import { getArgumentValues } from 'graphql/execution';
  *
@@ -252,7 +249,8 @@ function coerceVariableValues(
  *     reviews(stars: Int!, limit: Int = 10): [String]
  *   }
  * `);
- * const fieldDef = schema.getQueryType().getFields().reviews;
+ * const fieldDef = schema.getQueryType()?.getFields().reviews;
+ * assert(fieldDef);
  * const document = parse('{ reviews(stars: 5) }');
  * const operation = document.definitions[0];
  * assert(operation.kind === Kind.OPERATION_DEFINITION);
@@ -263,10 +261,9 @@ function coerceVariableValues(
  * ```
  * @example
  * ```ts
- * import { Kind } from 'graphql/language';
  * import assert from 'node:assert/strict';
  * // This variant resolves argument values from operation variables.
- * import { parse } from 'graphql/language';
+ * import { parse, Kind } from 'graphql/language';
  * import { buildSchema } from 'graphql/utilities';
  * import { getArgumentValues } from 'graphql/execution';
  *
@@ -275,7 +272,8 @@ function coerceVariableValues(
  *     reviews(stars: Int!): [String]
  *   }
  * `);
- * const fieldDef = schema.getQueryType().getFields().reviews;
+ * const fieldDef = schema.getQueryType()?.getFields().reviews;
+ * assert(fieldDef);
  * const document = parse('query ($stars: Int!) { reviews(stars: $stars) }');
  * const operation = document.definitions[0];
  * assert(operation.kind === Kind.OPERATION_DEFINITION);
@@ -390,10 +388,9 @@ export interface DirectiveValuesNode {
  * @returns Coerced directive argument values keyed by argument name.
  * @example
  * ```ts
- * import { Kind } from 'graphql/language';
  * import assert from 'node:assert/strict';
  * // Read literal directive arguments from a node.
- * import { parse } from 'graphql/language';
+ * import { parse, Kind } from 'graphql/language';
  * import { GraphQLSkipDirective } from 'graphql/type';
  * import { getDirectiveValues } from 'graphql/execution';
  *
@@ -406,10 +403,9 @@ export interface DirectiveValuesNode {
  * ```
  * @example
  * ```ts
- * import { Kind } from 'graphql/language';
  * import assert from 'node:assert/strict';
  * // This variant resolves directive arguments from variables and handles absent directives.
- * import { parse } from 'graphql/language';
+ * import { parse, Kind } from 'graphql/language';
  * import { GraphQLIncludeDirective } from 'graphql/type';
  * import { getDirectiveValues } from 'graphql/execution';
  *

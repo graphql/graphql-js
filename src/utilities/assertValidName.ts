@@ -43,7 +43,7 @@ export function assertValidName(name: string): string {
  * isValidNameError('User'); // => undefined
  *
  * const error = isValidNameError('__typename');
- * error.message; // => 'Name "__typename" must not begin with "__", which is reserved by GraphQL introspection.'
+ * error?.message; // => 'Name "__typename" must not begin with "__", which is reserved by GraphQL introspection.'
  * ```
  * @deprecated Please use `assertName` instead. Will be removed in v17
  */
