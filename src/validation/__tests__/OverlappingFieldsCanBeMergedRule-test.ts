@@ -4,6 +4,7 @@ import { describe, it } from 'mocha';
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 import { print } from '../../language/printer';
+import { visit } from '../../language/visitor';
 
 import type { GraphQLSchema } from '../../type/schema';
 
@@ -38,6 +39,18 @@ function expectValidWithSchema(schema: GraphQLSchema, queryStr: string) {
 }
 
 describe('Validate: Overlapping fields can be merged', () => {
+  it('compares manually constructed fields without optional argument arrays', () => {
+    const schema = buildSchema('type Query { field: String }');
+    const document = visit(parse('{ field field }'), {
+      Field(node) {
+        return { ...node, arguments: undefined };
+      },
+    });
+    expect(
+      validate(schema, document, [OverlappingFieldsCanBeMergedRule]),
+    ).to.deep.equal([]);
+  });
+
   it('compares wrapped return types across object types', () => {
     const schema = buildSchema(`
       type Query { result: Result }
@@ -357,6 +370,7 @@ second line"""
   it('different directives with different aliases', () => {
     expectValid(`
       fragment differentDirectivesWithDifferentAliases on Dog {
+        name
         nameIfTrue: name @include(if: true)
         nameIfFalse: name @include(if: false)
       }
@@ -369,6 +383,7 @@ second line"""
     // may have the same desired effect of including or skipping a field.
     expectValid(`
       fragment differentDirectivesWithDifferentAliases on Dog {
+        name
         name @include(if: true)
         name @include(if: false)
       }
