@@ -9,7 +9,7 @@ import { GraphQLError } from '../../error/GraphQLError';
 
 import type { ValueNode } from '../../language/ast';
 import type { ASTVisitor } from '../../language/visitor';
-import { print } from '../../language/printer';
+import { printForError as print } from '../../language/printer';
 
 import {
   isLeafType,

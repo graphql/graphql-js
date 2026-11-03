@@ -13,7 +13,7 @@ import type {
   VariableDefinitionNode,
 } from '../language/ast';
 import { Kind } from '../language/kinds';
-import { print } from '../language/printer';
+import { printForError as print } from '../language/printer';
 
 import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLField } from '../type/definition';

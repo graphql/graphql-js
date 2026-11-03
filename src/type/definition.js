@@ -24,7 +24,7 @@ import suggestionList from '../jsutils/suggestionList';
 import { GraphQLError } from '../error/GraphQLError';
 
 import { Kind } from '../language/kinds';
-import { print } from '../language/printer';
+import { printForError as print } from '../language/printer';
 import type {
   ScalarTypeDefinitionNode,
   ObjectTypeDefinitionNode,
