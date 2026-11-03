@@ -28,7 +28,7 @@ export function getVariableValues(
   schema: GraphQLSchema,
   varDefNodes: ReadonlyArray<VariableDefinitionNode>,
   inputs: { [key: string]: any },
-  options?: { maxErrors?: number },
+  options?: { maxErrors?: number; hideSuggestions?: boolean | null },
 ): CoercedVariableValues;
 
 /**

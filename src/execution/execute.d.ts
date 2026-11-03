@@ -67,6 +67,7 @@ export interface FormattedExecutionResult<
 }
 
 export interface ExecutionArgs {
+  hideSuggestions?: Maybe<boolean>;
   schema: GraphQLSchema;
   document: DocumentNode;
   rootValue?: any;
@@ -133,6 +134,7 @@ export function buildExecutionContext(
   operationName: Maybe<string>,
   fieldResolver: Maybe<GraphQLFieldResolver<any, any>>,
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>,
+  hideSuggestions?: Maybe<boolean>,
 ): ReadonlyArray<GraphQLError> | ExecutionContext;
 
 /**

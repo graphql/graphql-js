@@ -6,6 +6,7 @@ import { GraphQLSchema } from '../type/schema';
 import { GraphQLFieldResolver } from '../type/definition';
 
 export interface SubscriptionArgs {
+  hideSuggestions?: Maybe<boolean>;
   schema: GraphQLSchema;
   document: DocumentNode;
   rootValue?: any;
@@ -77,4 +78,5 @@ export function createSourceEventStream(
   variableValues?: { [key: string]: any },
   operationName?: Maybe<string>,
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
+  hideSuggestions?: Maybe<boolean>,
 ): Promise<AsyncIterable<any> | ExecutionResult>;

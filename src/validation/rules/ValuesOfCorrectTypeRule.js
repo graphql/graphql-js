@@ -14,6 +14,7 @@ import { printForError as print } from '../../language/printer';
 import {
   isLeafType,
   isInputObjectType,
+  isEnumType,
   isListType,
   isNonNullType,
   isRequiredInputField,
@@ -67,10 +68,12 @@ export function ValuesOfCorrectTypeRule(
       const parentType = getNamedType(context.getParentInputType());
       const fieldType = context.getInputType();
       if (!fieldType && isInputObjectType(parentType)) {
-        const suggestions = suggestionList(
-          node.name.value,
-          Object.keys(parentType.getFields()),
-        );
+        const suggestions = context.hideSuggestions
+          ? []
+          : suggestionList(
+              node.name.value,
+              Object.keys(parentType.getFields()),
+            );
         context.reportError(
           new GraphQLError(
             `Field "${node.name.value}" is not defined by type "${parentType.name}".` +
@@ -126,7 +129,9 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
   // Scalars and Enums determine if a literal value is valid via parseLiteral(),
   // which may throw or return an invalid value to indicate failure.
   try {
-    const parseResult = type.parseLiteral(node, undefined /* variables */);
+    const parseResult = isEnumType(type)
+      ? type.parseLiteral(node, undefined, context.hideSuggestions)
+      : type.parseLiteral(node, undefined /* variables */);
     if (parseResult === undefined) {
       const typeStr = inspect(locationType);
       context.reportError(

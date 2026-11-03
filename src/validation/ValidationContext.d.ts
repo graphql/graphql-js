@@ -56,6 +56,7 @@ export class ASTValidationContext {
 }
 
 export class SDLValidationContext extends ASTValidationContext {
+  readonly hideSuggestions: boolean;
   constructor(
     ast: DocumentNode,
     schema: Maybe<GraphQLSchema>,
@@ -68,11 +69,13 @@ export class SDLValidationContext extends ASTValidationContext {
 export type SDLValidationRule = (context: SDLValidationContext) => ASTVisitor;
 
 export class ValidationContext extends ASTValidationContext {
+  readonly hideSuggestions: boolean;
   constructor(
     schema: GraphQLSchema,
     ast: DocumentNode,
     typeInfo: TypeInfo,
     onError: (err: GraphQLError) => void,
+    hideSuggestions?: Maybe<boolean>,
   );
 
   getSchema(): GraphQLSchema;

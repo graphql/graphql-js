@@ -36,7 +36,9 @@ export function validate(
   documentAST: DocumentNode,
   rules: $ReadOnlyArray<ValidationRule> = specifiedRules,
   typeInfo: TypeInfo = new TypeInfo(schema),
-  options: {| maxErrors?: number |} = { maxErrors: undefined },
+  options: $ReadOnly<{| maxErrors?: number, hideSuggestions?: ?boolean |}> = {
+    maxErrors: undefined,
+  },
 ): $ReadOnlyArray<GraphQLError> {
   devAssert(documentAST, 'Must provide document.');
   // If the schema used for validation is invalid, throw an error.
@@ -59,6 +61,7 @@ export function validate(
       }
       errors.push(error);
     },
+    options.hideSuggestions,
   );
 
   // This uses a specialized visitor which runs multiple visitors in parallel,
