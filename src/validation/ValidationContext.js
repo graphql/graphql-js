@@ -29,6 +29,8 @@ import type {
 
 import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
 
+import { validationAbortedError } from './validationAbortedError';
+
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 type VariableUsage = {|
   +node: VariableNode,
@@ -42,6 +44,7 @@ type VariableUsage = {|
  * validation rule.
  */
 export class ASTValidationContext {
+  _remainingFragmentWork: number;
   _ast: DocumentNode;
   _onError: (err: GraphQLError) => void;
   _fragments: ?ObjMap<FragmentDefinitionNode>;
@@ -52,6 +55,7 @@ export class ASTValidationContext {
   >;
 
   constructor(ast: DocumentNode, onError: (err: GraphQLError) => void) {
+    this._remainingFragmentWork = 50_000;
     this._ast = ast;
     this._fragments = undefined;
     this._fragmentSpreads = new Map();
@@ -132,7 +136,9 @@ export class ASTValidationContext {
       const nodesToVisit = operations.map(({ selectionSet }) => selectionSet);
       let node: SelectionSetNode | void;
       while ((node = nodesToVisit.pop())) {
-        for (const spread of this.getFragmentSpreads(node)) {
+        const spreads = this.getFragmentSpreads(node);
+        this.spendFragmentWork(spreads.length);
+        for (const spread of spreads) {
           const fragName = spread.name.value;
           if (!collectedNames.has(fragName)) {
             collectedNames.add(fragName);
@@ -147,6 +153,15 @@ export class ASTValidationContext {
       this._recursivelyReferencedFragments.set(fragmentNames, fragments);
     }
     return fragments;
+  }
+
+  /** @internal */
+  spendFragmentWork(cost: number): void {
+    this._remainingFragmentWork -= cost;
+    /* istanbul ignore next (Large validation work is covered by resource-limit probes.) */
+    if (this._remainingFragmentWork < 0) {
+      throw validationAbortedError;
+    }
   }
 }
 
@@ -229,12 +244,18 @@ export class ValidationContext extends ASTValidationContext {
       const fragments = this.getRecursivelyReferencedFragments(operation);
       let fragmentUsages = this._recursiveVariableUsages.get(fragments);
       if (!fragmentUsages) {
+        this.spendFragmentWork(fragments.length);
         fragmentUsages = [];
-        for (const fragment of fragments) {
-          fragmentUsages.push(...this.getVariableUsages(fragment));
+        for (const frag of fragments) {
+          const localUsages = this.getVariableUsages(frag);
+          this.spendFragmentWork(localUsages.length);
+          for (const usage of localUsages) {
+            fragmentUsages.push(usage);
+          }
         }
         this._recursiveVariableUsages.set(fragments, fragmentUsages);
       }
+      this.spendFragmentWork(fragmentUsages.length);
       usages = this.getVariableUsages(operation).concat(fragmentUsages);
       this._recursiveVariableUsages.set(operation, usages);
     }
