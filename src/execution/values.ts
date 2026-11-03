@@ -34,6 +34,8 @@ type CoercedVariableValues =
  * @internal
  */
 export interface GetVariableValuesOptions {
+  /** Omit suggestions from input coercion errors. */
+  hideSuggestions?: boolean;
   /**
    * Maximum number of variable coercion errors before coercion stops.
    * @internal
@@ -139,6 +141,7 @@ export function getVariableValues(
         }
         errors.push(error);
       },
+      options?.hideSuggestions,
     );
 
     if (errors.length === 0) {
@@ -156,6 +159,7 @@ function coerceVariableValues(
   varDefNodes: ReadonlyArray<VariableDefinitionNode>,
   inputs: { readonly [variable: string]: unknown },
   onError: (error: GraphQLError) => void,
+  hideSuggestions?: Maybe<boolean>,
 ): { [variable: string]: unknown } {
   const coercedValues: { [variable: string]: unknown } = Object.create(null);
   for (const varDefNode of varDefNodes) {
@@ -217,6 +221,7 @@ function coerceVariableValues(
           }),
         );
       },
+      hideSuggestions,
     );
   }
 

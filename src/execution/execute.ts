@@ -195,6 +195,8 @@ export interface FormattedExecutionResult<
 
 /** Arguments accepted by execute and executeSync. */
 export interface ExecutionArgs {
+  /** Omit suggestions from input coercion errors. */
+  hideSuggestions?: Maybe<boolean>;
   /** The schema used for validation or execution. */
   schema: GraphQLSchema;
   /** The parsed GraphQL document to execute. */
@@ -567,7 +569,10 @@ export function buildExecutionContext(
     schema,
     variableDefinitions,
     rawVariableValues ?? {},
-    { maxErrors: options?.maxCoercionErrors ?? 50 },
+    {
+      maxErrors: options?.maxCoercionErrors ?? 50,
+      hideSuggestions: args.hideSuggestions ?? false,
+    },
   );
 
   if (coercedVariableValues.errors) {

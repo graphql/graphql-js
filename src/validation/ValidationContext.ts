@@ -116,6 +116,8 @@ export class ASTValidationContext {
     return spreads;
   }
 
+  // TODO: In the next major version, accept multiple operations here and
+  // remove getRecursivelyReferencedFragmentsForOperations.
   getRecursivelyReferencedFragments(
     operation: OperationDefinitionNode,
   ): ReadonlyArray<FragmentDefinitionNode> {
@@ -177,6 +179,10 @@ export class SDLValidationContext extends ASTValidationContext {
     this._schema = schema;
   }
 
+  get hideSuggestions() {
+    return false;
+  }
+
   get [Symbol.toStringTag]() {
     return 'SDLValidationContext';
   }
@@ -191,6 +197,7 @@ export type SDLValidationRule = (context: SDLValidationContext) => ASTVisitor;
 
 /** Validation context passed to query validation rules. */
 export class ValidationContext extends ASTValidationContext {
+  private _hideSuggestions: boolean;
   private _schema: GraphQLSchema;
   private _typeInfo: TypeInfo;
   private _variableUsages: Map<
@@ -209,6 +216,7 @@ export class ValidationContext extends ASTValidationContext {
    * @param ast - Document AST being validated.
    * @param typeInfo - TypeInfo instance used to track traversal state.
    * @param onError - Callback invoked for each validation error.
+   * @param hideSuggestions - Omit suggestions from error messages.
    * @example
    * ```ts
    * import { parse } from 'graphql/language';
@@ -241,12 +249,22 @@ export class ValidationContext extends ASTValidationContext {
     ast: DocumentNode,
     typeInfo: TypeInfo,
     onError: (error: GraphQLError) => void,
+    hideSuggestions?: Maybe<boolean>,
   ) {
     super(ast, onError);
+    this._hideSuggestions = hideSuggestions ?? false;
     this._schema = schema;
     this._typeInfo = typeInfo;
     this._variableUsages = new Map();
     this._recursiveVariableUsages = new Map();
+  }
+
+  /**
+   * Whether suggestions should be omitted from validation errors.
+   * @returns True when validation error suggestions are disabled.
+   */
+  get hideSuggestions(): boolean {
+    return this._hideSuggestions;
   }
 
   /**

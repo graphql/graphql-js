@@ -32,6 +32,8 @@ const QueryDocumentKeysToValidate = mapValue(
  * @internal
  */
 export interface ValidationOptions {
+  /** Omit suggestions from validation errors. */
+  hideSuggestions?: Maybe<boolean>;
   /**
    * Maximum number of validation errors before validation stops.
    * @internal
@@ -122,6 +124,7 @@ export function validate(
   typeInfo: TypeInfo = new TypeInfo(schema),
 ): ReadonlyArray<GraphQLError> {
   const maxErrors = options?.maxErrors ?? 100;
+  const hideSuggestions = options?.hideSuggestions ?? false;
 
   devAssert(documentAST, 'Must provide document.');
   // If the schema used for validation is invalid, throw an error.
@@ -145,6 +148,7 @@ export function validate(
       }
       errors.push(error);
     },
+    hideSuggestions,
   );
 
   // This uses a specialized visitor which runs multiple visitors in parallel,

@@ -3602,6 +3602,7 @@ export class GraphQLEnumType /* <T> */ {
   /**
    * Parses a GraphQL enum name from variable input.
    * @param inputValue - Runtime input value to parse.
+   * @param hideSuggestions - Omit suggestions from error messages.
    * @returns The internal enum value represented by the input name.
    * @example
    * ```ts
@@ -3621,12 +3622,15 @@ export class GraphQLEnumType /* <T> */ {
    * RGB.parseValue(2); // throws an error
    * ```
    */
-  parseValue(inputValue: unknown): Maybe<any> /* T */ {
+  parseValue(
+    inputValue: unknown,
+    hideSuggestions?: Maybe<boolean>,
+  ): Maybe<any> /* T */ {
     if (typeof inputValue !== 'string') {
       const valueStr = inspect(inputValue);
       throw new GraphQLError(
         `Enum "${this.name}" cannot represent non-string value: ${valueStr}.` +
-          didYouMeanEnumValue(this, valueStr),
+          (hideSuggestions ? '' : didYouMeanEnumValue(this, valueStr)),
       );
     }
 
@@ -3634,7 +3638,7 @@ export class GraphQLEnumType /* <T> */ {
     if (enumValue == null) {
       throw new GraphQLError(
         `Value "${inputValue}" does not exist in "${this.name}" enum.` +
-          didYouMeanEnumValue(this, inputValue),
+          (hideSuggestions ? '' : didYouMeanEnumValue(this, inputValue)),
       );
     }
     return enumValue.value;
@@ -3644,6 +3648,7 @@ export class GraphQLEnumType /* <T> */ {
    * Parses a GraphQL enum name from an AST value literal.
    * @param valueNode - AST value literal to parse.
    * @param _variables - Runtime variable values; ignored because enum literals cannot contain variables.
+   * @param hideSuggestions - Omit suggestions from error messages.
    * @returns The internal enum value represented by the literal.
    * @example
    * ```ts
@@ -3666,13 +3671,14 @@ export class GraphQLEnumType /* <T> */ {
   parseLiteral(
     valueNode: ValueNode,
     _variables: Maybe<ObjMap<unknown>>,
+    hideSuggestions?: Maybe<boolean>,
   ): Maybe<any> /* T */ {
     // Note: variables will be resolved to a value before calling this function.
     if (valueNode.kind !== Kind.ENUM) {
       const valueStr = print(valueNode);
       throw new GraphQLError(
         `Enum "${this.name}" cannot represent non-enum value: ${valueStr}.` +
-          didYouMeanEnumValue(this, valueStr),
+          (hideSuggestions ? '' : didYouMeanEnumValue(this, valueStr)),
         { nodes: valueNode },
       );
     }
@@ -3682,7 +3688,7 @@ export class GraphQLEnumType /* <T> */ {
       const valueStr = print(valueNode);
       throw new GraphQLError(
         `Value "${valueStr}" does not exist in "${this.name}" enum.` +
-          didYouMeanEnumValue(this, valueStr),
+          (hideSuggestions ? '' : didYouMeanEnumValue(this, valueStr)),
         { nodes: valueNode },
       );
     }
