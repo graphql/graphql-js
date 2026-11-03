@@ -8,7 +8,7 @@ import { GraphQLSchema } from '../../type/schema';
 import { execute } from '../execute';
 
 describe('defaultTypeResolver promise cleanup', () => {
-  for (const throws of [false]) {
+  for (const throws of [false, true]) {
     it(`observes earlier rejections when a later type ${
       throws ? 'throws' : 'matches'
     }`, async () => {

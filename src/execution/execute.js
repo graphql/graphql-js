@@ -1180,23 +1180,36 @@ export const defaultTypeResolver: GraphQLTypeResolver<mixed, mixed> = function (
   const possibleTypes = info.schema.getPossibleTypes(abstractType);
   const promisedIsTypeOfResults = [];
 
-  for (let i = 0; i < possibleTypes.length; i++) {
-    const type = possibleTypes[i];
+  try {
+    for (let i = 0; i < possibleTypes.length; i++) {
+      const type = possibleTypes[i];
 
-    if (type.isTypeOf) {
-      const isTypeOfResult = type.isTypeOf(value, contextValue, info);
+      if (type.isTypeOf) {
+        const isTypeOfResult = type.isTypeOf(value, contextValue, info);
 
-      if (isPromise(isTypeOfResult)) {
-        promisedIsTypeOfResults[i] = isTypeOfResult;
-      } else if (isTypeOfResult) {
-        if (promisedIsTypeOfResults.length) {
-          Promise.all(promisedIsTypeOfResults).catch(() => {
-            /* Ignore unused results. */
-          });
+        if (isPromise(isTypeOfResult)) {
+          promisedIsTypeOfResults[i] = isTypeOfResult;
+        } else if (isTypeOfResult) {
+          if (promisedIsTypeOfResults.length) {
+            Promise.all(promisedIsTypeOfResults).catch(() => {
+              /* Ignore unused results. */
+            });
+          }
+          return type.name;
         }
-        return type.name;
       }
     }
+  } catch (error) {
+    if (promisedIsTypeOfResults.length) {
+      return Promise.all(
+        promisedIsTypeOfResults.map((promise) =>
+          Promise.resolve(promise).catch(() => undefined),
+        ),
+      ).then(() => {
+        throw error;
+      });
+    }
+    throw error;
   }
 
   if (promisedIsTypeOfResults.length) {
