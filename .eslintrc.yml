@@ -12,6 +12,8 @@ plugins:
 settings:
   node:
     tryExtensions: ['.js', '.jsx', '.json', '.node', '.ts', '.d.ts']
+  # Avoid parsing large external dependencies during import checks.
+  import/ignore: ['node_modules']
   jsdoc:
     mode: typescript
     ignoreInternal: true
@@ -970,9 +972,6 @@ overrides:
       no-console: off
       no-await-in-loop: off
   - files: 'resources/**'
-    settings:
-      # TypeScript checks tooling imports; skip bundled dependency internals.
-      import/ignore: ['node_modules']
     env:
       node: true
     rules:
