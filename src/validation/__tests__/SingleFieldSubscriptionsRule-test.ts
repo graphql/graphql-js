@@ -1,8 +1,14 @@
+import { expect } from 'chai';
 import { describe, it } from 'mocha';
+
+import { Kind } from '../../language/kinds';
+import { parse } from '../../language/parser';
+import { visit } from '../../language/visitor';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
 import { SingleFieldSubscriptionsRule } from '../rules/SingleFieldSubscriptionsRule';
+import { validate } from '../validate';
 
 import { expectValidationErrorsWithSchema } from './harness';
 
@@ -44,6 +50,40 @@ const schema = buildSchema(`
 `);
 
 describe('Validate: Subscriptions with single field', () => {
+  it('accounts for include and custom subscription directives', () => {
+    const document = parse(
+      'subscription { importantEmails @include(if: true) @custom }',
+    );
+    expect(
+      validate(schema, document, [SingleFieldSubscriptionsRule]),
+    ).to.deep.equal([]);
+  });
+  it('preserves errors for directive AST nodes without argument arrays', () => {
+    const document = visit(parse('subscription { importantEmails @include }'), {
+      [Kind.DIRECTIVE](node) {
+        return { ...node, arguments: undefined };
+      },
+    });
+    expect(() =>
+      validate(schema, document, [SingleFieldSubscriptionsRule]),
+    ).to.throw('Argument "if" of required type "Boolean!" was not provided.');
+  });
+  it('bounds repeated subscription fragment and directive work', () => {
+    const operations = Array.from(
+      { length: 300 },
+      (_, i) => `subscription S${i} { ...F }`,
+    ).join('\n');
+    const fragment = `fragment F on SubscriptionRoot { ${'importantEmails @skip(if: false) '.repeat(
+      100,
+    )} }`;
+    const errors = validate(schema, parse(operations + fragment), [
+      SingleFieldSubscriptionsRule,
+    ]);
+    expect(errors.map((error) => error.message)).to.deep.equal([
+      'Validation aborted.',
+    ]);
+  });
+
   it('valid subscription', () => {
     expectValid(`
       subscription ImportantEmails {
