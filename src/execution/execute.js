@@ -125,6 +125,7 @@ export type FormattedExecutionResult = {|
 |};
 
 export type ExecutionArgs = {|
+  hideSuggestions?: ?boolean,
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: mixed,
@@ -230,6 +231,7 @@ function executeImpl(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    args.hideSuggestions,
   );
 
   // Return early errors if execution context failed.
@@ -304,6 +306,7 @@ export function buildExecutionContext(
   operationName: ?string,
   fieldResolver: ?GraphQLFieldResolver<mixed, mixed>,
   typeResolver?: ?GraphQLTypeResolver<mixed, mixed>,
+  hideSuggestions?: ?boolean,
 ): $ReadOnlyArray<GraphQLError> | ExecutionContext {
   let operation: OperationDefinitionNode | void;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
@@ -343,7 +346,7 @@ export function buildExecutionContext(
     schema,
     variableDefinitions,
     rawVariableValues ?? {},
-    { maxErrors: 50 },
+    { maxErrors: 50, hideSuggestions },
   );
 
   if (coercedVariableValues.errors) {

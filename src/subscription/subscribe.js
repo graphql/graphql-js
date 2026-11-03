@@ -26,6 +26,7 @@ import { getOperationRootType } from '../utilities/getOperationRootType';
 import mapAsyncIterator from './mapAsyncIterator';
 
 export type SubscriptionArgs = {|
+  hideSuggestions?: ?boolean,
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: mixed,
@@ -132,6 +133,7 @@ function subscribeImpl(
     variableValues,
     operationName,
     subscribeFieldResolver,
+    args.hideSuggestions,
   );
 
   // For each payload yielded from a subscription, map it over the normal
@@ -142,6 +144,7 @@ function subscribeImpl(
   // "ExecuteQuery" algorithm, for which `execute` is also used.
   const mapSourceToResponse = (payload) =>
     execute({
+      hideSuggestions: args.hideSuggestions,
       schema,
       document,
       rootValue: payload,
@@ -201,6 +204,7 @@ export function createSourceEventStream(
   variableValues?: ?{ +[variable: string]: mixed, ... },
   operationName?: ?string,
   fieldResolver?: ?GraphQLFieldResolver<any, any>,
+  hideSuggestions?: ?boolean,
 ): Promise<AsyncIterable<mixed> | ExecutionResult> {
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
@@ -217,6 +221,8 @@ export function createSourceEventStream(
       variableValues,
       operationName,
       fieldResolver,
+      undefined,
+      hideSuggestions,
     );
 
     resolve(

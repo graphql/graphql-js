@@ -41,6 +41,7 @@ import { ExecutionResult } from './execution/execute';
  *    value or method on the source value with the field's name).
  */
 export interface GraphQLArgs {
+  hideSuggestions?: Maybe<boolean>;
   schema: GraphQLSchema;
   source: string | Source;
   rootValue?: any;

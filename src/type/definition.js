@@ -1343,12 +1343,12 @@ export class GraphQLEnumType /* <T> */ {
     return enumValue.name;
   }
 
-  parseValue(inputValue: mixed): ?any /* T */ {
+  parseValue(inputValue: mixed, hideSuggestions?: ?boolean): ?any /* T */ {
     if (typeof inputValue !== 'string') {
       const valueStr = inspect(inputValue);
       throw new GraphQLError(
         `Enum "${this.name}" cannot represent non-string value: ${valueStr}.` +
-          didYouMeanEnumValue(this, valueStr),
+          (hideSuggestions === true ? '' : didYouMeanEnumValue(this, valueStr)),
       );
     }
 
@@ -1356,19 +1356,25 @@ export class GraphQLEnumType /* <T> */ {
     if (enumValue == null) {
       throw new GraphQLError(
         `Value "${inputValue}" does not exist in "${this.name}" enum.` +
-          didYouMeanEnumValue(this, inputValue),
+          (hideSuggestions === true
+            ? ''
+            : didYouMeanEnumValue(this, inputValue)),
       );
     }
     return enumValue.value;
   }
 
-  parseLiteral(valueNode: ValueNode, _variables: ?ObjMap<mixed>): ?any /* T */ {
+  parseLiteral(
+    valueNode: ValueNode,
+    _variables: ?ObjMap<mixed>,
+    hideSuggestions?: ?boolean,
+  ): ?any /* T */ {
     // Note: variables will be resolved to a value before calling this function.
     if (valueNode.kind !== Kind.ENUM) {
       const valueStr = print(valueNode);
       throw new GraphQLError(
         `Enum "${this.name}" cannot represent non-enum value: ${valueStr}.` +
-          didYouMeanEnumValue(this, valueStr),
+          (hideSuggestions === true ? '' : didYouMeanEnumValue(this, valueStr)),
         valueNode,
       );
     }
@@ -1378,7 +1384,7 @@ export class GraphQLEnumType /* <T> */ {
       const valueStr = print(valueNode);
       throw new GraphQLError(
         `Value "${valueStr}" does not exist in "${this.name}" enum.` +
-          didYouMeanEnumValue(this, valueStr),
+          (hideSuggestions === true ? '' : didYouMeanEnumValue(this, valueStr)),
         valueNode,
       );
     }

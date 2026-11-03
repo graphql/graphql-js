@@ -52,10 +52,12 @@ export function KnownTypeNamesRule(
           return;
         }
 
-        const suggestedTypes = suggestionList(
-          typeName,
-          isSDL ? standardTypeNames.concat(typeNames) : typeNames,
-        );
+        const suggestedTypes = context.hideSuggestions
+          ? []
+          : suggestionList(
+              typeName,
+              isSDL ? standardTypeNames.concat(typeNames) : typeNames,
+            );
         context.reportError(
           new GraphQLError(
             `Unknown type "${typeName}".` + didYouMean(suggestedTypes),

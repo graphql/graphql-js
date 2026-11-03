@@ -16,6 +16,7 @@ import type { GraphQLInputType } from '../type/definition';
 import {
   isLeafType,
   isInputObjectType,
+  isEnumType,
   isListType,
   isNonNullType,
 } from '../type/definition';
@@ -32,9 +33,17 @@ type OnErrorCB = (
 export function coerceInputValue(
   inputValue: mixed,
   type: GraphQLInputType,
+  // eslint-disable-next-line default-param-last
   onError: OnErrorCB = defaultOnError,
+  hideSuggestions?: ?boolean,
 ): mixed {
-  return coerceInputValueImpl(inputValue, type, onError);
+  return coerceInputValueImpl(
+    inputValue,
+    type,
+    onError,
+    undefined,
+    hideSuggestions,
+  );
 }
 
 function defaultOnError(
@@ -55,10 +64,17 @@ function coerceInputValueImpl(
   type: GraphQLInputType,
   onError: OnErrorCB,
   path: Path | void,
+  hideSuggestions?: ?boolean,
 ): mixed {
   if (isNonNullType(type)) {
     if (inputValue != null) {
-      return coerceInputValueImpl(inputValue, type.ofType, onError, path);
+      return coerceInputValueImpl(
+        inputValue,
+        type.ofType,
+        onError,
+        path,
+        hideSuggestions,
+      );
     }
     onError(
       pathToArray(path),
@@ -80,7 +96,13 @@ function coerceInputValueImpl(
 
     const coercedList = safeArrayFrom(inputValue, (itemValue, index) => {
       const itemPath = addPath(path, index, undefined);
-      return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
+      return coerceInputValueImpl(
+        itemValue,
+        itemType,
+        onError,
+        itemPath,
+        hideSuggestions,
+      );
     });
 
     if (coercedList != null) {
@@ -88,7 +110,15 @@ function coerceInputValueImpl(
     }
 
     // Lists accept a non-list value as a list of one.
-    return [coerceInputValueImpl(inputValue, itemType, onError, path)];
+    return [
+      coerceInputValueImpl(
+        inputValue,
+        itemType,
+        onError,
+        path,
+        hideSuggestions,
+      ),
+    ];
   }
 
   if (isInputObjectType(type)) {
@@ -128,16 +158,17 @@ function coerceInputValueImpl(
         field.type,
         onError,
         addPath(path, field.name, type.name),
+        hideSuggestions,
       );
     }
 
     // Ensure every provided field is defined.
     for (const fieldName of Object.keys(inputValue)) {
       if (!fieldDefs[fieldName]) {
-        const suggestions = suggestionList(
-          fieldName,
-          Object.keys(type.getFields()),
-        );
+        const suggestions =
+          hideSuggestions === true
+            ? []
+            : suggestionList(fieldName, Object.keys(type.getFields()));
         onError(
           pathToArray(path),
           inputValue,
@@ -159,7 +190,9 @@ function coerceInputValueImpl(
     // which can throw to indicate failure. If it throws, maintain a reference
     // to the original error.
     try {
-      parseResult = type.parseValue(inputValue);
+      parseResult = isEnumType(type)
+        ? type.parseValue(inputValue, hideSuggestions)
+        : type.parseValue(inputValue);
     } catch (error) {
       if (error instanceof GraphQLError) {
         onError(pathToArray(path), inputValue, error);

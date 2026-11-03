@@ -1,4 +1,5 @@
 import { SetMap } from '../jsutils/SetMap';
+
 import type { ObjMap } from '../jsutils/ObjMap';
 
 import type { GraphQLError } from '../error/GraphQLError';
@@ -109,6 +110,8 @@ export class ASTValidationContext {
     return spreads;
   }
 
+  // TODO: In the next major version, accept multiple operations here and
+  // remove getRecursivelyReferencedFragmentsForOperations.
   getRecursivelyReferencedFragments(
     operation: OperationDefinitionNode,
   ): $ReadOnlyArray<FragmentDefinitionNode> {
@@ -164,6 +167,7 @@ export class ASTValidationContext {
 export type ASTValidationRule = (ASTValidationContext) => ASTVisitor;
 
 export class SDLValidationContext extends ASTValidationContext {
+  hideSuggestions: boolean;
   _schema: ?GraphQLSchema;
 
   constructor(
@@ -172,6 +176,7 @@ export class SDLValidationContext extends ASTValidationContext {
     onError: (err: GraphQLError) => void,
   ) {
     super(ast, onError);
+    this.hideSuggestions = false;
     this._schema = schema;
   }
 
@@ -183,6 +188,7 @@ export class SDLValidationContext extends ASTValidationContext {
 export type SDLValidationRule = (SDLValidationContext) => ASTVisitor;
 
 export class ValidationContext extends ASTValidationContext {
+  hideSuggestions: boolean;
   _schema: GraphQLSchema;
   _typeInfo: TypeInfo;
   _variableUsages: Map<NodeWithSelectionSet, $ReadOnlyArray<VariableUsage>>;
@@ -196,8 +202,10 @@ export class ValidationContext extends ASTValidationContext {
     ast: DocumentNode,
     typeInfo: TypeInfo,
     onError: (err: GraphQLError) => void,
+    hideSuggestions?: ?boolean,
   ) {
     super(ast, onError);
+    this.hideSuggestions = hideSuggestions ?? false;
     this._schema = schema;
     this._typeInfo = typeInfo;
     this._variableUsages = new Map();

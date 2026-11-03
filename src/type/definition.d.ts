@@ -787,10 +787,11 @@ export class GraphQLEnumType {
   getValues(): Array<GraphQLEnumValue>;
   getValue(name: string): Maybe<GraphQLEnumValue>;
   serialize(value: any): Maybe<string>;
-  parseValue(value: any): Maybe<any>;
+  parseValue(value: any, hideSuggestions?: Maybe<boolean>): Maybe<any>;
   parseLiteral(
     valueNode: ValueNode,
     _variables: Maybe<{ [key: string]: any }>,
+    hideSuggestions?: Maybe<boolean>,
   ): Maybe<any>;
 
   toConfig(): GraphQLEnumTypeConfig & {

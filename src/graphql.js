@@ -56,6 +56,7 @@ import { execute } from './execution/execute';
  *    `__typename` field or alternatively calls the `isTypeOf` method).
  */
 export type GraphQLArgs = {|
+  hideSuggestions?: ?boolean,
   schema: GraphQLSchema,
   source: string | Source,
   rootValue?: mixed,
@@ -187,13 +188,16 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
   }
 
   // Validate
-  const validationErrors = validate(schema, document);
+  const validationErrors = validate(schema, document, undefined, undefined, {
+    hideSuggestions: args.hideSuggestions,
+  });
   if (validationErrors.length > 0) {
     return { errors: validationErrors };
   }
 
   // Execute
   return execute({
+    hideSuggestions: args.hideSuggestions,
     schema,
     document,
     rootValue,

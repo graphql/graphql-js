@@ -31,7 +31,7 @@ export function validate(
   documentAST: DocumentNode,
   rules?: ReadonlyArray<ValidationRule>,
   typeInfo?: TypeInfo,
-  options?: { maxErrors?: number },
+  options?: { maxErrors?: number; hideSuggestions?: boolean | null },
 ): ReadonlyArray<GraphQLError>;
 
 /**

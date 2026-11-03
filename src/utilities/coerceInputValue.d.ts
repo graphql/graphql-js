@@ -14,4 +14,5 @@ export function coerceInputValue(
   inputValue: any,
   type: GraphQLInputType,
   onError?: OnErrorCB,
+  hideSuggestions?: boolean | null,
 ): any;
