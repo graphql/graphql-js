@@ -14,7 +14,7 @@ import type {
   VariableDefinitionNode,
 } from '../language/ast';
 import { Kind } from '../language/kinds';
-import { print } from '../language/printer';
+import { printForError as print } from '../language/printer';
 
 import type { GraphQLField } from '../type/definition';
 import { isInputType, isNonNullType } from '../type/definition';
