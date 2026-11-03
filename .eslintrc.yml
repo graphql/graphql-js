@@ -13,6 +13,8 @@ plugins:
 settings:
   node:
     tryExtensions: ['.js', '.json', '.node', '.ts', '.d.ts']
+  # Avoid parsing large external dependencies during import checks.
+  import/ignore: ['node_modules']
 
 rules:
   ##############################################################################
