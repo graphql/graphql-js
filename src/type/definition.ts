@@ -1724,9 +1724,9 @@ export interface GraphQLScalarTypeExtensions {
  * const OddType = new GraphQLScalarType({
  *   name: 'Odd',
  *   serialize: (value) => {
- *     if (!Number.isFinite(value)) {
+ *     if (typeof value !== 'number' || !Number.isInteger(value)) {
  *       throw new Error(
- *         `Scalar "Odd" cannot represent "${value}" since it is not a finite number.`,
+ *         `Scalar "Odd" cannot represent "${value}" since it is not an integer.`,
  *       );
  *     }
  *
@@ -1736,6 +1736,10 @@ export interface GraphQLScalarTypeExtensions {
  *     return value;
  *   }
  * });
+ *
+ * OddType.serialize(3); // => 3
+ * OddType.serialize(2); // throws an error
+ * OddType.serialize(1.5); // throws an error
  * ```
  */
 export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
@@ -1773,31 +1777,28 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
    *   extend scalar Odd @specifiedBy(url: "https://example.com/odd-v2")
    * `);
    *
+   * const ensureOdd = (value: unknown) => {
+   *   if (
+   *     typeof value !== 'number' ||
+   *     !Number.isInteger(value) ||
+   *     value % 2 === 0
+   *   ) {
+   *     throw new TypeError('Odd can only accept odd integers.');
+   *   }
+   *   return value;
+   * };
+   *
    * const Odd = new GraphQLScalarType({
    *   name: 'Odd',
    *   description: 'Odd integer values.',
    *   specifiedByURL: 'https://example.com/odd',
-   *   serialize: (value) => {
-   *     if (typeof value !== 'number' || value % 2 === 0) {
-   *       throw new TypeError('Odd can only serialize odd numbers.');
-   *     }
-   *     return value;
-   *   },
-   *   parseValue: (value) => {
-   *     if (typeof value !== 'number' || value % 2 === 0) {
-   *       throw new TypeError('Odd can only parse odd numbers.');
-   *     }
-   *     return value;
-   *   },
+   *   serialize: ensureOdd,
+   *   parseValue: ensureOdd,
    *   parseLiteral: (ast) => {
    *     if (ast.kind !== Kind.INT) {
    *       throw new TypeError('Odd can only parse integer literals.');
    *     }
-   *     const value = Number(ast.value);
-   *     if (value % 2 === 0) {
-   *       throw new TypeError('Odd can only parse odd integer literals.');
-   *     }
-   *     return value;
+   *     return ensureOdd(Number(ast.value));
    *   },
    *   extensions: { numeric: true },
    *   astNode: document.definitions[0],
@@ -1808,6 +1809,8 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
    * Odd.specifiedByURL; // => 'https://example.com/odd'
    * Odd.serialize(3); // => 3
    * Odd.parseValue(5); // => 5
+   * Odd.parseValue(2); // throws an error
+   * Odd.parseValue(1.5); // throws an error
    * Odd.extensions; // => { numeric: true }
    * ```
    */
