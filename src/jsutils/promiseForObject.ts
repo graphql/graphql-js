@@ -1,3 +1,4 @@
+import { CompactExecutionResultMap } from './CompactExecutionResultMap';
 import type { ObjMap } from './ObjMap';
 
 /**
@@ -13,7 +14,10 @@ export function promiseForObject<T>(
   object: ObjMap<Promise<T>>,
 ): Promise<ObjMap<T>> {
   return Promise.all(Object.values(object)).then((resolvedValues) => {
-    const resolvedObject = Object.create(null);
+    const resolvedObject = Object.setPrototypeOf(
+      new CompactExecutionResultMap(),
+      null,
+    );
     for (const [i, key] of Object.keys(object).entries()) {
       resolvedObject[key] = resolvedValues[i];
     }
