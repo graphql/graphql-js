@@ -288,9 +288,7 @@ Returns a JSON representation of this location.
 import { parse } from 'graphql/language';
 
 const document = parse('{ hello }');
-const location = document.loc?.toJSON();
-
-location; // => { start: 0, end: 9 }
+const location = document.loc?.toJSON(); // => { start: 0, end: 9 }
 ```
 
 <hr className="api-item-divider" />
@@ -453,9 +451,7 @@ Returns a JSON representation of this token.
 import { Lexer, Source } from 'graphql/language';
 
 const lexer = new Lexer(new Source('{ hello }'));
-const token = lexer.advance().toJSON();
-
-token; // => { kind: '{', value: undefined, line: 1, column: 1 }
+const token = lexer.advance().toJSON(); // => { kind: '{', value: undefined, line: 1, column: 1 }
 ```
 
 ### Types
@@ -3958,9 +3954,7 @@ line and column as a SourceLocation.
 import { Source, getLocation } from 'graphql/language';
 
 const source = new Source('type Query { hello: String }');
-const location = getLocation(source, 13);
-
-location; // => { line: 1, column: 14 }
+const location = getLocation(source, 13); // => { line: 1, column: 14 }
 ```
 
 <hr className="api-item-divider" />
@@ -4024,9 +4018,7 @@ const document = parse('type Query { hello: String }');
 const location = document.definitions[0].loc;
 
 if (location) {
-  const printed = printLocation(location);
-
-  printed; // => 'GraphQL request:1:1\n1 | type Query { hello: String }\n  | ^'
+  const printed = printLocation(location); // => 'GraphQL request:1:1\n1 | type Query { hello: String }\n  | ^'
 }
 ```
 
@@ -4093,9 +4085,7 @@ Render a helpful description of the location in the GraphQL Source document.
 import { Source, printSourceLocation } from 'graphql/language';
 
 const source = new Source('type Query { hello: String }');
-const printed = printSourceLocation(source, { line: 1, column: 14 });
-
-printed; // => 'GraphQL request:1:14\n1 | type Query { hello: String }\n  |              ^'
+const printed = printSourceLocation(source, { line: 1, column: 14 }); // => 'GraphQL request:1:14\n1 | type Query { hello: String }\n  |              ^'
 ```
 
 ### Types
@@ -4230,7 +4220,7 @@ import { Lexer, Source, parse } from 'graphql/language';
 
 const document = parse('fragment A($var: Boolean) on Query { field }', {
   allowLegacyFragmentVariables: true,
-  maxTokens: 20,
+  maxLexicalTokens: 20,
   noLocation: true,
 });
 const directiveDocument = parse('directive @foo @bar on FIELD', {
@@ -4557,13 +4547,29 @@ in the source that they correspond to. This configuration flag<br />
 disables that behavior for performance or testing.</td>
     </tr>
     <tr>
-      <td>maxTokens?</td>
+      <td>maxLexicalTokens?</td>
       <td><ApiType parts={[["keyword", "number"]]} /></td>
-      <td>Parser CPU and memory usage is linear to the number of tokens in a document<br />
-however in extreme cases it becomes quadratic due to memory exhaustion.<br />
-Parsing happens before validation so even invalid queries can burn lots of<br />
-CPU time and memory.<br />
-To prevent this you can set a maximum number of tokens allowed within a document.</td>
+      <td>Parser CPU and memory usage is linear to the number of lexical tokens in a<br />
+document; however, in extreme cases it becomes quadratic due to memory<br />
+exhaustion. Parsing happens before validation, so even invalid queries can<br />
+consume significant CPU time and memory.<br />
+Use this option to limit the number of lexical tokens allowed in a document.<br />
+This does not limit the length of the source text or of an individual token.</td>
+    </tr>
+    <tr>
+      <td>maxComments?</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>Maximum number of comments.</td>
+    </tr>
+    <tr>
+      <td>maxSourceLength?</td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>Maximum source length in UTF-16 code units.</td>
+    </tr>
+    <tr>
+      <td>maxTokens? <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
+      <td><ApiType parts={[["keyword", "number"]]} /></td>
+      <td>Deprecated alias for <code>{"maxLexicalTokens"}</code>.</td>
     </tr>
     <tr>
       <td>allowLegacyFragmentVariables? <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
@@ -4590,7 +4596,7 @@ This syntax is not part of the GraphQL specification and may change.</td>
 
 The syntax is identical to normal, query-defined variables.
 
-```graphql
+```graphql prettier-ignore
 fragment A($var: Boolean = false) on T {
   ...
 }
@@ -4600,7 +4606,7 @@ fragment A($var: Boolean = false) on T {
 
 <div className="api-subsection-title">experimentalDirectivesOnDirectiveDefinitions Example</div>
 
-```graphql
+```graphql prettier-ignore
 directive @foo @bar on FIELD
 ```
 
@@ -4817,8 +4823,11 @@ Returns true when the AST node is a selection node.
 ```ts
 import { Kind, isSelectionNode } from 'graphql/language';
 
-const field = { kind: Kind.FIELD, name: { kind: Kind.NAME, value: 'hello' } };
-const document = { kind: Kind.DOCUMENT, definitions: [] };
+const field = {
+  kind: Kind.FIELD,
+  name: { kind: Kind.NAME, value: 'hello' },
+} as const;
+const document = { kind: Kind.DOCUMENT, definitions: [] } as const;
 
 isSelectionNode(field); // => true
 isSelectionNode(document); // => false
@@ -4943,7 +4952,11 @@ Returns true when the AST node is a constant value node.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { parseConstValue, parseValue, isConstValueNode } from 'graphql/language';
+import {
+  parseConstValue,
+  parseValue,
+  isConstValueNode,
+} from 'graphql/language';
 
 const value = parseConstValue('[42]');
 const variable = parseValue('$id');
@@ -5353,6 +5366,76 @@ isSchemaCoordinateNode(document); // => false
 
 #### print()
 
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 1</div>
+
+Prints an AST with indentation and inserted newlines disabled at the given depth.
+
+**Signature:**
+
+<ApiSignature parts={[["name", "print"], "(\n  ", ["parameter", "ast"], ": ", ["link", "ASTNode", "/api-v16/language#astnode"], ",\n  ", ["parameter", "options"], ": \u007b ", ["property", "maxIndentDepth"], "?: ", ["keyword", "number"], " \u007d,\n): ", ["keyword", "string"], ";"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ast</td>
+      <td><ApiType parts={[["link", "ASTNode", "/api-v16/language#astnode"]]} /></td>
+      <td>The GraphQL AST node to print.</td>
+    </tr>
+    <tr>
+      <td>options</td>
+      <td><ApiType parts={["\u007b ", ["property", "maxIndentDepth"], "?: ", ["keyword", "number"], " \u007d"]} /></td>
+      <td>Output configuration.<br />
+Indentation depth defaults to <code>{"Infinity"}</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Returns</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><ApiType parts={[["keyword", "string"]]} /></td>
+      <td>A string representation of the AST.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { parse, print } from 'graphql/language';
+
+print(parse('{ a { b } }'), { maxIndentDepth: 0 }); // => '{ a { b } }'
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Overload 2</div>
+
 Converts an AST into a string, using one set of reasonable
 formatting rules.
 
@@ -5408,9 +5491,7 @@ formatting rules.
 import { parse, print } from 'graphql';
 
 const ast = parse('{ hero { name } }');
-const text = print(ast);
-
-text; // => '{\n  hero {\n    name\n  }\n}'
+const text = print(ast); // => '{\n  hero {\n    name\n  }\n}'
 ```
 
 ## Category: Visiting
@@ -5576,7 +5657,7 @@ print(editedAST); // => '{\n  human {\n    name\n  }\n}'
 import { parse, visit } from 'graphql/language';
 
 const document = parse('{ hero { name } }');
-const fieldNames = [];
+const fieldNames: Array<string> = [];
 
 visit(document, {
   Field: (node) => {
@@ -5597,7 +5678,7 @@ fieldNames; // => ['hero', 'name']
 import { parse, visit } from 'graphql/language';
 
 const document = parse('{ hero { name } }');
-const events = [];
+const events: Array<string> = [];
 
 visit(document, {
   Field: {
@@ -5626,10 +5707,10 @@ let enterCount = 0;
 let leaveCount = 0;
 
 visit(document, {
-  enter: (node) => {
+  enter: () => {
     enterCount += 1;
   },
-  leave: (node) => {
+  leave: () => {
     leaveCount += 1;
   },
 });
@@ -5763,9 +5844,7 @@ const printed = visit(document, {
       return node.definitions.join('\n');
     },
   },
-});
-
-printed; // => 'hero { name }'
+}); // => 'hero { name }'
 ```
 
 <hr className="api-item-divider" />
@@ -5829,13 +5908,21 @@ If a prior visitor edits a node, no following visitors will see that node.
 import { parse, visit, visitInParallel } from 'graphql/language';
 
 const document = parse('{ hero { name } }');
-const events = [];
+const events: Array<string> = [];
 
 visit(
   document,
   visitInParallel([
-    { Field: (node) => { events.push(`field:${node.name.value}`); } },
-    { Name: (node) => { events.push(`name:${node.value}`); } },
+    {
+      Field: (node) => {
+        events.push(`field:${node.name.value}`);
+      },
+    },
+    {
+      Name: (node) => {
+        events.push(`name:${node.value}`);
+      },
+    },
   ]),
 );
 

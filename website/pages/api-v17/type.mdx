@@ -469,7 +469,9 @@ an object type.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-const PersonType = new GraphQLObjectType({
+import { GraphQLList, GraphQLObjectType } from 'graphql';
+
+const PersonType: GraphQLObjectType = new GraphQLObjectType({
   name: 'Person',
   fields: () => ({
     parents: { type: new GraphQLList(PersonType) },
@@ -655,6 +657,8 @@ usually the id field of a database row will never be null.
 <div className="api-subsection-title">Example</div>
 
 ```ts
+import { GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
+
 const RowType = new GraphQLObjectType({
   name: 'Row',
   fields: () => ({
@@ -887,10 +891,10 @@ Custom scalar behavior is defined via the following functions:
 ```ts
 import { GraphQLScalarType, Kind } from 'graphql';
 
-const ensureOdd = (value) => {
-  if (!Number.isFinite(value)) {
+const ensureOdd = (value: unknown) => {
+  if (typeof value !== 'number' || !Number.isInteger(value)) {
     throw new Error(
-      `Scalar "Odd" cannot represent "${value}" since it is not a finite number.`,
+      `Scalar "Odd" cannot represent "${value}" since it is not an integer.`,
     );
   }
 
@@ -915,6 +919,10 @@ const OddType = new GraphQLScalarType({
     return { kind: Kind.INT, value: String(ensureOdd(value)) };
   },
 });
+
+OddType.coerceInputValue(3); // => 3
+OddType.coerceInputValue(2); // throws an error
+OddType.coerceInputValue(1.5); // throws an error
 ```
 
 <hr className="api-subsection-divider" />
@@ -1215,6 +1223,8 @@ have a name, but most importantly describe their fields.
 <div className="api-subsection-title">Example 1</div>
 
 ```ts
+import { GraphQLInt, GraphQLObjectType, GraphQLString } from 'graphql';
+
 const AddressType = new GraphQLObjectType({
   name: 'Address',
   fields: {
@@ -1239,7 +1249,9 @@ itself in a field, you can use a function expression (aka a closure or a
 thunk) to supply the fields lazily.
 
 ```ts
-const PersonType = new GraphQLObjectType({
+import { GraphQLObjectType, GraphQLString } from 'graphql';
+
+const PersonType: GraphQLObjectType = new GraphQLObjectType({
   name: 'Person',
   fields: () => ({
     name: { type: GraphQLString },
@@ -1628,6 +1640,8 @@ when the field is resolved.
 <div className="api-subsection-title">Example</div>
 
 ```ts
+import { GraphQLInterfaceType, GraphQLString } from 'graphql';
+
 const EntityType = new GraphQLInterfaceType({
   name: 'Entity',
   fields: {
@@ -2028,15 +2042,28 @@ to determine which type is actually used when the field is resolved.
 <div className="api-subsection-title">Example</div>
 
 ```ts
+import { GraphQLObjectType, GraphQLString, GraphQLUnionType } from 'graphql';
+
+class Dog {}
+class Cat {}
+const DogType = new GraphQLObjectType({
+  name: 'Dog',
+  fields: { name: { type: GraphQLString } },
+});
+const CatType = new GraphQLObjectType({
+  name: 'Cat',
+  fields: { name: { type: GraphQLString } },
+});
+
 const PetType = new GraphQLUnionType({
   name: 'Pet',
   types: [DogType, CatType],
   resolveType: (value) => {
     if (value instanceof Dog) {
-      return DogType;
+      return 'Dog';
     }
     if (value instanceof Cat) {
-      return CatType;
+      return 'Cat';
     }
   },
 });
@@ -2948,8 +2975,8 @@ const RGB = new GraphQLEnumType({
   },
 });
 
-RGB.parseLiteral(parseValue('RED')); // => 0
-RGB.parseLiteral(parseValue('"RED"')); // throws an error
+RGB.parseLiteral(parseValue('RED'), undefined); // => 0
+RGB.parseLiteral(parseValue('"RED"'), undefined); // throws an error
 ```
 
 <hr className="api-subsection-divider" />
@@ -3032,7 +3059,7 @@ RGB.coerceInputLiteral(parseConstValue('"RED"'), true); // throws an error
 
 ##### valueToLiteral()
 
-Converts a runtime enum value to a GraphQL enum value AST node.
+Converts an external enum value name to a GraphQL enum value AST node.
 
 **Signature:**
 
@@ -3054,7 +3081,7 @@ Converts a runtime enum value to a GraphQL enum value AST node.
     <tr>
       <td>value</td>
       <td><ApiType parts={[["keyword", "unknown"]]} /></td>
-      <td>Runtime enum value to convert.</td>
+      <td>External enum value name to convert.</td>
     </tr>
   </tbody>
 </table>
@@ -3083,6 +3110,7 @@ Converts a runtime enum value to a GraphQL enum value AST node.
 <div className="api-subsection-title">Example</div>
 
 ```ts
+import assert from 'node:assert/strict';
 import { print } from 'graphql/language';
 import { GraphQLEnumType } from 'graphql/type';
 
@@ -3095,8 +3123,11 @@ const RGB = new GraphQLEnumType({
   },
 });
 
-print(RGB.valueToLiteral(2)); // => 'BLUE'
-RGB.valueToLiteral(3); // => undefined
+const literal = RGB.valueToLiteral('BLUE');
+assert(literal);
+print(literal); // => 'BLUE'
+RGB.valueToLiteral(2); // => undefined
+RGB.valueToLiteral('PURPLE'); // => undefined
 ```
 
 <hr className="api-subsection-divider" />
@@ -3266,6 +3297,8 @@ Using `NonNull` will ensure that a value must be provided by the query
 <div className="api-subsection-title">Example</div>
 
 ```ts
+import { GraphQLFloat, GraphQLInputObjectType, GraphQLNonNull } from 'graphql';
+
 const GeoPoint = new GraphQLInputObjectType({
   name: 'GeoPoint',
   fields: {
@@ -3387,6 +3420,8 @@ Returns the fields defined by this type.
 <div className="api-subsection-title">Example</div>
 
 ```ts
+import { Kind } from 'graphql/language';
+import assert from 'node:assert/strict';
 import { buildSchema } from 'graphql/utilities';
 import { assertInputObjectType } from 'graphql/type';
 
@@ -3405,7 +3440,9 @@ const ReviewInput = assertInputObjectType(schema.getType('ReviewInput'));
 const fields = ReviewInput.getFields();
 
 Object.keys(fields); // => ['stars', 'commentary']
-fields.commentary.default; // => { literal: { kind: 'StringValue', value: '' } }
+const literal = fields.commentary.default?.literal;
+assert(literal?.kind === Kind.STRING);
+literal.value; // => ''
 ```
 
 <hr className="api-subsection-divider" />
@@ -4056,7 +4093,7 @@ import { buildSchema } from 'graphql/utilities';
 import { isField } from 'graphql/type';
 
 const schema = buildSchema('type Query { greeting: String }');
-const field = schema.getQueryType().getFields().greeting;
+const field = schema.getQueryType()?.getFields().greeting;
 
 isField(field); // => true
 isField(schema.getQueryType()); // => false
@@ -4121,7 +4158,7 @@ import { buildSchema } from 'graphql/utilities';
 import { assertField } from 'graphql/type';
 
 const schema = buildSchema('type Query { greeting: String }');
-const field = assertField(schema.getQueryType().getFields().greeting);
+const field = assertField(schema.getQueryType()?.getFields().greeting);
 
 field.name; // => 'greeting'
 assertField(schema.getQueryType()); // throws an error
@@ -4186,7 +4223,7 @@ import { buildSchema } from 'graphql/utilities';
 import { isArgument } from 'graphql/type';
 
 const schema = buildSchema('type Query { greeting(name: String): String }');
-const arg = schema.getQueryType().getFields().greeting.args[0];
+const arg = schema.getQueryType()?.getFields().greeting.args[0];
 
 isArgument(arg); // => true
 isArgument(schema.getQueryType()); // => false
@@ -4251,7 +4288,7 @@ import { buildSchema } from 'graphql/utilities';
 import { assertArgument } from 'graphql/type';
 
 const schema = buildSchema('type Query { greeting(name: String): String }');
-const arg = assertArgument(schema.getQueryType().getFields().greeting.args[0]);
+const arg = assertArgument(schema.getQueryType()?.getFields().greeting.args[0]);
 
 arg.name; // => 'name'
 assertArgument(schema.getQueryType()); // throws an error
@@ -6720,9 +6757,7 @@ import {
   assertNullableType,
 } from 'graphql/type';
 
-const nullableType = assertNullableType(GraphQLString);
-
-nullableType; // => GraphQLString
+const nullableType = assertNullableType(GraphQLString); // => GraphQLString
 assertNullableType(new GraphQLNonNull(GraphQLString)); // throws an error
 ```
 
@@ -7173,7 +7208,7 @@ const schema = buildSchema(`
 
 const inputArg = schema.getQueryType()?.getFields().review.args[0];
 
-getNamedType(inputArg?.type).toString(); // => 'ReviewInput'
+getNamedType(inputArg?.type)?.toString(); // => 'ReviewInput'
 ```
 
 <hr className="api-subsection-divider" />
@@ -7246,7 +7281,7 @@ const schema = buildSchema(`
 
 const usersField = schema.getQueryType()?.getFields().users;
 
-getNamedType(usersField?.type).toString(); // => 'User'
+getNamedType(usersField?.type)?.toString(); // => 'User'
 ```
 
 <hr className="api-subsection-divider" />
@@ -7459,11 +7494,8 @@ Resolves a thunked readonly array.
 ```ts
 import { GraphQLString, resolveReadonlyArrayThunk } from 'graphql/type';
 
-const lazyFields = resolveReadonlyArrayThunk(() => [GraphQLString]);
-const fields = resolveReadonlyArrayThunk([GraphQLString]);
-
-lazyFields; // => [GraphQLString]
-fields; // => [GraphQLString]
+const lazyFields = resolveReadonlyArrayThunk(() => [GraphQLString]); // => [GraphQLString]
+const fields = resolveReadonlyArrayThunk([GraphQLString]); // => [GraphQLString]
 ```
 
 <hr className="api-item-divider" />
@@ -7609,14 +7641,13 @@ Returns true when the argument is non-null and has no default value.
 
 ```ts
 import {
-  GraphQLArgument,
-  GraphQLField,
   GraphQLInt,
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLString,
   isRequiredArgument,
 } from 'graphql/type';
+import { GraphQLArgument, GraphQLField } from 'graphql/type/definition';
 
 const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
 const field = new GraphQLField(Query, 'reviews', { type: GraphQLString });
@@ -7692,13 +7723,13 @@ Returns true when the input field is non-null and has no default value.
 
 ```ts
 import {
-  GraphQLInputField,
   GraphQLInputObjectType,
   GraphQLInt,
   GraphQLNonNull,
   GraphQLString,
   isRequiredInputField,
 } from 'graphql/type';
+import { GraphQLInputField } from 'graphql/type/definition';
 
 const ReviewInput = new GraphQLInputObjectType({
   name: 'ReviewInput',
@@ -8536,7 +8567,7 @@ Use <code>{"track(...)"}</code> for un-awaited async side effects:<br />
     <tr>
       <td>fieldName</td>
       <td><ApiType parts={[["keyword", "string"]]} /></td>
-      <td>The field name referenced by this schema coordinate.</td>
+      <td>Name of the field being resolved.</td>
     </tr>
     <tr>
       <td>fieldNodes</td>
@@ -8556,12 +8587,12 @@ Use <code>{"track(...)"}</code> for un-awaited async side effects:<br />
     <tr>
       <td>path</td>
       <td><ApiType parts={[["link", "Path", "/api-v17/type#responsepath"]]} /></td>
-      <td>Response path where this error occurred during execution.</td>
+      <td>Response path of the field being resolved.</td>
     </tr>
     <tr>
       <td>schema</td>
       <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
-      <td>The schema used for validation or execution.</td>
+      <td>The schema being executed.</td>
     </tr>
     <tr>
       <td>fragments</td>
@@ -8996,7 +9027,8 @@ Returns a normalized configuration object for this field.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { GraphQLField, GraphQLObjectType, GraphQLString } from 'graphql/type';
+import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+import { GraphQLField } from 'graphql/type/definition';
 
 const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
 const field = new GraphQLField(Query, 'greeting', {
@@ -9042,7 +9074,8 @@ Returns this field as a schema coordinate string.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { GraphQLField, GraphQLObjectType, GraphQLString } from 'graphql/type';
+import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+import { GraphQLField } from 'graphql/type/definition';
 
 const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
 const field = new GraphQLField(Query, 'greeting', { type: GraphQLString });
@@ -9084,7 +9117,8 @@ Returns the JSON representation used when this object is serialized.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { GraphQLField, GraphQLObjectType, GraphQLString } from 'graphql/type';
+import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+import { GraphQLField } from 'graphql/type/definition';
 
 const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
 const field = new GraphQLField(Query, 'greeting', { type: GraphQLString });
@@ -9194,12 +9228,8 @@ Returns a normalized configuration object for this argument.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import {
-  GraphQLArgument,
-  GraphQLField,
-  GraphQLObjectType,
-  GraphQLString,
-} from 'graphql/type';
+import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+import { GraphQLArgument, GraphQLField } from 'graphql/type/definition';
 
 const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
 const field = new GraphQLField(Query, 'greeting', { type: GraphQLString });
@@ -9208,7 +9238,7 @@ const arg = new GraphQLArgument(field, 'name', {
   default: { value: 'world' },
 });
 
-arg.toConfig().default.value; // => 'world'
+arg.toConfig().default?.value; // => 'world'
 ```
 
 <hr className="api-subsection-divider" />
@@ -9245,12 +9275,8 @@ Returns this argument as a schema coordinate string.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import {
-  GraphQLArgument,
-  GraphQLField,
-  GraphQLObjectType,
-  GraphQLString,
-} from 'graphql/type';
+import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+import { GraphQLArgument, GraphQLField } from 'graphql/type/definition';
 
 const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
 const field = new GraphQLField(Query, 'greeting', { type: GraphQLString });
@@ -9293,12 +9319,8 @@ Returns the JSON representation used when this object is serialized.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import {
-  GraphQLArgument,
-  GraphQLField,
-  GraphQLObjectType,
-  GraphQLString,
-} from 'graphql/type';
+import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+import { GraphQLArgument, GraphQLField } from 'graphql/type/definition';
 
 const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
 const field = new GraphQLField(Query, 'greeting', { type: GraphQLString });
@@ -9775,7 +9797,8 @@ Returns a normalized configuration object for this enum value.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { GraphQLEnumType, GraphQLEnumValue } from 'graphql/type';
+import { GraphQLEnumType } from 'graphql/type';
+import { GraphQLEnumValue } from 'graphql/type/definition';
 
 const Episode = new GraphQLEnumType({
   name: 'Episode',
@@ -9823,7 +9846,8 @@ Returns this enum value as a schema coordinate string.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { GraphQLEnumType, GraphQLEnumValue } from 'graphql/type';
+import { GraphQLEnumType } from 'graphql/type';
+import { GraphQLEnumValue } from 'graphql/type/definition';
 
 const Episode = new GraphQLEnumType({
   name: 'Episode',
@@ -9868,7 +9892,8 @@ Returns the JSON representation used when this object is serialized.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { GraphQLEnumType, GraphQLEnumValue } from 'graphql/type';
+import { GraphQLEnumType } from 'graphql/type';
+import { GraphQLEnumValue } from 'graphql/type/definition';
 
 const Episode = new GraphQLEnumType({
   name: 'Episode',
@@ -10126,11 +10151,8 @@ Returns a normalized configuration object for this input field.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import {
-  GraphQLInputField,
-  GraphQLInputObjectType,
-  GraphQLString,
-} from 'graphql/type';
+import { GraphQLInputObjectType, GraphQLString } from 'graphql/type';
+import { GraphQLInputField } from 'graphql/type/definition';
 
 const ReviewInput = new GraphQLInputObjectType({
   name: 'ReviewInput',
@@ -10178,11 +10200,8 @@ Returns this input field as a schema coordinate string.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import {
-  GraphQLInputField,
-  GraphQLInputObjectType,
-  GraphQLString,
-} from 'graphql/type';
+import { GraphQLInputObjectType, GraphQLString } from 'graphql/type';
+import { GraphQLInputField } from 'graphql/type/definition';
 
 const ReviewInput = new GraphQLInputObjectType({
   name: 'ReviewInput',
@@ -10229,11 +10248,8 @@ Returns the JSON representation used when this object is serialized.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import {
-  GraphQLInputField,
-  GraphQLInputObjectType,
-  GraphQLString,
-} from 'graphql/type';
+import { GraphQLInputObjectType, GraphQLString } from 'graphql/type';
+import { GraphQLInputField } from 'graphql/type/definition';
 
 const ReviewInput = new GraphQLInputObjectType({
   name: 'ReviewInput',
@@ -11472,6 +11488,8 @@ validator and executor.
 <div className="api-subsection-title">Example 1</div>
 
 ```ts
+import { GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql';
+
 const MyAppQueryRootType = new GraphQLObjectType({
   name: 'Query',
   fields: {
@@ -11501,6 +11519,13 @@ by traversing the root types are included, other types must be explicitly
 referenced.
 
 ```ts
+import {
+  GraphQLInterfaceType,
+  GraphQLObjectType,
+  GraphQLSchema,
+  GraphQLString,
+} from 'graphql';
+
 const characterInterface = new GraphQLInterfaceType({
   name: 'Character',
   fields: {
@@ -11549,9 +11574,26 @@ provided then a default set of the specified directives (e.g. `@include` and
 these specified directives, you must explicitly declare them.
 
 ```ts
+import {
+  DirectiveLocation,
+  GraphQLDirective,
+  GraphQLObjectType,
+  GraphQLSchema,
+  GraphQLString,
+  specifiedDirectives,
+} from 'graphql';
+
 const MyAppSchema = new GraphQLSchema({
-  query: MyAppQueryRootType,
-  directives: specifiedDirectives.concat([myCustomDirective]),
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: { greeting: { type: GraphQLString } },
+  }),
+  directives: specifiedDirectives.concat([
+    new GraphQLDirective({
+      name: 'custom',
+      locations: [DirectiveLocation.FIELD],
+    }),
+  ]),
 });
 ```
 
@@ -12272,7 +12314,7 @@ const schema = buildSchema(`
   }
 `);
 
-schema.getDirectives().map((directive) => directive.name); // => ['include', 'skip', 'deprecated', 'specifiedBy', 'oneOf', 'upper']
+schema.getDirectives().map((directive) => directive.name); // => ['upper', 'include', 'skip', 'deprecated', 'specifiedBy', 'oneOf']
 ```
 
 <hr className="api-subsection-divider" />
@@ -12412,6 +12454,7 @@ but that would require mutating type definitions, which would cause issues.
 <div className="api-subsection-title">Example</div>
 
 ```ts
+import assert from 'node:assert/strict';
 import { buildSchema } from 'graphql/utilities';
 
 const schema = buildSchema(`
@@ -12420,6 +12463,7 @@ const schema = buildSchema(`
   }
 `);
 const queryType = schema.getQueryType();
+assert(queryType);
 
 schema.getField(queryType, 'greeting')?.name; // => 'greeting'
 schema.getField(queryType, '__typename')?.name; // => '__typename'
@@ -12668,7 +12712,7 @@ an object which can contain all the values you need.
     <tr>
       <td>types?</td>
       <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "readonly"], " ", ["link", "GraphQLNamedType", "/api-v17/type#graphqlnamedtype"], "[]\u003e"]} /></td>
-      <td>Object types that belong to this union type.</td>
+      <td>Additional named types to include in the schema.</td>
     </tr>
     <tr>
       <td>directives?</td>
@@ -12771,9 +12815,7 @@ const schema = buildSchema(`
     name: String
   }
 `);
-const errors = validateSchema(schema);
-
-errors; // => []
+const errors = validateSchema(schema); // => []
 ```
 
 <hr className="api-item-divider" />

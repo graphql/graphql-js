@@ -38,7 +38,7 @@ Creates a ValidationContext instance.
 
 **Signature:**
 
-<ApiSignature parts={[["keyword", "new"], " ", ["name", "ValidationContext"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n  ", ["parameter", "ast"], ": ", ["link", "DocumentNode", "/api-v16/language#documentnode"], ",\n  ", ["parameter", "typeInfo"], ": ", ["link", "TypeInfo", "/api-v16/utilities#typeinfo"], ",\n  ", ["parameter", "onError"], ": (", ["parameter", "error"], ": ", ["link", "GraphQLError", "/api-v16/error#graphqlerror"], ") =\u003e ", ["keyword", "void"], ",\n);"]} />
+<ApiSignature parts={[["keyword", "new"], " ", ["name", "ValidationContext"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v16/type#graphqlschema"], ",\n  ", ["parameter", "ast"], ": ", ["link", "DocumentNode", "/api-v16/language#documentnode"], ",\n  ", ["parameter", "typeInfo"], ": ", ["link", "TypeInfo", "/api-v16/utilities#typeinfo"], ",\n  ", ["parameter", "onError"], ": (", ["parameter", "error"], ": ", ["link", "GraphQLError", "/api-v16/error#graphqlerror"], ") =\u003e ", ["keyword", "void"], ",\n  ", ["parameter", "hideSuggestions"], "?: ", ["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e,\n);"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -72,6 +72,11 @@ Creates a ValidationContext instance.
       <td>onError</td>
       <td><ApiType parts={["(", ["parameter", "error"], ": ", ["link", "GraphQLError", "/api-v16/error#graphqlerror"], ") =\u003e ", ["keyword", "void"]]} /></td>
       <td>Callback invoked for each validation error.</td>
+    </tr>
+    <tr>
+      <td>hideSuggestions?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e"]} /></td>
+      <td>Omit suggestions from error messages.</td>
     </tr>
   </tbody>
 </table>
@@ -182,7 +187,8 @@ Returns variable usages found directly within this node.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { parse } from 'graphql/language';
+import assert from 'node:assert/strict';
+import { parse, Kind } from 'graphql/language';
 import { buildSchema, TypeInfo } from 'graphql/utilities';
 import { ValidationContext } from 'graphql/validation';
 
@@ -193,6 +199,7 @@ const schema = buildSchema(`
 `);
 const document = parse('query ($name: String) { greeting(name: $name) }');
 const operation = document.definitions[0];
+assert(operation.kind === Kind.OPERATION_DEFINITION);
 const context = new ValidationContext(
   schema,
   document,
@@ -261,7 +268,8 @@ Returns variable usages for an operation, including variables used by referenced
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { parse } from 'graphql/language';
+import assert from 'node:assert/strict';
+import { parse, Kind } from 'graphql/language';
 import { buildSchema, TypeInfo } from 'graphql/utilities';
 import { ValidationContext } from 'graphql/validation';
 
@@ -286,6 +294,7 @@ const document = parse(`
   }
 `);
 const operation = document.definitions[0];
+assert(operation.kind === Kind.OPERATION_DEFINITION);
 const context = new ValidationContext(
   schema,
   document,
@@ -950,16 +959,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   type Extra { field: String }
 `);
-const invalidErrors = validate(schema, invalidDocument, [ExecutableDefinitionsRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  ExecutableDefinitionsRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { name }
 `);
-const validErrors = validate(schema, validDocument, [ExecutableDefinitionsRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [
+  ExecutableDefinitionsRule,
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -1034,16 +1045,16 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { missing }
 `);
-const invalidErrors = validate(schema, invalidDocument, [FieldsOnCorrectTypeRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  FieldsOnCorrectTypeRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { name }
 `);
-const validErrors = validate(schema, validDocument, [FieldsOnCorrectTypeRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [FieldsOnCorrectTypeRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -1119,16 +1130,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   fragment Bad on String { length }
 `);
-const invalidErrors = validate(schema, invalidDocument, [FragmentsOnCompositeTypesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  FragmentsOnCompositeTypesRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   fragment Good on Query { name }
 `);
-const validErrors = validate(schema, validDocument, [FragmentsOnCompositeTypesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [
+  FragmentsOnCompositeTypesRule,
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -1204,16 +1217,16 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { field(unknown: "1") }
 `);
-const invalidErrors = validate(schema, invalidDocument, [KnownArgumentNamesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  KnownArgumentNamesRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { field(arg: "1") }
 `);
-const validErrors = validate(schema, validDocument, [KnownArgumentNamesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [KnownArgumentNamesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -1295,9 +1308,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   { name @include(if: true) }
 `);
-const validErrors = validate(schema, validDocument, [KnownDirectivesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [KnownDirectivesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -1372,16 +1383,16 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { ...Missing }
 `);
-const invalidErrors = validate(schema, invalidDocument, [KnownFragmentNamesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  KnownFragmentNamesRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   fragment NameFields on Query { name } query { ...NameFields }
 `);
-const validErrors = validate(schema, validDocument, [KnownFragmentNamesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [KnownFragmentNamesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -1463,9 +1474,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   fragment Good on Query { name }
 `);
-const validErrors = validate(schema, validDocument, [KnownTypeNamesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [KnownTypeNamesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -1540,16 +1549,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   query { name } query Other { name }
 `);
-const invalidErrors = validate(schema, invalidDocument, [LoneAnonymousOperationRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  LoneAnonymousOperationRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { name }
 `);
-const validErrors = validate(schema, validDocument, [LoneAnonymousOperationRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [
+  LoneAnonymousOperationRule,
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -1693,16 +1704,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { __schema { types { fields { type { fields { type { fields { name } } } } } } } }
 `);
-const invalidErrors = validate(schema, invalidDocument, [MaxIntrospectionDepthRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  MaxIntrospectionDepthRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { __schema { queryType { name } } }
 `);
-const validErrors = validate(schema, validDocument, [MaxIntrospectionDepthRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [
+  MaxIntrospectionDepthRule,
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -1784,9 +1797,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   fragment A on Query { name } query { ...A }
 `);
-const validErrors = validate(schema, validDocument, [NoFragmentCyclesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [NoFragmentCyclesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -1861,16 +1872,16 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   query ($id: ID) { field(arg: $missing) }
 `);
-const invalidErrors = validate(schema, invalidDocument, [NoUndefinedVariablesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  NoUndefinedVariablesRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   query ($id: ID) { field(arg: $id) }
 `);
-const validErrors = validate(schema, validDocument, [NoUndefinedVariablesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [NoUndefinedVariablesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -1945,16 +1956,16 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   fragment Unused on Query { name } query { name }
 `);
-const invalidErrors = validate(schema, invalidDocument, [NoUnusedFragmentsRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  NoUnusedFragmentsRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   fragment Used on Query { name } query { ...Used }
 `);
-const validErrors = validate(schema, validDocument, [NoUnusedFragmentsRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [NoUnusedFragmentsRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -2030,16 +2041,16 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   query ($id: ID) { name }
 `);
-const invalidErrors = validate(schema, invalidDocument, [NoUnusedVariablesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  NoUnusedVariablesRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   query ($id: ID) { field(arg: $id) }
 `);
-const validErrors = validate(schema, validDocument, [NoUnusedVariablesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [NoUnusedVariablesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -2056,7 +2067,7 @@ See https://spec.graphql.org/draft/#sec-Field-Selection-Merging
 
 **Signature:**
 
-<ApiSignature parts={[["name", "OverlappingFieldsCanBeMergedRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v16/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v16/language#astvisitor"], ";"]} />
+<ApiSignature parts={[["name", "OverlappingFieldsCanBeMergedRule"], "(\n  ", ["parameter", "validationContext"], ": ", ["link", "ValidationContext", "/api-v16/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v16/language#astvisitor"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -2072,7 +2083,7 @@ See https://spec.graphql.org/draft/#sec-Field-Selection-Merging
   </thead>
   <tbody>
     <tr>
-      <td>context</td>
+      <td>validationContext</td>
       <td><ApiType parts={[["link", "ValidationContext", "/api-v16/validation#validationcontext"]]} /></td>
       <td>The validation context used while checking the document.</td>
     </tr>
@@ -2120,16 +2131,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { dog { value: barkVolume value: name } }
 `);
-const invalidErrors = validate(schema, invalidDocument, [OverlappingFieldsCanBeMergedRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  OverlappingFieldsCanBeMergedRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { dog { barkVolume name } }
 `);
-const validErrors = validate(schema, validDocument, [OverlappingFieldsCanBeMergedRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [
+  OverlappingFieldsCanBeMergedRule,
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -2211,16 +2224,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { dog { ... on Cat { meowVolume } } }
 `);
-const invalidErrors = validate(schema, invalidDocument, [PossibleFragmentSpreadsRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  PossibleFragmentSpreadsRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { dog { ... on Dog { barkVolume } } }
 `);
-const validErrors = validate(schema, validDocument, [PossibleFragmentSpreadsRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [
+  PossibleFragmentSpreadsRule,
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -2367,16 +2382,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { field }
 `);
-const invalidErrors = validate(schema, invalidDocument, [ProvidedRequiredArgumentsRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  ProvidedRequiredArgumentsRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { field(required: "x") }
 `);
-const validErrors = validate(schema, validDocument, [ProvidedRequiredArgumentsRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [
+  ProvidedRequiredArgumentsRule,
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -2456,9 +2473,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   { name }
 `);
-const validErrors = validate(schema, validDocument, [ScalarLeafsRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [ScalarLeafsRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -2538,16 +2553,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   subscription { a b }
 `);
-const invalidErrors = validate(schema, invalidDocument, [SingleFieldSubscriptionsRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  SingleFieldSubscriptionsRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   subscription { a }
 `);
-const validErrors = validate(schema, validDocument, [SingleFieldSubscriptionsRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [
+  SingleFieldSubscriptionsRule,
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -2697,16 +2714,16 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { field(arg: "1", arg: "2") }
 `);
-const invalidErrors = validate(schema, invalidDocument, [UniqueArgumentNamesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  UniqueArgumentNamesRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { field(arg: "1") }
 `);
-const validErrors = validate(schema, validDocument, [UniqueArgumentNamesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [UniqueArgumentNamesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -2855,16 +2872,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { name @include(if: true) @include(if: false) }
 `);
-const invalidErrors = validate(schema, invalidDocument, [UniqueDirectivesPerLocationRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  UniqueDirectivesPerLocationRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { name @include(if: true) }
 `);
-const validErrors = validate(schema, validDocument, [UniqueDirectivesPerLocationRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [
+  UniqueDirectivesPerLocationRule,
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -3086,16 +3105,16 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   fragment A on Query { name } fragment A on Query { name } query { ...A }
 `);
-const invalidErrors = validate(schema, invalidDocument, [UniqueFragmentNamesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  UniqueFragmentNamesRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   fragment A on Query { name } query { ...A }
 `);
-const validErrors = validate(schema, validDocument, [UniqueFragmentNamesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [UniqueFragmentNamesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -3174,16 +3193,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { search(filter: { name: "a", name: "b" }) }
 `);
-const invalidErrors = validate(schema, invalidDocument, [UniqueInputFieldNamesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  UniqueInputFieldNamesRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { search(filter: { name: "a" }) }
 `);
-const validErrors = validate(schema, validDocument, [UniqueInputFieldNamesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [
+  UniqueInputFieldNamesRule,
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -3257,16 +3278,16 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   query Same { name } query Same { name }
 `);
-const invalidErrors = validate(schema, invalidDocument, [UniqueOperationNamesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  UniqueOperationNamesRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   query One { name } query Two { name }
 `);
-const validErrors = validate(schema, validDocument, [UniqueOperationNamesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [UniqueOperationNamesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -3486,16 +3507,16 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   query ($id: ID, $id: ID) { field(arg: $id) }
 `);
-const invalidErrors = validate(schema, invalidDocument, [UniqueVariableNamesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  UniqueVariableNamesRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   query ($id: ID) { field(arg: $id) }
 `);
-const validErrors = validate(schema, validDocument, [UniqueVariableNamesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [UniqueVariableNamesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -3570,16 +3591,16 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { count(limit: "many") }
 `);
-const invalidErrors = validate(schema, invalidDocument, [ValuesOfCorrectTypeRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  ValuesOfCorrectTypeRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { count(limit: 1) }
 `);
-const validErrors = validate(schema, validDocument, [ValuesOfCorrectTypeRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [ValuesOfCorrectTypeRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -3658,16 +3679,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   query ($user: User) { field(arg: "1") }
 `);
-const invalidErrors = validate(schema, invalidDocument, [VariablesAreInputTypesRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  VariablesAreInputTypesRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   query ($id: ID) { field(arg: $id) }
 `);
-const validErrors = validate(schema, validDocument, [VariablesAreInputTypesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [
+  VariablesAreInputTypesRule,
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -3741,16 +3764,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   query ($id: String) { field(arg: $id) }
 `);
-const invalidErrors = validate(schema, invalidDocument, [VariablesInAllowedPositionRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  VariablesInAllowedPositionRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   query ($id: ID!) { field(arg: $id) }
 `);
-const validErrors = validate(schema, validDocument, [VariablesInAllowedPositionRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [
+  VariablesInAllowedPositionRule,
+]); // => []
 ```
 
 ### Constants
@@ -3879,16 +3904,16 @@ const schema = new GraphQLSchema({
 const invalidDocument = parse(`
   { oldName }
 `);
-const invalidErrors = validate(schema, invalidDocument, [NoDeprecatedCustomRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  NoDeprecatedCustomRule,
+]);
 
 invalidErrors.length; // => 1
 
 const validDocument = parse(`
   { name }
 `);
-const validErrors = validate(schema, validDocument, [NoDeprecatedCustomRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [NoDeprecatedCustomRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -3965,16 +3990,18 @@ const schema = buildSchema(`
 const invalidDocument = parse(`
   { __schema { queryType { name } } }
 `);
-const invalidErrors = validate(schema, invalidDocument, [NoSchemaIntrospectionCustomRule]);
+const invalidErrors = validate(schema, invalidDocument, [
+  NoSchemaIntrospectionCustomRule,
+]);
 
-invalidErrors.length; // => 1
+invalidErrors.length; // => 2
 
 const validDocument = parse(`
   { name }
 `);
-const validErrors = validate(schema, validDocument, [NoSchemaIntrospectionCustomRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [
+  NoSchemaIntrospectionCustomRule,
+]); // => []
 ```
 
 ## Category: Validation

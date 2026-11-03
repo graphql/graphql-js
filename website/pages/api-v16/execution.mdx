@@ -119,12 +119,10 @@ const result = await execute({
   schema,
   document: parse('query ($name: String!) { greeting(name: $name) }'),
   rootValue: {
-    greeting: ({ name }) => `Hello, ${name}!`,
+    greeting: ({ name }: { name: string }) => `Hello, ${name}!`,
   },
   variableValues: { name: 'Ada' },
-});
-
-result; // => { data: { greeting: 'Hello, Ada!' } }
+}); // => { data: { greeting: 'Hello, Ada!' } }
 ```
 
 <hr className="api-subsection-divider" />
@@ -157,8 +155,7 @@ const result = await execute({
   rootValue: { viewer: { kind: 'user', name: 'Ada' } },
   contextValue: { locale: 'en' },
   operationName: 'Viewer',
-  fieldResolver: (source, _args, contextValue, info) => {
-    contextValue.locale; // => 'en'
+  fieldResolver: (source, _args, _contextValue, info) => {
     return source[info.fieldName];
   },
   typeResolver: (value) => {
@@ -196,8 +193,8 @@ const result = await execute({
   },
 });
 
-result.data.broken; // => null
-result.errors[0].message; // => 'Resolver failed.'
+result.data?.broken; // => null
+result.errors?.[0].message; // => 'Resolver failed.'
 ```
 
 <hr className="api-subsection-divider" />
@@ -236,8 +233,8 @@ const result = await execute({
   options: { maxCoercionErrors: 1 },
 });
 
-result.errors.length; // => 2
-result.errors[1].message; // matches /error limit reached/
+result.errors?.length; // => 2
+result.errors?.[1].message.includes('error limit reached'); // => true
 ```
 
 <hr className="api-item-divider" />
@@ -531,6 +528,11 @@ of calling that function while passing along args and context value.
   </thead>
   <tbody>
     <tr>
+      <td>hideSuggestions?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e"]} /></td>
+      <td>Omit suggestions from input coercion errors.</td>
+    </tr>
+    <tr>
       <td>schema</td>
       <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>
       <td>The schema used for validation or execution.</td>
@@ -740,7 +742,10 @@ const result = await subscribe({
     'subscription Greeting($locale: String) { greeting(locale: $locale) }',
   ),
   rootValue: {
-    greeting: (args, contextValue) => {
+    greeting: (
+      args: { locale?: string },
+      contextValue: { defaultLocale: string },
+    ) => {
       const locale = args.locale ?? contextValue.defaultLocale;
       return locale === 'fr' ? frenchGreetings() : defaultGreetings();
     },
@@ -784,7 +789,7 @@ const result = await subscribe({
 
 assert('errors' in result);
 
-result.errors[0].message; // => 'Schema is not configured to execute subscription operation.'
+result.errors?.[0].message; // => 'Schema is not configured to execute subscription operation.'
 ```
 
 <hr className="api-item-divider" />
@@ -1104,8 +1109,9 @@ Object prototype.
 <div className="api-subsection-title">Example 1</div>
 
 ```ts
+import assert from 'node:assert/strict';
 // Coerce provided variables and apply operation defaults.
-import { parse } from 'graphql/language';
+import { parse, Kind } from 'graphql/language';
 import { buildSchema } from 'graphql/utilities';
 import { getVariableValues } from 'graphql/execution';
 
@@ -1120,12 +1126,11 @@ const document = parse(`
   }
 `);
 const operation = document.definitions[0];
+assert(operation.kind === Kind.OPERATION_DEFINITION);
 
-const result = getVariableValues(
-  schema,
-  operation.variableDefinitions,
-  { stars: '5' },
-);
+const result = getVariableValues(schema, operation.variableDefinitions ?? [], {
+  stars: 5,
+});
 
 result; // => { coerced: { stars: 5, limit: 10 } }
 ```
@@ -1135,8 +1140,9 @@ result; // => { coerced: { stars: 5, limit: 10 } }
 <div className="api-subsection-title">Example 2</div>
 
 ```ts
+import assert from 'node:assert/strict';
 // This variant uses maxErrors to cap reported coercion errors.
-import { parse } from 'graphql/language';
+import { parse, Kind } from 'graphql/language';
 import { buildSchema } from 'graphql/utilities';
 import { getVariableValues } from 'graphql/execution';
 
@@ -1156,16 +1162,17 @@ const document = parse(`
   }
 `);
 const operation = document.definitions[0];
+assert(operation.kind === Kind.OPERATION_DEFINITION);
 
 const result = getVariableValues(
   schema,
-  operation.variableDefinitions,
+  operation.variableDefinitions ?? [],
   { first: { stars: 'bad' }, second: { stars: 'also bad' } },
   { maxErrors: 1 },
 );
 
-result.errors.length; // => 2
-result.errors[1].message; // matches /error limit reached/
+result.errors?.length; // => 2
+result.errors?.[1].message.includes('error limit reached'); // => true
 ```
 
 <hr className="api-item-divider" />
@@ -1238,8 +1245,9 @@ Object prototype.
 <div className="api-subsection-title">Example 1</div>
 
 ```ts
+import assert from 'node:assert/strict';
 // Read literal argument values and defaults.
-import { parse } from 'graphql/language';
+import { parse, Kind } from 'graphql/language';
 import { buildSchema } from 'graphql/utilities';
 import { getArgumentValues } from 'graphql/execution';
 
@@ -1248,9 +1256,13 @@ const schema = buildSchema(`
     reviews(stars: Int!, limit: Int = 10): [String]
   }
 `);
-const fieldDef = schema.getQueryType().getFields().reviews;
+const fieldDef = schema.getQueryType()?.getFields().reviews;
+assert(fieldDef);
 const document = parse('{ reviews(stars: 5) }');
-const fieldNode = document.definitions[0].selectionSet.selections[0];
+const operation = document.definitions[0];
+assert(operation.kind === Kind.OPERATION_DEFINITION);
+const fieldNode = operation.selectionSet.selections[0];
+assert(fieldNode.kind === Kind.FIELD);
 
 getArgumentValues(fieldDef, fieldNode); // => { stars: 5, limit: 10 }
 ```
@@ -1260,8 +1272,9 @@ getArgumentValues(fieldDef, fieldNode); // => { stars: 5, limit: 10 }
 <div className="api-subsection-title">Example 2</div>
 
 ```ts
+import assert from 'node:assert/strict';
 // This variant resolves argument values from operation variables.
-import { parse } from 'graphql/language';
+import { parse, Kind } from 'graphql/language';
 import { buildSchema } from 'graphql/utilities';
 import { getArgumentValues } from 'graphql/execution';
 
@@ -1270,9 +1283,13 @@ const schema = buildSchema(`
     reviews(stars: Int!): [String]
   }
 `);
-const fieldDef = schema.getQueryType().getFields().reviews;
+const fieldDef = schema.getQueryType()?.getFields().reviews;
+assert(fieldDef);
 const document = parse('query ($stars: Int!) { reviews(stars: $stars) }');
-const fieldNode = document.definitions[0].selectionSet.selections[0];
+const operation = document.definitions[0];
+assert(operation.kind === Kind.OPERATION_DEFINITION);
+const fieldNode = operation.selectionSet.selections[0];
+assert(fieldNode.kind === Kind.FIELD);
 
 getArgumentValues(fieldDef, fieldNode, { stars: 5 }); // => { stars: 5 }
 getArgumentValues(fieldDef, fieldNode, {}); // throws an error
@@ -1351,13 +1368,16 @@ Object prototype.
 <div className="api-subsection-title">Example 1</div>
 
 ```ts
+import assert from 'node:assert/strict';
 // Read literal directive arguments from a node.
-import { parse } from 'graphql/language';
+import { parse, Kind } from 'graphql/language';
 import { GraphQLSkipDirective } from 'graphql/type';
 import { getDirectiveValues } from 'graphql/execution';
 
 const document = parse('{ name @skip(if: true) }');
-const fieldNode = document.definitions[0].selectionSet.selections[0];
+const operation = document.definitions[0];
+assert(operation.kind === Kind.OPERATION_DEFINITION);
+const fieldNode = operation.selectionSet.selections[0];
 
 getDirectiveValues(GraphQLSkipDirective, fieldNode); // => { if: true }
 ```
@@ -1367,13 +1387,18 @@ getDirectiveValues(GraphQLSkipDirective, fieldNode); // => { if: true }
 <div className="api-subsection-title">Example 2</div>
 
 ```ts
+import assert from 'node:assert/strict';
 // This variant resolves directive arguments from variables and handles absent directives.
-import { parse } from 'graphql/language';
+import { parse, Kind } from 'graphql/language';
 import { GraphQLIncludeDirective } from 'graphql/type';
 import { getDirectiveValues } from 'graphql/execution';
 
-const document = parse('query ($includeName: Boolean!) { name @include(if: $includeName) }');
-const fieldNode = document.definitions[0].selectionSet.selections[0];
+const document = parse(
+  'query ($includeName: Boolean!) { name @include(if: $includeName) }',
+);
+const operation = document.definitions[0];
+assert(operation.kind === Kind.OPERATION_DEFINITION);
+const fieldNode = operation.selectionSet.selections[0];
 
 getDirectiveValues(GraphQLIncludeDirective, fieldNode, {
   includeName: false,

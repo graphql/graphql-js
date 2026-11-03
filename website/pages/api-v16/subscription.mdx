@@ -171,7 +171,10 @@ const result = await subscribe({
     'subscription Greeting($locale: String) { greeting(locale: $locale) }',
   ),
   rootValue: {
-    greeting: (args, contextValue) => {
+    greeting: (
+      args: { locale?: string },
+      contextValue: { defaultLocale: string },
+    ) => {
       const locale = args.locale ?? contextValue.defaultLocale;
       return locale === 'fr' ? frenchGreetings() : defaultGreetings();
     },
@@ -215,7 +218,7 @@ const result = await subscribe({
 
 assert('errors' in result);
 
-result.errors[0].message; // => 'Schema is not configured to execute subscription operation.'
+result.errors?.[0].message; // => 'Schema is not configured to execute subscription operation.'
 ```
 
 <hr className="api-item-divider" />
