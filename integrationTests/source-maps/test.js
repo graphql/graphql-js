@@ -21,6 +21,11 @@ for (const extension of ['js', 'mjs']) {
           .endsWith(`//# sourceMappingURL=${path.basename(mapFile)}`),
         moduleFile,
       );
+
+      const sourceMap = JSON.parse(
+        fs.readFileSync(path.join(packageDir, mapFile), 'utf8'),
+      );
+      assert.equal(sourceMap.file, path.basename(moduleFile), mapFile);
     }
   });
 
