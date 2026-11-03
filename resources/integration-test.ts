@@ -74,6 +74,9 @@ describe('Integration Tests', () => {
   // Conditional export tests
   testOnNodeProject('conditions');
 
+  // Source map tests
+  testOnNodeProject('source-maps');
+
   // Development mode tests
   testOnNodeProject('dev-explicit');
   testOnNodeProject('dev-node');
