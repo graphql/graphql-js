@@ -8,6 +8,8 @@ const vm = require('vm');
 const { it } = require('mocha');
 const ts = require('typescript');
 
+const { applyEdits } = require('./jsdoc-examples.ts');
+
 const root = path.join(__dirname, '..');
 
 const allExamples = findExamples();
@@ -20,9 +22,12 @@ for (const example of allExamples) {
     const source = parseExample(example);
     validateImports(source);
     const importEdits = getImportEdits(source);
-    const { assertionEdits, assertions } = getAssertionEdits(source, example);
+    const { assertionEdits, locations, runtimeName } = getAssertionEdits(
+      source,
+      example,
+    );
     const code = applyEdits(example.code, [...importEdits, ...assertionEdits]);
-    const module = addRuntimeChecks(code, assertions);
+    const module = addRuntimeChecks(code, locations, runtimeName);
     const javascript = ts.transpileModule(module, {
       compilerOptions: {
         target: ts.ScriptTarget.ES2019,
@@ -32,7 +37,7 @@ for (const example of allExamples) {
     }).outputText;
     const run = vm.runInThisContext(
       `(async function (require, exports) {
-${javascript}
+${javascript.replace(/^#![^\r\n]*/, '')}
 })`,
       { filename: `${example.filename}:${example.line}` },
     );
@@ -256,72 +261,125 @@ function resolveSourceImport(specifier) {
 function getAssertionEdits(source, example) {
   const { code, filename, line: firstLine } = example;
   const assertionEdits = [];
-  const assertions = [];
-  const annotationPositions = new Set();
-  const handledAnnotations = new Set();
-  function location(position) {
-    const { line, character } = source.getLineAndCharacterOfPosition(position);
-    return `${filename}:${firstLine + line}:${character + 1}`;
-  }
-  function visit(node) {
-    // Inspect actual comments, not strings that happen to contain "// =>".
-    const leadingComments = ts.getLeadingCommentRanges(code, node.pos) || [];
-    const trailingComments = ts.getTrailingCommentRanges(code, node.end) || [];
-    for (const range of [...leadingComments, ...trailingComments]) {
-      if (
+  const locations = [];
+  const nodes = [...walkSyntax(source)];
+  // Inspect actual comments, not strings that happen to contain "// =>".
+  const annotationPositions = new Set(
+    nodes
+      .flatMap((node) => [
+        ...(ts.getLeadingCommentRanges(code, node.pos) ?? []),
+        ...(ts.getTrailingCommentRanges(code, node.end) ?? []),
+      ])
+      .filter((range) =>
         /^\/\/\s*(?:=>|throws\b|does not throw\b)/.test(
           code.slice(range.pos, range.end),
-        )
-      ) {
-        annotationPositions.add(range.pos);
-      }
-    }
-    if (ts.isExpressionStatement(node) || ts.isVariableStatement(node)) {
-      for (const range of trailingComments) {
-        if (!annotationPositions.has(range.pos)) {
-          continue;
-        }
-        const label = location(range.pos);
-        const expression = getAnnotatedExpression(node, label);
-        const assertionIndex = assertions.length;
-        const wrapper = getAssertionWrapper(
-          expression,
-          code.slice(range.pos, range.end),
-          label,
-          assertionIndex,
-        );
-        if (wrapper === undefined) {
-          continue;
-        }
-        handledAnnotations.add(range.pos);
-        assertions.push({ location: label, executed: false, pending: 0 });
-        // Wrap the expression so assertions inside it can be edited separately.
-        assertionEdits.push({
-          start: expression.getStart(source),
-          end: expression.getStart(source),
-          text: wrapper.before,
-        });
-        assertionEdits.push({
-          start: expression.end,
-          end: range.end,
-          text: `${wrapper.after};`,
-        });
-      }
-    }
-    ts.forEachChild(node, visit);
+        ),
+      )
+      .map((range) => range.pos),
+  );
+  const identifiers = new Set(
+    nodes.filter(ts.isIdentifier).map((node) => node.text),
+  );
+  let runtimeName = '__exampleChecks';
+  while (
+    [runtimeName, `${runtimeName}Assertion`, `${runtimeName}Threw`].some(
+      (name) => identifiers.has(name),
+    ) ||
+    code.includes(runtimeName)
+  ) {
+    runtimeName += '_';
   }
-  visit(source);
-
+  function location(position) {
+    const { line } = source.getLineAndCharacterOfPosition(position);
+    return `${filename}:${firstLine + line}`;
+  }
+  for (const node of nodes) {
+    if (!ts.isExpressionStatement(node) && !ts.isVariableStatement(node)) {
+      continue;
+    }
+    for (const range of ts.getTrailingCommentRanges(code, node.end) ?? []) {
+      if (!annotationPositions.delete(range.pos)) {
+        continue;
+      }
+      const label = location(range.pos);
+      const expression = getAnnotatedExpression(node, label);
+      const assertionIndex = locations.length;
+      const comment = code.slice(range.pos + 2, range.end).trim();
+      const expectsError = comment === 'throws an error';
+      const wrapper = getAssertionWrapper(
+        comment,
+        `${runtimeName}[${assertionIndex}]`,
+        runtimeName,
+      );
+      assert(wrapper, `${label}: unsupported example annotation`);
+      if (ts.isVariableStatement(node)) {
+        const { name } = node.declarationList.declarations[0];
+        if (expectsError) {
+          // A throwing initializer has no value to destructure. Keep its
+          // bindings in the original scope, without evaluating defaults.
+          const bindings = getBindingNames(name)
+            .map((binding) => `${binding} = void 0`)
+            .join(', ');
+          if (bindings !== '') {
+            const prefix = code.slice(
+              node.getStart(source),
+              name.getStart(source),
+            );
+            const declaration = `${prefix}${bindings};`;
+            if (
+              (node.declarationList.flags & ts.NodeFlags.BlockScoped) === 0 &&
+              !node.modifiers?.some(
+                (modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword,
+              )
+            ) {
+              // var keeps its scope inside the generated block, including
+              // when the declaration is an unbraced if/else or loop body.
+              wrapper.after = wrapper.after.slice(0, -1) + declaration + ' }';
+            } else {
+              wrapper.after += ' ' + declaration;
+            }
+          }
+        }
+        if (ts.isIdentifier(name)) {
+          // A property initializer preserves anonymous function/class names
+          // just as a variable initializer does. Compute the key so even
+          // __proto__ is an ordinary property.
+          const key = JSON.stringify(name.text);
+          wrapper.before += `({ [${key}]: (`;
+          wrapper.after = `) })[${key}]${wrapper.after}`;
+        }
+      }
+      locations.push(label);
+      // Wrap the expression so assertions inside it can be edited separately.
+      assertionEdits.push({
+        start: expectsError
+          ? node.getStart(source)
+          : expression.getStart(source),
+        end: expression.getStart(source),
+        text: wrapper.before,
+      });
+      assertionEdits.push({
+        start: expression.end,
+        end: range.end,
+        text: wrapper.after,
+      });
+    }
+  }
   // Reject misplaced or malformed annotations instead of silently skipping them.
   for (const position of annotationPositions) {
-    assert(
-      handledAnnotations.has(position),
-      `${location(position)}: unsupported example annotation`,
-    );
+    assert.fail(`${location(position)}: unsupported example annotation`);
   }
-  return { assertionEdits, assertions };
+  return { assertionEdits, locations, runtimeName };
 }
-
+function* walkSyntax(node) {
+  yield node;
+  // Include punctuation tokens to find comments in empty blocks and containers.
+  for (const child of node.getChildren()) {
+    if (!ts.isJSDoc(child)) {
+      yield* walkSyntax(child);
+    }
+  }
+}
 // Both statement forms check a value; declarations must keep that value too.
 function getAnnotatedExpression(statement, location) {
   if (ts.isExpressionStatement(statement)) {
@@ -337,84 +395,53 @@ function getAnnotatedExpression(statement, location) {
   assert(initializer, `${location}: annotated variables need an initializer`);
   return initializer;
 }
-
+function getBindingNames(name) {
+  if (ts.isIdentifier(name)) {
+    return [name.getText()];
+  }
+  return name.elements.flatMap((element) =>
+    ts.isOmittedExpression(element) ? [] : getBindingNames(element.name),
+  );
+}
 // Add assertion code before and after the original expression.
-function getAssertionWrapper(expression, comment, location, assertionIndex) {
-  const label = JSON.stringify(location);
+function getAssertionWrapper(comment, assertion, runtimeName) {
+  // Begin with an identifier or a block to preserve statement boundaries.
   // Start before evaluating the expression: a caught failure must leave a
   // pending check even if this assertion succeeded on an earlier invocation.
-  const start = `(__startAssertion(${assertionIndex}), `;
-  const expected = /^\/\/ => (.+)$/.exec(comment);
+  const start = `${assertion}.start()`;
+  const expected = /^=>\s*(.+)$/.exec(comment);
   if (expected) {
     return {
-      before: `${start}__checkValue((`,
-      after: `), (${expected[1]}), ${assertionIndex}))`,
+      before: `${start}.value((`,
+      after: `), (${expected[1]}\n));`,
     };
   }
-  if (comment === '// throws an error') {
+  if (comment === 'throws an error') {
+    // Keep await and yield in their original scope instead of a callback.
+    const threw = `${runtimeName}Threw`;
     return {
-      before: containsAwait(expression)
-        ? `${start}__recordExecution(await __assert.rejects(async () => (`
-        : `${start}__recordExecution(__assert.throws(() => (`,
-      after: `), undefined, ${label}), ${assertionIndex}))`,
+      before: `{ ${start}; let ${threw} = false; try { (`,
+      after: `); } catch { ${threw} = true; } ${assertion}.threw(${threw}); }`,
     };
   }
-  if (comment === '// does not throw') {
+  if (comment === 'does not throw') {
     return {
-      before: `${start}__recordExecution((`,
-      after: `), ${assertionIndex}))`,
+      before: `${start}.record((`,
+      after: '));',
     };
   }
   return undefined;
 }
-
-// Await inside a nested function does not make the enclosing expression async.
-function containsAwait(node) {
-  if (ts.isAwaitExpression(node)) {
-    return true;
-  }
-  return (
-    !ts.isFunctionLike(node) && Boolean(ts.forEachChild(node, containsAwait))
-  );
-}
-
-function applyEdits(code, edits) {
-  // Apply changes from the end so earlier source offsets remain valid.
-  let result = code;
-  for (const edit of edits.sort((a, b) => b.start - a.start)) {
-    result = result.slice(0, edit.start) + edit.text + result.slice(edit.end);
-  }
-  return result;
-}
-
-function addRuntimeChecks(code, assertions) {
-  const helper = path.join(root, 'src/__testUtils__/expectJSON.ts');
-  return `
-import { strict as __assert } from 'assert';
-import { expectJSON as __expectJSON } from ${JSON.stringify(helper)};
-const __exampleAssertions = ${JSON.stringify(assertions)};
-function __startAssertion(assertionIndex) {
-  __exampleAssertions[assertionIndex].pending++;
-}
-function __checkValue(actual, expected, assertionIndex) {
-  __expectJSON(actual, __exampleAssertions[assertionIndex].location)
-    .toDeepEqual(expected);
-  return __recordExecution(actual, assertionIndex);
-}
-function __recordExecution(value, assertionIndex) {
-  const assertion = __exampleAssertions[assertionIndex];
-  assertion.executed = true;
-  assertion.pending--;
-  // Preserve the value when an assertion wraps a variable initializer.
-  return value;
-}
-${code}
-// A failed or unfinished invocation must not be hidden by an earlier success.
-for (const assertion of __exampleAssertions) {
-  __assert.equal(assertion.pending, 0,
-    'Example assertion did not complete: ' + assertion.location);
-  __assert.ok(assertion.executed,
-    'Example assertion was not executed: ' + assertion.location);
-}
+function addRuntimeChecks(code, locations, runtimeName) {
+  const helper = path.join(root, 'resources/example-assertions.ts');
+  const shebang = ts.getShebang(code) ?? '';
+  return `${shebang}
+import { ExampleAssertion as ${runtimeName}Assertion } from ${JSON.stringify(
+    helper,
+  )};
+const ${runtimeName} = ${JSON.stringify(locations)}
+  .map((location) => new ${runtimeName}Assertion(location));
+${code.slice(shebang.length)}
+for (const assertion of ${runtimeName}) { assertion.verify(); }
 `;
 }

@@ -169,6 +169,8 @@ visit(parse('{ greeting }'), {
 ```
 
 An uncalled callback or a skipped branch containing an assertion fails the check.
+Assertions retain the original scope of `await` and `yield` expressions.
+
 Await asynchronous work so its assertions run before the example finishes.
 Repeated calls to one assertion do not compensate for another that never runs.
 
