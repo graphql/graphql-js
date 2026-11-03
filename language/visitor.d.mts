@@ -122,7 +122,7 @@ export declare const BREAK: unknown;
  * import { parse, visit } from 'graphql/language';
  *
  * const document = parse('{ hero { name } }');
- * const fieldNames = [];
+ * const fieldNames: Array<string> = [];
  *
  * visit(document, {
  *   Field: (node) => {
@@ -139,7 +139,7 @@ export declare const BREAK: unknown;
  * import { parse, visit } from 'graphql/language';
  *
  * const document = parse('{ hero { name } }');
- * const events = [];
+ * const events: Array<string> = [];
  *
  * visit(document, {
  *   Field: {
@@ -164,10 +164,10 @@ export declare const BREAK: unknown;
  * let leaveCount = 0;
  *
  * visit(document, {
- *   enter: (node) => {
+ *   enter: () => {
  *     enterCount += 1;
  *   },
- *   leave: (node) => {
+ *   leave: () => {
  *     leaveCount += 1;
  *   },
  * });
@@ -235,7 +235,7 @@ export declare function visit<R>(root: ASTNode, visitor: ASTReducer<R>, visitorK
  * import { parse, visit, visitInParallel } from 'graphql/language';
  *
  * const document = parse('{ hero { name } }');
- * const events = [];
+ * const events: Array<string> = [];
  *
  * visit(
  *   document,

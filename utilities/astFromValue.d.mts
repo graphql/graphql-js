@@ -28,6 +28,7 @@ import type { GraphQLInputType } from "../type/definition.mjs";
  * @returns A GraphQL value AST for the provided JavaScript value, or null when no literal can represent it.
  * @example
  * ```ts
+ * import assert from 'node:assert/strict';
  * import { print } from 'graphql/language';
  * import {
  *   GraphQLInputObjectType,
@@ -51,6 +52,7 @@ import type { GraphQLInputType } from "../type/definition.mjs";
  *   ReviewInput,
  * );
  *
+ * assert(valueNode);
  * print(valueNode); // => '{ stars: 5, tags: ["featured", "verified"] }'
  * astFromValue(undefined, GraphQLString); // => null
  * astFromValue(null, new GraphQLNonNull(GraphQLString)); // => null

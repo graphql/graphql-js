@@ -168,7 +168,7 @@ export declare function assertObjectType(type: unknown): GraphQLObjectType;
  * import { isField } from 'graphql/type';
  *
  * const schema = buildSchema('type Query { greeting: String }');
- * const field = schema.getQueryType().getFields().greeting;
+ * const field = schema.getQueryType()?.getFields().greeting;
  *
  * isField(field); // => true
  * isField(schema.getQueryType()); // => false
@@ -185,7 +185,7 @@ export declare function isField(field: unknown): field is GraphQLField;
  * import { assertField } from 'graphql/type';
  *
  * const schema = buildSchema('type Query { greeting: String }');
- * const field = assertField(schema.getQueryType().getFields().greeting);
+ * const field = assertField(schema.getQueryType()?.getFields().greeting);
  *
  * field.name; // => 'greeting'
  * assertField(schema.getQueryType()); // throws an error
@@ -202,7 +202,7 @@ export declare function assertField(field: unknown): GraphQLField;
  * import { isArgument } from 'graphql/type';
  *
  * const schema = buildSchema('type Query { greeting(name: String): String }');
- * const arg = schema.getQueryType().getFields().greeting.args[0];
+ * const arg = schema.getQueryType()?.getFields().greeting.args[0];
  *
  * isArgument(arg); // => true
  * isArgument(schema.getQueryType()); // => false
@@ -219,7 +219,7 @@ export declare function isArgument(arg: unknown): arg is GraphQLArgument;
  * import { assertArgument } from 'graphql/type';
  *
  * const schema = buildSchema('type Query { greeting(name: String): String }');
- * const arg = assertArgument(schema.getQueryType().getFields().greeting.args[0]);
+ * const arg = assertArgument(schema.getQueryType()?.getFields().greeting.args[0]);
  *
  * arg.name; // => 'name'
  * assertArgument(schema.getQueryType()); // throws an error
@@ -1013,7 +1013,7 @@ export declare function assertAbstractType(type: unknown): GraphQLAbstractType;
  * ```ts
  * import { GraphQLList, GraphQLObjectType } from 'graphql';
  *
- * const PersonType = new GraphQLObjectType({
+ * const PersonType: GraphQLObjectType = new GraphQLObjectType({
  *   name: 'Person',
  *   fields: () => ({
  *     parents: { type: new GraphQLList(PersonType) },
@@ -1344,7 +1344,7 @@ export declare function getNamedType(type: undefined | null): void;
  *
  * const inputArg = schema.getQueryType()?.getFields().review.args[0];
  *
- * getNamedType(inputArg?.type).toString(); // => 'ReviewInput'
+ * getNamedType(inputArg?.type)?.toString(); // => 'ReviewInput'
  * ```
  */
 export declare function getNamedType(type: GraphQLInputType): GraphQLNamedInputType;
@@ -1369,7 +1369,7 @@ export declare function getNamedType(type: GraphQLInputType): GraphQLNamedInputT
  *
  * const usersField = schema.getQueryType()?.getFields().users;
  *
- * getNamedType(usersField?.type).toString(); // => 'User'
+ * getNamedType(usersField?.type)?.toString(); // => 'User'
  * ```
  */
 export declare function getNamedType(type: GraphQLOutputType): GraphQLNamedOutputType;
@@ -1520,10 +1520,10 @@ export interface GraphQLScalarTypeExtensions {
  * ```ts
  * import { GraphQLScalarType, Kind } from 'graphql';
  *
- * const ensureOdd = (value) => {
- *   if (!Number.isFinite(value)) {
+ * const ensureOdd = (value: unknown) => {
+ *   if (typeof value !== 'number' || !Number.isInteger(value)) {
  *     throw new Error(
- *       `Scalar "Odd" cannot represent "${value}" since it is not a finite number.`,
+ *       `Scalar "Odd" cannot represent "${value}" since it is not an integer.`,
  *     );
  *   }
  *
@@ -1548,6 +1548,10 @@ export interface GraphQLScalarTypeExtensions {
  *     return { kind: Kind.INT, value: String(ensureOdd(value)) };
  *   },
  * });
+ *
+ * OddType.coerceInputValue(3); // => 3
+ * OddType.coerceInputValue(2); // throws an error
+ * OddType.coerceInputValue(1.5); // throws an error
  * ```
  */
 export declare class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> implements GraphQLSchemaElement {
@@ -1594,6 +1598,7 @@ export declare class GraphQLScalarType<TInternal = unknown, TExternal = TInterna
      * @param config - Configuration describing this object.
      * @example
      * ```ts
+     * import assert from 'node:assert/strict';
      * import { Kind, parse } from 'graphql/language';
      * import { GraphQLScalarType } from 'graphql/type';
      *
@@ -1603,32 +1608,31 @@ export declare class GraphQLScalarType<TInternal = unknown, TExternal = TInterna
      *
      *   extend scalar Odd @specifiedBy(url: "https://example.com/odd-v2")
      * `);
+     * assert(document.definitions[0].kind === Kind.SCALAR_TYPE_DEFINITION);
+     * assert(document.definitions[1].kind === Kind.SCALAR_TYPE_EXTENSION);
+     *
+     * const ensureOdd = (value: unknown) => {
+     *   if (
+     *     typeof value !== 'number' ||
+     *     !Number.isInteger(value) ||
+     *     value % 2 === 0
+     *   ) {
+     *     throw new TypeError('Odd can only accept odd integers.');
+     *   }
+     *   return value;
+     * };
      *
      * const Odd = new GraphQLScalarType({
      *   name: 'Odd',
      *   description: 'Odd integer values.',
      *   specifiedByURL: 'https://example.com/odd',
-     *   coerceOutputValue: (value) => {
-     *     if (typeof value !== 'number' || value % 2 === 0) {
-     *       throw new TypeError('Odd can only produce odd numbers.');
-     *     }
-     *     return value;
-     *   },
-     *   coerceInputValue: (value) => {
-     *     if (typeof value !== 'number' || value % 2 === 0) {
-     *       throw new TypeError('Odd can only accept odd numbers.');
-     *     }
-     *     return value;
-     *   },
+     *   coerceOutputValue: ensureOdd,
+     *   coerceInputValue: ensureOdd,
      *   coerceInputLiteral: (ast) => {
      *     if (ast.kind !== Kind.INT) {
      *       throw new TypeError('Odd can only accept integer literals.');
      *     }
-     *     const value = Number(ast.value);
-     *     if (value % 2 === 0) {
-     *       throw new TypeError('Odd can only accept odd integer literals.');
-     *     }
-     *     return value;
+     *     return ensureOdd(Number(ast.value));
      *   },
      *   valueToLiteral: (value) => {
      *     return { kind: Kind.INT, value: String(ensureOdd(value)) };
@@ -1642,6 +1646,9 @@ export declare class GraphQLScalarType<TInternal = unknown, TExternal = TInterna
      * Odd.specifiedByURL; // => 'https://example.com/odd'
      * Odd.coerceOutputValue(3); // => 3
      * Odd.coerceInputValue(5); // => 5
+     * Odd.valueToLiteral?.(3); // => { kind: 'IntValue', value: '3' }
+     * Odd.valueToLiteral?.(2); // throws an error
+     * Odd.valueToLiteral?.(1.5); // throws an error
      * Odd.extensions; // => { numeric: true }
      * ```
      */
@@ -1845,7 +1852,7 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  * ```ts
  * import { GraphQLObjectType, GraphQLString } from 'graphql';
  *
- * const PersonType = new GraphQLObjectType({
+ * const PersonType: GraphQLObjectType = new GraphQLObjectType({
  *   name: 'Person',
  *   fields: () => ({
  *     name: { type: GraphQLString },
@@ -1874,8 +1881,9 @@ export declare class GraphQLObjectType<TSource = any, TContext = any, TAbstract 
      * @param config - Configuration describing this object.
      * @example
      * ```ts
+     * import assert from 'node:assert/strict';
      * // Configure an object type with interfaces, fields, arguments, and metadata.
-     * import { parse } from 'graphql/language';
+     * import { parse, Kind } from 'graphql/language';
      * import {
      *   GraphQLID,
      *   GraphQLInterfaceType,
@@ -1894,9 +1902,11 @@ export declare class GraphQLObjectType<TSource = any, TContext = any, TAbstract 
      *     displayName: String
      *   }
      * `);
+     * assert(document.definitions[0].kind === Kind.OBJECT_TYPE_DEFINITION);
+     * assert(document.definitions[1].kind === Kind.OBJECT_TYPE_EXTENSION);
      * const definition = document.definitions[0];
-     * const nameField = definition.fields[1];
-     * const formatArg = nameField.arguments[0];
+     * const nameField = definition.fields?.[1];
+     * const formatArg = nameField?.arguments?.[0];
      *
      * const Node = new GraphQLInterfaceType({
      *   name: 'Node',
@@ -1943,7 +1953,7 @@ export declare class GraphQLObjectType<TSource = any, TContext = any, TAbstract 
      * User.name; // => 'User'
      * User.getInterfaces(); // => [Node]
      * Object.keys(User.getFields()); // => ['id', 'name']
-     * User.getFields().name.args[0].default.value; // => 'short'
+     * User.getFields().name.args[0].default?.value; // => 'short'
      * User.extensions; // => { entity: 'User' }
      * ```
      * @example
@@ -2330,13 +2340,15 @@ export declare class GraphQLField<TSource = any, TContext = any, TArgs = any> im
      * @param config - Field configuration.
      * @example
      * ```ts
-     * import { parse } from 'graphql/language';
+     * import assert from 'node:assert/strict';
+     * import { parse, Kind } from 'graphql/language';
      * import { GraphQLObjectType, GraphQLString } from 'graphql/type';
      * import { GraphQLField } from 'graphql/type/definition';
      *
      * const Query = new GraphQLObjectType({ name: 'Query', fields: {} });
      * const document = parse('type Query { greeting: String }');
-     * const fieldNode = document.definitions[0].fields[0];
+     * assert(document.definitions[0].kind === Kind.OBJECT_TYPE_DEFINITION);
+     * const fieldNode = document.definitions[0].fields?.[0];
      * const field = new GraphQLField(Query, 'greeting', {
      *   description: 'Greeting text.',
      *   type: GraphQLString,
@@ -2354,7 +2366,7 @@ export declare class GraphQLField<TSource = any, TContext = any, TArgs = any> im
      *
      * field.parentType; // => Query
      * field.name; // => 'greeting'
-     * field.args[0].default.value; // => 'world'
+     * field.args[0].default?.value; // => 'world'
      * typeof field.subscribe; // => 'function'
      * field.deprecationReason; // => 'Use hello.'
      * field.astNode; // => fieldNode
@@ -2459,7 +2471,7 @@ export declare class GraphQLArgument implements GraphQLSchemaElement {
      *
      * arg.parent; // => field
      * arg.name; // => 'name'
-     * arg.default.value; // => 'world'
+     * arg.default?.value; // => 'world'
      * ```
      */
     constructor(parent: GraphQLField | GraphQLDirective, name: string, config: GraphQLArgumentConfig);
@@ -2483,7 +2495,7 @@ export declare class GraphQLArgument implements GraphQLSchemaElement {
      *   default: { value: 'world' },
      * });
      *
-     * arg.toConfig().default.value; // => 'world'
+     * arg.toConfig().default?.value; // => 'world'
      * ```
      */
     toConfig(): GraphQLArgumentNormalizedConfig;
@@ -2624,7 +2636,8 @@ export declare class GraphQLInterfaceType<TSource = any, TContext = any> impleme
      * @param config - Configuration describing this object.
      * @example
      * ```ts
-     * import { parse } from 'graphql/language';
+     * import assert from 'node:assert/strict';
+     * import { parse, Kind } from 'graphql/language';
      * import { GraphQLID, GraphQLInterfaceType, GraphQLNonNull } from 'graphql/type';
      *
      * const document = parse(`
@@ -2640,6 +2653,8 @@ export declare class GraphQLInterfaceType<TSource = any, TContext = any> impleme
      *     url: String
      *   }
      * `);
+     * assert(document.definitions[1].kind === Kind.INTERFACE_TYPE_DEFINITION);
+     * assert(document.definitions[2].kind === Kind.INTERFACE_TYPE_EXTENSION);
      *
      * const Node = new GraphQLInterfaceType({
      *   name: 'Node',
@@ -2658,7 +2673,7 @@ export declare class GraphQLInterfaceType<TSource = any, TContext = any> impleme
      *   resolveType: (value) => {
      *     return typeof value === 'object' && value != null && 'url' in value
      *       ? 'WebPage'
-     *       : null;
+     *       : undefined;
      *   },
      *   extensions: { abstract: true },
      *   astNode: document.definitions[1],
@@ -2910,7 +2925,8 @@ export declare class GraphQLUnionType<TSource = any, TContext = any> implements 
      * @param config - Configuration describing this object.
      * @example
      * ```ts
-     * import { parse } from 'graphql/language';
+     * import assert from 'node:assert/strict';
+     * import { parse, Kind } from 'graphql/language';
      * import {
      *   GraphQLObjectType,
      *   GraphQLString,
@@ -2922,6 +2938,8 @@ export declare class GraphQLUnionType<TSource = any, TContext = any> implements 
      *
      *   extend union Media = Audio
      * `);
+     * assert(document.definitions[0].kind === Kind.UNION_TYPE_DEFINITION);
+     * assert(document.definitions[1].kind === Kind.UNION_TYPE_EXTENSION);
      *
      * const Photo = new GraphQLObjectType({
      *   name: 'Photo',
@@ -3156,7 +3174,8 @@ export declare class GraphQLEnumType/* <T> */  implements GraphQLSchemaElement {
      * @param config - Configuration describing this object.
      * @example
      * ```ts
-     * import { parse } from 'graphql/language';
+     * import assert from 'node:assert/strict';
+     * import { parse, Kind } from 'graphql/language';
      * import { GraphQLEnumType } from 'graphql/type';
      *
      * const document = parse(`
@@ -3170,6 +3189,8 @@ export declare class GraphQLEnumType/* <T> */  implements GraphQLSchemaElement {
      *     FORCE_AWAKENS
      *   }
      * `);
+     * assert(document.definitions[0].kind === Kind.ENUM_TYPE_DEFINITION);
+     * assert(document.definitions[1].kind === Kind.ENUM_TYPE_EXTENSION);
      * const definition = document.definitions[0];
      *
      * const Episode = new GraphQLEnumType({
@@ -3180,13 +3201,13 @@ export declare class GraphQLEnumType/* <T> */  implements GraphQLSchemaElement {
      *       value: 4,
      *       description: 'Released in 1977.',
      *       extensions: { trilogy: 'original' },
-     *       astNode: definition.values[0],
+     *       astNode: definition.values?.[0],
      *     },
-     *     EMPIRE: { value: 5, astNode: definition.values[1] },
+     *     EMPIRE: { value: 5, astNode: definition.values?.[1] },
      *     JEDI: {
      *       value: 6,
      *       deprecationReason: 'Use RETURN_OF_THE_JEDI.',
-     *       astNode: definition.values[2],
+     *       astNode: definition.values?.[2],
      *     },
      *   },
      *   extensions: { catalog: 'films' },
@@ -3197,7 +3218,7 @@ export declare class GraphQLEnumType/* <T> */  implements GraphQLSchemaElement {
      * Episode.description; // => 'A Star Wars film episode.'
      * Episode.coerceOutputValue(5); // => 'EMPIRE'
      * Episode.coerceInputValue('JEDI'); // => 6
-     * Episode.getValue('JEDI').deprecationReason; // => 'Use RETURN_OF_THE_JEDI.'
+     * Episode.getValue('JEDI')?.deprecationReason; // => 'Use RETURN_OF_THE_JEDI.'
      * Episode.extensions; // => { catalog: 'films' }
      * ```
      */
@@ -3378,8 +3399,8 @@ export declare class GraphQLEnumType/* <T> */  implements GraphQLSchemaElement {
      *   },
      * });
      *
-     * RGB.parseLiteral(parseValue('RED')); // => 0
-     * RGB.parseLiteral(parseValue('"RED"')); // throws an error
+     * RGB.parseLiteral(parseValue('RED'), undefined); // => 0
+     * RGB.parseLiteral(parseValue('"RED"'), undefined); // throws an error
      * ```
      * @deprecated use `coerceInputLiteral()` instead, `parseLiteral()` will be removed in v18
      */
@@ -3414,6 +3435,7 @@ export declare class GraphQLEnumType/* <T> */  implements GraphQLSchemaElement {
      * @returns Enum value AST node, or undefined if the value is invalid.
      * @example
      * ```ts
+     * import assert from 'node:assert/strict';
      * import { print } from 'graphql/language';
      * import { GraphQLEnumType } from 'graphql/type';
      *
@@ -3426,7 +3448,9 @@ export declare class GraphQLEnumType/* <T> */  implements GraphQLSchemaElement {
      *   },
      * });
      *
-     * print(RGB.valueToLiteral('BLUE')); // => 'BLUE'
+     * const literal = RGB.valueToLiteral('BLUE');
+     * assert(literal);
+     * print(literal); // => 'BLUE'
      * RGB.valueToLiteral(2); // => undefined
      * RGB.valueToLiteral('PURPLE'); // => undefined
      * ```
@@ -3708,7 +3732,8 @@ export declare class GraphQLInputObjectType implements GraphQLSchemaElement {
      * @param config - Configuration describing this object.
      * @example
      * ```ts
-     * import { parse } from 'graphql/language';
+     * import assert from 'node:assert/strict';
+     * import { parse, Kind } from 'graphql/language';
      * import {
      *   GraphQLID,
      *   GraphQLInputObjectType,
@@ -3727,6 +3752,8 @@ export declare class GraphQLInputObjectType implements GraphQLSchemaElement {
      *     body: String
      *   }
      * `);
+     * assert(document.definitions[0].kind === Kind.INPUT_OBJECT_TYPE_DEFINITION);
+     * assert(document.definitions[1].kind === Kind.INPUT_OBJECT_TYPE_EXTENSION);
      * const definition = document.definitions[0];
      *
      * const ReviewInput = new GraphQLInputObjectType({
@@ -3737,13 +3764,13 @@ export declare class GraphQLInputObjectType implements GraphQLSchemaElement {
      *       description: 'Star rating from one to five.',
      *       type: new GraphQLNonNull(GraphQLInt),
      *       extensions: { min: 1, max: 5 },
-     *       astNode: definition.fields[0],
+     *       astNode: definition.fields?.[0],
      *     },
      *     commentary: {
      *       type: GraphQLString,
      *       default: { value: '' },
      *       deprecationReason: 'Use body.',
-     *       astNode: definition.fields[1],
+     *       astNode: definition.fields?.[1],
      *     },
      *   },
      *   extensions: { form: 'review' },
@@ -3765,7 +3792,7 @@ export declare class GraphQLInputObjectType implements GraphQLSchemaElement {
      * ReviewInput.description; // => 'Input collected when reviewing a product.'
      * String(fields.stars.type); // => 'Int!'
      * fields.stars.extensions; // => { min: 1, max: 5 }
-     * fields.commentary.default.value; // => ''
+     * fields.commentary.default?.value; // => ''
      * fields.commentary.deprecationReason; // => 'Use body.'
      * ReviewInput.isOneOf; // => false
      * SearchBy.isOneOf; // => true
@@ -3782,6 +3809,8 @@ export declare class GraphQLInputObjectType implements GraphQLSchemaElement {
      * @returns The fields keyed by field name.
      * @example
      * ```ts
+     * import { Kind } from 'graphql/language';
+     * import assert from 'node:assert/strict';
      * import { buildSchema } from 'graphql/utilities';
      * import { assertInputObjectType } from 'graphql/type';
      *
@@ -3800,8 +3829,9 @@ export declare class GraphQLInputObjectType implements GraphQLSchemaElement {
      * const fields = ReviewInput.getFields();
      *
      * Object.keys(fields); // => ['stars', 'commentary']
-     * fields.commentary.default.literal.kind; // => 'StringValue'
-     * fields.commentary.default.literal.value; // => ''
+     * const literal = fields.commentary.default?.literal;
+     * assert(literal?.kind === Kind.STRING);
+     * literal.value; // => ''
      * ```
      */
     getFields(): GraphQLInputFieldMap;
@@ -3984,7 +4014,7 @@ export declare class GraphQLInputField implements GraphQLSchemaElement {
      *
      * field.parentType; // => ReviewInput
      * field.name; // => 'commentary'
-     * field.default.value; // => ''
+     * field.default?.value; // => ''
      * ```
      */
     constructor(parentType: GraphQLInputObjectType, name: string, config: GraphQLInputFieldConfig);

@@ -29,7 +29,7 @@ import type { IntrospectionQuery } from "./getIntrospectionQuery.mjs";
  *   assumeValid: true,
  * });
  *
- * clientSchema.getQueryType().name; // => 'Query'
+ * clientSchema.getQueryType()?.name; // => 'Query'
  * ```
  */
 export declare function buildClientSchema(introspection: IntrospectionQuery, options?: GraphQLSchemaValidationOptions): GraphQLSchema;

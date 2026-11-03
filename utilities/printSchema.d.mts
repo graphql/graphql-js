@@ -38,9 +38,9 @@ export declare function printSchema(schema: GraphQLSchema): string;
  *
  * const printed = printIntrospectionSchema(schema);
  *
- * printed; // matches /type __Schema/
- * printed; // matches /enum __TypeKind/
- * printed; // does not match /type Query/
+ * printed.includes('type __Schema'); // => true
+ * printed.includes('enum __TypeKind'); // => true
+ * printed.includes('type Query'); // => false
  * ```
  */
 export declare function printIntrospectionSchema(schema: GraphQLSchema): string;
@@ -50,6 +50,7 @@ export declare function printIntrospectionSchema(schema: GraphQLSchema): string;
  * @returns The printed string representation.
  * @example
  * ```ts
+ * import assert from 'node:assert/strict';
  * import { buildSchema, printType } from 'graphql/utilities';
  *
  * const schema = buildSchema(`
@@ -63,7 +64,9 @@ export declare function printIntrospectionSchema(schema: GraphQLSchema): string;
  *   }
  * `);
  *
- * printType(schema.getType('User')); // => ['type User {', '  id: ID!', '  name: String', '}'].join('\n')
+ * const userType = schema.getType('User');
+ * assert(userType);
+ * printType(userType); // => ['type User {', '  id: ID!', '  name: String', '}'].join('\n')
  * ```
  */
 export declare function printType(type: GraphQLNamedType): string;

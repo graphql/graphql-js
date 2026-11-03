@@ -82,7 +82,8 @@ export declare class GraphQLDirective implements GraphQLSchemaElement {
      * @param config - Configuration describing this object.
      * @example
      * ```ts
-     * import { DirectiveLocation, parse } from 'graphql/language';
+     * import assert from 'node:assert/strict';
+     * import { DirectiveLocation, parse, Kind } from 'graphql/language';
      * import {
      *   GraphQLBoolean,
      *   GraphQLDirective,
@@ -94,6 +95,8 @@ export declare class GraphQLDirective implements GraphQLSchemaElement {
      *   directive @cacheControl(maxAge: Int) repeatable on FIELD_DEFINITION
      *   extend directive @cacheControl @tag
      * `);
+     * assert(document.definitions[0].kind === Kind.DIRECTIVE_DEFINITION);
+     * assert(document.definitions[1].kind === Kind.DIRECTIVE_EXTENSION);
      * const definition = document.definitions[0];
      *
      * const cacheControl = new GraphQLDirective({
@@ -110,7 +113,7 @@ export declare class GraphQLDirective implements GraphQLSchemaElement {
      *     },
      *     maxAge: {
      *       type: GraphQLInt,
-     *       astNode: definition.arguments[0],
+     *       astNode: definition.arguments?.[0],
      *     },
      *   },
      *   isRepeatable: true,
@@ -123,7 +126,7 @@ export declare class GraphQLDirective implements GraphQLSchemaElement {
      * cacheControl.name; // => 'cacheControl'
      * cacheControl.description; // => 'Controls HTTP cache hints for a field.'
      * cacheControl.args[0].name; // => 'inheritMaxAge'
-     * cacheControl.args[0].default.value; // => false
+     * cacheControl.args[0].default?.value; // => false
      * cacheControl.isRepeatable; // => true
      * cacheControl.extensions; // => { scope: 'cache' }
      * ```

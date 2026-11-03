@@ -17,6 +17,7 @@ import type { GraphQLInputType } from "../type/definition.js";
  * @returns A GraphQL value AST, or undefined if the value is invalid.
  * @example
  * ```ts
+ * import assert from 'node:assert/strict';
  * import { print } from 'graphql/language';
  * import {
  *   GraphQLInputObjectType,
@@ -37,6 +38,7 @@ import type { GraphQLInputType } from "../type/definition.js";
  *
  * const literal = valueToLiteral({ stars: 5, tags: ['featured'] }, ReviewInput);
  *
+ * assert(literal);
  * print(literal); // => '{ stars: 5, tags: ["featured"] }'
  * valueToLiteral({ tags: ['missing stars'] }, ReviewInput); // => undefined
  * ```

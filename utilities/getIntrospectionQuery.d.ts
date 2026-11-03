@@ -61,9 +61,9 @@ export interface IntrospectionOptions {
  *
  * const query = getIntrospectionQuery();
  *
- * query; // matches /__schema/
- * query; // matches /description/
- * query; // does not match /specifiedByURL/
+ * query.includes('__schema'); // => true
+ * query.includes('description'); // => true
+ * query.includes('specifiedByURL'); // => false
  * ```
  * @example
  * ```ts
@@ -81,11 +81,11 @@ export interface IntrospectionOptions {
  *   typeDepth: 3,
  * });
  *
- * query; // does not match /description/
- * query; // matches /specifiedByURL/
- * query; // matches /isRepeatable/
- * query; // matches /includeDeprecated: true/
- * query; // matches /isOneOf/
+ * query.includes('description'); // => false
+ * query.includes('specifiedByURL'); // => true
+ * query.includes('isRepeatable'); // => true
+ * query.includes('includeDeprecated: true'); // => true
+ * query.includes('isOneOf'); // => true
  * (query.match(/ofType/g)?.length ?? 0) > 0; // => true
  * ```
  */

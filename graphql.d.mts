@@ -58,7 +58,7 @@ export interface GraphQLArgs extends ParseOptions, ValidationOptions, Omit<Execu
  *   schema,
  *   source: 'query SayHello($name: String!) { greeting(name: $name) }',
  *   rootValue: {
- *     greeting: ({ name }) => `Hello, ${name}!`,
+ *     greeting: ({ name }: { name: string }) => `Hello, ${name}!`,
  *   },
  *   variableValues: { name: 'Ada' },
  *   operationName: 'SayHello',
@@ -107,9 +107,9 @@ export interface GraphQLArgs extends ParseOptions, ValidationOptions, Omit<Execu
  *     greeting: String
  *   }
  * `);
- * const stages = [];
+ * const stages: Array<string> = [];
  * const abortController = new AbortController();
- * const harness = {
+ * const harness: typeof defaultHarness = {
  *   parse: (...args) => {
  *     stages.push('parse');
  *     return defaultHarness.parse(...args);
@@ -168,7 +168,7 @@ export declare function graphql(args: GraphQLArgs): Promise<ExecutionResult>;
  *   schema,
  *   source: 'query SayHello($name: String!) { greeting(name: $name) }',
  *   rootValue: {
- *     greeting: ({ name }) => `Hello, ${name}!`,
+ *     greeting: ({ name }: { name: string }) => `Hello, ${name}!`,
  *   },
  *   variableValues: { name: 'Ada' },
  *   operationName: 'SayHello',

@@ -32,8 +32,8 @@ import type { DocumentNode } from "../language/ast.js";
  * const separated = separateOperations(document);
  *
  * Object.keys(separated); // => ['GetUser', 'GetStatus']
- * print(separated.GetUser); // matches /fragment UserFields/
- * print(separated.GetStatus); // does not match /fragment UserFields/
+ * print(separated.GetUser).includes('fragment UserFields'); // => true
+ * print(separated.GetStatus).includes('fragment UserFields'); // => false
  * ```
  */
 export declare function separateOperations(documentAST: DocumentNode): ObjMap<DocumentNode>;

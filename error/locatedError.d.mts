@@ -12,11 +12,14 @@ import { GraphQLError } from "./GraphQLError.mjs";
  * @returns The GraphQL error.
  * @example
  * ```ts
- * import { parse } from 'graphql/language';
+ * import assert from 'node:assert/strict';
+ * import { parse, Kind } from 'graphql/language';
  * import { locatedError } from 'graphql/error';
  *
  * const document = parse('{ viewer { name } }');
- * const fieldNode = document.definitions[0].selectionSet.selections[0];
+ * const operation = document.definitions[0];
+ * assert(operation.kind === Kind.OPERATION_DEFINITION);
+ * const fieldNode = operation.selectionSet.selections[0];
  * const error = locatedError(new Error('Resolver failed'), fieldNode, ['viewer']);
  *
  * error.message; // => 'Resolver failed'

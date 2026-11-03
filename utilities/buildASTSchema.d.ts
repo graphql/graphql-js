@@ -33,7 +33,7 @@ export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
  * const document = parse('type Query { hello: String }');
  * const schema = buildASTSchema(document);
  *
- * schema.getQueryType().name; // => 'Query'
+ * schema.getQueryType()?.name; // => 'Query'
  * ```
  * @example
  * ```ts
@@ -63,7 +63,7 @@ export declare function buildASTSchema(documentAST: DocumentNode, options?: Buil
  *
  * const schema = buildSchema('type Query { hello: String }');
  *
- * schema.getQueryType().name; // => 'Query'
+ * schema.getQueryType()?.name; // => 'Query'
  * ```
  * @example
  * ```ts
@@ -81,8 +81,8 @@ export declare function buildASTSchema(documentAST: DocumentNode, options?: Buil
  *
  * const directive = schema.getDirective('compose');
  *
- * directive.name; // => 'compose'
- * directive.astNode.loc; // => undefined
+ * directive?.name; // => 'compose'
+ * directive?.astNode?.loc; // => undefined
  * ```
  */
 export declare function buildSchema(source: string | Source, options?: BuildSchemaOptions & ParseOptions): GraphQLSchema;

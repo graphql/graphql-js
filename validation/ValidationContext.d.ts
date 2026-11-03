@@ -91,7 +91,7 @@ export declare class ValidationContext extends ASTValidationContext {
      *   }
      * `);
      * const document = parse('{ greeting }');
-     * const errors = [];
+     * const errors: Array<GraphQLError> = [];
      * const context = new ValidationContext(
      *   schema,
      *   document,
@@ -180,7 +180,8 @@ export declare class ValidationContext extends ASTValidationContext {
      * @returns Variable usages found directly within this node.
      * @example
      * ```ts
-     * import { parse } from 'graphql/language';
+     * import assert from 'node:assert/strict';
+     * import { parse, Kind } from 'graphql/language';
      * import { buildSchema, TypeInfo } from 'graphql/utilities';
      * import { ValidationContext } from 'graphql/validation';
      *
@@ -191,6 +192,7 @@ export declare class ValidationContext extends ASTValidationContext {
      * `);
      * const document = parse('query ($name: String) { greeting(name: $name) }');
      * const operation = document.definitions[0];
+     * assert(operation.kind === Kind.OPERATION_DEFINITION);
      * const context = new ValidationContext(
      *   schema,
      *   document,
@@ -211,7 +213,8 @@ export declare class ValidationContext extends ASTValidationContext {
      * @returns Variable usages reachable from the operation.
      * @example
      * ```ts
-     * import { parse } from 'graphql/language';
+     * import assert from 'node:assert/strict';
+     * import { parse, Kind } from 'graphql/language';
      * import { buildSchema, TypeInfo } from 'graphql/utilities';
      * import { ValidationContext } from 'graphql/validation';
      *
@@ -236,6 +239,7 @@ export declare class ValidationContext extends ASTValidationContext {
      *   }
      * `);
      * const operation = document.definitions[0];
+     * assert(operation.kind === Kind.OPERATION_DEFINITION);
      * const context = new ValidationContext(
      *   schema,
      *   document,
