@@ -27,18 +27,14 @@ export function NoUnusedFragmentsRule(
     },
     Document: {
       leave() {
-        const fragmentNameUsed = Object.create(null);
-        for (const operation of operationDefs) {
-          for (const fragment of context.getRecursivelyReferencedFragments(
-            operation,
-          )) {
-            fragmentNameUsed[fragment.name.value] = true;
-          }
-        }
-
+        const fragmentNameUsed = new Set(
+          context
+            .getRecursivelyReferencedFragmentsForOperations(operationDefs)
+            .map((fragment) => fragment.name.value),
+        );
         for (const fragmentDef of fragmentDefs) {
           const fragName = fragmentDef.name.value;
-          if (fragmentNameUsed[fragName] !== true) {
+          if (!fragmentNameUsed.has(fragName)) {
             context.reportError(
               new GraphQLError(
                 `Fragment "${fragName}" is never used.`,
