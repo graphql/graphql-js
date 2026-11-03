@@ -61,13 +61,18 @@ export function printSourceLocation(
 
   // Special case for minified documents
   if (locationLine.length > 120) {
-    const zeroBasedColumn = columnNum - 1;
-    const subLineIndex = Math.floor(zeroBasedColumn / 80);
-    const subLineColumnNum = (zeroBasedColumn % 80) + 1;
     const subLines: Array<string> = [];
     for (let i = 0; i < locationLine.length; i += 80) {
       subLines.push(locationLine.slice(i, i + 80));
     }
+
+    // At EOF, point just after the last character, even in a full chunk.
+    const zeroBasedColumn = columnNum - 1;
+    const subLineIndex = Math.min(
+      Math.floor(zeroBasedColumn / 80),
+      subLines.length - 1,
+    );
+    const subLineColumnNum = columnNum - subLineIndex * 80;
 
     return (
       locationStr +

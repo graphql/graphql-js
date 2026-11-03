@@ -79,6 +79,20 @@ describe('printSourceLocation', () => {
     }
   });
 
+  it('prints EOF after the final minified chunk', () => {
+    const source = new Source('a'.repeat(80) + 'b'.repeat(80));
+    const result = printSourceLocation(source, { line: 1, column: 161 });
+
+    expect(result).to.equal(
+      [
+        'GraphQL request:1:161',
+        `1 | ${'a'.repeat(80)}`,
+        `  | ${'b'.repeat(80)}`,
+        `  | ${' '.repeat(80)}^`,
+      ].join('\n'),
+    );
+  });
+
   it('prints single digit line number with no padding', () => {
     const result = printSourceLocation(
       new Source('*', 'Test', { line: 9, column: 1 }),
