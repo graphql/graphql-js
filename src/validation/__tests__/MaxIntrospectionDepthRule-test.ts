@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery';
@@ -12,6 +13,32 @@ function expectErrors(queryStr: string) {
 
 function expectValid(queryStr: string) {
   expectErrors(queryStr).toDeepEqual([]);
+}
+
+function expectErrorsLookingUpFragments(
+  queryStr: string,
+  lookedUpFragments: Array<string>,
+) {
+  return expectValidationErrors(
+    (context) =>
+      // eslint-disable-next-line new-cap
+      MaxIntrospectionDepthRule(
+        Object.assign(Object.create(context), {
+          getFragment(name: string) {
+            lookedUpFragments.push(name);
+            return context.getFragment(name);
+          },
+        }),
+      ),
+    queryStr,
+  );
+}
+
+function expectValidLookingUpFragments(
+  queryStr: string,
+  lookedUpFragments: Array<string>,
+) {
+  expectErrorsLookingUpFragments(queryStr, lookedUpFragments).toDeepEqual([]);
 }
 
 describe('Validate: Max introspection nodes rule', () => {
@@ -553,6 +580,49 @@ describe('Validate: Max introspection nodes rule', () => {
     `);
   });
 
+  it('reuses a successful fragment check', () => {
+    const lookedUpFragments: Array<string> = [];
+    expectValidLookingUpFragments(
+      `
+      {
+        first: __type(name: "Query") { ...Shared }
+        second: __type(name: "Query") { ...Shared }
+      }
+      fragment Shared on __Type {
+        interfaces { name }
+      }
+    `,
+      lookedUpFragments,
+    );
+    expect(lookedUpFragments).to.deep.equal(['Shared']);
+  });
+
+  it('reuses a fragment check exceeding the depth', () => {
+    const lookedUpFragments: Array<string> = [];
+    expectErrorsLookingUpFragments(
+      `
+      {
+        first: __type(name: "Query") { ...Shared }
+        second: __type(name: "Query") { ...Shared }
+      }
+      fragment Shared on __Type {
+        interfaces { interfaces { interfaces { name } } }
+      }
+    `,
+      lookedUpFragments,
+    ).toDeepEqual([
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [{ line: 3, column: 9 }],
+      },
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [{ line: 4, column: 9 }],
+      },
+    ]);
+    expect(lookedUpFragments).to.deep.equal(['Shared']);
+  });
+
   it('checks shared fragments at different depths', () => {
     expectErrors(`
       {
@@ -575,6 +645,92 @@ describe('Validate: Max introspection nodes rule', () => {
       {
         message: 'Maximum introspection depth exceeded',
         locations: [{ line: 7, column: 9 }],
+      },
+    ]);
+  });
+
+  it('reuses fragment checks from fields exceeding the depth', () => {
+    const lookedUpFragments: Array<string> = [];
+    expectErrorsLookingUpFragments(
+      `
+      {
+        first: __type(name: "Query") {
+          ...Shared
+          fields { fields { fields { name } } }
+        }
+        second: __type(name: "Query") {
+          ...Shared
+          fields { fields { fields { name } } }
+        }
+      }
+      fragment Shared on __Type {
+        ...Leaf
+      }
+      fragment Leaf on __Type {
+        name
+      }
+    `,
+      lookedUpFragments,
+    ).toDeepEqual([
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [{ line: 3, column: 9 }],
+      },
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [{ line: 7, column: 9 }],
+      },
+    ]);
+    expect(lookedUpFragments).to.deep.equal(['Shared', 'Leaf']);
+  });
+
+  it('reuses fragment checks exceeding the depth', () => {
+    const lookedUpFragments: Array<string> = [];
+    expectErrorsLookingUpFragments(
+      `
+      {
+        first: __type(name: "Query") { ...Outer }
+        second: __type(name: "Query") { interfaces { ...Outer } }
+        third: __type(name: "Query") { name }
+      }
+      fragment Outer on __Type {
+        ...Inner
+      }
+      fragment Inner on __Type {
+        fields { fields { fields { name } } }
+      }
+    `,
+      lookedUpFragments,
+    ).toDeepEqual([
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [{ line: 3, column: 9 }],
+      },
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [{ line: 4, column: 9 }],
+      },
+    ]);
+    expect(lookedUpFragments).to.deep.equal(['Outer', 'Inner']);
+  });
+
+  it('reuses fragment checks completed inside a fragment cycle', () => {
+    expectErrors(`
+      {
+        first: __type(name: "Query") { ...Outer }
+        second: __type(name: "Query") { ...Inner }
+      }
+      fragment Outer on __Type {
+        ...Inner
+        fields { fields { fields { name } } }
+      }
+      fragment Inner on __Type {
+        ...Outer
+      }
+    `).toDeepEqual([
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [{ line: 3, column: 9 }],
       },
     ]);
   });
