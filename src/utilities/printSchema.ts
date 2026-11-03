@@ -81,9 +81,9 @@ export function printSchema(schema: GraphQLSchema): string {
  *
  * const printed = printIntrospectionSchema(schema);
  *
- * printed; // matches /type __Schema/
- * printed; // matches /enum __TypeKind/
- * printed; // does not match /type Query/
+ * printed.includes('type __Schema'); // => true
+ * printed.includes('enum __TypeKind'); // => true
+ * printed.includes('type Query'); // => false
  * ```
  */
 export function printIntrospectionSchema(schema: GraphQLSchema): string {

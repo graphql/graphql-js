@@ -139,7 +139,7 @@ export interface DangerousChange {
  * const changes = findBreakingChanges(oldSchema, newSchema);
  *
  * changes[0].type; // => 'FIELD_REMOVED'
- * changes[0].description; // matches /User.name was removed/
+ * changes[0].description.includes('User.name was removed'); // => true
  * ```
  */
 export function findBreakingChanges(
@@ -185,7 +185,7 @@ export function findBreakingChanges(
  * const changes = findDangerousChanges(oldSchema, newSchema);
  *
  * changes[0].type; // => 'VALUE_ADDED_TO_ENUM'
- * changes[0].description; // matches /EMPIRE was added/
+ * changes[0].description.includes('EMPIRE was added'); // => true
  * ```
  */
 export function findDangerousChanges(
