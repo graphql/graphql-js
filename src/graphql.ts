@@ -95,7 +95,7 @@ export interface GraphQLArgs {
  *   schema,
  *   source: 'query SayHello($name: String!) { greeting(name: $name) }',
  *   rootValue: {
- *     greeting: ({ name }) => `Hello, ${name}!`,
+ *     greeting: ({ name }: { name: string }) => `Hello, ${name}!`,
  *   },
  *   variableValues: { name: 'Ada' },
  *   operationName: 'SayHello',
@@ -165,7 +165,7 @@ export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
  *   schema,
  *   source: 'query SayHello($name: String!) { greeting(name: $name) }',
  *   rootValue: {
- *     greeting: ({ name }) => `Hello, ${name}!`,
+ *     greeting: ({ name }: { name: string }) => `Hello, ${name}!`,
  *   },
  *   variableValues: { name: 'Ada' },
  *   operationName: 'SayHello',

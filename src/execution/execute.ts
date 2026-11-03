@@ -254,7 +254,7 @@ export interface ExecutionArgs {
  *   schema,
  *   document: parse('query ($name: String!) { greeting(name: $name) }'),
  *   rootValue: {
- *     greeting: ({ name }) => `Hello, ${name}!`,
+ *     greeting: ({ name }: { name: string }) => `Hello, ${name}!`,
  *   },
  *   variableValues: { name: 'Ada' },
  * }); // => { data: { greeting: 'Hello, Ada!' } }

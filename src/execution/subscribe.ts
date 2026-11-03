@@ -124,7 +124,10 @@ import { getArgumentValues } from './values';
  *     'subscription Greeting($locale: String) { greeting(locale: $locale) }',
  *   ),
  *   rootValue: {
- *     greeting: (args, contextValue) => {
+ *     greeting: (
+ *       args: { locale?: string },
+ *       contextValue: { defaultLocale: string },
+ *     ) => {
  *       const locale = args.locale ?? contextValue.defaultLocale;
  *       return locale === 'fr' ? frenchGreetings() : defaultGreetings();
  *     },
