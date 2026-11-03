@@ -1189,6 +1189,11 @@ export const defaultTypeResolver: GraphQLTypeResolver<mixed, mixed> = function (
       if (isPromise(isTypeOfResult)) {
         promisedIsTypeOfResults[i] = isTypeOfResult;
       } else if (isTypeOfResult) {
+        if (promisedIsTypeOfResults.length) {
+          Promise.all(promisedIsTypeOfResults).catch(() => {
+            /* Ignore unused results. */
+          });
+        }
         return type.name;
       }
     }
