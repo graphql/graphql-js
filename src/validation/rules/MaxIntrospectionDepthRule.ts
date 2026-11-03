@@ -45,8 +45,17 @@ const MAX_LISTS_DEPTH = 3;
 export function MaxIntrospectionDepthRule(
   context: ASTValidationContext,
 ): ASTVisitor {
+  // For each fragment, the greatest entry depth at which its check completed
+  // without reaching the limit. Shared across root checks.
+  // Entry depth is the list depth before entering the fragment.
   const checkedFragments: { [key: string]: number | undefined } =
     Object.create(null);
+
+  // For each fragment, the smallest entry depth at which its check reached
+  // the limit. Shared across root checks.
+  const exceededFragments: { [key: string]: number | undefined } =
+    Object.create(null);
+
   /**
    * Counts the depth of list fields in "__Type" recursively and
    * returns `true` if the limit has been reached.
@@ -62,8 +71,16 @@ export function MaxIntrospectionDepthRule(
   ): boolean {
     if (node.kind === Kind.FRAGMENT_SPREAD) {
       const fragmentName = node.name.value;
+      const exceededEntryDepth = exceededFragments[fragmentName];
+      // A check that reached the limit will also do so when repeated at an
+      // equal or greater entry depth.
+      if (exceededEntryDepth !== undefined && exceededEntryDepth <= depth) {
+        return true;
+      }
       const visitedEntryDepth = visitedFragments[fragmentName];
       const checkedEntryDepth = checkedFragments[fragmentName];
+      // At equal or shallower entry depths, skip revisits to break cycles
+      // or reuse a completed successful check.
       if (
         (visitedEntryDepth !== undefined && visitedEntryDepth >= depth) ||
         (checkedEntryDepth !== undefined && checkedEntryDepth >= depth)
@@ -77,7 +94,12 @@ export function MaxIntrospectionDepthRule(
       }
 
       visitedFragments[fragmentName] = depth;
-      return checkDepth(fragment, visitedFragments, depth);
+      if (checkDepth(fragment, visitedFragments, depth)) {
+        exceededFragments[fragmentName] = depth;
+        return true;
+      }
+      checkedFragments[fragmentName] = depth;
+      return false;
     }
 
     if (
@@ -110,6 +132,8 @@ export function MaxIntrospectionDepthRule(
   return {
     Field(node) {
       if (node.name.value === '__schema' || node.name.value === '__type') {
+        // For each fragment, the greatest entry depth at which it was visited
+        // during this root check, including visits still in progress.
         const visitedFragments: { [key: string]: number } = Object.create(null);
         if (checkDepth(node, visitedFragments)) {
           context.reportError(
@@ -118,9 +142,6 @@ export function MaxIntrospectionDepthRule(
             }),
           );
           return false;
-        }
-        for (const name of Object.keys(visitedFragments)) {
-          checkedFragments[name] = visitedFragments[name];
         }
       }
     },
