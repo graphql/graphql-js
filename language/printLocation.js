@@ -18,13 +18,13 @@ function printSourceLocation(source, sourceLocation) {
     const lines = body.split(/\r\n|[\n\r]/g);
     const locationLine = lines[lineIndex];
     if (locationLine.length > 120) {
-        const zeroBasedColumn = columnNum - 1;
-        const subLineIndex = Math.floor(zeroBasedColumn / 80);
-        const subLineColumnNum = (zeroBasedColumn % 80) + 1;
         const subLines = [];
         for (let i = 0; i < locationLine.length; i += 80) {
             subLines.push(locationLine.slice(i, i + 80));
         }
+        const zeroBasedColumn = columnNum - 1;
+        const subLineIndex = Math.min(Math.floor(zeroBasedColumn / 80), subLines.length - 1);
+        const subLineColumnNum = columnNum - subLineIndex * 80;
         return (locationStr +
             printPrefixedLines([
                 [`${lineNum} |`, subLines[0]],
