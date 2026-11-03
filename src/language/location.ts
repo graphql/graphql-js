@@ -1,10 +1,6 @@
 /** @category Source */
 
-import { invariant } from '../jsutils/invariant';
-
 import type { Source } from './source';
-
-const LineRegExp = /\r\n|[\n\r]/g;
 
 /** Represents a location in a Source. */
 export interface SourceLocation {
@@ -29,17 +25,41 @@ export interface SourceLocation {
  * ```
  */
 export function getLocation(source: Source, position: number): SourceLocation {
-  let lastLineStart = 0;
-  let line = 1;
+  return getLocations([{ source, start: position }])[0];
+}
 
-  for (const match of source.body.matchAll(LineRegExp)) {
-    invariant(typeof match.index === 'number');
-    if (match.index >= position) {
-      break;
+/** @internal */
+export function getLocations(
+  locations: ReadonlyArray<{ source: Source; start: number }>,
+): Array<SourceLocation> {
+  const bySource = new Map<
+    Source,
+    Array<{ position: number; index: number }>
+  >();
+  locations.forEach(({ source, start }, index) => {
+    let positions = bySource.get(source);
+    if (positions === undefined) {
+      positions = [];
+      bySource.set(source, positions);
     }
-    lastLineStart = match.index + match[0].length;
-    line += 1;
+    positions.push({ position: start, index });
+  });
+  const result = new Array<SourceLocation>(locations.length);
+  for (const [source, positions] of bySource) {
+    const lineRegexp = /\r\n|[\n\r]/g;
+    let match = lineRegexp.exec(source.body);
+    let line = 1;
+    let lastLineStart = 0;
+    // These arrays are local; sorting never changes the caller's input.
+    positions.sort((a, b) => a.position - b.position);
+    for (const { position, index } of positions) {
+      while (match !== null && match.index < position) {
+        lastLineStart = match.index + match[0].length;
+        line++;
+        match = lineRegexp.exec(source.body);
+      }
+      result[index] = { line, column: position + 1 - lastLineStart };
+    }
   }
-
-  return { line, column: position + 1 - lastLineStart };
+  return result;
 }
