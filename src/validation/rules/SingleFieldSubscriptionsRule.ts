@@ -60,6 +60,7 @@ import type { ValidationContext } from '../ValidationContext';
 export function SingleFieldSubscriptionsRule(
   context: ValidationContext,
 ): ASTVisitor {
+  let fragments: ObjMap<FragmentDefinitionNode> | undefined;
   return {
     OperationDefinition(node: OperationDefinitionNode) {
       if (node.operation === 'subscription') {
@@ -70,11 +71,12 @@ export function SingleFieldSubscriptionsRule(
           const variableValues: {
             [variable: string]: any;
           } = Object.create(null);
-          const document = context.getDocument();
-          const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
-          for (const definition of document.definitions) {
-            if (definition.kind === Kind.FRAGMENT_DEFINITION) {
-              fragments[definition.name.value] = definition;
+          if (fragments === undefined) {
+            fragments = Object.create(null) as ObjMap<FragmentDefinitionNode>;
+            for (const definition of context.getDocument().definitions) {
+              if (definition.kind === Kind.FRAGMENT_DEFINITION) {
+                fragments[definition.name.value] = definition;
+              }
             }
           }
           const fields = collectFields(
