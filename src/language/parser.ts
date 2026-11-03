@@ -1700,10 +1700,13 @@ export class Parser {
    * @returns Parsed schema coordinate AST.
    * @example
    * ```ts
-   * import { parseSchemaCoordinate } from 'graphql/language';
+   * import assert from 'node:assert/strict';
+   * import { Kind, parseSchemaCoordinate } from 'graphql/language';
    *
    * const typeCoordinate = parseSchemaCoordinate('User.name');
    * const directiveCoordinate = parseSchemaCoordinate('@include(if:)');
+   * assert(typeCoordinate.kind === Kind.MEMBER_COORDINATE);
+   * assert(directiveCoordinate.kind === Kind.DIRECTIVE_ARGUMENT_COORDINATE);
    *
    * typeCoordinate.name.value; // => 'User'
    * typeCoordinate.memberName?.value; // => 'name'

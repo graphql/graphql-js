@@ -1767,6 +1767,7 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
    * @param config - Configuration describing this object.
    * @example
    * ```ts
+   * import assert from 'node:assert/strict';
    * import { Kind, parse } from 'graphql/language';
    * import { GraphQLScalarType } from 'graphql/type';
    *
@@ -1776,6 +1777,8 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
    *
    *   extend scalar Odd @specifiedBy(url: "https://example.com/odd-v2")
    * `);
+   * assert(document.definitions[0].kind === Kind.SCALAR_TYPE_DEFINITION);
+   * assert(document.definitions[1].kind === Kind.SCALAR_TYPE_EXTENSION);
    *
    * const ensureOdd = (value: unknown) => {
    *   if (
@@ -2071,8 +2074,9 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
    * @param config - Configuration describing this object.
    * @example
    * ```ts
+   * import assert from 'node:assert/strict';
    * // Configure an object type with interfaces, fields, arguments, and metadata.
-   * import { parse } from 'graphql/language';
+   * import { parse, Kind } from 'graphql/language';
    * import {
    *   GraphQLID,
    *   GraphQLInterfaceType,
@@ -2091,9 +2095,11 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
    *     displayName: String
    *   }
    * `);
+   * assert(document.definitions[0].kind === Kind.OBJECT_TYPE_DEFINITION);
+   * assert(document.definitions[1].kind === Kind.OBJECT_TYPE_EXTENSION);
    * const definition = document.definitions[0];
-   * const nameField = definition.fields[1];
-   * const formatArg = nameField.arguments[0];
+   * const nameField = definition.fields?.[1];
+   * const formatArg = nameField?.arguments?.[0];
    *
    * const Node = new GraphQLInterfaceType({
    *   name: 'Node',
@@ -2767,7 +2773,8 @@ export class GraphQLInterfaceType {
    * @param config - Configuration describing this object.
    * @example
    * ```ts
-   * import { parse } from 'graphql/language';
+   * import assert from 'node:assert/strict';
+   * import { parse, Kind } from 'graphql/language';
    * import { GraphQLID, GraphQLInterfaceType, GraphQLNonNull } from 'graphql/type';
    *
    * const document = parse(`
@@ -2783,6 +2790,8 @@ export class GraphQLInterfaceType {
    *     url: String
    *   }
    * `);
+   * assert(document.definitions[1].kind === Kind.INTERFACE_TYPE_DEFINITION);
+   * assert(document.definitions[2].kind === Kind.INTERFACE_TYPE_EXTENSION);
    *
    * const Node = new GraphQLInterfaceType({
    *   name: 'Node',
@@ -3106,6 +3115,8 @@ export class GraphQLUnionType {
    * @param config - Configuration describing this object.
    * @example
    * ```ts
+   * import { Kind } from 'graphql/language';
+   * import assert from 'node:assert/strict';
    * import { parse } from 'graphql/language';
    * import { GraphQLObjectType, GraphQLString, GraphQLUnionType } from 'graphql/type';
    *
@@ -3114,6 +3125,8 @@ export class GraphQLUnionType {
    *
    *   extend union Media = Audio
    * `);
+   * assert(document.definitions[0].kind === Kind.UNION_TYPE_DEFINITION);
+   * assert(document.definitions[1].kind === Kind.UNION_TYPE_EXTENSION);
    *
    * const Photo = new GraphQLObjectType({
    *   name: 'Photo',
@@ -3400,7 +3413,8 @@ export class GraphQLEnumType /* <T> */ {
    * @param config - Configuration describing this object.
    * @example
    * ```ts
-   * import { parse } from 'graphql/language';
+   * import assert from 'node:assert/strict';
+   * import { parse, Kind } from 'graphql/language';
    * import { GraphQLEnumType } from 'graphql/type';
    *
    * const document = parse(`
@@ -3414,6 +3428,8 @@ export class GraphQLEnumType /* <T> */ {
    *     FORCE_AWAKENS
    *   }
    * `);
+   * assert(document.definitions[0].kind === Kind.ENUM_TYPE_DEFINITION);
+   * assert(document.definitions[1].kind === Kind.ENUM_TYPE_EXTENSION);
    * const definition = document.definitions[0];
    *
    * const Episode = new GraphQLEnumType({
@@ -3424,13 +3440,13 @@ export class GraphQLEnumType /* <T> */ {
    *       value: 4,
    *       description: 'Released in 1977.',
    *       extensions: { trilogy: 'original' },
-   *       astNode: definition.values[0],
+   *       astNode: definition.values?.[0],
    *     },
-   *     EMPIRE: { value: 5, astNode: definition.values[1] },
+   *     EMPIRE: { value: 5, astNode: definition.values?.[1] },
    *     JEDI: {
    *       value: 6,
    *       deprecationReason: 'Use RETURN_OF_THE_JEDI.',
-   *       astNode: definition.values[2],
+   *       astNode: definition.values?.[2],
    *     },
    *   },
    *   extensions: { catalog: 'films' },
@@ -3912,7 +3928,8 @@ export class GraphQLInputObjectType {
    * @param config - Configuration describing this object.
    * @example
    * ```ts
-   * import { parse } from 'graphql/language';
+   * import assert from 'node:assert/strict';
+   * import { parse, Kind } from 'graphql/language';
    * import {
    *   GraphQLID,
    *   GraphQLInputObjectType,
@@ -3931,6 +3948,8 @@ export class GraphQLInputObjectType {
    *     body: String
    *   }
    * `);
+   * assert(document.definitions[0].kind === Kind.INPUT_OBJECT_TYPE_DEFINITION);
+   * assert(document.definitions[1].kind === Kind.INPUT_OBJECT_TYPE_EXTENSION);
    * const definition = document.definitions[0];
    *
    * const ReviewInput = new GraphQLInputObjectType({
@@ -3941,13 +3960,13 @@ export class GraphQLInputObjectType {
    *       description: 'Star rating from one to five.',
    *       type: new GraphQLNonNull(GraphQLInt),
    *       extensions: { min: 1, max: 5 },
-   *       astNode: definition.fields[0],
+   *       astNode: definition.fields?.[0],
    *     },
    *     commentary: {
    *       type: GraphQLString,
    *       defaultValue: '',
    *       deprecationReason: 'Use body.',
-   *       astNode: definition.fields[1],
+   *       astNode: definition.fields?.[1],
    *     },
    *   },
    *   extensions: { form: 'review' },

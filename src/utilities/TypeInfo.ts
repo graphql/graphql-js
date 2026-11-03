@@ -499,6 +499,7 @@ export class TypeInfo {
    * @returns Nothing.
    * @example
    * ```ts
+   * import assert from 'node:assert/strict';
    * import { Kind, parse } from 'graphql/language';
    * import { buildSchema, TypeInfo } from 'graphql/utilities';
    *
@@ -509,6 +510,7 @@ export class TypeInfo {
    * `);
    * const document = parse('{ greeting }');
    * const operation = document.definitions[0];
+   * assert(operation.kind === Kind.OPERATION_DEFINITION);
    * const selectionSet = operation.selectionSet;
    * const field = selectionSet.selections[0];
    * const typeInfo = new TypeInfo(schema);
@@ -639,7 +641,8 @@ export class TypeInfo {
    * @returns Nothing.
    * @example
    * ```ts
-   * import { parse } from 'graphql/language';
+   * import assert from 'node:assert/strict';
+   * import { parse, Kind } from 'graphql/language';
    * import { buildSchema, TypeInfo } from 'graphql/utilities';
    *
    * const schema = buildSchema(`
@@ -649,6 +652,7 @@ export class TypeInfo {
    * `);
    * const document = parse('{ greeting }');
    * const operation = document.definitions[0];
+   * assert(operation.kind === Kind.OPERATION_DEFINITION);
    * const selectionSet = operation.selectionSet;
    * const field = selectionSet.selections[0];
    * const typeInfo = new TypeInfo(schema);

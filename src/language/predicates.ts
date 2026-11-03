@@ -70,8 +70,11 @@ export function isExecutableDefinitionNode(
  * ```ts
  * import { Kind, isSelectionNode } from 'graphql/language';
  *
- * const field = { kind: Kind.FIELD, name: { kind: Kind.NAME, value: 'hello' } };
- * const document = { kind: Kind.DOCUMENT, definitions: [] };
+ * const field = {
+ *   kind: Kind.FIELD,
+ *   name: { kind: Kind.NAME, value: 'hello' },
+ * } as const;
+ * const document = { kind: Kind.DOCUMENT, definitions: [] } as const;
  *
  * isSelectionNode(field); // => true
  * isSelectionNode(document); // => false
