@@ -414,26 +414,32 @@ function join(
   maybeArray: Maybe<$ReadOnlyArray<string | PrintBuffer | void>>,
   separator = '',
 ): PrintBuffer {
+  if (maybeArray == null || maybeArray.length === 0) {
+    return EMPTY;
+  }
   let result = EMPTY;
-  for (const item of maybeArray ?? []) {
+  for (const item of maybeArray) {
     if (item === undefined || item.length === 0) {
       continue;
     }
     if (result.length === 0) {
       result = typeof item === 'string' ? new PrintBuffer(item) : item;
     } else {
-      result.append(separator).append(item);
+      if (separator !== '') {
+        result.append(separator);
+      }
+      result.append(item);
     }
   }
   return result;
 }
 
 function joinedLength(
-  maybeArray: Maybe<$ReadOnlyArray<PrintBuffer>>,
+  array: $ReadOnlyArray<PrintBuffer>,
   separator: string,
 ): number {
   let length = 0;
-  for (const item of maybeArray ?? []) {
+  for (const item of array) {
     if (item.length !== 0) {
       length += (length === 0 ? 0 : separator.length) + item.length;
     }
@@ -461,7 +467,9 @@ function wrap(
   end = '',
 ): PrintBuffer {
   return maybeBuffer != null && maybeBuffer.length !== 0
-    ? new PrintBuffer(start).append(maybeBuffer).append(end)
+    ? start === ''
+      ? maybeBuffer.append(end)
+      : new PrintBuffer(start).append(maybeBuffer).append(end)
     : EMPTY;
 }
 
@@ -477,6 +485,9 @@ function wrappedLineAndArgs(
   prefix: PrintBuffer,
   args: $ReadOnlyArray<PrintBuffer> | void,
 ): PrintBuffer {
+  if (args == null || args.length === 0) {
+    return prefix;
+  }
   return join([
     prefix,
     prefix.length + joinedLength(args, ', ') + 2 > MAX_LINE_LENGTH
