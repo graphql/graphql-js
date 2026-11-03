@@ -28,6 +28,7 @@ const directory = fs.mkdtempSync(
 );
 const originalDirectory = process.cwd();
 const exampleRequire = createRequire(path.join(directory, 'example.js'));
+const typeErrors = new Map<Example, Array<string>>();
 after(() => {
   process.chdir(originalDirectory);
   fs.rmSync(directory, { recursive: true, force: true });
@@ -71,6 +72,9 @@ before(function prepareExamples(this: Context) {
     ],
     { cwd: directory },
   );
+  for (const [example, errors] of checkExampleTypes(allExamples, directory)) {
+    typeErrors.set(example, errors);
+  }
   process.chdir(directory);
 });
 
@@ -78,6 +82,8 @@ before(function prepareExamples(this: Context) {
 // TypeScript compiles snippets and preserves top-level await in the async wrapper.
 for (const example of allExamples) {
   it(`${example.filename}:${example.line}`, async () => {
+    const errors = typeErrors.get(example) ?? [];
+    assert.equal(errors.length, 0, errors.join('\n'));
     const source = parseExample(example);
     validateImports(source);
     const { assertionEdits, locations, runtimeName } = getAssertionEdits(
@@ -101,6 +107,55 @@ ${javascript.replace(/^#![^\r\n]*/, '')}
     );
     await run(exampleRequire, {});
   });
+}
+
+function checkExampleTypes(
+  examples: ReadonlyArray<Example>,
+  exampleDirectory: string,
+): Map<Example, Array<string>> {
+  const examplesByPath = new Map<string, Example>();
+  for (const [index, example] of examples.entries()) {
+    const filename = path.join(exampleDirectory, `${index}.ts`);
+    // Import-free snippets are modules too; keep original diagnostic positions.
+    fs.writeFileSync(filename, `${example.code}\nexport {};`);
+    examplesByPath.set(filename, example);
+  }
+  const config = ts.readConfigFile(
+    path.join(root, 'tsconfig.json'),
+    ts.sys.readFile,
+  );
+  assert(!config.error, 'Cannot read tsconfig.json');
+  const { options, errors: configErrors } = ts.parseJsonConfigFileContent(
+    config.config,
+    ts.sys,
+    root,
+  );
+  assert.equal(configErrors.length, 0, 'Invalid TypeScript configuration');
+  const program = ts.createProgram([...examplesByPath.keys()], {
+    ...options,
+    module: ts.ModuleKind.ESNext,
+    moduleResolution: ts.ModuleResolutionKind.NodeJs,
+    esModuleInterop: true,
+    noUnusedLocals: false,
+    typeRoots: [path.join(root, 'node_modules/@types')],
+    types: ['node'],
+  });
+  const errors = new Map<Example, Array<string>>();
+  for (const diagnostic of ts.getPreEmitDiagnostics(program)) {
+    const message = `TS${diagnostic.code}: ${ts.flattenDiagnosticMessageText(
+      diagnostic.messageText,
+      '\n',
+    )}`;
+    const { file, start } = diagnostic;
+    assert(file && start !== undefined, message);
+    const { line } = file.getLineAndCharacterOfPosition(start);
+    const example = examplesByPath.get(path.normalize(file.fileName));
+    assert(example, `${file.fileName}:${line + 1}: ${message}`);
+    const messages = errors.get(example) ?? [];
+    messages.push(`${example.filename}:${example.line + line}: ${message}`);
+    errors.set(example, messages);
+  }
+  return errors;
 }
 
 function findExamples(): Array<Example> {
@@ -135,9 +190,13 @@ function extractExamples(text: string, filename: string): Array<Example> {
     text,
     filename,
   )) {
-    if (!['ts', 'typescript', 'js', 'javascript'].includes(language)) {
+    if (['graphql', 'gql'].includes(language)) {
       continue;
     }
+    assert(
+      ['ts', 'typescript'].includes(language),
+      `${filename}:${line}: executable examples must use a TypeScript fence (ts or typescript)`,
+    );
     assert.equal(
       metadata,
       '',
