@@ -41,6 +41,7 @@ import { GraphQLID } from '../type/scalars.ts';
  * @returns A GraphQL value AST for the provided JavaScript value, or null when no literal can represent it.
  * @example
  * ```ts
+ * import assert from 'node:assert/strict';
  * import { print } from 'graphql/language';
  * import {
  *   GraphQLInputObjectType,
@@ -64,6 +65,7 @@ import { GraphQLID } from '../type/scalars.ts';
  *   ReviewInput,
  * );
  *
+ * assert(valueNode);
  * print(valueNode); // => '{ stars: 5, tags: ["featured", "verified"] }'
  * astFromValue(undefined, GraphQLString); // => null
  * astFromValue(null, new GraphQLNonNull(GraphQLString)); // => null

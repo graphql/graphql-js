@@ -109,12 +109,15 @@ export class GraphQLError extends Error {
    * @param options - Error metadata such as source locations, response path, cause, original error, and extensions.
    * @example
    * ```ts
+   * import assert from 'node:assert/strict';
    * // Create an error from AST nodes and response metadata.
-   * import { parse } from 'graphql/language';
+   * import { parse, Kind } from 'graphql/language';
    * import { GraphQLError } from 'graphql/error';
    *
    * const document = parse('{ greeting }');
-   * const fieldNode = document.definitions[0].selectionSet.selections[0];
+   * const operation = document.definitions[0];
+   * assert(operation.kind === Kind.OPERATION_DEFINITION);
+   * const fieldNode = operation.selectionSet.selections[0];
    * const error = new GraphQLError('Cannot query this field.', {
    *   nodes: fieldNode,
    *   path: ['greeting'],
