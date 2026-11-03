@@ -54,8 +54,9 @@ export function printSourceLocation(
   const locationLine = lines[lineIndex];
   // Special case for minified documents
   if (locationLine.length > 120) {
-    const subLineIndex = Math.floor(columnNum / 80);
-    const subLineColumnNum = columnNum % 80;
+    const zeroBasedColumn = columnNum - 1;
+    const subLineIndex = Math.floor(zeroBasedColumn / 80);
+    const subLineColumnNum = (zeroBasedColumn % 80) + 1;
     const subLines: Array<string> = [];
     for (let i = 0; i < locationLine.length; i += 80) {
       subLines.push(locationLine.slice(i, i + 80));
