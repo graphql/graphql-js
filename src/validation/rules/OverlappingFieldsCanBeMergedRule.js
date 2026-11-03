@@ -118,6 +118,7 @@ interface FieldDetails {
   node: FieldNode;
   definition: ?GraphQLField<mixed, mixed>;
   info?: FieldInfo;
+  isSimpleLeaf: boolean;
 }
 interface FieldInfo {
   typeString?: string;
@@ -665,7 +666,14 @@ function findConflict(
 
   // Count attempted field pairs, including pairs skipped by type exclusivity.
   spendComplexityBudget(ruleContext, 2);
-
+  if (
+    fieldDetails1.isSimpleLeaf &&
+    fieldDetails2.isSimpleLeaf &&
+    def1?.type === def2?.type &&
+    node1.name.value === node2.name.value
+  ) {
+    return;
+  }
   if (!areMutuallyExclusive) {
     const fieldInfo1 = getFieldInfo(fieldDetails1);
     const fieldInfo2 = getFieldInfo(fieldDetails2);
@@ -946,6 +954,8 @@ function collectFieldsImpl(
           parentType,
           node: selection,
           definition: fieldDef,
+          isSimpleLeaf:
+            (selection.arguments?.length ?? 0) === 0 && !selection.selectionSet,
         });
         break;
       }
