@@ -13,3 +13,8 @@ export interface SourceLocation {
  * line and column as a SourceLocation.
  */
 export function getLocation(source: Source, position: number): SourceLocation;
+
+/** @internal */
+export function getLocations(
+  locations: ReadonlyArray<{ source: Source; start: number }>,
+): Array<SourceLocation>;

@@ -5,7 +5,7 @@ import { SYMBOL_TO_STRING_TAG } from '../polyfills/symbols';
 import type { ASTNode } from '../language/ast';
 import type { Source } from '../language/source';
 import type { SourceLocation } from '../language/location';
-import { getLocation } from '../language/location';
+import { getLocations } from '../language/location';
 import { printLocation, printSourceLocation } from '../language/printLocation';
 
 /**
@@ -98,8 +98,8 @@ export class GraphQLError extends Error {
 
     this.locations =
       positions && source
-        ? positions.map((pos) => getLocation(source, pos))
-        : nodeLocations?.map((loc) => getLocation(loc.source, loc.start));
+        ? getLocations(positions.map((start) => ({ source, start })))
+        : nodeLocations && getLocations(nodeLocations);
 
     this.path = path ?? undefined;
 
