@@ -84,12 +84,6 @@ async function buildPackage(outDir: string): Promise<void> {
 
     if (ext === '.map') {
       continue;
-    } else if (path.basename(dir) === 'dev') {
-      packageJSON.exports['./dev'] = buildPlatformConditionalExports(
-        './dev',
-        'index',
-      );
-      continue;
     }
 
     const relativePathToProd = path.relative(prodFile, outDir);
@@ -167,7 +161,7 @@ function emitTSFiles(options: {
   emittedTSFiles: ReadonlyArray<string>;
 } {
   const { extension, ...rest } = options;
-  const rootFiles = ['src/index.ts', 'src/dev/index.ts'];
+  const rootFiles = ['src/index.ts'];
   const jsOptions = readTSConfig({
     ...rest,
     noEmit: false,
