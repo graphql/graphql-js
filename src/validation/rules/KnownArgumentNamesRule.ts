@@ -87,7 +87,9 @@ export function KnownArgumentNamesOnDirectivesRule(
     ? schema.getDirectives()
     : specifiedDirectives;
   for (const directive of definedDirectives) {
-    directiveArgs[directive.name] = directive.args.map((arg) => arg.name);
+    directiveArgs[directive.name] = new Set(
+      directive.args.map((arg) => arg.name),
+    );
   }
 
   const astDefinitions = context.getDocument().definitions;
@@ -97,7 +99,9 @@ export function KnownArgumentNamesOnDirectivesRule(
       /* c8 ignore next */
       const argsNodes = def.arguments ?? [];
 
-      directiveArgs[def.name.value] = argsNodes.map((arg) => arg.name.value);
+      directiveArgs[def.name.value] = new Set(
+        argsNodes.map((arg) => arg.name.value),
+      );
     }
   }
 
@@ -109,8 +113,8 @@ export function KnownArgumentNamesOnDirectivesRule(
       if (directiveNode.arguments && knownArgs) {
         for (const argNode of directiveNode.arguments) {
           const argName = argNode.name.value;
-          if (!knownArgs.includes(argName)) {
-            const suggestions = suggestionList(argName, knownArgs);
+          if (!knownArgs.has(argName)) {
+            const suggestions = suggestionList(argName, [...knownArgs]);
             context.reportError(
               new GraphQLError(
                 `Unknown argument "${argName}" on directive "@${directiveName}".` +
