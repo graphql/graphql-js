@@ -1,12 +1,16 @@
 import { strict as assert } from 'assert';
 import fs from 'fs';
-import { it } from 'mocha';
+import type { Context } from 'mocha';
+import { after, before, it } from 'mocha';
+import { createRequire } from 'module';
+import os from 'os';
 import path from 'path';
 import ts from 'typescript';
 import vm from 'vm';
 
 import type { SourceEdit } from './jsdoc-examples';
 import { applyEdits, extractJSDocExamples } from './jsdoc-examples';
+import { spawnOutput } from './utils.js';
 
 interface Example {
   filename: string;
@@ -19,18 +23,68 @@ const root = path.join(__dirname, '..');
 const allExamples = findExamples();
 assert(allExamples.length > 0, 'No JSDoc examples found');
 
-// Find examples, parse their code, rewrite imports and assertions, then run them.
-// TypeScript reads syntax and compiles examples for the existing source loader.
+const directory = fs.mkdtempSync(
+  path.join(os.tmpdir(), 'graphql-js-examples-'),
+);
+const originalDirectory = process.cwd();
+const exampleRequire = createRequire(path.join(directory, 'example.js'));
+after(() => {
+  process.chdir(originalDirectory);
+  fs.rmSync(directory, { recursive: true, force: true });
+});
+before(function prepareExamples(this: Context) {
+  this.timeout(120000);
+  const packageDirectory = path.join(directory, 'npmDist');
+  spawnOutput(
+    process.execPath,
+    [path.join(root, 'resources/build-npm.js'), packageDirectory],
+    { cwd: root },
+  );
+  const npmCommand = process.platform === 'win32' ? 'cmd' : 'npm';
+  const npmPrefix = process.platform === 'win32' ? ['/c', 'npm.cmd'] : [];
+  const archives: Array<{ filename: string }> = JSON.parse(
+    spawnOutput(
+      npmCommand,
+      [...npmPrefix, 'pack', packageDirectory, '--json', '--ignore-scripts'],
+      {
+        cwd: directory,
+      },
+    ),
+  );
+  assert.equal(archives.length, 1);
+  fs.writeFileSync(
+    path.join(directory, 'package.json'),
+    JSON.stringify({
+      private: true,
+      dependencies: { graphql: `file:./${archives[0].filename}` },
+    }),
+  );
+  spawnOutput(
+    npmCommand,
+    [
+      ...npmPrefix,
+      'install',
+      '--ignore-scripts',
+      '--offline',
+      '--no-audit',
+      '--no-fund',
+    ],
+    { cwd: directory },
+  );
+  process.chdir(directory);
+});
+
+// Run each example against the installed package through CommonJS resolution.
+// TypeScript compiles snippets and preserves top-level await in the async wrapper.
 for (const example of allExamples) {
   it(`${example.filename}:${example.line}`, async () => {
     const source = parseExample(example);
     validateImports(source);
-    const importEdits = getImportEdits(source);
     const { assertionEdits, locations, runtimeName } = getAssertionEdits(
       source,
       example,
     );
-    const code = applyEdits(example.code, [...importEdits, ...assertionEdits]);
+    const code = applyEdits(example.code, assertionEdits);
     const module = addRuntimeChecks(code, locations, runtimeName);
     const javascript = ts.transpileModule(module, {
       compilerOptions: {
@@ -45,18 +99,18 @@ ${javascript.replace(/^#![^\r\n]*/, '')}
 })`,
       { filename: `${example.filename}:${example.line}` },
     );
-    await run(require, {});
+    await run(exampleRequire, {});
   });
 }
 
 function findExamples(): Array<Example> {
   const examples: Array<Example> = [];
   const names: Array<string> = [];
-  function walk(directory: string): void {
-    for (const entry of fs.readdirSync(path.join(root, 'src', directory), {
+  function walk(relativePath: string): void {
+    for (const entry of fs.readdirSync(path.join(root, 'src', relativePath), {
       withFileTypes: true,
     })) {
-      const name = path.join(directory, entry.name);
+      const name = path.join(relativePath, entry.name);
       if (entry.isDirectory()) {
         walk(name);
       } else {
@@ -171,9 +225,7 @@ function validateImports(source: ts.SourceFile): void {
     }
     assert(ts.isStringLiteral(statement.moduleSpecifier));
     const specifier = statement.moduleSpecifier.text;
-    const target = resolveSourceImport(specifier);
-    // eslint-disable-next-line node/global-require, import/no-dynamic-require, @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports -- Load the same source module as the example.
-    const module = require(target === undefined ? specifier : target);
+    const module = exampleRequire(specifier);
     const checkBinding = (name: string) => {
       // CommonJS modules supply a synthetic default through esModuleInterop.
       if (name === 'default' && !module?.__esModule) {
@@ -193,54 +245,6 @@ function validateImports(source: ts.SourceFile): void {
       }
     }
   }
-}
-
-function getImportEdits(source: ts.SourceFile): Array<SourceEdit> {
-  const edits: Array<SourceEdit> = [];
-  function visit(node: ts.Node): void {
-    const specifier =
-      ts.isImportDeclaration(node) || ts.isExportDeclaration(node)
-        ? node.moduleSpecifier
-        : ts.isCallExpression(node) &&
-          node.expression.kind === ts.SyntaxKind.ImportKeyword
-        ? node.arguments[0]
-        : undefined;
-    if (specifier && ts.isStringLiteral(specifier)) {
-      const target = resolveSourceImport(specifier.text);
-      if (target !== undefined) {
-        edits.push({
-          start: specifier.getStart(source),
-          end: specifier.end,
-          text: JSON.stringify(target),
-        });
-      }
-    }
-    ts.forEachChild(node, visit);
-  }
-  visit(source);
-  return edits;
-}
-
-// Package imports in documentation run against this checkout's TypeScript source.
-function resolveSourceImport(specifier: string): string | undefined {
-  // Node 12 supports these built-in modules without the node: require prefix.
-  if (specifier.startsWith('node:')) {
-    return specifier.slice('node:'.length);
-  }
-
-  if (specifier !== 'graphql' && !specifier.startsWith('graphql/')) {
-    return undefined;
-  }
-  const subpath =
-    specifier === 'graphql'
-      ? 'index'
-      : specifier.slice('graphql/'.length).replace(/\.js$/, '');
-  const filename = path.join(root, 'src', subpath);
-  const target =
-    fs.existsSync(filename) && fs.statSync(filename).isDirectory()
-      ? path.join(filename, 'index.ts')
-      : `${filename}.ts`;
-  return target;
 }
 
 function getAssertionEdits(source: ts.SourceFile, example: Example) {

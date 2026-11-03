@@ -76,16 +76,19 @@ ensure your pull request matches the style guides, run `npm run prettier`.
 
 ## Executable API examples
 
-Run `npm run check:examples` to execute all JavaScript and TypeScript fences under
-JSDoc `@example` tags in `src`. No package build is needed. CI runs the same check
-alongside the other lint checks.
+Run `npm run check:examples` to build, pack, and install the npm package into a
+temporary consumer project, then execute the JavaScript and TypeScript fences
+under JSDoc `@example` tags in `src`. CI runs the same check alongside the other
+lint checks.
 
-Each fence runs separately: include its imports and setup. The TypeScript runner uses the shared JSDoc Markdown parser, validates original
-module syntax, rewrites imports and assertion comments, and executes
-them in memory using Mocha and the existing Babel source loader. Imports from `graphql` resolve directly to the
-source in `src`.
-It checks runtime behavior, not TypeScript types. GraphQL fences are not executed.
-Examples without expectations are smoke tests.
+Each fence runs separately: include its imports and setup. The TypeScript runner
+uses the shared JSDoc Markdown parser, validates original module syntax, and
+adds runtime assertions. Mocha executes the transpiled examples with CommonJS
+resolution from the temporary consumer directory, so `graphql` imports load the
+installed package. The original working directory is restored during cleanup.
+The assertion helper uses the existing Babel source loader. It checks runtime
+behavior, not TypeScript types. GraphQL fences are not executed. Examples without
+expectations are smoke tests.
 
 Add a fenced example under `@example` in the API's JSDoc comment. Use trailing
 comments to describe expected results:
