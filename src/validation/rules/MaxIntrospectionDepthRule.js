@@ -11,22 +11,33 @@ const MAX_LISTS_DEPTH = 3;
 export function MaxIntrospectionDepthRule(
   context: ASTValidationContext,
 ): ASTVisitor {
+  const checkedFragments: {
+    [key: string]: number | void,
+    __proto__: null,
+  } = Object.create(null);
   /**
    * Counts the depth of list fields in "__Type" recursively and
    * returns `true` if the limit has been reached.
+   *
+   * @internal
    */
   function checkDepth(
     node: ASTNode,
     visitedFragments: {
-      [fragmentName: string]: number | null,
+      [fragmentName: string]: number | void,
       __proto__: null,
-    } = Object.create(null),
-    depth: number = 0,
+    },
+    initialDepth: number = 0,
   ): boolean {
+    let depth = initialDepth;
     if (node.kind === Kind.FRAGMENT_SPREAD) {
       const fragmentName = node.name.value;
-      const visitedDepth = visitedFragments[fragmentName];
-      if (visitedDepth != null && visitedDepth >= depth) {
+      const visitedEntryDepth = visitedFragments[fragmentName];
+      const checkedEntryDepth = checkedFragments[fragmentName];
+      if (
+        (visitedEntryDepth !== undefined && visitedEntryDepth >= depth) ||
+        (checkedEntryDepth !== undefined && checkedEntryDepth >= depth)
+      ) {
         return false;
       }
       const fragment = context.getFragment(fragmentName);
@@ -47,8 +58,7 @@ export function MaxIntrospectionDepthRule(
         node.name.value === 'possibleTypes' ||
         node.name.value === 'inputFields')
     ) {
-      // $FlowFixMe[reassign-const] why are argument parameters treated as const in flow?
-      depth++; // eslint-disable-line no-param-reassign
+      depth++;
       if (depth >= MAX_LISTS_DEPTH) {
         return true;
       }
@@ -69,11 +79,18 @@ export function MaxIntrospectionDepthRule(
   return {
     Field(node) {
       if (node.name.value === '__schema' || node.name.value === '__type') {
-        if (checkDepth(node)) {
+        const visitedFragments: {
+          [key: string]: number | void,
+          __proto__: null,
+        } = Object.create(null);
+        if (checkDepth(node, visitedFragments)) {
           context.reportError(
             new GraphQLError('Maximum introspection depth exceeded', [node]),
           );
           return false;
+        }
+        for (const name of Object.keys(visitedFragments)) {
+          checkedFragments[name] = visitedFragments[name];
         }
       }
     },
