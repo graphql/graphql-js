@@ -228,7 +228,8 @@ function isMissingVariable(
 ): boolean {
   return (
     valueNode.kind === Kind.VARIABLE &&
-    (variables?.[valueNode.name.value] === undefined ||
-      !Object.hasOwn(variables, valueNode.name.value))
+    (variables == null ||
+      !Object.hasOwn(variables, valueNode.name.value) ||
+      variables[valueNode.name.value] === undefined)
   );
 }
