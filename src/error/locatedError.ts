@@ -26,9 +26,7 @@ import { GraphQLError } from './GraphQLError';
  * const operation = document.definitions[0];
  * assert(operation.kind === Kind.OPERATION_DEFINITION);
  * const fieldNode = operation.selectionSet.selections[0];
- * const error = locatedError(new Error('Resolver failed'), fieldNode, [
- *   'viewer',
- * ]);
+ * const error = locatedError(new Error('Resolver failed'), fieldNode, ['viewer']);
  *
  * error.message; // => 'Resolver failed'
  * error.locations; // => [{ line: 1, column: 3 }]

@@ -45,7 +45,9 @@ import type { ValidationContext } from '../ValidationContext';
  * const invalidDocument = parse(`
  *   { dog { ... on Cat { meowVolume } } }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [PossibleFragmentSpreadsRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   PossibleFragmentSpreadsRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *

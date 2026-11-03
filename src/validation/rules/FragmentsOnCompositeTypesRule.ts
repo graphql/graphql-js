@@ -35,7 +35,9 @@ import type { ValidationContext } from '../ValidationContext';
  * const invalidDocument = parse(`
  *   fragment Bad on String { length }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [FragmentsOnCompositeTypesRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   FragmentsOnCompositeTypesRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *

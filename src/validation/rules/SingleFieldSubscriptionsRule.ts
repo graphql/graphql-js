@@ -43,7 +43,9 @@ import type { ValidationContext } from '../ValidationContext';
  * const invalidDocument = parse(`
  *   subscription { a b }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [SingleFieldSubscriptionsRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   SingleFieldSubscriptionsRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *

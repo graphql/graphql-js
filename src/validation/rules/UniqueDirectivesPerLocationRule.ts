@@ -39,7 +39,9 @@ import type {
  * const invalidDocument = parse(`
  *   { name @include(if: true) @include(if: false) }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [UniqueDirectivesPerLocationRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   UniqueDirectivesPerLocationRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *

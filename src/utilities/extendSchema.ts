@@ -159,9 +159,9 @@ interface Options extends GraphQLSchemaValidationOptions {
  *
  * extendSchema(schema, invalidExtension); // throws an error
  * extendSchema(schema, invalidExtension, {
- *     assumeValid: true,
- *     assumeValidSDL: true,
- *   }); // does not throw
+ *   assumeValid: true,
+ *   assumeValidSDL: true,
+ * }); // does not throw
  * ```
  */
 export function extendSchema(

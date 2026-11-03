@@ -42,7 +42,15 @@ import { TokenKind } from '../language/tokenKind';
  * Becomes:
  *
  * ```graphql
- * query SomeQuery($foo:String!$bar:String){someField(foo:$foo bar:$bar){a b{c d}}}
+ * query SomeQuery($foo: String!, $bar: String) {
+ *   someField(foo: $foo, bar: $bar) {
+ *     a
+ *     b {
+ *       c
+ *       d
+ *     }
+ *   }
+ * }
  * ```
  * @example SDL source
  * ```graphql
@@ -60,7 +68,15 @@ import { TokenKind } from '../language/tokenKind';
  * Becomes:
  *
  * ```graphql
- * """Type description""" type Foo{"""Field description""" bar:String}
+ * """
+ * Type description
+ * """
+ * type Foo {
+ *   """
+ *   Field description
+ *   """
+ *   bar: String
+ * }
  * ```
  * @example
  * ```ts

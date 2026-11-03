@@ -28,7 +28,9 @@ import type { ASTValidationContext } from '../ValidationContext';
  * const invalidDocument = parse(`
  *   query Same { name } query Same { name }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [UniqueOperationNamesRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   UniqueOperationNamesRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *

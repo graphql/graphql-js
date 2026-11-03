@@ -105,7 +105,7 @@ export interface ParseOptions {
    * @example
    * The syntax is identical to normal, query-defined variables.
    *
-   * ```graphql
+   * ```graphql prettier-ignore
    * fragment A($var: Boolean = false) on T {
    *   ...
    * }
@@ -124,7 +124,7 @@ export interface ParseOptions {
    * If enabled, the parser will parse directives on directive definitions.
    * This syntax is not part of the GraphQL specification and may change.
    * @example
-   * ```graphql
+   * ```graphql prettier-ignore
    * directive @foo @bar on FIELD
    * ```
    */

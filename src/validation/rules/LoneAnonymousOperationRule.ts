@@ -30,7 +30,9 @@ import type { ASTValidationContext } from '../ValidationContext';
  * const invalidDocument = parse(`
  *   query { name } query Other { name }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [LoneAnonymousOperationRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   LoneAnonymousOperationRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *

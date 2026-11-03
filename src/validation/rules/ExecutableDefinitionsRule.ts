@@ -31,7 +31,9 @@ import type { ASTValidationContext } from '../ValidationContext';
  * const invalidDocument = parse(`
  *   type Extra { field: String }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [ExecutableDefinitionsRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   ExecutableDefinitionsRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *

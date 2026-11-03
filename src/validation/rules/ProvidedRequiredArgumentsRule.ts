@@ -41,7 +41,9 @@ import type {
  * const invalidDocument = parse(`
  *   { field }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [ProvidedRequiredArgumentsRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   ProvidedRequiredArgumentsRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *

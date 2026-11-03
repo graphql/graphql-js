@@ -75,11 +75,9 @@ export interface GetVariableValuesOptions {
  * const operation = document.definitions[0];
  * assert(operation.kind === Kind.OPERATION_DEFINITION);
  *
- * const result = getVariableValues(
- *   schema,
- *   operation.variableDefinitions ?? [],
- *   { stars: 5 },
- * );
+ * const result = getVariableValues(schema, operation.variableDefinitions ?? [], {
+ *   stars: 5,
+ * });
  *
  * result; // => { coerced: { stars: 5, limit: 10 } }
  * ```
@@ -409,7 +407,9 @@ export interface DirectiveValuesNode {
  * import { GraphQLIncludeDirective } from 'graphql/type';
  * import { getDirectiveValues } from 'graphql/execution';
  *
- * const document = parse('query ($includeName: Boolean!) { name @include(if: $includeName) }');
+ * const document = parse(
+ *   'query ($includeName: Boolean!) { name @include(if: $includeName) }',
+ * );
  * const operation = document.definitions[0];
  * assert(operation.kind === Kind.OPERATION_DEFINITION);
  * const fieldNode = operation.selectionSet.selections[0];

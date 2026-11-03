@@ -44,7 +44,9 @@ import type { ValidationContext } from '../ValidationContext';
  * const invalidDocument = parse(`
  *   query ($id: String) { field(arg: $id) }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [VariablesInAllowedPositionRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   VariablesInAllowedPositionRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *

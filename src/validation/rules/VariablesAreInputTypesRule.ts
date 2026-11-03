@@ -39,7 +39,9 @@ import type { ValidationContext } from '../ValidationContext';
  * const invalidDocument = parse(`
  *   query ($user: User) { field(arg: "1") }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [VariablesAreInputTypesRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   VariablesAreInputTypesRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *

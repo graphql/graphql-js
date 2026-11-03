@@ -124,10 +124,13 @@ export class GraphQLDirective {
    *   GraphQLNonNull,
    * } from 'graphql/type';
    *
-   * const document = parse(`
+   * const document = parse(
+   *   `
    *   directive @cacheControl(maxAge: Int) repeatable on FIELD_DEFINITION
    *   extend directive @cacheControl @tag
-   * `, { experimentalDirectivesOnDirectiveDefinitions: true });
+   * `,
+   *   { experimentalDirectivesOnDirectiveDefinitions: true },
+   * );
    * assert(document.definitions[0].kind === Kind.DIRECTIVE_DEFINITION);
    * assert(document.definitions[1].kind === Kind.DIRECTIVE_EXTENSION);
    * const definition = document.definitions[0];
@@ -153,7 +156,7 @@ export class GraphQLDirective {
    *   deprecationReason: 'Use @cache instead.',
    *   extensions: { scope: 'cache' },
    *   astNode: definition,
-   *   extensionASTNodes: [ document.definitions[1] ],
+   *   extensionASTNodes: [document.definitions[1]],
    * });
    *
    * cacheControl.name; // => 'cacheControl'

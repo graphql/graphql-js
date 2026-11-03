@@ -72,7 +72,9 @@ const MAX_COMPLEXITY_BUDGET = 500_000;
  * const invalidDocument = parse(`
  *   { dog { value: barkVolume value: name } }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [OverlappingFieldsCanBeMergedRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   OverlappingFieldsCanBeMergedRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
