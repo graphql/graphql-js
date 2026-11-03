@@ -32,16 +32,16 @@ import type { ASTValidationContext } from '../ValidationContext';
  * const invalidDocument = parse(`
  *   { field(arg: "1", arg: "2") }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [UniqueArgumentNamesRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   UniqueArgumentNamesRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
  * const validDocument = parse(`
  *   { field(arg: "1") }
  * `);
- * const validErrors = validate(schema, validDocument, [UniqueArgumentNamesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [UniqueArgumentNamesRule]); // => []
  * ```
  */
 export function UniqueArgumentNamesRule(

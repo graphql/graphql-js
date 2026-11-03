@@ -48,16 +48,16 @@ import type { ValidationContext } from '../../ValidationContext';
  * const invalidDocument = parse(`
  *   { oldName }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [NoDeprecatedCustomRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   NoDeprecatedCustomRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
  * const validDocument = parse(`
  *   { name }
  * `);
- * const validErrors = validate(schema, validDocument, [NoDeprecatedCustomRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [NoDeprecatedCustomRule]); // => []
  * ```
  */
 export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {

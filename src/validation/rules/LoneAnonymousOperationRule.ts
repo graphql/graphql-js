@@ -30,16 +30,18 @@ import type { ASTValidationContext } from '../ValidationContext';
  * const invalidDocument = parse(`
  *   query { name } query Other { name }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [LoneAnonymousOperationRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   LoneAnonymousOperationRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
  * const validDocument = parse(`
  *   { name }
  * `);
- * const validErrors = validate(schema, validDocument, [LoneAnonymousOperationRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [
+ *   LoneAnonymousOperationRule,
+ * ]); // => []
  * ```
  */
 export function LoneAnonymousOperationRule(

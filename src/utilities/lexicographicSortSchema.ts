@@ -43,7 +43,11 @@ import { GraphQLSchema } from '../type/schema';
  * @returns A copy of the schema with types, fields, arguments, and values sorted lexicographically.
  * @example
  * ```ts
- * import { buildSchema, lexicographicSortSchema, printSchema } from 'graphql/utilities';
+ * import {
+ *   buildSchema,
+ *   lexicographicSortSchema,
+ *   printSchema,
+ * } from 'graphql/utilities';
  *
  * const schema = buildSchema(`
  *   type Query {
@@ -60,18 +64,18 @@ import { GraphQLSchema } from '../type/schema';
  *
  * const sortedSchema = lexicographicSortSchema(schema);
  *
- * printSchema(sortedSchema);
- * // =>
- * // enum Episode {
- * //   EMPIRE
- * //   JEDI
- * //   NEW_HOPE
- * // }
- * //
- * // type Query {
- * //   apple: String
- * //   zebra: String
- * // }
+ * const expectedSDL = `enum Episode {
+ *   EMPIRE
+ *   JEDI
+ *   NEW_HOPE
+ * }
+ *
+ * type Query {
+ *   apple: String
+ *   zebra: String
+ * }`;
+ *
+ * printSchema(sortedSchema); // => expectedSDL
  * ```
  */
 export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {

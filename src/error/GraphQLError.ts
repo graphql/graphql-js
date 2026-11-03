@@ -140,12 +140,16 @@ export class GraphQLError extends Error {
    * `GraphQLError(message, options)` overload instead.
    * @example
    * ```ts
+   * import { Kind } from 'graphql/language';
+   * import assert from 'node:assert/strict';
    * // Create an error from AST nodes and response metadata.
    * import { parse } from 'graphql/language';
    * import { GraphQLError } from 'graphql/error';
    *
    * const document = parse('{ greeting }');
-   * const fieldNode = document.definitions[0].selectionSet.selections[0];
+   * const operation = document.definitions[0];
+   * assert(operation.kind === Kind.OPERATION_DEFINITION);
+   * const fieldNode = operation.selectionSet.selections[0];
    * const error = new GraphQLError('Cannot query this field.', {
    *   nodes: fieldNode,
    *   path: ['greeting'],

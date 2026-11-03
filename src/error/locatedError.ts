@@ -17,14 +17,16 @@ import { GraphQLError } from './GraphQLError';
  * @returns The GraphQL error.
  * @example
  * ```ts
+ * import { Kind } from 'graphql/language';
+ * import assert from 'node:assert/strict';
  * import { parse } from 'graphql/language';
  * import { locatedError } from 'graphql/error';
  *
  * const document = parse('{ viewer { name } }');
- * const fieldNode = document.definitions[0].selectionSet.selections[0];
- * const error = locatedError(new Error('Resolver failed'), fieldNode, [
- *   'viewer',
- * ]);
+ * const operation = document.definitions[0];
+ * assert(operation.kind === Kind.OPERATION_DEFINITION);
+ * const fieldNode = operation.selectionSet.selections[0];
+ * const error = locatedError(new Error('Resolver failed'), fieldNode, ['viewer']);
  *
  * error.message; // => 'Resolver failed'
  * error.locations; // => [{ line: 1, column: 3 }]

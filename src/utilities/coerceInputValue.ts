@@ -52,7 +52,7 @@ type OnErrorCB = (
  *   },
  * });
  *
- * coerceInputValue({ stars: '5', tags: ['featured'] }, ReviewInput); // => { stars: 5, tags: ['featured'] }
+ * coerceInputValue({ stars: 5, tags: ['featured'] }, ReviewInput); // => { stars: 5, tags: ['featured'] }
  * coerceInputValue({ stars: 'bad' }, ReviewInput); // throws an error
  * ```
  * @example
@@ -61,7 +61,11 @@ type OnErrorCB = (
  * import { GraphQLInt, GraphQLNonNull } from 'graphql/type';
  * import { coerceInputValue } from 'graphql/utilities';
  *
- * const errors = [];
+ * const errors: Array<{
+ *   path: ReadonlyArray<string | number>;
+ *   invalidValue: unknown;
+ *   message: string;
+ * }> = [];
  * const value = coerceInputValue(
  *   null,
  *   new GraphQLNonNull(GraphQLInt),

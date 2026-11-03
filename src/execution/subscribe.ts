@@ -124,7 +124,10 @@ import { getArgumentValues } from './values';
  *     'subscription Greeting($locale: String) { greeting(locale: $locale) }',
  *   ),
  *   rootValue: {
- *     greeting: (args, contextValue) => {
+ *     greeting: (
+ *       args: { locale?: string },
+ *       contextValue: { defaultLocale: string },
+ *     ) => {
  *       const locale = args.locale ?? contextValue.defaultLocale;
  *       return locale === 'fr' ? frenchGreetings() : defaultGreetings();
  *     },
@@ -164,7 +167,7 @@ import { getArgumentValues } from './values';
  *
  * assert('errors' in result);
  *
- * result.errors[0].message; // => 'Schema is not configured to execute subscription operation.'
+ * result.errors?.[0].message; // => 'Schema is not configured to execute subscription operation.'
  * ```
  */
 export async function subscribe(

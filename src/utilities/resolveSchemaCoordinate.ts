@@ -127,13 +127,13 @@ export type ResolvedSchemaElement =
  *   }
  * `);
  *
- * resolveSchemaCoordinate(schema, 'Query').kind; // => 'NamedType'
- * resolveSchemaCoordinate(schema, 'Query.reviews').kind; // => 'Field'
- * resolveSchemaCoordinate(schema, 'Query.reviews(input:)').kind; // => 'FieldArgument'
- * resolveSchemaCoordinate(schema, 'ReviewInput.stars').kind; // => 'InputField'
- * resolveSchemaCoordinate(schema, 'Episode.NEW_HOPE').kind; // => 'EnumValue'
- * resolveSchemaCoordinate(schema, '@tag').kind; // => 'Directive'
- * resolveSchemaCoordinate(schema, '@tag(name:)').kind; // => 'DirectiveArgument'
+ * resolveSchemaCoordinate(schema, 'Query')?.kind; // => 'NamedType'
+ * resolveSchemaCoordinate(schema, 'Query.reviews')?.kind; // => 'Field'
+ * resolveSchemaCoordinate(schema, 'Query.reviews(input:)')?.kind; // => 'FieldArgument'
+ * resolveSchemaCoordinate(schema, 'ReviewInput.stars')?.kind; // => 'InputField'
+ * resolveSchemaCoordinate(schema, 'Episode.NEW_HOPE')?.kind; // => 'EnumValue'
+ * resolveSchemaCoordinate(schema, '@tag')?.kind; // => 'Directive'
+ * resolveSchemaCoordinate(schema, '@tag(name:)')?.kind; // => 'DirectiveArgument'
  * resolveSchemaCoordinate(schema, 'Query.missing'); // => undefined
  * ```
  */
@@ -363,6 +363,7 @@ function resolveDirectiveArgumentCoordinate(
  * @returns The schema element identified by the parsed coordinate, or undefined if none exists.
  * @example
  * ```ts
+ * import assert from 'node:assert/strict';
  * import { parseSchemaCoordinate } from 'graphql/language';
  * import { buildSchema, resolveASTSchemaCoordinate } from 'graphql/utilities';
  *
@@ -374,7 +375,7 @@ function resolveDirectiveArgumentCoordinate(
  * const coordinate = parseSchemaCoordinate('Query.greeting(name:)');
  * const resolved = resolveASTSchemaCoordinate(schema, coordinate);
  *
- * resolved.kind; // => 'FieldArgument'
+ * assert(resolved?.kind === 'FieldArgument');
  * resolved.field.name; // => 'greeting'
  * resolved.fieldArgument.name; // => 'name'
  * ```

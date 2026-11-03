@@ -53,16 +53,16 @@ import type { ValidationContext } from '../ValidationContext';
  * const invalidDocument = parse(`
  *   { count(limit: "many") }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [ValuesOfCorrectTypeRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   ValuesOfCorrectTypeRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
  * const validDocument = parse(`
  *   { count(limit: 1) }
  * `);
- * const validErrors = validate(schema, validDocument, [ValuesOfCorrectTypeRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [ValuesOfCorrectTypeRule]); // => []
  * ```
  */
 export function ValuesOfCorrectTypeRule(

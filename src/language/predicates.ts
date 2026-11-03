@@ -70,8 +70,11 @@ export function isExecutableDefinitionNode(
  * ```ts
  * import { Kind, isSelectionNode } from 'graphql/language';
  *
- * const field = { kind: Kind.FIELD, name: { kind: Kind.NAME, value: 'hello' } };
- * const document = { kind: Kind.DOCUMENT, definitions: [] };
+ * const field = {
+ *   kind: Kind.FIELD,
+ *   name: { kind: Kind.NAME, value: 'hello' },
+ * } as const;
+ * const document = { kind: Kind.DOCUMENT, definitions: [] } as const;
  *
  * isSelectionNode(field); // => true
  * isSelectionNode(document); // => false
@@ -120,7 +123,11 @@ export function isValueNode(node: ASTNode): node is ValueNode {
  * @returns True when the AST node is a constant value node.
  * @example
  * ```ts
- * import { parseConstValue, parseValue, isConstValueNode } from 'graphql/language';
+ * import {
+ *   parseConstValue,
+ *   parseValue,
+ *   isConstValueNode,
+ * } from 'graphql/language';
  *
  * const value = parseConstValue('[42]');
  * const variable = parseValue('$id');

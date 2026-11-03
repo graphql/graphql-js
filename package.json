@@ -35,9 +35,9 @@
     "release:prepare": "node resources/release-prepare.js",
     "release:metadata": "node resources/release-metadata.js",
     "benchmark": "node benchmark/benchmark.js",
-    "test": "npm run lint && npm run check && npm run testonly && npm run prettier:check && npm run check:spelling && npm run check:integrations",
+    "test": "npm run lint && npm run check && npm run testonly && npm run testonly:examples && npm run prettier:examples:check && npm run prettier:check && npm run check:spelling && npm run check:integrations",
     "lint": "eslint --cache --max-warnings 0 .",
-    "check": "tsc --pretty",
+    "check": "tsc --pretty && tsc --pretty -p resources/tsconfig.json",
     "testonly": "mocha --full-trace src/**/__tests__/**/*-test.ts",
     "testonly:cover": "c8 npm run testonly",
     "prettier": "prettier --write --list-different .",
@@ -45,7 +45,11 @@
     "check:spelling": "cspell --cache --no-progress '**/*'",
     "check:integrations": "npm run build:npm && npm run build:deno && mocha --full-trace integrationTests/*-test.js",
     "build:npm": "node resources/build-npm.js",
-    "build:deno": "node resources/build-deno.js"
+    "build:deno": "node resources/build-deno.js",
+    "testonly:examples": "mocha --node-option experimental-vm-modules --require ./resources/ts-register.js resources/test-examples.ts",
+    "check:examples": "npm run testonly:examples",
+    "prettier:examples": "node -r ./resources/ts-register.js resources/prettier-examples.ts --write",
+    "prettier:examples:check": "node -r ./resources/ts-register.js resources/prettier-examples.ts --check"
   },
   "devDependencies": {
     "@babel/core": "7.17.9",
@@ -56,6 +60,7 @@
     "@types/chai": "4.3.1",
     "@types/mocha": "9.1.0",
     "@types/node": "17.0.24",
+    "@types/prettier": "2.6.0",
     "@typescript-eslint/eslint-plugin": "5.19.0",
     "@typescript-eslint/parser": "5.19.0",
     "c8": "7.11.0",

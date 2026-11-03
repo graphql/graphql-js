@@ -33,11 +33,10 @@ export class Source {
    * ```ts
    * import { Source } from 'graphql/language';
    *
-   * const source = new Source(
-   *   'type Query { greeting: String }',
-   *   'schema.graphql',
-   *   { line: 10, column: 1 },
-   * );
+   * const source = new Source('type Query { greeting: String }', 'schema.graphql', {
+   *   line: 10,
+   *   column: 1,
+   * });
    *
    * source.body; // => 'type Query { greeting: String }'
    * source.name; // => 'schema.graphql'

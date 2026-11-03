@@ -119,7 +119,7 @@ export interface ParseOptions {
    * @example
    * The syntax is identical to normal, query-defined variables.
    *
-   * ```graphql
+   * ```graphql prettier-ignore
    * fragment A($var: Boolean = false) on T {
    *   ...
    * }
@@ -138,7 +138,7 @@ export interface ParseOptions {
    * If enabled, the parser will parse directives on directive definitions.
    * This syntax is not part of the GraphQL specification and may change.
    * @example
-   * ```graphql
+   * ```graphql prettier-ignore
    * directive @foo @bar on FIELD
    * ```
    */
@@ -1729,15 +1729,18 @@ export class Parser {
    * @returns Parsed schema coordinate AST.
    * @example
    * ```ts
-   * import { Parser, Source } from 'graphql/language';
+   * import assert from 'node:assert/strict';
+   * import { Kind, parseSchemaCoordinate } from 'graphql/language';
    *
-   * const typeCoordinate = new Parser(new Source('User.name')).parseSchemaCoordinate();
-   * const directiveCoordinate = new Parser(new Source('@include(if:)')).parseSchemaCoordinate();
+   * const typeCoordinate = parseSchemaCoordinate('User.name');
+   * const directiveCoordinate = parseSchemaCoordinate('@include(if:)');
+   * assert(typeCoordinate.kind === Kind.MEMBER_COORDINATE);
+   * assert(directiveCoordinate.kind === Kind.DIRECTIVE_ARGUMENT_COORDINATE);
    *
    * typeCoordinate.name.value; // => 'User'
    * typeCoordinate.memberName?.value; // => 'name'
-   * directiveCoordinate.name.value; // => 'deprecated'
-   * directiveCoordinate.argumentName?.value; // => 'reason'
+   * directiveCoordinate.name.value; // => 'include'
+   * directiveCoordinate.argumentName?.value; // => 'if'
    * ```
    */
   parseSchemaCoordinate(): SchemaCoordinateNode {

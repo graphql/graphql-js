@@ -103,6 +103,8 @@ export interface GraphQLSchemaExtensions {
  * validator and executor.
  * @example
  * ```ts
+ * import { GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql';
+ *
  * const MyAppQueryRootType = new GraphQLObjectType({
  *   name: 'Query',
  *   fields: {
@@ -128,6 +130,13 @@ export interface GraphQLSchemaExtensions {
  * referenced.
  *
  * ```ts
+ * import {
+ *   GraphQLInterfaceType,
+ *   GraphQLObjectType,
+ *   GraphQLSchema,
+ *   GraphQLString,
+ * } from 'graphql';
+ *
  * const characterInterface = new GraphQLInterfaceType({
  *   name: 'Character',
  *   fields: {
@@ -172,9 +181,26 @@ export interface GraphQLSchemaExtensions {
  * these specified directives, you must explicitly declare them.
  *
  * ```ts
+ * import {
+ *   DirectiveLocation,
+ *   GraphQLDirective,
+ *   GraphQLObjectType,
+ *   GraphQLSchema,
+ *   GraphQLString,
+ *   specifiedDirectives,
+ * } from 'graphql';
+ *
  * const MyAppSchema = new GraphQLSchema({
- *   query: MyAppQueryRootType,
- *   directives: specifiedDirectives.concat([myCustomDirective]),
+ *   query: new GraphQLObjectType({
+ *     name: 'Query',
+ *     fields: { greeting: { type: GraphQLString } },
+ *   }),
+ *   directives: specifiedDirectives.concat([
+ *     new GraphQLDirective({
+ *       name: 'custom',
+ *       locations: [DirectiveLocation.FIELD],
+ *     }),
+ *   ]),
  * });
  * ```
  */
@@ -211,11 +237,7 @@ export class GraphQLSchema {
    * @example
    * ```ts
    * // Create a schema with the required query root.
-   * import {
-   *   GraphQLObjectType,
-   *   GraphQLSchema,
-   *   GraphQLString,
-   * } from 'graphql/type';
+   * import { GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql/type';
    *
    * const Query = new GraphQLObjectType({
    *   name: 'Query',
@@ -237,8 +259,9 @@ export class GraphQLSchema {
    * ```
    * @example
    * ```ts
+   * import assert from 'node:assert/strict';
    * // This variant configures every schema option, including directives and extensions.
-   * import { DirectiveLocation, parse } from 'graphql/language';
+   * import { DirectiveLocation, parse, Kind } from 'graphql/language';
    * import {
    *   GraphQLBoolean,
    *   GraphQLDirective,
@@ -277,6 +300,8 @@ export class GraphQLSchema {
    *
    *   extend schema @auth
    * `);
+   * assert(schemaDocument.definitions[0].kind === Kind.SCHEMA_DEFINITION);
+   * assert(schemaDocument.definitions[1].kind === Kind.SCHEMA_EXTENSION);
    *
    * const schema = new GraphQLSchema({
    *   description: 'Operations exposed by the application.',
@@ -287,7 +312,7 @@ export class GraphQLSchema {
    *   directives: [authDirective],
    *   extensions: { owner: 'platform' },
    *   astNode: schemaDocument.definitions[0],
-   *   extensionASTNodes: [ schemaDocument.definitions[1] ],
+   *   extensionASTNodes: [schemaDocument.definitions[1]],
    *   assumeValid: true,
    * });
    *
@@ -748,7 +773,7 @@ export class GraphQLSchema {
    *   }
    * `);
    *
-   * schema.getDirectives().map((directive) => directive.name); // => ['include', 'skip', 'deprecated', 'specifiedBy', 'oneOf', 'upper']
+   * schema.getDirectives().map((directive) => directive.name); // => ['upper', 'include', 'skip', 'deprecated', 'specifiedBy', 'oneOf']
    * ```
    */
   getDirectives(): ReadonlyArray<GraphQLDirective> {
@@ -843,7 +868,7 @@ export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
   mutation?: Maybe<GraphQLObjectType>;
   /** Root object type for subscription operations. */
   subscription?: Maybe<GraphQLObjectType>;
-  /** Object types that belong to this union type. */
+  /** Additional named types to include in the schema. */
   types?: Maybe<ReadonlyArray<GraphQLNamedType>>;
   /** Directives available in this schema or applied to this AST node. */
   directives?: Maybe<ReadonlyArray<GraphQLDirective>>;

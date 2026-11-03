@@ -29,16 +29,16 @@ import type { ValidationContext } from '../ValidationContext';
  * const invalidDocument = parse(`
  *   { ...Missing }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [KnownFragmentNamesRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   KnownFragmentNamesRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
  * const validDocument = parse(`
  *   fragment NameFields on Query { name } query { ...NameFields }
  * `);
- * const validErrors = validate(schema, validDocument, [KnownFragmentNamesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [KnownFragmentNamesRule]); // => []
  * ```
  */
 export function KnownFragmentNamesRule(context: ValidationContext): ASTVisitor {

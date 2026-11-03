@@ -39,16 +39,18 @@ import type {
  * const invalidDocument = parse(`
  *   { name @include(if: true) @include(if: false) }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [UniqueDirectivesPerLocationRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   UniqueDirectivesPerLocationRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
  * const validDocument = parse(`
  *   { name @include(if: true) }
  * `);
- * const validErrors = validate(schema, validDocument, [UniqueDirectivesPerLocationRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [
+ *   UniqueDirectivesPerLocationRule,
+ * ]); // => []
  * ```
  */
 export function UniqueDirectivesPerLocationRule(

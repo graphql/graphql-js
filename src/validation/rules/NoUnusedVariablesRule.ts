@@ -31,16 +31,16 @@ import type { ValidationContext } from '../ValidationContext';
  * const invalidDocument = parse(`
  *   query ($id: ID) { name }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [NoUnusedVariablesRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   NoUnusedVariablesRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
  * const validDocument = parse(`
  *   query ($id: ID) { field(arg: $id) }
  * `);
- * const validErrors = validate(schema, validDocument, [NoUnusedVariablesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [NoUnusedVariablesRule]); // => []
  * ```
  */
 export function NoUnusedVariablesRule(context: ValidationContext): ASTVisitor {

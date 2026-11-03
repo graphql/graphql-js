@@ -115,7 +115,8 @@ export class GraphQLDirective {
    * @param config - Configuration describing this object.
    * @example
    * ```ts
-   * import { DirectiveLocation, parse } from 'graphql/language';
+   * import assert from 'node:assert/strict';
+   * import { DirectiveLocation, parse, Kind } from 'graphql/language';
    * import {
    *   GraphQLBoolean,
    *   GraphQLDirective,
@@ -123,10 +124,15 @@ export class GraphQLDirective {
    *   GraphQLNonNull,
    * } from 'graphql/type';
    *
-   * const document = parse(`
+   * const document = parse(
+   *   `
    *   directive @cacheControl(maxAge: Int) repeatable on FIELD_DEFINITION
-   *   extend directive @cacheControl(maxAge: Int) on FIELD_DEFINITION
-   * `);
+   *   extend directive @cacheControl @tag
+   * `,
+   *   { experimentalDirectivesOnDirectiveDefinitions: true },
+   * );
+   * assert(document.definitions[0].kind === Kind.DIRECTIVE_DEFINITION);
+   * assert(document.definitions[1].kind === Kind.DIRECTIVE_EXTENSION);
    * const definition = document.definitions[0];
    *
    * const cacheControl = new GraphQLDirective({
@@ -143,14 +149,14 @@ export class GraphQLDirective {
    *     },
    *     maxAge: {
    *       type: GraphQLInt,
-   *       astNode: definition.arguments[0],
+   *       astNode: definition.arguments?.[0],
    *     },
    *   },
    *   isRepeatable: true,
    *   deprecationReason: 'Use @cache instead.',
    *   extensions: { scope: 'cache' },
    *   astNode: definition,
-   *   extensionASTNodes: [ document.definitions[1] ],
+   *   extensionASTNodes: [document.definitions[1]],
    * });
    *
    * cacheControl.name; // => 'cacheControl'

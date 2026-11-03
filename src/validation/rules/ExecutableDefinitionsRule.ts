@@ -31,16 +31,18 @@ import type { ASTValidationContext } from '../ValidationContext';
  * const invalidDocument = parse(`
  *   type Extra { field: String }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [ExecutableDefinitionsRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   ExecutableDefinitionsRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
  * const validDocument = parse(`
  *   { name }
  * `);
- * const validErrors = validate(schema, validDocument, [ExecutableDefinitionsRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [
+ *   ExecutableDefinitionsRule,
+ * ]); // => []
  * ```
  */
 export function ExecutableDefinitionsRule(

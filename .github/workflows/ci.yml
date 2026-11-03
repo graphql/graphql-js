@@ -29,6 +29,12 @@ jobs:
       - name: Lint ESLint
         run: npm run lint
 
+      - name: Run API example tests
+        run: npm run testonly:examples
+
+      - name: Check API example formatting
+        run: npm run prettier:examples:check
+
       - name: Check Types
         run: npm run check
 

@@ -13,16 +13,23 @@ const {
   showDirStats,
 } = require('./utils.js');
 
+const root = path.join(__dirname, '..');
+
 if (require.main === module) {
-  fs.rmSync('./npmDist', { recursive: true, force: true });
-  fs.mkdirSync('./npmDist');
+  const outputDirectory = path.resolve(
+    process.argv[2] ?? path.join(root, 'npmDist'),
+  );
+  fs.rmSync(outputDirectory, { recursive: true, force: true });
+  fs.mkdirSync(outputDirectory);
 
   const packageJSON = buildPackageJSON();
 
-  const srcFiles = readdirRecursive('./src', { ignoreDir: /^__.*__$/ });
+  const srcFiles = readdirRecursive(path.join(root, 'src'), {
+    ignoreDir: /^__.*__$/,
+  });
   for (const filepath of srcFiles) {
-    const srcPath = path.join('./src', filepath);
-    const destPath = path.join('./npmDist', filepath);
+    const srcPath = path.join(path.join(root, 'src'), filepath);
+    const destPath = path.join(outputDirectory, filepath);
 
     fs.mkdirSync(path.dirname(destPath), { recursive: true });
     if (filepath.endsWith('.ts')) {
@@ -46,16 +53,21 @@ if (require.main === module) {
     ...tsConfig.compilerOptions,
     noEmit: false,
     declaration: true,
-    declarationDir: './npmDist',
+    declarationDir: outputDirectory,
     emitDeclarationOnly: true,
   };
 
   const tsHost = ts.createCompilerHost(tsOptions);
+  tsHost.getCurrentDirectory = () => root;
   tsHost.writeFile = (filepath, body) => {
     writeGeneratedFile(filepath, body);
   };
 
-  const tsProgram = ts.createProgram(['src/index.ts'], tsOptions, tsHost);
+  const tsProgram = ts.createProgram(
+    [path.join(root, 'src/index.ts')],
+    tsOptions,
+    tsHost,
+  );
   const tsResult = tsProgram.emit();
   assert(
     !tsResult.emitSkipped,
@@ -71,7 +83,7 @@ if (require.main === module) {
   // TODO: revisit once TS implements https://github.com/microsoft/TypeScript/issues/32166
   const notSupportedTSVersionFile = 'NotSupportedTSVersion.d.ts';
   fs.writeFileSync(
-    path.join('./npmDist', notSupportedTSVersionFile),
+    path.join(outputDirectory, notSupportedTSVersionFile),
     // Provoke syntax error to show this message
     `"Package 'graphql' support only TS versions that are ${supportedTSVersions[0]}".`,
   );
@@ -80,19 +92,29 @@ if (require.main === module) {
     '*': { '*': [notSupportedTSVersionFile] },
   };
 
-  fs.copyFileSync('./LICENSE', './npmDist/LICENSE');
-  fs.copyFileSync('./README.md', './npmDist/README.md');
+  fs.copyFileSync(
+    path.join(root, 'LICENSE'),
+    path.join(outputDirectory, 'LICENSE'),
+  );
+  fs.copyFileSync(
+    path.join(root, 'README.md'),
+    path.join(outputDirectory, 'README.md'),
+  );
 
   // Should be done as the last step so only valid packages can be published
-  writeGeneratedFile('./npmDist/package.json', JSON.stringify(packageJSON));
+  writeGeneratedFile(
+    path.join(outputDirectory, 'package.json'),
+    JSON.stringify(packageJSON),
+  );
 
-  showDirStats('./npmDist');
+  showDirStats(outputDirectory);
 }
 
 function babelBuild(srcPath, options) {
   const { code } = babel.transformFileSync(srcPath, {
     babelrc: false,
-    configFile: './.babelrc-npm.json',
+    configFile: path.join(root, '.babelrc-npm.json'),
+    cwd: root,
     ...options,
   });
   return code + '\n';

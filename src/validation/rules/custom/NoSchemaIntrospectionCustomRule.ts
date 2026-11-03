@@ -35,16 +35,18 @@ import type { ValidationContext } from '../../ValidationContext';
  * const invalidDocument = parse(`
  *   { __schema { queryType { name } } }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [NoSchemaIntrospectionCustomRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   NoSchemaIntrospectionCustomRule,
+ * ]);
  *
- * invalidErrors.length; // => 1
+ * invalidErrors.length; // => 2
  *
  * const validDocument = parse(`
  *   { name }
  * `);
- * const validErrors = validate(schema, validDocument, [NoSchemaIntrospectionCustomRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [
+ *   NoSchemaIntrospectionCustomRule,
+ * ]); // => []
  * ```
  */
 export function NoSchemaIntrospectionCustomRule(

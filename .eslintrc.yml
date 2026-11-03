@@ -499,7 +499,12 @@ overrides:
     parser: '@typescript-eslint/parser'
     parserOptions:
       sourceType: module
-      project: ['./tsconfig.json', './website/tsconfig.json']
+      project:
+        [
+          './tsconfig.json',
+          './website/tsconfig.json',
+          './resources/tsconfig.json',
+        ]
     plugins:
       - '@typescript-eslint'
       - 'eslint-plugin-tsdoc'
@@ -965,13 +970,18 @@ overrides:
       no-console: off
       no-await-in-loop: off
   - files: 'resources/**'
+    settings:
+      # TypeScript checks tooling imports; skip bundled dependency internals.
+      import/ignore: ['node_modules']
     env:
       node: true
     rules:
+      import/order: off # Use the shared simple-import-sort groups.
       internal-rules/only-ascii: [error, { allowEmoji: true }]
       import/no-extraneous-dependencies: off
       node/no-extraneous-require: off
       node/no-unpublished-require: off
+      node/no-unpublished-import: off
       node/no-sync: off
       import/no-nodejs-modules: off
       import/no-commonjs: off

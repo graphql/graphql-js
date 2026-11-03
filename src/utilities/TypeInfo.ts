@@ -75,7 +75,7 @@ export class TypeInfo {
    *   }
    * `);
    * const typeInfo = new TypeInfo(schema);
-   * const seenTypes = [];
+   * const seenTypes: Array<string> = [];
    *
    * visit(
    *   parse('{ greeting }'),
@@ -189,7 +189,7 @@ export class TypeInfo {
    *   }
    * `);
    * const typeInfo = new TypeInfo(schema);
-   * const fieldTypes = {};
+   * const fieldTypes: Record<string, string> = {};
    *
    * visit(
    *   parse('{ viewer { name } }'),
@@ -227,7 +227,7 @@ export class TypeInfo {
    *   }
    * `);
    * const typeInfo = new TypeInfo(schema);
-   * const parentTypes = {};
+   * const parentTypes: Record<string, string> = {};
    *
    * visit(
    *   parse('{ viewer { name } }'),
@@ -266,7 +266,7 @@ export class TypeInfo {
    *   }
    * `);
    * const typeInfo = new TypeInfo(schema);
-   * const inputTypes = {};
+   * const inputTypes: Record<string, string> = {};
    *
    * visit(
    *   parse('{ reviews(stars: 5, sort: OLDEST) }'),
@@ -304,7 +304,7 @@ export class TypeInfo {
    *   }
    * `);
    * const typeInfo = new TypeInfo(schema);
-   * const parentInputTypes = {};
+   * const parentInputTypes: Record<string, string> = {};
    *
    * visit(
    *   parse('{ reviews(filter: { stars: 5 }) }'),
@@ -372,7 +372,7 @@ export class TypeInfo {
    *   }
    * `);
    * const typeInfo = new TypeInfo(schema);
-   * let defaultLimit;
+   * let defaultLimit: unknown;
    *
    * visit(
    *   parse('{ reviews(limit: 5) }'),
@@ -499,6 +499,7 @@ export class TypeInfo {
    * @returns Nothing.
    * @example
    * ```ts
+   * import assert from 'node:assert/strict';
    * import { Kind, parse } from 'graphql/language';
    * import { buildSchema, TypeInfo } from 'graphql/utilities';
    *
@@ -509,6 +510,7 @@ export class TypeInfo {
    * `);
    * const document = parse('{ greeting }');
    * const operation = document.definitions[0];
+   * assert(operation.kind === Kind.OPERATION_DEFINITION);
    * const selectionSet = operation.selectionSet;
    * const field = selectionSet.selections[0];
    * const typeInfo = new TypeInfo(schema);
@@ -634,12 +636,13 @@ export class TypeInfo {
   }
 
   /**
-   * Updates this TypeInfo instance for a left AST node.
-   * @param node - AST node being entered.
+   * Updates this TypeInfo instance when leaving an AST node.
+   * @param node - AST node being left.
    * @returns Nothing.
    * @example
    * ```ts
-   * import { parse } from 'graphql/language';
+   * import assert from 'node:assert/strict';
+   * import { parse, Kind } from 'graphql/language';
    * import { buildSchema, TypeInfo } from 'graphql/utilities';
    *
    * const schema = buildSchema(`
@@ -649,6 +652,7 @@ export class TypeInfo {
    * `);
    * const document = parse('{ greeting }');
    * const operation = document.definitions[0];
+   * assert(operation.kind === Kind.OPERATION_DEFINITION);
    * const selectionSet = operation.selectionSet;
    * const field = selectionSet.selections[0];
    * const typeInfo = new TypeInfo(schema);
@@ -659,7 +663,7 @@ export class TypeInfo {
    * String(typeInfo.getType()); // => 'String'
    *
    * typeInfo.leave(field);
-   * typeInfo.getType(); // => undefined
+   * String(typeInfo.getType()); // => 'Query'
    * ```
    */
   leave(node: ASTNode) {
@@ -754,7 +758,7 @@ function getFieldDef(
  *   }
  * `);
  * const typeInfo = new TypeInfo(schema);
- * const fields = [];
+ * const fields: Array<{ name: string; parentType: string; type: string }> = [];
  *
  * visit(
  *   parse('{ greeting }'),

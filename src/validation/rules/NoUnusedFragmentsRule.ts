@@ -33,16 +33,16 @@ import type { ASTValidationContext } from '../ValidationContext';
  * const invalidDocument = parse(`
  *   fragment Unused on Query { name } query { name }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [NoUnusedFragmentsRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   NoUnusedFragmentsRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
  * const validDocument = parse(`
  *   fragment Used on Query { name } query { ...Used }
  * `);
- * const validErrors = validate(schema, validDocument, [NoUnusedFragmentsRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [NoUnusedFragmentsRule]); // => []
  * ```
  */
 export function NoUnusedFragmentsRule(

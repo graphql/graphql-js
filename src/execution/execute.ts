@@ -254,12 +254,10 @@ export interface ExecutionArgs {
  *   schema,
  *   document: parse('query ($name: String!) { greeting(name: $name) }'),
  *   rootValue: {
- *     greeting: ({ name }) => `Hello, ${name}!`,
+ *     greeting: ({ name }: { name: string }) => `Hello, ${name}!`,
  *   },
  *   variableValues: { name: 'Ada' },
- * });
- *
- * result; // => { data: { greeting: 'Hello, Ada!' } }
+ * }); // => { data: { greeting: 'Hello, Ada!' } }
  * ```
  * @example
  * ```ts
@@ -288,8 +286,7 @@ export interface ExecutionArgs {
  *   rootValue: { viewer: { kind: 'user', name: 'Ada' } },
  *   contextValue: { locale: 'en' },
  *   operationName: 'Viewer',
- *   fieldResolver: (source, _args, contextValue, info) => {
- *     contextValue.locale; // => 'en'
+ *   fieldResolver: (source, _args, _contextValue, info) => {
  *     return source[info.fieldName];
  *   },
  *   typeResolver: (value) => {
@@ -323,8 +320,8 @@ export interface ExecutionArgs {
  *   },
  * });
  *
- * result.data.broken; // => null
- * result.errors[0].message; // => 'Resolver failed.'
+ * result.data?.broken; // => null
+ * result.errors?.[0].message; // => 'Resolver failed.'
  * ```
  * @example
  * ```ts
@@ -359,8 +356,8 @@ export interface ExecutionArgs {
  *   options: { maxCoercionErrors: 1 },
  * });
  *
- * result.errors.length; // => 2
- * result.errors[1].message; // matches /error limit reached/
+ * result.errors?.length; // => 2
+ * result.errors?.[1].message.includes('error limit reached'); // => true
  * ```
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {

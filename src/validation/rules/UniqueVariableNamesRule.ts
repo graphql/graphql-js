@@ -28,16 +28,16 @@ import type { ASTValidationContext } from '../ValidationContext';
  * const invalidDocument = parse(`
  *   query ($id: ID, $id: ID) { field(arg: $id) }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [UniqueVariableNamesRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   UniqueVariableNamesRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
  * const validDocument = parse(`
  *   query ($id: ID) { field(arg: $id) }
  * `);
- * const validErrors = validate(schema, validDocument, [UniqueVariableNamesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [UniqueVariableNamesRule]); // => []
  * ```
  */
 export function UniqueVariableNamesRule(

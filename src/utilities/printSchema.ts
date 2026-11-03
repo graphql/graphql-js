@@ -81,9 +81,9 @@ export function printSchema(schema: GraphQLSchema): string {
  *
  * const printed = printIntrospectionSchema(schema);
  *
- * printed; // matches /type __Schema/
- * printed; // matches /enum __TypeKind/
- * printed; // does not match /type Query/
+ * printed.includes('type __Schema'); // => true
+ * printed.includes('enum __TypeKind'); // => true
+ * printed.includes('type Query'); // => false
  * ```
  */
 export function printIntrospectionSchema(schema: GraphQLSchema): string {
@@ -178,6 +178,7 @@ function isSchemaOfCommonNames(schema: GraphQLSchema): boolean {
  * @returns The printed string representation.
  * @example
  * ```ts
+ * import assert from 'node:assert/strict';
  * import { buildSchema, printType } from 'graphql/utilities';
  *
  * const schema = buildSchema(`
@@ -191,7 +192,9 @@ function isSchemaOfCommonNames(schema: GraphQLSchema): boolean {
  *   }
  * `);
  *
- * printType(schema.getType('User')); // => ['type User {', '  id: ID!', '  name: String', '}'].join('\n')
+ * const userType = schema.getType('User');
+ * assert(userType);
+ * printType(userType); // => ['type User {', '  id: ID!', '  name: String', '}'].join('\n')
  * ```
  */
 export function printType(type: GraphQLNamedType): string {

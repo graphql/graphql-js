@@ -1118,13 +1118,15 @@ export function assertAbstractType(type: unknown): GraphQLAbstractType {
  * @typeParam T - The GraphQL type wrapped by this list type.
  * @example
  * ```ts
- * const PersonType = new GraphQLObjectType({
+ * import { GraphQLList, GraphQLObjectType } from 'graphql';
+ *
+ * const PersonType: GraphQLObjectType = new GraphQLObjectType({
  *   name: 'Person',
  *   fields: () => ({
  *     parents: { type: new GraphQLList(PersonType) },
  *     children: { type: new GraphQLList(PersonType) },
- *   })
- * })
+ *   }),
+ * });
  * ```
  */
 export class GraphQLList<T extends GraphQLType> {
@@ -1208,12 +1210,14 @@ export class GraphQLList<T extends GraphQLType> {
  * @typeParam T - The nullable GraphQL type wrapped by this non-null type.
  * @example
  * ```ts
+ * import { GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
+ *
  * const RowType = new GraphQLObjectType({
  *   name: 'Row',
  *   fields: () => ({
  *     id: { type: new GraphQLNonNull(GraphQLString) },
- *   })
- * })
+ *   }),
+ * });
  * ```
  *
  * Note: the enforcement of non-nullability occurs within the executor.
@@ -1260,9 +1264,7 @@ export class GraphQLNonNull<T extends GraphQLNullableType> {
    * import { GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql/type';
    *
    * const requiredString = new GraphQLNonNull(GraphQLString);
-   * const requiredStringList = new GraphQLNonNull(
-   *   new GraphQLList(GraphQLString),
-   * );
+   * const requiredStringList = new GraphQLNonNull(new GraphQLList(GraphQLString));
    *
    * requiredString.toString(); // => 'String!'
    * requiredStringList.toString(); // => '[String]!'
@@ -1377,9 +1379,7 @@ export function isNullableType(type: unknown): type is GraphQLNullableType {
  *   assertNullableType,
  * } from 'graphql/type';
  *
- * const nullableType = assertNullableType(GraphQLString);
- *
- * nullableType; // => GraphQLString
+ * const nullableType = assertNullableType(GraphQLString); // => GraphQLString
  * assertNullableType(new GraphQLNonNull(GraphQLString)); // throws an error
  * ```
  */
@@ -1440,9 +1440,7 @@ export function getNullableType<T extends GraphQLNullableType>(
  *   getNullableType,
  * } from 'graphql/type';
  *
- * const requiredStringList = new GraphQLNonNull(
- *   new GraphQLList(GraphQLString),
- * );
+ * const requiredStringList = new GraphQLNonNull(new GraphQLList(GraphQLString));
  *
  * getNullableType(requiredStringList).toString(); // => '[String]'
  * getNullableType(GraphQLString); // => GraphQLString
@@ -1556,7 +1554,7 @@ export function getNamedType(type: undefined | null): void;
  *
  * const inputArg = schema.getQueryType()?.getFields().review.args[0];
  *
- * getNamedType(inputArg?.type).toString(); // => 'ReviewInput'
+ * getNamedType(inputArg?.type)?.toString(); // => 'ReviewInput'
  * ```
  */
 export function getNamedType(type: GraphQLInputType): GraphQLNamedInputType;
@@ -1581,7 +1579,7 @@ export function getNamedType(type: GraphQLInputType): GraphQLNamedInputType;
  *
  * const usersField = schema.getQueryType()?.getFields().users;
  *
- * getNamedType(usersField?.type).toString(); // => 'User'
+ * getNamedType(usersField?.type)?.toString(); // => 'User'
  * ```
  */
 export function getNamedType(type: GraphQLOutputType): GraphQLNamedOutputType;
@@ -1612,11 +1610,7 @@ export function getNamedType(type: GraphQLType): GraphQLNamedType;
  * @returns The named type after unwrapping all wrappers, or undefined for nullish input.
  * @example
  * ```ts
- * import {
- *   GraphQLList,
- *   GraphQLString,
- *   getNamedType,
- * } from 'graphql/type';
+ * import { GraphQLList, GraphQLString, getNamedType } from 'graphql/type';
  *
  * getNamedType(new GraphQLList(GraphQLString)); // => GraphQLString
  * getNamedType(undefined); // => undefined
@@ -1659,11 +1653,8 @@ export type ThunkObjMap<T> = (() => ObjMap<T>) | ObjMap<T>;
  * ```ts
  * import { GraphQLString, resolveReadonlyArrayThunk } from 'graphql/type';
  *
- * const lazyFields = resolveReadonlyArrayThunk(() => [GraphQLString]);
- * const fields = resolveReadonlyArrayThunk([GraphQLString]);
- *
- * lazyFields; // => [GraphQLString]
- * fields; // => [GraphQLString]
+ * const lazyFields = resolveReadonlyArrayThunk(() => [GraphQLString]); // => [GraphQLString]
+ * const fields = resolveReadonlyArrayThunk([GraphQLString]); // => [GraphQLString]
  * ```
  */
 export function resolveReadonlyArrayThunk<T>(
@@ -1720,21 +1711,29 @@ export interface GraphQLScalarTypeExtensions {
  * @typeParam TExternal - The serialized representation exposed in GraphQL results.
  * @example
  * ```ts
+ * import { GraphQLScalarType } from 'graphql/type';
+ *
  * const OddType = new GraphQLScalarType({
  *   name: 'Odd',
  *   serialize: (value) => {
- *     if (!Number.isFinite(value)) {
+ *     if (typeof value !== 'number' || !Number.isInteger(value)) {
  *       throw new Error(
- *         `Scalar "Odd" cannot represent "${value}" since it is not a finite number.`,
+ *         `Scalar "Odd" cannot represent "${value}" since it is not an integer.`,
  *       );
  *     }
  *
  *     if (value % 2 === 0) {
- *       throw new Error(`Scalar "Odd" cannot represent "${value}" since it is even.`);
+ *       throw new Error(
+ *         `Scalar "Odd" cannot represent "${value}" since it is even.`,
+ *       );
  *     }
  *     return value;
- *   }
+ *   },
  * });
+ *
+ * OddType.serialize(3); // => 3
+ * OddType.serialize(2); // throws an error
+ * OddType.serialize(1.5); // throws an error
  * ```
  */
 export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
@@ -1762,6 +1761,7 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
    * @param config - Configuration describing this object.
    * @example
    * ```ts
+   * import assert from 'node:assert/strict';
    * import { Kind, parse } from 'graphql/language';
    * import { GraphQLScalarType } from 'graphql/type';
    *
@@ -1771,42 +1771,43 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
    *
    *   extend scalar Odd @specifiedBy(url: "https://example.com/odd-v2")
    * `);
+   * assert(document.definitions[0].kind === Kind.SCALAR_TYPE_DEFINITION);
+   * assert(document.definitions[1].kind === Kind.SCALAR_TYPE_EXTENSION);
+   *
+   * const ensureOdd = (value: unknown) => {
+   *   if (
+   *     typeof value !== 'number' ||
+   *     !Number.isInteger(value) ||
+   *     value % 2 === 0
+   *   ) {
+   *     throw new TypeError('Odd can only accept odd integers.');
+   *   }
+   *   return value;
+   * };
    *
    * const Odd = new GraphQLScalarType({
    *   name: 'Odd',
    *   description: 'Odd integer values.',
    *   specifiedByURL: 'https://example.com/odd',
-   *   serialize: (value) => {
-   *     if (typeof value !== 'number' || value % 2 === 0) {
-   *       throw new TypeError('Odd can only serialize odd numbers.');
-   *     }
-   *     return value;
-   *   },
-   *   parseValue: (value) => {
-   *     if (typeof value !== 'number' || value % 2 === 0) {
-   *       throw new TypeError('Odd can only parse odd numbers.');
-   *     }
-   *     return value;
-   *   },
+   *   serialize: ensureOdd,
+   *   parseValue: ensureOdd,
    *   parseLiteral: (ast) => {
    *     if (ast.kind !== Kind.INT) {
    *       throw new TypeError('Odd can only parse integer literals.');
    *     }
-   *     const value = Number(ast.value);
-   *     if (value % 2 === 0) {
-   *       throw new TypeError('Odd can only parse odd integer literals.');
-   *     }
-   *     return value;
+   *     return ensureOdd(Number(ast.value));
    *   },
    *   extensions: { numeric: true },
    *   astNode: document.definitions[0],
-   *   extensionASTNodes: [ document.definitions[1] ],
+   *   extensionASTNodes: [document.definitions[1]],
    * });
    *
    * Odd.description; // => 'Odd integer values.'
    * Odd.specifiedByURL; // => 'https://example.com/odd'
    * Odd.serialize(3); // => 3
    * Odd.parseValue(5); // => 5
+   * Odd.parseValue(2); // throws an error
+   * Odd.parseValue(1.5); // throws an error
    * Odd.extensions; // => { numeric: true }
    * ```
    */
@@ -2012,6 +2013,8 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  * @typeParam TContext - Context object type passed to resolvers.
  * @example
  * ```ts
+ * import { GraphQLInt, GraphQLObjectType, GraphQLString } from 'graphql';
+ *
  * const AddressType = new GraphQLObjectType({
  *   name: 'Address',
  *   fields: {
@@ -2020,10 +2023,10 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  *     formatted: {
  *       type: GraphQLString,
  *       resolve: (obj) => {
- *         return obj.number + ' ' + obj.street
- *       }
- *     }
- *   }
+ *         return obj.number + ' ' + obj.street;
+ *       },
+ *     },
+ *   },
  * });
  * ```
  * @example
@@ -2032,12 +2035,14 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  * thunk) to supply the fields lazily.
  *
  * ```ts
- * const PersonType = new GraphQLObjectType({
+ * import { GraphQLObjectType, GraphQLString } from 'graphql';
+ *
+ * const PersonType: GraphQLObjectType = new GraphQLObjectType({
  *   name: 'Person',
  *   fields: () => ({
  *     name: { type: GraphQLString },
  *     bestFriend: { type: PersonType },
- *   })
+ *   }),
  * });
  * ```
  */
@@ -2063,8 +2068,9 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
    * @param config - Configuration describing this object.
    * @example
    * ```ts
+   * import assert from 'node:assert/strict';
    * // Configure an object type with interfaces, fields, arguments, and metadata.
-   * import { parse } from 'graphql/language';
+   * import { parse, Kind } from 'graphql/language';
    * import {
    *   GraphQLID,
    *   GraphQLInterfaceType,
@@ -2083,9 +2089,11 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
    *     displayName: String
    *   }
    * `);
+   * assert(document.definitions[0].kind === Kind.OBJECT_TYPE_DEFINITION);
+   * assert(document.definitions[1].kind === Kind.OBJECT_TYPE_EXTENSION);
    * const definition = document.definitions[0];
-   * const nameField = definition.fields[1];
-   * const formatArg = nameField.arguments[0];
+   * const nameField = definition.fields?.[1];
+   * const formatArg = nameField?.arguments?.[0];
    *
    * const Node = new GraphQLInterfaceType({
    *   name: 'Node',
@@ -2126,7 +2134,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
    *   },
    *   extensions: { entity: 'User' },
    *   astNode: definition,
-   *   extensionASTNodes: [ document.definitions[1] ],
+   *   extensionASTNodes: [document.definitions[1]],
    * });
    *
    * User.name; // => 'User'
@@ -2516,7 +2524,7 @@ export type GraphQLFieldResolver<
 
 /** Information about the currently executing GraphQL field. */
 export interface GraphQLResolveInfo {
-  /** The field name referenced by this schema coordinate. */
+  /** Name of the field being resolved. */
   readonly fieldName: string;
   /** AST field nodes that contributed to the current field execution. */
   readonly fieldNodes: ReadonlyArray<FieldNode>;
@@ -2524,9 +2532,9 @@ export interface GraphQLResolveInfo {
   readonly returnType: GraphQLOutputType;
   /** Object type that owns the current field. */
   readonly parentType: GraphQLObjectType;
-  /** Response path where this error occurred during execution. */
+  /** Response path of the field being resolved. */
   readonly path: Path;
-  /** The schema used for validation or execution. */
+  /** The schema being executed. */
   readonly schema: GraphQLSchema;
   /** Fragment definitions in the operation document keyed by fragment name. */
   readonly fragments: ObjMap<FragmentDefinitionNode>;
@@ -2676,17 +2684,26 @@ export interface GraphQLArgument {
  * import {
  *   GraphQLInt,
  *   GraphQLNonNull,
+ *   GraphQLObjectType,
  *   GraphQLString,
  *   isRequiredArgument,
  * } from 'graphql/type';
  *
- * const requiredArgument = { name: 'id', type: new GraphQLNonNull(GraphQLInt) };
- * const optionalArgument = { name: 'name', type: GraphQLString };
- * const argumentWithDefault = {
- *   name: 'limit',
- *   type: new GraphQLNonNull(GraphQLInt),
- *   defaultValue: 10,
- * };
+ * const Query = new GraphQLObjectType({
+ *   name: 'Query',
+ *   fields: {
+ *     greeting: {
+ *       type: GraphQLString,
+ *       args: {
+ *         id: { type: new GraphQLNonNull(GraphQLInt) },
+ *         name: { type: GraphQLString },
+ *         limit: { type: new GraphQLNonNull(GraphQLInt), defaultValue: 10 },
+ *       },
+ *     },
+ *   },
+ * });
+ * const [requiredArgument, optionalArgument, argumentWithDefault] =
+ *   Query.getFields().greeting.args;
  *
  * isRequiredArgument(requiredArgument); // => true
  * isRequiredArgument(optionalArgument); // => false
@@ -2727,11 +2744,13 @@ export interface GraphQLInterfaceTypeExtensions {
  * when the field is resolved.
  * @example
  * ```ts
+ * import { GraphQLInterfaceType, GraphQLString } from 'graphql';
+ *
  * const EntityType = new GraphQLInterfaceType({
  *   name: 'Entity',
  *   fields: {
- *     name: { type: GraphQLString }
- *   }
+ *     name: { type: GraphQLString },
+ *   },
  * });
  * ```
  */
@@ -2757,7 +2776,8 @@ export class GraphQLInterfaceType {
    * @param config - Configuration describing this object.
    * @example
    * ```ts
-   * import { parse } from 'graphql/language';
+   * import assert from 'node:assert/strict';
+   * import { parse, Kind } from 'graphql/language';
    * import { GraphQLID, GraphQLInterfaceType, GraphQLNonNull } from 'graphql/type';
    *
    * const document = parse(`
@@ -2773,6 +2793,8 @@ export class GraphQLInterfaceType {
    *     url: String
    *   }
    * `);
+   * assert(document.definitions[1].kind === Kind.INTERFACE_TYPE_DEFINITION);
+   * assert(document.definitions[2].kind === Kind.INTERFACE_TYPE_EXTENSION);
    *
    * const Node = new GraphQLInterfaceType({
    *   name: 'Node',
@@ -2791,11 +2813,11 @@ export class GraphQLInterfaceType {
    *   resolveType: (value) => {
    *     return typeof value === 'object' && value != null && 'url' in value
    *       ? 'WebPage'
-   *       : null;
+   *       : undefined;
    *   },
    *   extensions: { abstract: true },
    *   astNode: document.definitions[1],
-   *   extensionASTNodes: [ document.definitions[2] ],
+   *   extensionASTNodes: [document.definitions[2]],
    * });
    *
    * Resource.name; // => 'Resource'
@@ -3048,17 +3070,30 @@ export interface GraphQLUnionTypeExtensions {
  * to determine which type is actually used when the field is resolved.
  * @example
  * ```ts
+ * import { GraphQLObjectType, GraphQLString, GraphQLUnionType } from 'graphql';
+ *
+ * class Dog {}
+ * class Cat {}
+ * const DogType = new GraphQLObjectType({
+ *   name: 'Dog',
+ *   fields: { name: { type: GraphQLString } },
+ * });
+ * const CatType = new GraphQLObjectType({
+ *   name: 'Cat',
+ *   fields: { name: { type: GraphQLString } },
+ * });
+ *
  * const PetType = new GraphQLUnionType({
  *   name: 'Pet',
  *   types: [DogType, CatType],
  *   resolveType: (value) => {
  *     if (value instanceof Dog) {
- *       return DogType;
+ *       return 'Dog';
  *     }
  *     if (value instanceof Cat) {
- *       return CatType;
+ *       return 'Cat';
  *     }
- *   }
+ *   },
  * });
  * ```
  */
@@ -3083,14 +3118,21 @@ export class GraphQLUnionType {
    * @param config - Configuration describing this object.
    * @example
    * ```ts
-   * import { parse } from 'graphql/language';
-   * import { GraphQLObjectType, GraphQLString, GraphQLUnionType } from 'graphql/type';
+   * import assert from 'node:assert/strict';
+   * import { parse, Kind } from 'graphql/language';
+   * import {
+   *   GraphQLObjectType,
+   *   GraphQLString,
+   *   GraphQLUnionType,
+   * } from 'graphql/type';
    *
    * const document = parse(`
    *   union Media = Photo | Video
    *
    *   extend union Media = Audio
    * `);
+   * assert(document.definitions[0].kind === Kind.UNION_TYPE_DEFINITION);
+   * assert(document.definitions[1].kind === Kind.UNION_TYPE_EXTENSION);
    *
    * const Photo = new GraphQLObjectType({
    *   name: 'Photo',
@@ -3112,7 +3154,7 @@ export class GraphQLUnionType {
    *   },
    *   extensions: { searchable: true },
    *   astNode: document.definitions[0],
-   *   extensionASTNodes: [ document.definitions[1] ],
+   *   extensionASTNodes: [document.definitions[1]],
    * });
    *
    * Media.description; // => 'Media that can appear in a search result.'
@@ -3185,7 +3227,11 @@ export class GraphQLUnionType {
    * @returns A configuration object that can be used to recreate this object.
    * @example
    * ```ts
-   * import { GraphQLObjectType, GraphQLString, GraphQLUnionType } from 'graphql/type';
+   * import {
+   *   GraphQLObjectType,
+   *   GraphQLString,
+   *   GraphQLUnionType,
+   * } from 'graphql/type';
    *
    * const Photo = new GraphQLObjectType({
    *   name: 'Photo',
@@ -3252,7 +3298,11 @@ export class GraphQLUnionType {
    * @returns The JSON-serializable representation.
    * @example
    * ```ts
-   * import { GraphQLObjectType, GraphQLString, GraphQLUnionType } from 'graphql/type';
+   * import {
+   *   GraphQLObjectType,
+   *   GraphQLString,
+   *   GraphQLUnionType,
+   * } from 'graphql/type';
    *
    * const Photo = new GraphQLObjectType({
    *   name: 'Photo',
@@ -3377,7 +3427,8 @@ export class GraphQLEnumType /* <T> */ {
    * @param config - Configuration describing this object.
    * @example
    * ```ts
-   * import { parse } from 'graphql/language';
+   * import assert from 'node:assert/strict';
+   * import { parse, Kind } from 'graphql/language';
    * import { GraphQLEnumType } from 'graphql/type';
    *
    * const document = parse(`
@@ -3391,6 +3442,8 @@ export class GraphQLEnumType /* <T> */ {
    *     FORCE_AWAKENS
    *   }
    * `);
+   * assert(document.definitions[0].kind === Kind.ENUM_TYPE_DEFINITION);
+   * assert(document.definitions[1].kind === Kind.ENUM_TYPE_EXTENSION);
    * const definition = document.definitions[0];
    *
    * const Episode = new GraphQLEnumType({
@@ -3401,24 +3454,24 @@ export class GraphQLEnumType /* <T> */ {
    *       value: 4,
    *       description: 'Released in 1977.',
    *       extensions: { trilogy: 'original' },
-   *       astNode: definition.values[0],
+   *       astNode: definition.values?.[0],
    *     },
-   *     EMPIRE: { value: 5, astNode: definition.values[1] },
+   *     EMPIRE: { value: 5, astNode: definition.values?.[1] },
    *     JEDI: {
    *       value: 6,
    *       deprecationReason: 'Use RETURN_OF_THE_JEDI.',
-   *       astNode: definition.values[2],
+   *       astNode: definition.values?.[2],
    *     },
    *   },
    *   extensions: { catalog: 'films' },
    *   astNode: definition,
-   *   extensionASTNodes: [ document.definitions[1] ],
+   *   extensionASTNodes: [document.definitions[1]],
    * });
    *
    * Episode.description; // => 'A Star Wars film episode.'
    * Episode.serialize(5); // => 'EMPIRE'
    * Episode.parseValue('JEDI'); // => 6
-   * Episode.getValue('JEDI').deprecationReason; // => 'Use RETURN_OF_THE_JEDI.'
+   * Episode.getValue('JEDI')?.deprecationReason; // => 'Use RETURN_OF_THE_JEDI.'
    * Episode.extensions; // => { catalog: 'films' }
    * ```
    */
@@ -3606,8 +3659,8 @@ export class GraphQLEnumType /* <T> */ {
    *   },
    * });
    *
-   * RGB.parseLiteral(parseValue('RED')); // => 0
-   * RGB.parseLiteral(parseValue('"RED"')); // throws an error
+   * RGB.parseLiteral(parseValue('RED'), undefined); // => 0
+   * RGB.parseLiteral(parseValue('"RED"'), undefined); // throws an error
    * ```
    */
   parseLiteral(
@@ -3856,13 +3909,15 @@ export interface GraphQLInputObjectTypeExtensions {
  * Using `NonNull` will ensure that a value must be provided by the query
  * @example
  * ```ts
+ * import { GraphQLFloat, GraphQLInputObjectType, GraphQLNonNull } from 'graphql';
+ *
  * const GeoPoint = new GraphQLInputObjectType({
  *   name: 'GeoPoint',
  *   fields: {
  *     lat: { type: new GraphQLNonNull(GraphQLFloat) },
  *     lon: { type: new GraphQLNonNull(GraphQLFloat) },
  *     alt: { type: GraphQLFloat, defaultValue: 0 },
- *   }
+ *   },
  * });
  * ```
  */
@@ -3887,7 +3942,8 @@ export class GraphQLInputObjectType {
    * @param config - Configuration describing this object.
    * @example
    * ```ts
-   * import { parse } from 'graphql/language';
+   * import assert from 'node:assert/strict';
+   * import { parse, Kind } from 'graphql/language';
    * import {
    *   GraphQLID,
    *   GraphQLInputObjectType,
@@ -3906,6 +3962,8 @@ export class GraphQLInputObjectType {
    *     body: String
    *   }
    * `);
+   * assert(document.definitions[0].kind === Kind.INPUT_OBJECT_TYPE_DEFINITION);
+   * assert(document.definitions[1].kind === Kind.INPUT_OBJECT_TYPE_EXTENSION);
    * const definition = document.definitions[0];
    *
    * const ReviewInput = new GraphQLInputObjectType({
@@ -3916,18 +3974,18 @@ export class GraphQLInputObjectType {
    *       description: 'Star rating from one to five.',
    *       type: new GraphQLNonNull(GraphQLInt),
    *       extensions: { min: 1, max: 5 },
-   *       astNode: definition.fields[0],
+   *       astNode: definition.fields?.[0],
    *     },
    *     commentary: {
    *       type: GraphQLString,
    *       defaultValue: '',
    *       deprecationReason: 'Use body.',
-   *       astNode: definition.fields[1],
+   *       astNode: definition.fields?.[1],
    *     },
    *   },
    *   extensions: { form: 'review' },
    *   astNode: definition,
-   *   extensionASTNodes: [ document.definitions[1] ],
+   *   extensionASTNodes: [document.definitions[1]],
    *   isOneOf: false,
    * });
    * const SearchBy = new GraphQLInputObjectType({
@@ -4205,19 +4263,26 @@ export interface GraphQLInputField {
  * @example
  * ```ts
  * import {
+ *   GraphQLInputObjectType,
  *   GraphQLInt,
  *   GraphQLNonNull,
  *   GraphQLString,
  *   isRequiredInputField,
  * } from 'graphql/type';
  *
- * const requiredField = { name: 'id', type: new GraphQLNonNull(GraphQLInt) };
- * const optionalField = { name: 'name', type: GraphQLString };
- * const fieldWithDefault = {
- *   name: 'limit',
- *   type: new GraphQLNonNull(GraphQLInt),
- *   defaultValue: 10,
- * };
+ * const Input = new GraphQLInputObjectType({
+ *   name: 'Input',
+ *   fields: {
+ *     id: { type: new GraphQLNonNull(GraphQLInt) },
+ *     name: { type: GraphQLString },
+ *     limit: { type: new GraphQLNonNull(GraphQLInt), defaultValue: 10 },
+ *   },
+ * });
+ * const {
+ *   id: requiredField,
+ *   name: optionalField,
+ *   limit: fieldWithDefault,
+ * } = Input.getFields();
  *
  * isRequiredInputField(requiredField); // => true
  * isRequiredInputField(optionalField); // => false

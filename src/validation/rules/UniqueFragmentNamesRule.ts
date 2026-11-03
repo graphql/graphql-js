@@ -28,16 +28,16 @@ import type { ASTValidationContext } from '../ValidationContext';
  * const invalidDocument = parse(`
  *   fragment A on Query { name } fragment A on Query { name } query { ...A }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [UniqueFragmentNamesRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   UniqueFragmentNamesRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
  * const validDocument = parse(`
  *   fragment A on Query { name } query { ...A }
  * `);
- * const validErrors = validate(schema, validDocument, [UniqueFragmentNamesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [UniqueFragmentNamesRule]); // => []
  * ```
  */
 export function UniqueFragmentNamesRule(

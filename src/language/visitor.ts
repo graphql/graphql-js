@@ -147,7 +147,7 @@ export const BREAK: unknown = Object.freeze({});
  * import { parse, visit } from 'graphql/language';
  *
  * const document = parse('{ hero { name } }');
- * const fieldNames = [];
+ * const fieldNames: Array<string> = [];
  *
  * visit(document, {
  *   Field: (node) => {
@@ -164,7 +164,7 @@ export const BREAK: unknown = Object.freeze({});
  * import { parse, visit } from 'graphql/language';
  *
  * const document = parse('{ hero { name } }');
- * const events = [];
+ * const events: Array<string> = [];
  *
  * visit(document, {
  *   Field: {
@@ -189,10 +189,10 @@ export const BREAK: unknown = Object.freeze({});
  * let leaveCount = 0;
  *
  * visit(document, {
- *   enter: (node) => {
+ *   enter: () => {
  *     enterCount += 1;
  *   },
- *   leave: (node) => {
+ *   leave: () => {
  *     leaveCount += 1;
  *   },
  * });
@@ -248,9 +248,7 @@ export function visit<N extends ASTNode>(
  *       return node.definitions.join('\n');
  *     },
  *   },
- * });
- *
- * printed; // => 'hero { name }'
+ * }); // => 'hero { name }'
  * ```
  */
 export function visit<R>(
@@ -396,13 +394,21 @@ export function visit(
  * import { parse, visit, visitInParallel } from 'graphql/language';
  *
  * const document = parse('{ hero { name } }');
- * const events = [];
+ * const events: Array<string> = [];
  *
  * visit(
  *   document,
  *   visitInParallel([
- *     { Field: (node) => { events.push(`field:${node.name.value}`); } },
- *     { Name: (node) => { events.push(`name:${node.value}`); } },
+ *     {
+ *       Field: (node) => {
+ *         events.push(`field:${node.name.value}`);
+ *       },
+ *     },
+ *     {
+ *       Name: (node) => {
+ *         events.push(`name:${node.value}`);
+ *       },
+ *     },
  *   ]),
  * );
  *

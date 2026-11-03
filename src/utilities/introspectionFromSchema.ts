@@ -27,6 +27,7 @@ import { getIntrospectionQuery } from './getIntrospectionQuery';
  * @returns Introspection result data for the schema.
  * @example
  * ```ts
+ * import assert from 'node:assert/strict';
  * // Include schema metadata using the default introspection options.
  * import { buildSchema, introspectionFromSchema } from 'graphql/utilities';
  *
@@ -39,12 +40,16 @@ import { getIntrospectionQuery } from './getIntrospectionQuery';
  * `);
  *
  * const introspection = introspectionFromSchema(schema);
- * const urlType = introspection.__schema.types.find((type) => type.name === 'Url');
+ * const urlType = introspection.__schema.types.find(
+ *   (type) => type.name === 'Url',
+ * );
+ * assert(urlType?.kind === 'SCALAR');
  *
  * urlType.specifiedByURL; // => 'https://url.spec.whatwg.org/'
  * ```
  * @example
  * ```ts
+ * import assert from 'node:assert/strict';
  * // This variant disables optional introspection metadata.
  * import { buildSchema, introspectionFromSchema } from 'graphql/utilities';
  *
@@ -65,15 +70,18 @@ import { getIntrospectionQuery } from './getIntrospectionQuery';
  *   experimentalDirectiveDeprecation: false,
  *   oneOf: false,
  * });
- * const urlType = introspection.__schema.types.find((type) => type.name === 'Url');
+ * const urlType = introspection.__schema.types.find(
+ *   (type) => type.name === 'Url',
+ * );
+ * assert(urlType?.kind === 'SCALAR');
  * const deprecatedDirective = introspection.__schema.directives.find(
  *   (directive) => directive.name === 'deprecated',
  * );
  *
- * urlType.specifiedByURL; // => undefined
  * urlType.description; // => undefined
+ * urlType.specifiedByURL; // => undefined
+ * deprecatedDirective?.isRepeatable; // => undefined
  * introspection.__schema.description; // => undefined
- * deprecatedDirective.isRepeatable; // => undefined
  * ```
  */
 export function introspectionFromSchema(

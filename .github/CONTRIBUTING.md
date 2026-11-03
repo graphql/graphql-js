@@ -74,6 +74,122 @@ ensure your pull request matches the style guides, run `npm run prettier`.
 - Trailing commas,
 - Avd abbr wrds.
 
+## Executable API examples
+
+Run `npm run check:examples` to build, pack, and install the npm package into a
+temporary consumer project, then type-check and execute the TypeScript fences
+under JSDoc `@example` tags in `src`. CI runs the same check alongside the other
+lint checks.
+
+Each fence runs separately: include its imports and setup. The TypeScript runner
+uses the shared JSDoc Markdown parser, validates original module syntax, and
+adds runtime assertions. Mocha executes the transpiled examples with CommonJS
+resolution from the temporary consumer directory, so `graphql` imports load the
+installed package. The original working directory is restored during cleanup.
+The original snippets are checked against the installed declarations before
+execution. Use `ts` or `typescript` fences for executable examples; GraphQL
+fences remain documentation. The assertion helper uses the existing Babel source
+loader. Examples without expectations are smoke tests.
+
+Type callback parameters and collected values when inference needs help. Narrow
+AST kinds and optional values before accessing their properties; avoid casts or
+non-null assertions that would hide mistakes.
+
+Run `npm run prettier:examples` to format JSDoc examples, or
+`npm run prettier:examples:check` to check their formatting.
+
+Add a fenced example under `@example` in the API's JSDoc comment. Use trailing
+comments to describe expected results:
+
+````ts
+/**
+ * Parses a GraphQL document.
+ * @example
+ * ```ts
+ * import { parse } from 'graphql';
+ *
+ * parse('{ hello }').kind; // => 'Document'
+ * parse('invalid'); // throws an error
+ * parse('{ hello }'); // does not throw
+ * ```
+ */
+````
+
+Annotations can follow an expression statement or a variable declaration.
+On a declaration, `// =>` compares the initializer's result and the variable
+keeps that value:
+
+```ts
+import { parse } from 'graphql';
+
+const kind = parse('{ hello }').kind; // => 'Document'
+kind.toLowerCase(); // => 'document'
+```
+
+Use one initialized variable declaration per annotation. Destructuring checks the
+whole initializer's result before assigning its properties to the variables.
+
+Top-level `await` is supported. Inside an example fence, an async result can be
+checked like this:
+
+```ts
+import { buildSchema, graphql } from 'graphql';
+
+const schema = buildSchema('type Query { hello: String }');
+const result = await graphql({
+  schema,
+  source: '{ hello }',
+  rootValue: { hello: () => 'world' },
+});
+
+result; // => { data: { hello: 'world' } }
+```
+
+For an expected promise rejection, use
+`await Promise.reject(new Error('expected')); // throws an error`.
+
+Keep the expected expression on the same line as `// =>`. For a multiline value,
+define a variable and reference it in the expectation:
+
+```ts
+import { buildSchema, printSchema } from 'graphql';
+
+const schema = buildSchema('type Query { hello: String }');
+const expected = `type Query {
+  hello: String
+}`;
+
+printSchema(schema); // => expected
+```
+
+Comparisons use the existing `expectJSON` test helper. It calls `toJSON` methods
+and compares object properties, including GraphQL's null-prototype dictionaries.
+Missing properties and properties set to `undefined` remain distinct.
+
+Assertions can appear inside callbacks, functions, loops, and conditional blocks.
+Every annotated expression must execute at least once before the example finishes:
+
+```ts
+import { parse, visit } from 'graphql';
+
+visit(parse('{ greeting }'), {
+  Field(node) {
+    node.name.value; // => 'greeting'
+  },
+});
+```
+
+An uncalled callback or a skipped branch containing an assertion fails the check.
+Assertions retain the original scope of `await` and `yield` expressions.
+
+Await asynchronous work so its assertions run before the example finishes.
+Repeated calls to one assertion do not compensate for another that never runs.
+
+Invalid annotations and unexpected errors fail the check, with the example's
+source file and line in the output.
+Examples run sequentially and share GraphQL module state. They should not
+interfere with one another.
+
 ## Release on NPM
 
 Releases on `16.x.x` are managed by local scripts and GitHub Actions:

@@ -37,16 +37,18 @@ import type { ASTValidationContext } from '../ValidationContext';
  * const invalidDocument = parse(`
  *   { search(filter: { name: "a", name: "b" }) }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [UniqueInputFieldNamesRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   UniqueInputFieldNamesRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
  * const validDocument = parse(`
  *   { search(filter: { name: "a" }) }
  * `);
- * const validErrors = validate(schema, validDocument, [UniqueInputFieldNamesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [
+ *   UniqueInputFieldNamesRule,
+ * ]); // => []
  * ```
  */
 export function UniqueInputFieldNamesRule(

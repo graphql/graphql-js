@@ -39,16 +39,16 @@ import type {
  * const invalidDocument = parse(`
  *   { field(unknown: "1") }
  * `);
- * const invalidErrors = validate(schema, invalidDocument, [KnownArgumentNamesRule]);
+ * const invalidErrors = validate(schema, invalidDocument, [
+ *   KnownArgumentNamesRule,
+ * ]);
  *
  * invalidErrors.length; // => 1
  *
  * const validDocument = parse(`
  *   { field(arg: "1") }
  * `);
- * const validErrors = validate(schema, validDocument, [KnownArgumentNamesRule]);
- *
- * validErrors; // => []
+ * const validErrors = validate(schema, validDocument, [KnownArgumentNamesRule]); // => []
  * ```
  */
 export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {

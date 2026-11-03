@@ -20,11 +20,13 @@ import type { GraphQLSchema } from '../type/schema';
  * @returns The resolved operation root type.
  * @example
  * ```ts
+ * import assert from 'node:assert/strict';
  * import { buildSchema, getOperationRootType } from 'graphql/utilities';
- * import { parse } from 'graphql/language';
+ * import { parse, Kind } from 'graphql/language';
  *
  * const schema = buildSchema('type Query { name: String }');
  * const operation = parse('{ name }').definitions[0];
+ * assert(operation.kind === Kind.OPERATION_DEFINITION);
  * const rootType = getOperationRootType(schema, operation);
  *
  * rootType.name; // => 'Query'

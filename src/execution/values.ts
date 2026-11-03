@@ -56,8 +56,9 @@ export interface GetVariableValuesOptions {
  * @returns Coerced variable values, or request errors.
  * @example
  * ```ts
+ * import assert from 'node:assert/strict';
  * // Coerce provided variables and apply operation defaults.
- * import { parse } from 'graphql/language';
+ * import { parse, Kind } from 'graphql/language';
  * import { buildSchema } from 'graphql/utilities';
  * import { getVariableValues } from 'graphql/execution';
  *
@@ -72,19 +73,19 @@ export interface GetVariableValuesOptions {
  *   }
  * `);
  * const operation = document.definitions[0];
+ * assert(operation.kind === Kind.OPERATION_DEFINITION);
  *
- * const result = getVariableValues(
- *   schema,
- *   operation.variableDefinitions,
- *   { stars: '5' },
- * );
+ * const result = getVariableValues(schema, operation.variableDefinitions ?? [], {
+ *   stars: 5,
+ * });
  *
  * result; // => { coerced: { stars: 5, limit: 10 } }
  * ```
  * @example
  * ```ts
+ * import assert from 'node:assert/strict';
  * // This variant uses maxErrors to cap reported coercion errors.
- * import { parse } from 'graphql/language';
+ * import { parse, Kind } from 'graphql/language';
  * import { buildSchema } from 'graphql/utilities';
  * import { getVariableValues } from 'graphql/execution';
  *
@@ -104,16 +105,17 @@ export interface GetVariableValuesOptions {
  *   }
  * `);
  * const operation = document.definitions[0];
+ * assert(operation.kind === Kind.OPERATION_DEFINITION);
  *
  * const result = getVariableValues(
  *   schema,
- *   operation.variableDefinitions,
+ *   operation.variableDefinitions ?? [],
  *   { first: { stars: 'bad' }, second: { stars: 'also bad' } },
  *   { maxErrors: 1 },
  * );
  *
- * result.errors.length; // => 2
- * result.errors[1].message; // matches /error limit reached/
+ * result.errors?.length; // => 2
+ * result.errors?.[1].message.includes('error limit reached'); // => true
  * ```
  */
 export function getVariableValues(
@@ -234,8 +236,9 @@ function coerceVariableValues(
  * @returns Coerced argument values keyed by argument name.
  * @example
  * ```ts
+ * import assert from 'node:assert/strict';
  * // Read literal argument values and defaults.
- * import { parse } from 'graphql/language';
+ * import { parse, Kind } from 'graphql/language';
  * import { buildSchema } from 'graphql/utilities';
  * import { getArgumentValues } from 'graphql/execution';
  *
@@ -244,16 +247,21 @@ function coerceVariableValues(
  *     reviews(stars: Int!, limit: Int = 10): [String]
  *   }
  * `);
- * const fieldDef = schema.getQueryType().getFields().reviews;
+ * const fieldDef = schema.getQueryType()?.getFields().reviews;
+ * assert(fieldDef);
  * const document = parse('{ reviews(stars: 5) }');
- * const fieldNode = document.definitions[0].selectionSet.selections[0];
+ * const operation = document.definitions[0];
+ * assert(operation.kind === Kind.OPERATION_DEFINITION);
+ * const fieldNode = operation.selectionSet.selections[0];
+ * assert(fieldNode.kind === Kind.FIELD);
  *
  * getArgumentValues(fieldDef, fieldNode); // => { stars: 5, limit: 10 }
  * ```
  * @example
  * ```ts
+ * import assert from 'node:assert/strict';
  * // This variant resolves argument values from operation variables.
- * import { parse } from 'graphql/language';
+ * import { parse, Kind } from 'graphql/language';
  * import { buildSchema } from 'graphql/utilities';
  * import { getArgumentValues } from 'graphql/execution';
  *
@@ -262,9 +270,13 @@ function coerceVariableValues(
  *     reviews(stars: Int!): [String]
  *   }
  * `);
- * const fieldDef = schema.getQueryType().getFields().reviews;
+ * const fieldDef = schema.getQueryType()?.getFields().reviews;
+ * assert(fieldDef);
  * const document = parse('query ($stars: Int!) { reviews(stars: $stars) }');
- * const fieldNode = document.definitions[0].selectionSet.selections[0];
+ * const operation = document.definitions[0];
+ * assert(operation.kind === Kind.OPERATION_DEFINITION);
+ * const fieldNode = operation.selectionSet.selections[0];
+ * assert(fieldNode.kind === Kind.FIELD);
  *
  * getArgumentValues(fieldDef, fieldNode, { stars: 5 }); // => { stars: 5 }
  * getArgumentValues(fieldDef, fieldNode, {}); // throws an error
@@ -374,25 +386,33 @@ export interface DirectiveValuesNode {
  * @returns Coerced directive argument values keyed by argument name.
  * @example
  * ```ts
+ * import assert from 'node:assert/strict';
  * // Read literal directive arguments from a node.
- * import { parse } from 'graphql/language';
+ * import { parse, Kind } from 'graphql/language';
  * import { GraphQLSkipDirective } from 'graphql/type';
  * import { getDirectiveValues } from 'graphql/execution';
  *
  * const document = parse('{ name @skip(if: true) }');
- * const fieldNode = document.definitions[0].selectionSet.selections[0];
+ * const operation = document.definitions[0];
+ * assert(operation.kind === Kind.OPERATION_DEFINITION);
+ * const fieldNode = operation.selectionSet.selections[0];
  *
  * getDirectiveValues(GraphQLSkipDirective, fieldNode); // => { if: true }
  * ```
  * @example
  * ```ts
+ * import assert from 'node:assert/strict';
  * // This variant resolves directive arguments from variables and handles absent directives.
- * import { parse } from 'graphql/language';
+ * import { parse, Kind } from 'graphql/language';
  * import { GraphQLIncludeDirective } from 'graphql/type';
  * import { getDirectiveValues } from 'graphql/execution';
  *
- * const document = parse('query ($includeName: Boolean!) { name @include(if: $includeName) }');
- * const fieldNode = document.definitions[0].selectionSet.selections[0];
+ * const document = parse(
+ *   'query ($includeName: Boolean!) { name @include(if: $includeName) }',
+ * );
+ * const operation = document.definitions[0];
+ * assert(operation.kind === Kind.OPERATION_DEFINITION);
+ * const fieldNode = operation.selectionSet.selections[0];
  *
  * getDirectiveValues(GraphQLIncludeDirective, fieldNode, {
  *   includeName: false,
