@@ -143,6 +143,7 @@ interface FieldDetails {
   info?: FieldInfo;
 }
 interface FieldInfo {
+  typeString?: string;
   namedType: Maybe<GraphQLNamedType>;
   // A null reason means the field names and arguments match.
   comparisons: Map<FieldInfo, string | null>;
@@ -716,11 +717,15 @@ function findConflict(
   const type2 = def2?.type;
 
   if (type1 && type2 && doTypesConflict(type1, type2)) {
+    const fieldInfo1 = getFieldInfo(fieldDetails1);
+    const fieldInfo2 = getFieldInfo(fieldDetails2);
+    const type1String =
+      fieldInfo1.typeString ?? (fieldInfo1.typeString = inspect(type1));
+    const type2String =
+      fieldInfo2.typeString ?? (fieldInfo2.typeString = inspect(type2));
     return {
       responseName,
-      reason: `they return conflicting types "${inspect(type1)}" and "${inspect(
-        type2,
-      )}"`,
+      reason: `they return conflicting types "${type1String}" and "${type2String}"`,
       fields1: [node1],
       fields2: [node2],
     };
