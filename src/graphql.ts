@@ -26,6 +26,8 @@ import { execute } from './execution/execute';
  * @category Request Pipeline
  */
 export interface GraphQLArgs {
+  /** Omit suggestions from validation and input coercion errors. */
+  hideSuggestions?: Maybe<boolean>;
   /** The GraphQL type system to use when validating and executing a query. */
   schema: GraphQLSchema;
   /**
@@ -220,6 +222,7 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    hideSuggestions,
   } = args;
 
   // Validate Schema
@@ -237,7 +240,9 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
   }
 
   // Validate
-  const validationErrors = validate(schema, document);
+  const validationErrors = validate(schema, document, undefined, {
+    hideSuggestions,
+  });
   if (validationErrors.length > 0) {
     return { errors: validationErrors };
   }
@@ -252,5 +257,6 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    hideSuggestions,
   });
 }

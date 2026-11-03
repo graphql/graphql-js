@@ -62,8 +62,12 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
 
       if (!argDef && fieldDef && parentType) {
         const argName = argNode.name.value;
-        const knownArgsNames = fieldDef.args.map((arg) => arg.name);
-        const suggestions = suggestionList(argName, knownArgsNames);
+        const suggestions = context.hideSuggestions
+          ? []
+          : suggestionList(
+              argName,
+              fieldDef.args.map((arg) => arg.name),
+            );
         context.reportError(
           new GraphQLError(
             `Unknown argument "${argName}" on field "${parentType.name}.${fieldDef.name}".` +
@@ -114,11 +118,11 @@ export function KnownArgumentNamesOnDirectivesRule(
         for (const argNode of directiveNode.arguments) {
           const argName = argNode.name.value;
           if (!knownArgs.has(argName)) {
-            const suggestions = suggestionList(argName, [...knownArgs]);
+            const suggestions = suggestionList(argName, Array.from(knownArgs));
             context.reportError(
               new GraphQLError(
                 `Unknown argument "${argName}" on directive "@${directiveName}".` +
-                  didYouMean(suggestions),
+                  (context.hideSuggestions ? '' : didYouMean(suggestions)),
                 { nodes: argNode },
               ),
             );
