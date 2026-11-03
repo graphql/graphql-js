@@ -318,14 +318,11 @@ const printDocASTReducer: {
     leave: ({ description, name, type, defaultValue, directives }) =>
       join([
         wrap('', description, '\n'),
-        join(
-          [
-            join([name, ': ', type]),
-            wrap('= ', defaultValue),
-            join(directives, ' '),
-          ],
-          ' ',
-        ),
+        name,
+        ': ',
+        type,
+        wrap(' = ', defaultValue),
+        wrap(' ', join(directives, ' ')),
       ]),
   },
   InterfaceTypeDefinition: {
