@@ -113,6 +113,7 @@ interface FieldDetails {
   info?: FieldInfo;
 }
 interface FieldInfo {
+  namedType: ?GraphQLNamedType;
   // A null reason means the field names and arguments match.
   comparisons: Map<FieldInfo, string | null>;
   arguments: ArgumentInfo | void;
@@ -714,9 +715,9 @@ function findConflict(
       validationContext,
       ruleContext,
       areMutuallyExclusive,
-      getNamedType(type1),
+      getFieldInfo(fieldDetails1).namedType,
       selectionSet1,
-      getNamedType(type2),
+      getFieldInfo(fieldDetails2).namedType,
       selectionSet2,
     );
     return subfieldConflicts(conflicts, responseName, node1, node2);
@@ -728,6 +729,7 @@ function getFieldInfo(fieldDetails: FieldDetails): FieldInfo {
   if (fieldDetails.info === undefined) {
     fieldDetails.info = {
       comparisons: new Map(),
+      namedType: getNamedType(fieldDetails.definition?.type),
       arguments: getArgumentInfo(fieldDetails.node.arguments),
     };
   }
