@@ -51,6 +51,8 @@ export class ASTValidationContext {
   getRecursivelyReferencedFragmentsForOperations(
     operations: ReadonlyArray<OperationDefinitionNode>,
   ): ReadonlyArray<FragmentDefinitionNode>;
+  /** @internal */
+  spendFragmentWork(cost: number): void;
 }
 
 export class SDLValidationContext extends ASTValidationContext {
