@@ -183,8 +183,8 @@ function emitTSFiles(options: {
       if (filepath.match(/.js$/)) {
         let bodyToWrite = body;
         bodyToWrite = bodyToWrite.replace(
-          '//# sourceMappingURL=graphql.js.map',
-          '//# sourceMappingURL=graphql.mjs.map',
+          /(\/\/# sourceMappingURL=.+)\.js\.map(\r?\n?)$/,
+          '$1.mjs.map$2',
         );
         writeGeneratedFile(filepath.replace(/.js$/, extension), bodyToWrite);
         return;

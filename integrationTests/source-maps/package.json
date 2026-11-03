@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "description": "graphql-js source maps should match CommonJS and ESM modules",
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "test": "node --enable-source-maps test.js"
+  },
+  "dependencies": {
+    "graphql": "file:../graphql.tgz"
+  }
+}
