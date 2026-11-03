@@ -6,7 +6,7 @@ import { isObjectLike } from '../jsutils/isObjectLike';
 import { GraphQLError } from '../error/GraphQLError';
 
 import { Kind } from '../language/kinds';
-import { print } from '../language/printer';
+import { printForError as print } from '../language/printer';
 
 import type { GraphQLNamedType } from './definition';
 import { GraphQLScalarType } from './definition';

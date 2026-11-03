@@ -14,7 +14,7 @@ import type {
   ValueNode,
 } from '../../language/ast';
 import { Kind } from '../../language/kinds';
-import { print } from '../../language/printer';
+import { printForError as print } from '../../language/printer';
 import type { ASTVisitor } from '../../language/visitor';
 
 import type { GraphQLInputObjectType } from '../../type/definition';
