@@ -89,8 +89,8 @@ export function valueFromAST(
     const variableName = valueNode.name.value;
     if (
       variables == null ||
-      variables[variableName] === undefined ||
-      !hasOwnProperty(variables, variableName)
+      !hasOwnProperty(variables, variableName) ||
+      variables[variableName] === undefined
     ) {
       // No valid return value.
       return;
