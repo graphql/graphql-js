@@ -38,6 +38,57 @@ Creates a ValidationContext instance.
 
 **Signature:**
 
+<ApiSignature parts={[["keyword", "new"], " ", ["name", "ValidationContext"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n  ", ["parameter", "ast"], ": ", ["link", "DocumentNode", "/api-v17/language#documentnode"], ",\n  ", ["parameter", "typeInfo"], ": ", ["link", "TypeInfo", "/api-v17/utilities#typeinfo"], ",\n  ", ["parameter", "onError"], ": (", ["parameter", "error"], ": ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], ") =\u003e ", ["keyword", "void"], ",\n  ", ["parameter", "options"], "?: \u007b\n    ", ["property", "hideSuggestions"], "?: ", ["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e;\n    ", ["property", "allowEmptySelectionSets"], "?: ", ["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e;\n  \u007d,\n);"]} />
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Arguments</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>schema</td>
+      <td><ApiType parts={[["link", "GraphQLSchema", "/api-v17/type#graphqlschema"]]} /></td>
+      <td>Schema used to validate the document.</td>
+    </tr>
+    <tr>
+      <td>ast</td>
+      <td><ApiType parts={[["link", "DocumentNode", "/api-v17/language#documentnode"]]} /></td>
+      <td>Document AST being validated.</td>
+    </tr>
+    <tr>
+      <td>typeInfo</td>
+      <td><ApiType parts={[["link", "TypeInfo", "/api-v17/utilities#typeinfo"]]} /></td>
+      <td>TypeInfo instance used to track traversal state.</td>
+    </tr>
+    <tr>
+      <td>onError</td>
+      <td><ApiType parts={["(", ["parameter", "error"], ": ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], ") =\u003e ", ["keyword", "void"]]} /></td>
+      <td>Callback invoked for each validation error.</td>
+    </tr>
+    <tr>
+      <td>options?</td>
+      <td><ApiType parts={["\u007b\n  ", ["property", "hideSuggestions"], "?: ", ["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e;\n  ", ["property", "allowEmptySelectionSets"], "?: ", ["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e;\n\u007d"]} /></td>
+      <td>Validation options.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr className="api-subsection-divider" />
+
+##### <span className="api-deprecated-title">Constructor</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
+
+Creates a ValidationContext instance using the legacy positional options.
+
+**Signature:**
+
 <ApiSignature parts={[["keyword", "new"], " ", ["name", "ValidationContext"], "(\n  ", ["parameter", "schema"], ": ", ["link", "GraphQLSchema", "/api-v17/type#graphqlschema"], ",\n  ", ["parameter", "ast"], ": ", ["link", "DocumentNode", "/api-v17/language#documentnode"], ",\n  ", ["parameter", "typeInfo"], ": ", ["link", "TypeInfo", "/api-v17/utilities#typeinfo"], ",\n  ", ["parameter", "onError"], ": (", ["parameter", "error"], ": ", ["link", "GraphQLError", "/api-v17/error#graphqlerror"], ") =\u003e ", ["keyword", "void"], ",\n  ", ["parameter", "hideSuggestions"], "?: ", ["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e,\n);"]} />
 
 <hr className="api-subsection-divider" />
@@ -187,7 +238,8 @@ Returns variable usages found directly within this node.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { parse } from 'graphql/language';
+import assert from 'node:assert/strict';
+import { parse, Kind } from 'graphql/language';
 import { buildSchema, TypeInfo } from 'graphql/utilities';
 import { ValidationContext } from 'graphql/validation';
 
@@ -198,6 +250,7 @@ const schema = buildSchema(`
 `);
 const document = parse('query ($name: String) { greeting(name: $name) }');
 const operation = document.definitions[0];
+assert(operation.kind === Kind.OPERATION_DEFINITION);
 const context = new ValidationContext(
   schema,
   document,
@@ -266,7 +319,8 @@ Returns variable usages for an operation, including variables used by referenced
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { parse } from 'graphql/language';
+import assert from 'node:assert/strict';
+import { parse, Kind } from 'graphql/language';
 import { buildSchema, TypeInfo } from 'graphql/utilities';
 import { ValidationContext } from 'graphql/validation';
 
@@ -291,6 +345,7 @@ const document = parse(`
   }
 `);
 const operation = document.definitions[0];
+assert(operation.kind === Kind.OPERATION_DEFINITION);
 const context = new ValidationContext(
   schema,
   document,
@@ -731,7 +786,7 @@ argumentName; // => 'limit'
 
 ##### getFragmentSignature()
 
-Returns the fragment signature at the current traversal position.
+Returns the fragment signature referenced by the current fragment spread.
 
 **Signature:**
 
@@ -751,7 +806,7 @@ Returns the fragment signature at the current traversal position.
   <tbody>
     <tr>
       <td><ApiType parts={[["type", "Maybe"], "\u003c", ["type", "FragmentSignature"], "\u003e"]} /></td>
-      <td>The current fragment signature, if one is active.</td>
+      <td>The referenced fragment signature, if available.</td>
     </tr>
   </tbody>
 </table>
@@ -1210,7 +1265,9 @@ validate(schema, validDocument, [DeferStreamDirectiveOnRootFieldRule]); // => []
 
 Defer And Stream Directives Are Used On Valid Operations
 
-A GraphQL document is only valid if defer and stream directives are not used on root mutation or subscription types.
+Subscription operations must not use unconditional `@defer` or `@stream`.
+Their `if` argument must be `false` or a variable, unless the selection or
+an enclosing selection can be skipped via `@skip` or `@include`.
 
 **Signature:**
 
@@ -1392,9 +1449,7 @@ const validDocument = parse(`
 `);
 const validErrors = validate(schema, validDocument, [
   ExecutableDefinitionsRule,
-]);
-
-validErrors; // => []
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -1478,9 +1533,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   { name }
 `);
-const validErrors = validate(schema, validDocument, [FieldsOnCorrectTypeRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [FieldsOnCorrectTypeRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -1567,9 +1620,7 @@ const validDocument = parse(`
 `);
 const validErrors = validate(schema, validDocument, [
   FragmentsOnCompositeTypesRule,
-]);
-
-validErrors; // => []
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -1654,9 +1705,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   { field(arg: "1") }
 `);
-const validErrors = validate(schema, validDocument, [KnownArgumentNamesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [KnownArgumentNamesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -1738,9 +1787,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   { name @include(if: true) }
 `);
-const validErrors = validate(schema, validDocument, [KnownDirectivesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [KnownDirectivesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -1824,9 +1871,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   fragment NameFields on Query { name } query { ...NameFields }
 `);
-const validErrors = validate(schema, validDocument, [KnownFragmentNamesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [KnownFragmentNamesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -1984,9 +2029,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   fragment Good on Query { name }
 `);
-const validErrors = validate(schema, validDocument, [KnownTypeNamesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [KnownTypeNamesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -2072,9 +2115,7 @@ const validDocument = parse(`
 `);
 const validErrors = validate(schema, validDocument, [
   LoneAnonymousOperationRule,
-]);
-
-validErrors; // => []
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -2229,9 +2270,7 @@ const validDocument = parse(`
 `);
 const validErrors = validate(schema, validDocument, [
   MaxIntrospectionDepthRule,
-]);
-
-validErrors; // => []
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -2313,9 +2352,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   fragment A on Query { name } query { ...A }
 `);
-const validErrors = validate(schema, validDocument, [NoFragmentCyclesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [NoFragmentCyclesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -2399,9 +2436,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   query ($id: ID) { field(arg: $id) }
 `);
-const validErrors = validate(schema, validDocument, [NoUndefinedVariablesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [NoUndefinedVariablesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -2485,9 +2520,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   fragment Used on Query { name } query { ...Used }
 `);
-const validErrors = validate(schema, validDocument, [NoUnusedFragmentsRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [NoUnusedFragmentsRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -2572,9 +2605,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   query ($id: ID) { field(arg: $id) }
 `);
-const validErrors = validate(schema, validDocument, [NoUnusedVariablesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [NoUnusedVariablesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -2591,7 +2622,7 @@ See https://spec.graphql.org/draft/#sec-Field-Selection-Merging
 
 **Signature:**
 
-<ApiSignature parts={[["name", "OverlappingFieldsCanBeMergedRule"], "(\n  ", ["parameter", "context"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
+<ApiSignature parts={[["name", "OverlappingFieldsCanBeMergedRule"], "(\n  ", ["parameter", "validationContext"], ": ", ["link", "ValidationContext", "/api-v17/validation#validationcontext"], ",\n): ", ["link", "ASTVisitor", "/api-v17/language#astvisitor"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -2607,7 +2638,7 @@ See https://spec.graphql.org/draft/#sec-Field-Selection-Merging
   </thead>
   <tbody>
     <tr>
-      <td>context</td>
+      <td>validationContext</td>
       <td><ApiType parts={[["link", "ValidationContext", "/api-v17/validation#validationcontext"]]} /></td>
       <td>The validation context used while checking the document.</td>
     </tr>
@@ -2666,9 +2697,7 @@ const validDocument = parse(`
 `);
 const validErrors = validate(schema, validDocument, [
   OverlappingFieldsCanBeMergedRule,
-]);
-
-validErrors; // => []
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -2761,9 +2790,7 @@ const validDocument = parse(`
 `);
 const validErrors = validate(schema, validDocument, [
   PossibleFragmentSpreadsRule,
-]);
-
-validErrors; // => []
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -2921,9 +2948,7 @@ const validDocument = parse(`
 `);
 const validErrors = validate(schema, validDocument, [
   ProvidedRequiredArgumentsRule,
-]);
-
-validErrors; // => []
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -3003,9 +3028,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   { name }
 `);
-const validErrors = validate(schema, validDocument, [ScalarLeafsRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [ScalarLeafsRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -3096,9 +3119,7 @@ const validDocument = parse(`
 `);
 const validErrors = validate(schema, validDocument, [
   SingleFieldSubscriptionsRule,
-]);
-
-validErrors; // => []
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -3331,9 +3352,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   { field(arg: "1") }
 `);
-const validErrors = validate(schema, validDocument, [UniqueArgumentNamesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [UniqueArgumentNamesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -3493,9 +3512,7 @@ const validDocument = parse(`
 `);
 const validErrors = validate(schema, validDocument, [
   UniqueDirectivesPerLocationRule,
-]);
-
-validErrors; // => []
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -3726,9 +3743,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   fragment A on Query { name } query { ...A }
 `);
-const validErrors = validate(schema, validDocument, [UniqueFragmentNamesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [UniqueFragmentNamesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -3818,9 +3833,7 @@ const validDocument = parse(`
 `);
 const validErrors = validate(schema, validDocument, [
   UniqueInputFieldNamesRule,
-]);
-
-validErrors; // => []
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -3903,9 +3916,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   query One { name } query Two { name }
 `);
-const validErrors = validate(schema, validDocument, [UniqueOperationNamesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [UniqueOperationNamesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -4134,9 +4145,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   query ($id: ID) { field(arg: $id) }
 `);
-const validErrors = validate(schema, validDocument, [UniqueVariableNamesRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [UniqueVariableNamesRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -4220,9 +4229,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   { count(limit: 1) }
 `);
-const validErrors = validate(schema, validDocument, [ValuesOfCorrectTypeRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [ValuesOfCorrectTypeRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -4312,9 +4319,7 @@ const validDocument = parse(`
 `);
 const validErrors = validate(schema, validDocument, [
   VariablesAreInputTypesRule,
-]);
-
-validErrors; // => []
+]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -4399,9 +4404,7 @@ const validDocument = parse(`
 `);
 const validErrors = validate(schema, validDocument, [
   VariablesInAllowedPositionRule,
-]);
-
-validErrors; // => []
+]); // => []
 ```
 
 ### Constants
@@ -4539,9 +4542,7 @@ invalidErrors.length; // => 1
 const validDocument = parse(`
   { name }
 `);
-const validErrors = validate(schema, validDocument, [NoDeprecatedCustomRule]);
-
-validErrors; // => []
+const validErrors = validate(schema, validDocument, [NoDeprecatedCustomRule]); // => []
 ```
 
 <hr className="api-item-divider" />
@@ -4622,16 +4623,14 @@ const invalidErrors = validate(schema, invalidDocument, [
   NoSchemaIntrospectionCustomRule,
 ]);
 
-invalidErrors.length; // => 1
+invalidErrors.length; // => 2
 
 const validDocument = parse(`
   { name }
 `);
 const validErrors = validate(schema, validDocument, [
   NoSchemaIntrospectionCustomRule,
-]);
-
-validErrors; // => []
+]); // => []
 ```
 
 ## Category: Validation
@@ -4743,7 +4742,7 @@ import { validate } from 'graphql/validation';
 
 const schema = buildSchema(`
   type Query {
-    fullName: String
+    greeting: String
   }
 `);
 
@@ -4815,6 +4814,14 @@ hiddenSuggestionErrors[0].message; // => 'Cannot query field "name" on type "Que
       <td>hideSuggestions?</td>
       <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e"]} /></td>
       <td>Whether suggestion text should be omitted from validation errors.</td>
+    </tr>
+    <tr>
+      <td>allowEmptySelectionSets? <span aria-label="Deprecated" className="api-tag" title="Deprecated"></span></td>
+      <td><ApiType parts={[["keyword", "boolean"]]} /></td>
+      <td>If enabled (the default), a selection set on an object, interface or<br />
+union type is only required to be present, rather than to be non-empty.<br />
+Pair this with the <code>{"allowEmptySelectionSets"}</code> parse option.<br />
+See https://github.com/graphql/graphql-spec/pull/1227</td>
     </tr>
   </tbody>
 </table>

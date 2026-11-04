@@ -115,13 +115,11 @@ const result = await graphql({
   schema,
   source: 'query SayHello($name: String!) { greeting(name: $name) }',
   rootValue: {
-    greeting: ({ name }) => `Hello, ${name}!`,
+    greeting: ({ name }: { name: string }) => `Hello, ${name}!`,
   },
   variableValues: { name: 'Ada' },
   operationName: 'SayHello',
-});
-
-result; // => { data: { greeting: 'Hello, Ada!' } }
+}); // => { data: { greeting: 'Hello, Ada!' } }
 ```
 
 <hr className="api-subsection-divider" />
@@ -158,9 +156,7 @@ const result = await graphql({
   typeResolver: (value) => {
     return value.kind === 'user' ? 'User' : undefined;
   },
-});
-
-result; // => { data: { viewer: { __typename: 'User', name: 'Ada' } } }
+}); // => { data: { viewer: { __typename: 'User', name: 'Ada' } } }
 ```
 
 <hr className="api-item-divider" />
@@ -236,13 +232,11 @@ const result = graphqlSync({
   schema,
   source: 'query SayHello($name: String!) { greeting(name: $name) }',
   rootValue: {
-    greeting: ({ name }) => `Hello, ${name}!`,
+    greeting: ({ name }: { name: string }) => `Hello, ${name}!`,
   },
   variableValues: { name: 'Ada' },
   operationName: 'SayHello',
-});
-
-result; // => { data: { greeting: 'Hello, Ada!' } }
+}); // => { data: { greeting: 'Hello, Ada!' } }
 ```
 
 <hr className="api-subsection-divider" />
@@ -266,9 +260,7 @@ const result = graphqlSync({
     return contextValue.defaultGreeting;
   },
   contextValue: { defaultGreeting: 'Hello' },
-});
-
-result; // => { data: { greeting: 'Hello' } }
+}); // => { data: { greeting: 'Hello' } }
 ```
 
 ### Types
@@ -293,6 +285,11 @@ a GraphQL request.
     </tr>
   </thead>
   <tbody>
+    <tr>
+      <td>hideSuggestions?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e"]} /></td>
+      <td>Omit suggestions from validation and input coercion errors.</td>
+    </tr>
     <tr>
       <td>schema</td>
       <td><ApiType parts={[["link", "GraphQLSchema", "/api-v16/type#graphqlschema"]]} /></td>

@@ -127,7 +127,7 @@ const schema = buildSchema(`
   }
 `);
 const typeInfo = new TypeInfo(schema);
-const fieldTypes = {};
+const fieldTypes: Record<string, string> = {};
 
 visit(
   parse('{ viewer { name } }'),
@@ -188,7 +188,7 @@ const schema = buildSchema(`
   }
 `);
 const typeInfo = new TypeInfo(schema);
-const parentTypes = {};
+const parentTypes: Record<string, string> = {};
 
 visit(
   parse('{ viewer { name } }'),
@@ -250,7 +250,7 @@ const schema = buildSchema(`
   }
 `);
 const typeInfo = new TypeInfo(schema);
-const inputTypes = {};
+const inputTypes: Record<string, string> = {};
 
 visit(
   parse('{ reviews(stars: 5, sort: OLDEST) }'),
@@ -311,7 +311,7 @@ const schema = buildSchema(`
   }
 `);
 const typeInfo = new TypeInfo(schema);
-const parentInputTypes = {};
+const parentInputTypes: Record<string, string> = {};
 
 visit(
   parse('{ reviews(filter: { stars: 5 }) }'),
@@ -425,7 +425,7 @@ const schema = buildSchema(`
   }
 `);
 const typeInfo = new TypeInfo(schema);
-let defaultLimit;
+let defaultLimit: unknown;
 
 visit(
   parse('{ reviews(limit: 5) }'),
@@ -651,6 +651,7 @@ Updates this TypeInfo instance for an entered AST node.
 <div className="api-subsection-title">Example</div>
 
 ```ts
+import assert from 'node:assert/strict';
 import { Kind, parse } from 'graphql/language';
 import { buildSchema, TypeInfo } from 'graphql/utilities';
 
@@ -661,6 +662,7 @@ const schema = buildSchema(`
 `);
 const document = parse('{ greeting }');
 const operation = document.definitions[0];
+assert(operation.kind === Kind.OPERATION_DEFINITION);
 const selectionSet = operation.selectionSet;
 const field = selectionSet.selections[0];
 const typeInfo = new TypeInfo(schema);
@@ -678,7 +680,7 @@ String(typeInfo.getType()); // => 'String'
 
 ##### leave()
 
-Updates this TypeInfo instance for a left AST node.
+Updates this TypeInfo instance when leaving an AST node.
 
 **Signature:**
 
@@ -700,7 +702,7 @@ Updates this TypeInfo instance for a left AST node.
     <tr>
       <td>node</td>
       <td><ApiType parts={[["link", "ASTNode", "/api-v16/language#astnode"]]} /></td>
-      <td>AST node being entered.</td>
+      <td>AST node being left.</td>
     </tr>
   </tbody>
 </table>
@@ -710,7 +712,8 @@ Updates this TypeInfo instance for a left AST node.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { parse } from 'graphql/language';
+import assert from 'node:assert/strict';
+import { parse, Kind } from 'graphql/language';
 import { buildSchema, TypeInfo } from 'graphql/utilities';
 
 const schema = buildSchema(`
@@ -720,6 +723,7 @@ const schema = buildSchema(`
 `);
 const document = parse('{ greeting }');
 const operation = document.definitions[0];
+assert(operation.kind === Kind.OPERATION_DEFINITION);
 const selectionSet = operation.selectionSet;
 const field = selectionSet.selections[0];
 const typeInfo = new TypeInfo(schema);
@@ -730,7 +734,7 @@ typeInfo.enter(field);
 String(typeInfo.getType()); // => 'String'
 
 typeInfo.leave(field);
-typeInfo.getType(); // => undefined
+String(typeInfo.getType()); // => 'Query'
 ```
 
 ### Functions
@@ -803,7 +807,7 @@ const schema = buildSchema(`
   }
 `);
 const typeInfo = new TypeInfo(schema);
-const fields = [];
+const fields: Array<{ name: string; parentType: string; type: string }> = [];
 
 visit(
   parse('{ greeting }'),
@@ -957,7 +961,7 @@ import { isValidNameError } from 'graphql/utilities';
 isValidNameError('User'); // => undefined
 
 const error = isValidNameError('__typename');
-error.message; // => 'Name "__typename" must not begin with "__", which is reserved by GraphQL introspection.'
+error?.message; // => 'Name "__typename" must not begin with "__", which is reserved by GraphQL introspection.'
 ```
 
 ## Category: Values
@@ -1052,6 +1056,7 @@ JavaScript values.
 <div className="api-subsection-title">Example</div>
 
 ```ts
+import assert from 'node:assert/strict';
 import { print } from 'graphql/language';
 import {
   GraphQLInputObjectType,
@@ -1075,7 +1080,8 @@ const valueNode = astFromValue(
   ReviewInput,
 );
 
-print(valueNode); // => '{ stars: 5, tags: ["featured", "verified"] }'
+assert(valueNode);
+print(valueNode); // => '{stars: 5, tags: ["featured", "verified"]}'
 astFromValue(undefined, GraphQLString); // => null
 astFromValue(null, new GraphQLNonNull(GraphQLString)); // => null
 ```
@@ -1088,7 +1094,7 @@ Coerces a JavaScript value given a GraphQL Input Type.
 
 **Signature:**
 
-<ApiSignature parts={[["name", "coerceInputValue"], "(\n  ", ["parameter", "inputValue"], ": ", ["keyword", "unknown"], ",\n  ", ["parameter", "type"], ": ", ["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"], ",\n  ", ["parameter", "onError"], ": (\n    ", ["parameter", "path"], ": ", ["type", "ReadonlyArray"], "\u003c", ["keyword", "string"], " \u007c ", ["keyword", "number"], "\u003e,\n    ", ["parameter", "invalidValue"], ": ", ["keyword", "unknown"], ",\n    ", ["parameter", "error"], ": ", ["link", "GraphQLError", "/api-v16/error#graphqlerror"], ",\n  ) =\u003e ", ["keyword", "void"], " = defaultOnError,\n): ", ["keyword", "unknown"], ";"]} />
+<ApiSignature parts={[["name", "coerceInputValue"], "(\n  ", ["parameter", "inputValue"], ": ", ["keyword", "unknown"], ",\n  ", ["parameter", "type"], ": ", ["link", "GraphQLInputType", "/api-v16/type#graphqlinputtype"], ",\n  ", ["parameter", "onError"], ": (\n    ", ["parameter", "path"], ": ", ["type", "ReadonlyArray"], "\u003c", ["keyword", "string"], " \u007c ", ["keyword", "number"], "\u003e,\n    ", ["parameter", "invalidValue"], ": ", ["keyword", "unknown"], ",\n    ", ["parameter", "error"], ": ", ["link", "GraphQLError", "/api-v16/error#graphqlerror"], ",\n  ) =\u003e ", ["keyword", "void"], " = defaultOnError,\n  ", ["parameter", "hideSuggestions"], "?: ", ["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e,\n): ", ["keyword", "unknown"], ";"]} />
 
 <hr className="api-subsection-divider" />
 
@@ -1121,6 +1127,12 @@ Coerces a JavaScript value given a GraphQL Input Type.
       <td><ApiType parts={["(\n  ", ["parameter", "path"], ": ", ["type", "ReadonlyArray"], "\u003c", ["keyword", "string"], " \u007c ", ["keyword", "number"], "\u003e,\n  ", ["parameter", "invalidValue"], ": ", ["keyword", "unknown"], ",\n  ", ["parameter", "error"], ": ", ["link", "GraphQLError", "/api-v16/error#graphqlerror"], ",\n) =\u003e ", ["keyword", "void"]]} /></td>
       <td><ApiType parts={["defaultOnError"]} /></td>
       <td>Callback invoked for each coercion error.</td>
+    </tr>
+    <tr>
+      <td>hideSuggestions?</td>
+      <td><ApiType parts={[["type", "Maybe"], "\u003c", ["keyword", "boolean"], "\u003e"]} /></td>
+      <td></td>
+      <td>Omit suggestions from error messages.</td>
     </tr>
   </tbody>
 </table>
@@ -1167,7 +1179,7 @@ const ReviewInput = new GraphQLInputObjectType({
   },
 });
 
-coerceInputValue({ stars: '5', tags: ['featured'] }, ReviewInput); // => { stars: 5, tags: ['featured'] }
+coerceInputValue({ stars: 5, tags: ['featured'] }, ReviewInput); // => { stars: 5, tags: ['featured'] }
 coerceInputValue({ stars: 'bad' }, ReviewInput); // throws an error
 ```
 
@@ -1180,7 +1192,11 @@ coerceInputValue({ stars: 'bad' }, ReviewInput); // throws an error
 import { GraphQLInt, GraphQLNonNull } from 'graphql/type';
 import { coerceInputValue } from 'graphql/utilities';
 
-const errors = [];
+const errors: Array<{
+  path: ReadonlyArray<string | number>;
+  invalidValue: unknown;
+  message: string;
+}> = [];
 const value = coerceInputValue(
   null,
   new GraphQLNonNull(GraphQLInt),
@@ -1694,9 +1710,7 @@ the provided GraphQL value AST.
 import { parseValue } from 'graphql/language';
 import { valueFromASTUntyped } from 'graphql/utilities';
 
-const value = valueFromASTUntyped(parseValue('[1, 2, 3]'));
-
-value; // => [1, 2, 3]
+const value = valueFromASTUntyped(parseValue('[1, 2, 3]')); // => [1, 2, 3]
 valueFromASTUntyped(parseValue('$name'), { name: 'Ada' }); // => 'Ada'
 ```
 
@@ -1792,7 +1806,7 @@ import { buildASTSchema } from 'graphql/utilities';
 const document = parse('type Query { hello: String }');
 const schema = buildASTSchema(document);
 
-schema.getQueryType().name; // => 'Query'
+schema.getQueryType()?.name; // => 'Query'
 ```
 
 <hr className="api-subsection-divider" />
@@ -1800,15 +1814,15 @@ schema.getQueryType().name; // => 'Query'
 <div className="api-subsection-title">Example 2</div>
 
 ```ts
-// This variant uses validation options when the SDL references unknown types.
 import { parse } from 'graphql/language';
 import { buildASTSchema } from 'graphql/utilities';
 
-const document = parse('type Query { broken: MissingType }');
+const document = parse('type Query { greeting: String greeting: String }');
 
 buildASTSchema(document); // throws an error
+
+// Skipping SDL validation allows the duplicate field definition.
 buildASTSchema(document, {
-  assumeValid: true,
   assumeValidSDL: true,
 }); // does not throw
 ```
@@ -1878,7 +1892,7 @@ import { buildSchema } from 'graphql/utilities';
 
 const schema = buildSchema('type Query { hello: String }');
 
-schema.getQueryType().name; // => 'Query'
+schema.getQueryType()?.name; // => 'Query'
 ```
 
 <hr className="api-subsection-divider" />
@@ -1890,7 +1904,7 @@ schema.getQueryType().name; // => 'Query'
 import { buildSchema } from 'graphql/utilities';
 
 const schema = buildSchema(
-  'directive @tag on FIELD_DEFINITION\n' +
+  'directive @tag on DIRECTIVE_DEFINITION\n' +
     'directive @compose @tag on FIELD_DEFINITION',
   {
     experimentalDirectivesOnDirectiveDefinitions: true,
@@ -1900,8 +1914,8 @@ const schema = buildSchema(
 
 const directive = schema.getDirective('compose');
 
-directive.name; // => 'compose'
-directive.astNode.loc; // => undefined
+directive?.name; // => 'compose'
+directive?.astNode?.loc; // => undefined
 ```
 
 <hr className="api-item-divider" />
@@ -1979,6 +1993,7 @@ producing the copy. The original schema remains unaltered.
 
 ```ts
 // Extend a schema with new fields and types.
+import assert from 'node:assert/strict';
 import { parse } from 'graphql/language';
 import { buildSchema, extendSchema } from 'graphql/utilities';
 
@@ -2001,7 +2016,9 @@ const extendedSchema = extendSchema(schema, extensionAST);
 
 schema.getType('Review'); // => undefined
 extendedSchema.getType('Review')?.name; // => 'Review'
-Object.keys(extendedSchema.getQueryType().getFields()); // => ['greeting', 'farewell']
+const queryType = extendedSchema.getQueryType();
+assert(queryType);
+Object.keys(queryType.getFields()); // => ['greeting', 'farewell']
 ```
 
 <hr className="api-subsection-divider" />
@@ -2026,9 +2043,9 @@ const invalidExtension = parse(`
 
 extendSchema(schema, invalidExtension); // throws an error
 extendSchema(schema, invalidExtension, {
-    assumeValid: true,
-    assumeValidSDL: true,
-  }); // does not throw
+  assumeValid: true,
+  assumeValidSDL: true,
+}); // does not throw
 ```
 
 <hr className="api-item-divider" />
@@ -2088,7 +2105,11 @@ This function returns a sorted copy of the given GraphQLSchema.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { buildSchema, lexicographicSortSchema, printSchema } from 'graphql/utilities';
+import {
+  buildSchema,
+  lexicographicSortSchema,
+  printSchema,
+} from 'graphql/utilities';
 
 const schema = buildSchema(`
   type Query {
@@ -2105,18 +2126,18 @@ const schema = buildSchema(`
 
 const sortedSchema = lexicographicSortSchema(schema);
 
-printSchema(sortedSchema);
-// =>
-// enum Episode {
-//   EMPIRE
-//   JEDI
-//   NEW_HOPE
-// }
-//
-// type Query {
-//   apple: String
-//   zebra: String
-// }
+const expectedSDL = `enum Episode {
+  EMPIRE
+  JEDI
+  NEW_HOPE
+}
+
+type Query {
+  apple: String
+  zebra: String
+}`;
+
+printSchema(sortedSchema); // => expectedSDL
 ```
 
 ### Types
@@ -2275,14 +2296,18 @@ the "errors" field of a server response before calling this function.
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import { buildClientSchema, introspectionFromSchema, buildSchema } from 'graphql/utilities';
+import {
+  buildClientSchema,
+  introspectionFromSchema,
+  buildSchema,
+} from 'graphql/utilities';
 
 const schema = buildSchema('type Query { hello: String }');
 const clientSchema = buildClientSchema(introspectionFromSchema(schema), {
   assumeValid: true,
 });
 
-clientSchema.getQueryType().name; // => 'Query'
+clientSchema.getQueryType()?.name; // => 'Query'
 ```
 
 <hr className="api-item-divider" />
@@ -2346,9 +2371,9 @@ import { getIntrospectionQuery } from 'graphql/utilities';
 
 const query = getIntrospectionQuery();
 
-query; // matches /__schema/
-query; // matches /description/
-query; // does not match /specifiedByURL/
+query.includes('__schema'); // => true
+query.includes('description'); // => true
+query.includes('specifiedByURL'); // => false
 ```
 
 <hr className="api-subsection-divider" />
@@ -2370,11 +2395,11 @@ const query = getIntrospectionQuery({
   typeDepth: 3,
 });
 
-query; // does not match /description/
-query; // matches /specifiedByURL/
-query; // matches /isRepeatable/
-query; // matches /includeDeprecated: true/
-query; // matches /isOneOf/
+query.includes('description'); // => false
+query.includes('specifiedByURL'); // => true
+query.includes('isRepeatable'); // => true
+query.includes('includeDeprecated: true'); // => true
+query.includes('isOneOf'); // => true
 (query.match(/ofType/g)?.length ?? 0) > 0; // => true
 ```
 
@@ -2444,6 +2469,7 @@ of the server context, for instance when doing schema comparisons.
 <div className="api-subsection-title">Example 1</div>
 
 ```ts
+import assert from 'node:assert/strict';
 // Include schema metadata using the default introspection options.
 import { buildSchema, introspectionFromSchema } from 'graphql/utilities';
 
@@ -2456,7 +2482,10 @@ const schema = buildSchema(`
 `);
 
 const introspection = introspectionFromSchema(schema);
-const urlType = introspection.__schema.types.find((type) => type.name === 'Url');
+const urlType = introspection.__schema.types.find(
+  (type) => type.name === 'Url',
+);
+assert(urlType?.kind === 'SCALAR');
 
 urlType.specifiedByURL; // => 'https://url.spec.whatwg.org/'
 ```
@@ -2466,6 +2495,7 @@ urlType.specifiedByURL; // => 'https://url.spec.whatwg.org/'
 <div className="api-subsection-title">Example 2</div>
 
 ```ts
+import assert from 'node:assert/strict';
 // This variant disables optional introspection metadata.
 import { buildSchema, introspectionFromSchema } from 'graphql/utilities';
 
@@ -2486,15 +2516,18 @@ const introspection = introspectionFromSchema(schema, {
   experimentalDirectiveDeprecation: false,
   oneOf: false,
 });
-const urlType = introspection.__schema.types.find((type) => type.name === 'Url');
+const urlType = introspection.__schema.types.find(
+  (type) => type.name === 'Url',
+);
+assert(urlType?.kind === 'SCALAR');
 const deprecatedDirective = introspection.__schema.directives.find(
   (directive) => directive.name === 'deprecated',
 );
 
-urlType.specifiedByURL; // => undefined
 urlType.description; // => undefined
+urlType.specifiedByURL; // => undefined
+deprecatedDirective?.isRepeatable; // => undefined
 introspection.__schema.description; // => undefined
-deprecatedDirective.isRepeatable; // => undefined
 ```
 
 ### Types
@@ -2639,7 +2672,7 @@ Default: 9</td>
     <tr>
       <td>types</td>
       <td><ApiType parts={[["keyword", "readonly"], " ", ["link", "IntrospectionType", "/api-v16/utilities#introspectiontype"], "[]"]} /></td>
-      <td>Object types that belong to this union type.</td>
+      <td>All named types that belong to this schema.</td>
     </tr>
     <tr>
       <td>directives</td>
@@ -3410,7 +3443,10 @@ GraphQL source files which together represent one conceptual application.
 import { parse } from 'graphql/language';
 import { concatAST } from 'graphql/utilities';
 
-const document = concatAST([parse('type Query { a: String }'), parse('type User { id: ID }')]);
+const document = concatAST([
+  parse('type Query { a: String }'),
+  parse('type User { id: ID }'),
+]);
 
 document.definitions.length; // => 2
 ```
@@ -3495,8 +3531,8 @@ const document = parse(`
 const separated = separateOperations(document);
 
 Object.keys(separated); // => ['GetUser', 'GetStatus']
-print(separated.GetUser); // matches /fragment UserFields/
-print(separated.GetStatus); // does not match /fragment UserFields/
+print(separated.GetUser).includes('fragment UserFields'); // => true
+print(separated.GetStatus).includes('fragment UserFields'); // => false
 ```
 
 <hr className="api-item-divider" />
@@ -3585,7 +3621,15 @@ query SomeQuery($foo: String!, $bar: String) {
 Becomes:
 
 ```graphql
-query SomeQuery($foo:String!$bar:String){someField(foo:$foo bar:$bar){a b{c d}}}
+query SomeQuery($foo: String!, $bar: String) {
+  someField(foo: $foo, bar: $bar) {
+    a
+    b {
+      c
+      d
+    }
+  }
+}
 ```
 
 <hr className="api-subsection-divider" />
@@ -3607,7 +3651,15 @@ type Foo {
 Becomes:
 
 ```graphql
-"""Type description""" type Foo{"""Field description""" bar:String}
+"""
+Type description
+"""
+type Foo {
+  """
+  Field description
+  """
+  bar: String
+}
 ```
 
 <hr className="api-subsection-divider" />
@@ -3617,9 +3669,7 @@ Becomes:
 ```ts
 import { stripIgnoredCharacters } from 'graphql/utilities';
 
-const source = stripIgnoredCharacters('query Example { name }');
-
-source; // => 'query Example{name}'
+const source = stripIgnoredCharacters('query Example { name }'); // => 'query Example{name}'
 ```
 
 ## Category: Schema Changes
@@ -3731,7 +3781,7 @@ const newSchema = buildSchema(`
 const changes = findBreakingChanges(oldSchema, newSchema);
 
 changes[0].type; // => 'FIELD_REMOVED'
-changes[0].description; // matches /User.name was removed/
+changes[0].description.includes('User.name was removed'); // => true
 ```
 
 <hr className="api-item-divider" />
@@ -3820,7 +3870,7 @@ const newSchema = buildSchema(`
 const changes = findDangerousChanges(oldSchema, newSchema);
 
 changes[0].type; // => 'VALUE_ADDED_TO_ENUM'
-changes[0].description; // matches /EMPIRE was added/
+changes[0].description.includes('EMPIRE was added'); // => true
 ```
 
 ### Enumerations
@@ -4120,8 +4170,8 @@ import { getOperationAST } from 'graphql/utilities';
 const document = parse('query GetName { name }');
 const operation = getOperationAST(document, 'GetName');
 
-operation.name.value; // => 'GetName'
-getOperationAST(document, 'Missing'); // => undefined
+operation?.name?.value; // => 'GetName'
+getOperationAST(document, 'Missing'); // => null
 ```
 
 <hr className="api-item-divider" />
@@ -4187,11 +4237,13 @@ removed in v17.
 <div className="api-subsection-title">Example</div>
 
 ```ts
+import assert from 'node:assert/strict';
 import { buildSchema, getOperationRootType } from 'graphql/utilities';
-import { parse } from 'graphql/language';
+import { parse, Kind } from 'graphql/language';
 
 const schema = buildSchema('type Query { name: String }');
 const operation = parse('{ name }').definitions[0];
+assert(operation.kind === Kind.OPERATION_DEFINITION);
 const rootType = getOperationRootType(schema, operation);
 
 rootType.name; // => 'Query'
@@ -4343,9 +4395,9 @@ const schema = buildSchema(`
 
 const printed = printIntrospectionSchema(schema);
 
-printed; // matches /type __Schema/
-printed; // matches /enum __TypeKind/
-printed; // does not match /type Query/
+printed.includes('type __Schema'); // => true
+printed.includes('enum __TypeKind'); // => true
+printed.includes('type Query'); // => false
 ```
 
 <hr className="api-item-divider" />
@@ -4403,6 +4455,7 @@ Prints the type.
 <div className="api-subsection-title">Example</div>
 
 ```ts
+import assert from 'node:assert/strict';
 import { buildSchema, printType } from 'graphql/utilities';
 
 const schema = buildSchema(`
@@ -4416,7 +4469,9 @@ const schema = buildSchema(`
   }
 `);
 
-printType(schema.getType('User')); // => ['type User {', '  id: ID!', '  name: String', '}'].join('\n')
+const userType = schema.getType('User');
+assert(userType);
+printType(userType); // => ['type User {', '  id: ID!', '  name: String', '}'].join('\n')
 ```
 
 ## Category: Schema Coordinates
@@ -4518,13 +4573,13 @@ const schema = buildSchema(`
   }
 `);
 
-resolveSchemaCoordinate(schema, 'Query').kind; // => 'NamedType'
-resolveSchemaCoordinate(schema, 'Query.reviews').kind; // => 'Field'
-resolveSchemaCoordinate(schema, 'Query.reviews(input:)').kind; // => 'FieldArgument'
-resolveSchemaCoordinate(schema, 'ReviewInput.stars').kind; // => 'InputField'
-resolveSchemaCoordinate(schema, 'Episode.NEW_HOPE').kind; // => 'EnumValue'
-resolveSchemaCoordinate(schema, '@tag').kind; // => 'Directive'
-resolveSchemaCoordinate(schema, '@tag(name:)').kind; // => 'DirectiveArgument'
+resolveSchemaCoordinate(schema, 'Query')?.kind; // => 'NamedType'
+resolveSchemaCoordinate(schema, 'Query.reviews')?.kind; // => 'Field'
+resolveSchemaCoordinate(schema, 'Query.reviews(input:)')?.kind; // => 'FieldArgument'
+resolveSchemaCoordinate(schema, 'ReviewInput.stars')?.kind; // => 'InputField'
+resolveSchemaCoordinate(schema, 'Episode.NEW_HOPE')?.kind; // => 'EnumValue'
+resolveSchemaCoordinate(schema, '@tag')?.kind; // => 'Directive'
+resolveSchemaCoordinate(schema, '@tag(name:)')?.kind; // => 'DirectiveArgument'
 resolveSchemaCoordinate(schema, 'Query.missing'); // => undefined
 ```
 
@@ -4588,6 +4643,7 @@ Resolves schema coordinate from a parsed SchemaCoordinate node.
 <div className="api-subsection-title">Example</div>
 
 ```ts
+import assert from 'node:assert/strict';
 import { parseSchemaCoordinate } from 'graphql/language';
 import { buildSchema, resolveASTSchemaCoordinate } from 'graphql/utilities';
 
@@ -4599,7 +4655,7 @@ const schema = buildSchema(`
 const coordinate = parseSchemaCoordinate('Query.greeting(name:)');
 const resolved = resolveASTSchemaCoordinate(schema, coordinate);
 
-resolved.kind; // => 'FieldArgument'
+assert(resolved?.kind === 'FieldArgument');
 resolved.field.name; // => 'greeting'
 resolved.fieldArgument.name; // => 'name'
 ```
@@ -4685,11 +4741,7 @@ Provided two types, return true if the types are equal (invariant).
 <div className="api-subsection-title">Example</div>
 
 ```ts
-import {
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLString,
-} from 'graphql/type';
+import { GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql/type';
 import { isEqualType } from 'graphql/utilities';
 
 isEqualType(GraphQLString, GraphQLString); // => true

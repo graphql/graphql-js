@@ -238,12 +238,10 @@ const result = await execute({
   schema,
   document: parse('query ($name: String!) { greeting(name: $name) }'),
   rootValue: {
-    greeting: ({ name }) => `Hello, ${name}!`,
+    greeting: ({ name }: { name: string }) => `Hello, ${name}!`,
   },
   variableValues: { name: 'Ada' },
-});
-
-result; // => { data: { greeting: 'Hello, Ada!' } }
+}); // => { data: { greeting: 'Hello, Ada!' } }
 ```
 
 <hr className="api-item-divider" />
@@ -331,8 +329,7 @@ const validatedArgs = validateExecutionArgs({
 
 assert('schema' in validatedArgs);
 
-const result = await executeRootSelectionSet(validatedArgs);
-result; // => { data: { greeting: 'Hello' } }
+const result = await executeRootSelectionSet(validatedArgs); // => { data: { greeting: 'Hello' } }
 ```
 
 <hr className="api-item-divider" />
@@ -402,9 +399,7 @@ const result = executeSync({
   schema,
   document: parse('{ greeting }'),
   rootValue: { greeting: 'Hello' },
-});
-
-result; // => { data: { greeting: 'Hello' } }
+}); // => { data: { greeting: 'Hello' } }
 ```
 
 <hr className="api-item-divider" />
@@ -490,8 +485,7 @@ const validatedArgs = validateSubscriptionArgs({
 
 assert('schema' in validatedArgs);
 
-const result = await executeSubscriptionEvent(validatedArgs);
-result; // => { data: { greeting: 'Hello' } }
+const result = await executeSubscriptionEvent(validatedArgs); // => { data: { greeting: 'Hello' } }
 ```
 
 <hr className="api-item-divider" />
@@ -641,7 +635,10 @@ const result = await subscribe({
     'subscription Greeting($locale: String) { greeting(locale: $locale) }',
   ),
   rootValue: {
-    greeting: (args, contextValue) => {
+    greeting: (
+      args: { locale?: string },
+      contextValue: { defaultLocale: string },
+    ) => {
       const locale = args.locale ?? contextValue.defaultLocale;
       return locale === 'fr' ? frenchGreetings() : defaultGreetings();
     },
@@ -858,8 +855,7 @@ const validatedArgs = validateExecutionArgs({
   rootValue: { viewer: { kind: 'user', name: 'Ada' } },
   contextValue: { locale: 'en' },
   operationName: 'Viewer',
-  fieldResolver: (source, _args, contextValue, info) => {
-    contextValue.locale; // => 'en'
+  fieldResolver: (source, _args, _contextValue, info) => {
     return source[info.fieldName];
   },
   typeResolver: (value) => {
@@ -876,6 +872,7 @@ const validatedArgs = validateExecutionArgs({
 
 assert('operation' in validatedArgs);
 
+validatedArgs.contextValue; // => { locale: 'en' }
 validatedArgs.operation.name?.value; // => 'Viewer'
 validatedArgs.hideSuggestions; // => true
 ```
@@ -1643,9 +1640,7 @@ const result = await experimentalExecuteIncrementally({
   schema,
   document: parse('{ greeting }'),
   rootValue: { greeting: 'Hello' },
-});
-
-result; // => { data: { greeting: 'Hello' } }
+}); // => { data: { greeting: 'Hello' } }
 ```
 
 <hr className="api-item-divider" />
@@ -1720,8 +1715,7 @@ const validatedArgs = validateExecutionArgs({
 
 assert('schema' in validatedArgs);
 
-const result = await experimentalExecuteRootSelectionSet(validatedArgs);
-result; // => { data: { greeting: 'Hello' } }
+const result = await experimentalExecuteRootSelectionSet(validatedArgs); // => { data: { greeting: 'Hello' } }
 ```
 
 ### Types
@@ -2867,8 +2861,7 @@ const validatedArgs = validateExecutionArgs({
 
 assert('schema' in validatedArgs);
 
-const result = await legacyExecuteRootSelectionSet(validatedArgs);
-result; // => { data: { greeting: 'Hello' } }
+const result = await legacyExecuteRootSelectionSet(validatedArgs); // => { data: { greeting: 'Hello' } }
 ```
 
 ### Types
@@ -3766,7 +3759,7 @@ Object prototype properties.
 ```ts
 // Coerce provided variables and apply operation defaults.
 import assert from 'node:assert';
-import { parse } from 'graphql/language';
+import { parse, Kind } from 'graphql/language';
 import { buildSchema } from 'graphql/utilities';
 import { getVariableValues } from 'graphql/execution';
 
@@ -3781,9 +3774,10 @@ const document = parse(`
   }
 `);
 const operation = document.definitions[0];
+assert(operation.kind === Kind.OPERATION_DEFINITION);
 
-const result = getVariableValues(schema, operation.variableDefinitions, {
-  stars: '5',
+const result = getVariableValues(schema, operation.variableDefinitions ?? [], {
+  stars: 5,
 });
 
 assert('variableValues' in result);
@@ -3798,7 +3792,7 @@ result.variableValues.coerced; // => { stars: 5, limit: 10 }
 ```ts
 // This variant uses maxErrors to cap reported coercion errors.
 import assert from 'node:assert';
-import { parse } from 'graphql/language';
+import { parse, Kind } from 'graphql/language';
 import { buildSchema } from 'graphql/utilities';
 import { getVariableValues } from 'graphql/execution';
 
@@ -3818,10 +3812,11 @@ const document = parse(`
   }
 `);
 const operation = document.definitions[0];
+assert(operation.kind === Kind.OPERATION_DEFINITION);
 
 const result = getVariableValues(
   schema,
-  operation.variableDefinitions,
+  operation.variableDefinitions ?? [],
   { first: { stars: 'bad' }, second: { stars: 'also bad' } },
   { maxErrors: 1 },
 );
@@ -3829,7 +3824,7 @@ const result = getVariableValues(
 assert('errors' in result);
 
 result.errors.length; // => 2
-result.errors[1].message; // matches /error limit reached/
+result.errors[1].message.includes('error limit reached'); // => true
 ```
 
 <hr className="api-item-divider" />
@@ -3911,8 +3906,9 @@ JavaScript's own property names.
 <div className="api-subsection-title">Example 1</div>
 
 ```ts
+import assert from 'node:assert/strict';
 // Read literal argument values and defaults.
-import { parse } from 'graphql/language';
+import { parse, Kind } from 'graphql/language';
 import { buildSchema } from 'graphql/utilities';
 import { getArgumentValues } from 'graphql/execution';
 
@@ -3921,9 +3917,13 @@ const schema = buildSchema(`
     reviews(stars: Int!, limit: Int = 10): [String]
   }
 `);
-const fieldDef = schema.getQueryType().getFields().reviews;
+const fieldDef = schema.getQueryType()?.getFields().reviews;
+assert(fieldDef);
 const document = parse('{ reviews(stars: 5) }');
-const fieldNode = document.definitions[0].selectionSet.selections[0];
+const operation = document.definitions[0];
+assert(operation.kind === Kind.OPERATION_DEFINITION);
+const fieldNode = operation.selectionSet.selections[0];
+assert(fieldNode.kind === Kind.FIELD);
 
 getArgumentValues(fieldDef, fieldNode); // => { stars: 5, limit: 10 }
 ```
@@ -3935,7 +3935,7 @@ getArgumentValues(fieldDef, fieldNode); // => { stars: 5, limit: 10 }
 ```ts
 // This variant resolves argument values from operation variables.
 import assert from 'node:assert';
-import { parse } from 'graphql/language';
+import { parse, Kind } from 'graphql/language';
 import { buildSchema } from 'graphql/utilities';
 import { getArgumentValues, getVariableValues } from 'graphql/execution';
 
@@ -3944,13 +3944,20 @@ const schema = buildSchema(`
     reviews(stars: Int!): [String]
   }
 `);
-const fieldDef = schema.getQueryType().getFields().reviews;
+const fieldDef = schema.getQueryType()?.getFields().reviews;
+assert(fieldDef);
 const document = parse('query ($stars: Int!) { reviews(stars: $stars) }');
 const operation = document.definitions[0];
-const fieldNode = document.definitions[0].selectionSet.selections[0];
-const variables = getVariableValues(schema, operation.variableDefinitions, {
-  stars: '5',
-});
+assert(operation.kind === Kind.OPERATION_DEFINITION);
+const fieldNode = operation.selectionSet.selections[0];
+assert(fieldNode.kind === Kind.FIELD);
+const variables = getVariableValues(
+  schema,
+  operation.variableDefinitions ?? [],
+  {
+    stars: 5,
+  },
+);
 
 assert('variableValues' in variables);
 
@@ -4040,13 +4047,16 @@ JavaScript's own property names.
 <div className="api-subsection-title">Example 1</div>
 
 ```ts
+import assert from 'node:assert/strict';
 // Read literal directive arguments from a node.
-import { parse } from 'graphql/language';
+import { parse, Kind } from 'graphql/language';
 import { GraphQLSkipDirective } from 'graphql/type';
 import { getDirectiveValues } from 'graphql/execution';
 
 const document = parse('{ name @skip(if: true) }');
-const fieldNode = document.definitions[0].selectionSet.selections[0];
+const operation = document.definitions[0];
+assert(operation.kind === Kind.OPERATION_DEFINITION);
+const fieldNode = operation.selectionSet.selections[0];
 
 getDirectiveValues(GraphQLSkipDirective, fieldNode); // => { if: true }
 ```
@@ -4058,7 +4068,7 @@ getDirectiveValues(GraphQLSkipDirective, fieldNode); // => { if: true }
 ```ts
 // This variant resolves directive arguments from variables and handles absent directives.
 import assert from 'node:assert';
-import { parse } from 'graphql/language';
+import { parse, Kind } from 'graphql/language';
 import { GraphQLIncludeDirective } from 'graphql/type';
 import { buildSchema } from 'graphql/utilities';
 import { getDirectiveValues, getVariableValues } from 'graphql/execution';
@@ -4068,10 +4078,15 @@ const document = parse(
   'query ($includeName: Boolean!) { name @include(if: $includeName) }',
 );
 const operation = document.definitions[0];
-const fieldNode = document.definitions[0].selectionSet.selections[0];
-const variables = getVariableValues(schema, operation.variableDefinitions, {
-  includeName: false,
-});
+assert(operation.kind === Kind.OPERATION_DEFINITION);
+const fieldNode = operation.selectionSet.selections[0];
+const variables = getVariableValues(
+  schema,
+  operation.variableDefinitions ?? [],
+  {
+    includeName: false,
+  },
+);
 
 assert('variableValues' in variables);
 
