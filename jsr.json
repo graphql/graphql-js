@@ -1,6 +1,6 @@
 {
   "name": "@graphql/graphql-js",
-  "version": "17.0.2",
+  "version": "17.1.0",
   "exports": {
     "./dev/devMode.ts": "./__dev__/devMode.ts",
     "./dev/diagnostics.ts": "./__dev__/diagnostics.ts",
