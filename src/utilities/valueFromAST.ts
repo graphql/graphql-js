@@ -212,8 +212,8 @@ function isMissingVariable(
   return (
     valueNode.kind === Kind.VARIABLE &&
     (variables == null ||
-      variables[valueNode.name.value] === undefined ||
-      !hasOwnProperty(variables, valueNode.name.value))
+      !hasOwnProperty(variables, valueNode.name.value) ||
+      variables[valueNode.name.value] === undefined)
   );
 }
 
