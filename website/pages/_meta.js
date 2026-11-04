@@ -39,14 +39,14 @@ const meta = {
       },
     },
   },
-  'api-v16': {
-    title: 'v16 API',
+  'api-v17': {
+    title: 'v17 API',
     theme: {
       collapsed: true,
     },
   },
-  'api-v17': {
-    title: 'v17 API',
+  'api-v16': {
+    title: 'v16 API',
     theme: {
       collapsed: true,
     },
