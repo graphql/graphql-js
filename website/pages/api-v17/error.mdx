@@ -77,6 +77,55 @@ Creates a GraphQLError instance.
 
 <hr className="api-subsection-divider" />
 
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+import assert from 'node:assert/strict';
+// Create an error from AST nodes and response metadata.
+import { parse, Kind } from 'graphql/language';
+import { GraphQLError } from 'graphql/error';
+
+const document = parse('{ greeting }');
+const operation = document.definitions[0];
+assert(operation.kind === Kind.OPERATION_DEFINITION);
+const fieldNode = operation.selectionSet.selections[0];
+const error = new GraphQLError('Cannot query this field.', {
+  nodes: fieldNode,
+  path: ['greeting'],
+  extensions: { code: 'FORBIDDEN' },
+});
+
+error.message; // => 'Cannot query this field.'
+error.locations; // => [{ line: 1, column: 3 }]
+error.path; // => ['greeting']
+error.extensions; // => { code: 'FORBIDDEN' }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant derives locations from source positions and preserves the cause.
+import { Source } from 'graphql/language';
+import { GraphQLError } from 'graphql/error';
+
+const source = new Source('{ greeting }');
+const cause = new Error('Database unavailable.');
+const error = new GraphQLError('Resolver failed.', {
+  source,
+  positions: [2],
+  path: ['greeting'],
+  cause,
+});
+
+error.locations; // => [{ line: 1, column: 3 }]
+error.path; // => ['greeting']
+error.cause; // => cause
+```
+
+<hr className="api-subsection-divider" />
+
 #### Members
 
 <table>

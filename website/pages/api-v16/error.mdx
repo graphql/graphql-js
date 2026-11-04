@@ -80,6 +80,56 @@ This positional-arguments constructor overload is deprecated. Use the<br />
 
 <hr className="api-subsection-divider" />
 
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+import { Kind } from 'graphql/language';
+import assert from 'node:assert/strict';
+// Create an error from AST nodes and response metadata.
+import { parse } from 'graphql/language';
+import { GraphQLError } from 'graphql/error';
+
+const document = parse('{ greeting }');
+const operation = document.definitions[0];
+assert(operation.kind === Kind.OPERATION_DEFINITION);
+const fieldNode = operation.selectionSet.selections[0];
+const error = new GraphQLError('Cannot query this field.', {
+  nodes: fieldNode,
+  path: ['greeting'],
+  extensions: { code: 'FORBIDDEN' },
+});
+
+error.message; // => 'Cannot query this field.'
+error.locations; // => [{ line: 1, column: 3 }]
+error.path; // => ['greeting']
+error.extensions; // => { code: 'FORBIDDEN' }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant derives locations from source positions and preserves the original error.
+import { Source } from 'graphql/language';
+import { GraphQLError } from 'graphql/error';
+
+const source = new Source('{ greeting }');
+const originalError = new Error('Database unavailable.');
+const error = new GraphQLError('Resolver failed.', {
+  source,
+  positions: [2],
+  path: ['greeting'],
+  originalError,
+});
+
+error.locations; // => [{ line: 1, column: 3 }]
+error.path; // => ['greeting']
+error.originalError; // => originalError
+```
+
+<hr className="api-subsection-divider" />
+
 #### <span className="api-deprecated-title">Constructor</span><span aria-label="Deprecated" className="api-tag" title="Deprecated"></span>
 
 Creates a GraphQLError instance using the legacy positional constructor.
@@ -143,6 +193,32 @@ exists.</td>
     </tr>
   </tbody>
 </table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { Source } from 'graphql/language';
+import { GraphQLError } from 'graphql/error';
+
+const source = new Source('{ greeting }');
+const originalError = new Error('Database unavailable.');
+const error = new GraphQLError(
+  'Resolver failed.',
+  undefined,
+  source,
+  [2],
+  ['greeting'],
+  originalError,
+  { code: 'INTERNAL' },
+);
+
+error.locations; // => [{ line: 1, column: 3 }]
+error.path; // => ['greeting']
+error.originalError; // => originalError
+error.extensions; // => { code: 'INTERNAL' }
+```
 
 <hr className="api-subsection-divider" />
 

@@ -132,6 +132,22 @@ Creates an error for an aborted GraphQL execution.
 
 <hr className="api-subsection-divider" />
 
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { AbortedGraphQLExecutionError } from 'graphql/execution';
+
+const cause = new Error('Request cancelled.');
+const partialResult = { data: { viewer: null } };
+const error = new AbortedGraphQLExecutionError(cause, partialResult);
+
+error.message; // => 'Request cancelled.'
+error.cause; // => cause
+error.abortedResult; // => partialResult
+```
+
+<hr className="api-subsection-divider" />
+
 ##### Members
 
 <table>

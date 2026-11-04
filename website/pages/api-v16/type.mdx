@@ -483,6 +483,19 @@ Creates a GraphQLList instance.
 
 <hr className="api-subsection-divider" />
 
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { GraphQLList, GraphQLString } from 'graphql/type';
+
+const stringList = new GraphQLList(GraphQLString);
+
+stringList.ofType; // => GraphQLString
+String(stringList); // => '[String]'
+```
+
+<hr className="api-subsection-divider" />
+
 ##### Members
 
 <table>
@@ -669,6 +682,19 @@ Creates a GraphQLNonNull instance.
     </tr>
   </tbody>
 </table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import { GraphQLNonNull, GraphQLString } from 'graphql/type';
+
+const requiredString = new GraphQLNonNull(GraphQLString);
+
+requiredString.ofType; // => GraphQLString
+String(requiredString); // => 'String!'
+```
 
 <hr className="api-subsection-divider" />
 
@@ -881,6 +907,61 @@ Creates a GraphQLScalarType instance.
     </tr>
   </tbody>
 </table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import assert from 'node:assert/strict';
+import { Kind, parse } from 'graphql/language';
+import { GraphQLScalarType } from 'graphql/type';
+
+const document = parse(`
+  "Odd integer values."
+  scalar Odd @specifiedBy(url: "https://example.com/odd")
+
+  extend scalar Odd @specifiedBy(url: "https://example.com/odd-v2")
+`);
+assert(document.definitions[0].kind === Kind.SCALAR_TYPE_DEFINITION);
+assert(document.definitions[1].kind === Kind.SCALAR_TYPE_EXTENSION);
+
+const ensureOdd = (value: unknown) => {
+  if (
+    typeof value !== 'number' ||
+    !Number.isInteger(value) ||
+    value % 2 === 0
+  ) {
+    throw new TypeError('Odd can only accept odd integers.');
+  }
+  return value;
+};
+
+const Odd = new GraphQLScalarType({
+  name: 'Odd',
+  description: 'Odd integer values.',
+  specifiedByURL: 'https://example.com/odd',
+  serialize: ensureOdd,
+  parseValue: ensureOdd,
+  parseLiteral: (ast) => {
+    if (ast.kind !== Kind.INT) {
+      throw new TypeError('Odd can only parse integer literals.');
+    }
+    return ensureOdd(Number(ast.value));
+  },
+  extensions: { numeric: true },
+  astNode: document.definitions[0],
+  extensionASTNodes: [document.definitions[1]],
+});
+
+Odd.description; // => 'Odd integer values.'
+Odd.specifiedByURL; // => 'https://example.com/odd'
+Odd.serialize(3); // => 3
+Odd.parseValue(5); // => 5
+Odd.parseValue(2); // throws an error
+Odd.parseValue(1.5); // throws an error
+Odd.extensions; // => { numeric: true }
+```
 
 <hr className="api-subsection-divider" />
 
@@ -1187,6 +1268,113 @@ Creates a GraphQLObjectType instance.
     </tr>
   </tbody>
 </table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+import assert from 'node:assert/strict';
+// Configure an object type with interfaces, fields, arguments, and metadata.
+import { parse, Kind } from 'graphql/language';
+import {
+  GraphQLID,
+  GraphQLInterfaceType,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLString,
+} from 'graphql/type';
+
+const document = parse(`
+  type User implements Node {
+    id: ID!
+    name(format: String = "short"): String
+  }
+
+  extend type User {
+    displayName: String
+  }
+`);
+assert(document.definitions[0].kind === Kind.OBJECT_TYPE_DEFINITION);
+assert(document.definitions[1].kind === Kind.OBJECT_TYPE_EXTENSION);
+const definition = document.definitions[0];
+const nameField = definition.fields?.[1];
+const formatArg = nameField?.arguments?.[0];
+
+const Node = new GraphQLInterfaceType({
+  name: 'Node',
+  fields: {
+    id: { type: new GraphQLNonNull(GraphQLID) },
+  },
+});
+
+const User = new GraphQLObjectType({
+  name: 'User',
+  description: 'A registered user.',
+  interfaces: [Node],
+  fields: {
+    id: { type: new GraphQLNonNull(GraphQLID) },
+    name: {
+      description: 'The formatted user name.',
+      type: GraphQLString,
+      args: {
+        format: {
+          description: 'Controls the name format.',
+          type: GraphQLString,
+          defaultValue: 'short',
+          deprecationReason: 'Use locale instead.',
+          extensions: { public: true },
+          astNode: formatArg,
+        },
+      },
+      resolve: (user, { format }) => {
+        return format === 'long' ? user.fullName : user.name;
+      },
+      deprecationReason: 'Use displayName.',
+      extensions: { cacheSeconds: 60 },
+      astNode: nameField,
+    },
+  },
+  isTypeOf: (value) => {
+    return typeof value === 'object' && value != null && 'id' in value;
+  },
+  extensions: { entity: 'User' },
+  astNode: definition,
+  extensionASTNodes: [document.definitions[1]],
+});
+
+User.name; // => 'User'
+User.getInterfaces(); // => [Node]
+Object.keys(User.getFields()); // => ['id', 'name']
+User.getFields().name.args[0].defaultValue; // => 'short'
+User.extensions; // => { entity: 'User' }
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+// This variant configures a subscription field with subscribe and resolve functions.
+import { GraphQLObjectType, GraphQLString } from 'graphql/type';
+
+const Subscription = new GraphQLObjectType({
+  name: 'Subscription',
+  fields: {
+    greeting: {
+      type: GraphQLString,
+      subscribe: async function* () {
+        yield { greeting: 'Hello!' };
+      },
+      resolve: (event) => {
+        return event.greeting;
+      },
+    },
+  },
+});
+
+typeof Subscription.getFields().greeting.subscribe; // => 'function'
+```
 
 <hr className="api-subsection-divider" />
 
@@ -1548,6 +1736,61 @@ Creates a GraphQLInterfaceType instance.
     </tr>
   </tbody>
 </table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import assert from 'node:assert/strict';
+import { parse, Kind } from 'graphql/language';
+import { GraphQLID, GraphQLInterfaceType, GraphQLNonNull } from 'graphql/type';
+
+const document = parse(`
+  interface Node {
+    id: ID!
+  }
+
+  interface Resource implements Node {
+    id: ID!
+  }
+
+  extend interface Resource {
+    url: String
+  }
+`);
+assert(document.definitions[1].kind === Kind.INTERFACE_TYPE_DEFINITION);
+assert(document.definitions[2].kind === Kind.INTERFACE_TYPE_EXTENSION);
+
+const Node = new GraphQLInterfaceType({
+  name: 'Node',
+  fields: {
+    id: { type: new GraphQLNonNull(GraphQLID) },
+  },
+});
+
+const Resource = new GraphQLInterfaceType({
+  name: 'Resource',
+  description: 'An addressable resource.',
+  interfaces: [Node],
+  fields: {
+    id: { type: new GraphQLNonNull(GraphQLID) },
+  },
+  resolveType: (value) => {
+    return typeof value === 'object' && value != null && 'url' in value
+      ? 'WebPage'
+      : undefined;
+  },
+  extensions: { abstract: true },
+  astNode: document.definitions[1],
+  extensionASTNodes: [document.definitions[2]],
+});
+
+Resource.name; // => 'Resource'
+Resource.getInterfaces(); // => [Node]
+Object.keys(Resource.getFields()); // => ['id']
+Resource.extensions; // => { abstract: true }
+```
 
 <hr className="api-subsection-divider" />
 
@@ -1941,6 +2184,55 @@ Creates a GraphQLUnionType instance.
 
 <hr className="api-subsection-divider" />
 
+<div className="api-subsection-title">Example</div>
+
+```ts
+import assert from 'node:assert/strict';
+import { parse, Kind } from 'graphql/language';
+import {
+  GraphQLObjectType,
+  GraphQLString,
+  GraphQLUnionType,
+} from 'graphql/type';
+
+const document = parse(`
+  union Media = Photo | Video
+
+  extend union Media = Audio
+`);
+assert(document.definitions[0].kind === Kind.UNION_TYPE_DEFINITION);
+assert(document.definitions[1].kind === Kind.UNION_TYPE_EXTENSION);
+
+const Photo = new GraphQLObjectType({
+  name: 'Photo',
+  fields: { url: { type: GraphQLString } },
+});
+const Video = new GraphQLObjectType({
+  name: 'Video',
+  fields: { url: { type: GraphQLString } },
+});
+
+const Media = new GraphQLUnionType({
+  name: 'Media',
+  description: 'Media that can appear in a search result.',
+  types: [Photo, Video],
+  resolveType: (value) => {
+    return typeof value === 'object' && value != null && 'duration' in value
+      ? 'Video'
+      : 'Photo';
+  },
+  extensions: { searchable: true },
+  astNode: document.definitions[0],
+  extensionASTNodes: [document.definitions[1]],
+});
+
+Media.description; // => 'Media that can appear in a search result.'
+Media.getTypes().map((type) => type.name); // => ['Photo', 'Video']
+Media.extensions; // => { searchable: true }
+```
+
+<hr className="api-subsection-divider" />
+
 ##### Members
 
 <table>
@@ -2271,6 +2563,59 @@ Creates a GraphQLEnumType instance.
     </tr>
   </tbody>
 </table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import assert from 'node:assert/strict';
+import { parse, Kind } from 'graphql/language';
+import { GraphQLEnumType } from 'graphql/type';
+
+const document = parse(`
+  enum Episode {
+    NEW_HOPE
+    EMPIRE
+    JEDI
+  }
+
+  extend enum Episode {
+    FORCE_AWAKENS
+  }
+`);
+assert(document.definitions[0].kind === Kind.ENUM_TYPE_DEFINITION);
+assert(document.definitions[1].kind === Kind.ENUM_TYPE_EXTENSION);
+const definition = document.definitions[0];
+
+const Episode = new GraphQLEnumType({
+  name: 'Episode',
+  description: 'A Star Wars film episode.',
+  values: {
+    NEW_HOPE: {
+      value: 4,
+      description: 'Released in 1977.',
+      extensions: { trilogy: 'original' },
+      astNode: definition.values?.[0],
+    },
+    EMPIRE: { value: 5, astNode: definition.values?.[1] },
+    JEDI: {
+      value: 6,
+      deprecationReason: 'Use RETURN_OF_THE_JEDI.',
+      astNode: definition.values?.[2],
+    },
+  },
+  extensions: { catalog: 'films' },
+  astNode: definition,
+  extensionASTNodes: [document.definitions[1]],
+});
+
+Episode.description; // => 'A Star Wars film episode.'
+Episode.serialize(5); // => 'EMPIRE'
+Episode.parseValue('JEDI'); // => 6
+Episode.getValue('JEDI')?.deprecationReason; // => 'Use RETURN_OF_THE_JEDI.'
+Episode.extensions; // => { catalog: 'films' }
+```
 
 <hr className="api-subsection-divider" />
 
@@ -2878,6 +3223,77 @@ Creates a GraphQLInputObjectType instance.
     </tr>
   </tbody>
 </table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example</div>
+
+```ts
+import assert from 'node:assert/strict';
+import { parse, Kind } from 'graphql/language';
+import {
+  GraphQLID,
+  GraphQLInputObjectType,
+  GraphQLInt,
+  GraphQLNonNull,
+  GraphQLString,
+} from 'graphql/type';
+
+const document = parse(`
+  input ReviewInput {
+    stars: Int!
+    commentary: String
+  }
+
+  extend input ReviewInput {
+    body: String
+  }
+`);
+assert(document.definitions[0].kind === Kind.INPUT_OBJECT_TYPE_DEFINITION);
+assert(document.definitions[1].kind === Kind.INPUT_OBJECT_TYPE_EXTENSION);
+const definition = document.definitions[0];
+
+const ReviewInput = new GraphQLInputObjectType({
+  name: 'ReviewInput',
+  description: 'Input collected when reviewing a product.',
+  fields: {
+    stars: {
+      description: 'Star rating from one to five.',
+      type: new GraphQLNonNull(GraphQLInt),
+      extensions: { min: 1, max: 5 },
+      astNode: definition.fields?.[0],
+    },
+    commentary: {
+      type: GraphQLString,
+      defaultValue: '',
+      deprecationReason: 'Use body.',
+      astNode: definition.fields?.[1],
+    },
+  },
+  extensions: { form: 'review' },
+  astNode: definition,
+  extensionASTNodes: [document.definitions[1]],
+  isOneOf: false,
+});
+const SearchBy = new GraphQLInputObjectType({
+  name: 'SearchBy',
+  fields: {
+    id: { type: GraphQLID },
+    slug: { type: GraphQLString },
+  },
+  isOneOf: true,
+});
+
+const fields = ReviewInput.getFields();
+
+ReviewInput.description; // => 'Input collected when reviewing a product.'
+String(fields.stars.type); // => 'Int!'
+fields.stars.extensions; // => { min: 1, max: 5 }
+fields.commentary.defaultValue; // => ''
+fields.commentary.deprecationReason; // => 'Use body.'
+ReviewInput.isOneOf; // => false
+SearchBy.isOneOf; // => true
+```
 
 <hr className="api-subsection-divider" />
 
@@ -8547,6 +8963,63 @@ Creates a GraphQLDirective instance.
 
 <hr className="api-subsection-divider" />
 
+<div className="api-subsection-title">Example</div>
+
+```ts
+import assert from 'node:assert/strict';
+import { DirectiveLocation, parse, Kind } from 'graphql/language';
+import {
+  GraphQLBoolean,
+  GraphQLDirective,
+  GraphQLInt,
+  GraphQLNonNull,
+} from 'graphql/type';
+
+const document = parse(
+  `
+  directive @cacheControl(maxAge: Int) repeatable on FIELD_DEFINITION
+  extend directive @cacheControl @tag
+`,
+  { experimentalDirectivesOnDirectiveDefinitions: true },
+);
+assert(document.definitions[0].kind === Kind.DIRECTIVE_DEFINITION);
+assert(document.definitions[1].kind === Kind.DIRECTIVE_EXTENSION);
+const definition = document.definitions[0];
+
+const cacheControl = new GraphQLDirective({
+  name: 'cacheControl',
+  description: 'Controls HTTP cache hints for a field.',
+  locations: [DirectiveLocation.FIELD_DEFINITION],
+  args: {
+    inheritMaxAge: {
+      description: 'Inherit the parent cache hint.',
+      type: new GraphQLNonNull(GraphQLBoolean),
+      defaultValue: false,
+      deprecationReason: 'Use maxAge instead.',
+      extensions: { scope: 'cache' },
+    },
+    maxAge: {
+      type: GraphQLInt,
+      astNode: definition.arguments?.[0],
+    },
+  },
+  isRepeatable: true,
+  deprecationReason: 'Use @cache instead.',
+  extensions: { scope: 'cache' },
+  astNode: definition,
+  extensionASTNodes: [document.definitions[1]],
+});
+
+cacheControl.name; // => 'cacheControl'
+cacheControl.description; // => 'Controls HTTP cache hints for a field.'
+cacheControl.args[0].name; // => 'inheritMaxAge'
+cacheControl.args[0].defaultValue; // => false
+cacheControl.isRepeatable; // => true
+cacheControl.extensions; // => { scope: 'cache' }
+```
+
+<hr className="api-subsection-divider" />
+
 ##### Members
 
 <table>
@@ -9794,6 +10267,102 @@ Creates a GraphQLSchema instance.
     </tr>
   </tbody>
 </table>
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Create a schema with the required query root.
+import { GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql/type';
+
+const Query = new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+    greeting: {
+      type: GraphQLString,
+      resolve: () => 'Hello',
+    },
+  },
+});
+
+const schema = new GraphQLSchema({
+  description: 'The application schema.',
+  query: Query,
+});
+
+schema.getQueryType(); // => Query
+schema.description; // => 'The application schema.'
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+import assert from 'node:assert/strict';
+// This variant configures every schema option, including directives and extensions.
+import { DirectiveLocation, parse, Kind } from 'graphql/language';
+import {
+  GraphQLBoolean,
+  GraphQLDirective,
+  GraphQLObjectType,
+  GraphQLSchema,
+  GraphQLString,
+} from 'graphql/type';
+
+const Query = new GraphQLObjectType({
+  name: 'Query',
+  fields: { greeting: { type: GraphQLString } },
+});
+const Mutation = new GraphQLObjectType({
+  name: 'Mutation',
+  fields: { setGreeting: { type: GraphQLString } },
+});
+const Subscription = new GraphQLObjectType({
+  name: 'Subscription',
+  fields: { greetingChanged: { type: GraphQLString } },
+});
+const AuditEvent = new GraphQLObjectType({
+  name: 'AuditEvent',
+  fields: { message: { type: GraphQLString } },
+});
+const authDirective = new GraphQLDirective({
+  name: 'auth',
+  locations: [DirectiveLocation.FIELD_DEFINITION],
+  args: { required: { type: GraphQLBoolean } },
+});
+const schemaDocument = parse(`
+  schema {
+    query: Query
+    mutation: Mutation
+    subscription: Subscription
+  }
+
+  extend schema @auth
+`);
+assert(schemaDocument.definitions[0].kind === Kind.SCHEMA_DEFINITION);
+assert(schemaDocument.definitions[1].kind === Kind.SCHEMA_EXTENSION);
+
+const schema = new GraphQLSchema({
+  description: 'Operations exposed by the application.',
+  query: Query,
+  mutation: Mutation,
+  subscription: Subscription,
+  types: [AuditEvent],
+  directives: [authDirective],
+  extensions: { owner: 'platform' },
+  astNode: schemaDocument.definitions[0],
+  extensionASTNodes: [schemaDocument.definitions[1]],
+  assumeValid: true,
+});
+
+schema.getMutationType(); // => Mutation
+schema.getSubscriptionType(); // => Subscription
+schema.getType('AuditEvent'); // => AuditEvent
+schema.getDirective('auth'); // => authDirective
+schema.extensions; // => { owner: 'platform' }
+```
 
 <hr className="api-subsection-divider" />
 

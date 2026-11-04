@@ -2676,6 +2676,7 @@ async function renderDeclaration(node, level = 3, siblings = []) {
         lines.push('**Signature:**', constructorDeclaration);
         // eslint-disable-next-line no-await-in-loop
         lines.push(...(await renderParams(signature, options)));
+        lines.push(...renderExamples(signature.comment));
       }
     }
   } else {

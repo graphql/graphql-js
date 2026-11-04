@@ -81,6 +81,83 @@ Creates a TypeInfo instance.
   </tbody>
 </table>
 
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 1</div>
+
+```ts
+// Track field types during a visitWithTypeInfo traversal.
+import { parse, visit } from 'graphql/language';
+import { buildSchema } from 'graphql/utilities';
+import { TypeInfo, visitWithTypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+const typeInfo = new TypeInfo(schema);
+const seenTypes: Array<string> = [];
+
+visit(
+  parse('{ greeting }'),
+  visitWithTypeInfo(typeInfo, {
+    Field: () => {
+      seenTypes.push(String(typeInfo.getType()));
+    },
+  }),
+);
+
+seenTypes; // => ['String']
+```
+
+<hr className="api-subsection-divider" />
+
+<div className="api-subsection-title">Example 2</div>
+
+```ts
+import assert from 'node:assert/strict';
+// This variant starts from an initial type and supplies fragment signatures.
+import { Kind, parse } from 'graphql/language';
+import { buildSchema, TypeInfo } from 'graphql/utilities';
+
+const schema = buildSchema(`
+  type Query {
+    greeting(name: String): String
+  }
+`);
+const fragmentDocument = parse(
+  'fragment GreetingFields($name: String) on Query { greeting(name: $name) }',
+  { experimentalFragmentArguments: true },
+);
+const fragmentDefinition = fragmentDocument.definitions[0];
+assert(fragmentDefinition.kind === Kind.FRAGMENT_DEFINITION);
+const variableDefinition = fragmentDefinition.variableDefinitions?.[0];
+assert(variableDefinition);
+const typeInfo = new TypeInfo(schema, schema.getQueryType(), (name) =>
+  name === 'GreetingFields'
+    ? {
+        definition: fragmentDefinition,
+        variableDefinitions: new Map([['name', variableDefinition]]),
+      }
+    : undefined,
+);
+
+typeInfo.enter({
+  kind: Kind.SELECTION_SET,
+  selections: [],
+});
+typeInfo.enter({
+  kind: Kind.FRAGMENT_SPREAD,
+  name: { kind: Kind.NAME, value: 'GreetingFields' },
+  arguments: [],
+  directives: [],
+});
+
+String(typeInfo.getParentType()); // => 'Query'
+typeInfo.getFragmentSignature()?.definition.name.value; // => 'GreetingFields'
+```
+
 ##### getType()
 
 Returns the current output type at this point in traversal.
