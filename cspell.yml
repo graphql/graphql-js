@@ -46,6 +46,11 @@ overrides:
       - precompiled
       - debuggable
       - dataloaders
+      - setex
+      - uncacheable
+      - myapp
+      - autocannon
+      - Millis
 
 ignoreRegExpList:
   - u\{[0-9a-f]{1,8}\}
