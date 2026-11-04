@@ -74,6 +74,8 @@ const meta = {
   },
   'development-mode': '',
   'going-to-production': '',
+  'production-errors-debug': '',
+  'production-schema-management': '',
   'scaling-graphql': '',
 };
 
