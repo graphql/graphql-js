@@ -1,5 +1,6 @@
 /** @category Execution */
 
+import { CompactExecutionResultMap } from '../jsutils/CompactExecutionResultMap.ts';
 import { inspect } from '../jsutils/inspect.ts';
 import { invariant } from '../jsutils/invariant.ts';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.ts';
@@ -537,7 +538,10 @@ export class Executor<
     groupedFieldSet: GroupedFieldSet,
     positionContext: TPositionContext | undefined,
   ): PromiseOrValue<ObjMap<unknown>> {
-    const results = Object.create(null);
+    const results = Object.setPrototypeOf(
+      new CompactExecutionResultMap(),
+      null,
+    );
     let containsPromise = false;
     const tracingChannel = shouldTrace(resolveChannel)
       ? resolveChannel
