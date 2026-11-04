@@ -4,7 +4,7 @@
 // automatically updated by "npm version" command.
 
 /** A string containing the version of the GraphQL.js library */
-export const version = '17.0.2' as string;
+export const version = '17.1.0' as string;
 
 /** An object containing the components of the GraphQL.js version string */
 export const versionInfo: Readonly<{
@@ -14,7 +14,7 @@ export const versionInfo: Readonly<{
   preReleaseTag: string | null;
 }> = Object.freeze({
   major: 17,
-  minor: 0,
-  patch: 2,
+  minor: 1,
+  patch: 0,
   preReleaseTag: null,
 });
