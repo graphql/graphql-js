@@ -46,6 +46,7 @@ overrides:
       - precompiled
       - debuggable
       - dataloaders
+      - Hasher
 
 ignoreRegExpList:
   - u\{[0-9a-f]{1,8}\}
