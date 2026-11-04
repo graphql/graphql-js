@@ -29,6 +29,37 @@ import { valueFromAST } from '../valueFromAST.ts';
 
 /** @deprecated use `coerceInputLiteral()` instead - will be removed in v18 */
 describe('valueFromAST', () => {
+  it('does not read inherited variable getters', () => {
+    const prototype = Object.create(null);
+    Object.defineProperty(prototype, 'value', {
+      get() {
+        throw new Error('Inherited getter read');
+      },
+    });
+    const variables = Object.create(prototype);
+    expect(
+      valueFromAST(parseValue('$value'), GraphQLString, variables),
+    ).to.equal(undefined);
+    expect(
+      valueFromAST(
+        parseValue('[$value]'),
+        new GraphQLList(GraphQLString),
+        variables,
+      ),
+    ).to.deep.equal([null]);
+    const input = new GraphQLInputObjectType({
+      name: 'Input',
+      fields: { a: { type: GraphQLString, defaultValue: 'default' } },
+    });
+    expect(
+      valueFromAST(parseValue('{ a: $value }'), input, variables),
+    ).to.deep.equal({ a: 'default' });
+    const own = Object.assign(Object.create(null), { value: 'own' });
+    expect(valueFromAST(parseValue('$value'), GraphQLString, own)).to.equal(
+      'own',
+    );
+  });
+
   function expectValueFrom(
     valueText: string,
     type: GraphQLInputType,
