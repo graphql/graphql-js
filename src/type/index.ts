@@ -150,6 +150,25 @@ export type {
   GraphQLDirectiveExtensions,
 } from './directives';
 
+export {
+  // Predicate
+  isService,
+  // Assertion
+  assertService,
+  // GraphQL Service definition
+  GraphQLService,
+  // Built-in service
+  builtInService,
+  isBuiltInService,
+} from './service';
+
+export type {
+  GraphQLCapability,
+  GraphQLCapabilityConfig,
+  GraphQLServiceConfig,
+  GraphQLServiceExtensions,
+} from './service';
+
 // Common built-in scalar instances.
 export {
   // Predicate
@@ -179,12 +198,15 @@ export {
   __InputValue,
   __EnumValue,
   __TypeKind,
+  __Service,
+  __Capability,
   // "Enum" of Type Kinds
   TypeKind,
   // Meta-field definitions.
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
+  ServiceMetaFieldDef,
 } from './introspection';
 
 // Validate GraphQL schema.

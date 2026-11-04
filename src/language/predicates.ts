@@ -191,7 +191,8 @@ export function isTypeSystemDefinitionNode(
   return (
     node.kind === Kind.SCHEMA_DEFINITION ||
     isTypeDefinitionNode(node) ||
-    node.kind === Kind.DIRECTIVE_DEFINITION
+    node.kind === Kind.DIRECTIVE_DEFINITION ||
+    node.kind === Kind.SERVICE_DEFINITION
   );
 }
 
@@ -244,7 +245,8 @@ export function isTypeSystemExtensionNode(
   return (
     node.kind === Kind.SCHEMA_EXTENSION ||
     node.kind === Kind.DIRECTIVE_EXTENSION ||
-    isTypeExtensionNode(node)
+    isTypeExtensionNode(node) ||
+    node.kind === Kind.SERVICE_EXTENSION
   );
 }
 

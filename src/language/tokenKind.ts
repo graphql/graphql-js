@@ -41,6 +41,7 @@ enum TokenKind {
   BRACE_R = '}',
   /** A GraphQL name token or name AST node. */
   NAME = 'Name',
+  QUALIFIED_NAME = 'QualifiedName',
   /** An integer value token or AST node. */
   INT = 'Int',
   /** A floating-point value token or AST node. */

@@ -11,6 +11,7 @@ import type { Source } from '../language/source';
 import { specifiedDirectives } from '../type/directives';
 import type { GraphQLSchemaValidationOptions } from '../type/schema';
 import { GraphQLSchema } from '../type/schema';
+import { builtInService } from '../type/service';
 
 import { assertValidSDL } from '../validation/validate';
 
@@ -80,6 +81,7 @@ export function buildASTSchema(
     description: undefined,
     types: [],
     directives: [],
+    service: builtInService,
     extensions: Object.create(null),
     extensionASTNodes: [],
     assumeValid: false,

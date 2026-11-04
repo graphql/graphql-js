@@ -222,6 +222,8 @@ export type ASTNode =
   | EnumValueDefinitionNode
   | InputObjectTypeDefinitionNode
   | DirectiveDefinitionNode
+  | ServiceDefinitionNode
+  | ServiceCapabilityNode
   | SchemaExtensionNode
   | ScalarTypeExtensionNode
   | ObjectTypeExtensionNode
@@ -230,6 +232,7 @@ export type ASTNode =
   | EnumTypeExtensionNode
   | InputObjectTypeExtensionNode
   | DirectiveExtensionNode
+  | ServiceExtensionNode
   | TypeCoordinateNode
   | MemberCoordinateNode
   | ArgumentCoordinateNode
@@ -334,6 +337,9 @@ export const QueryDocumentKeys: {
     'locations',
   ],
 
+  ServiceDefinition: ['description', 'directives', 'entries'],
+  ServiceCapability: ['description', 'identifier', 'value'],
+
   SchemaExtension: ['directives', 'operationTypes'],
 
   DirectiveExtension: ['name', 'directives'],
@@ -344,6 +350,8 @@ export const QueryDocumentKeys: {
   UnionTypeExtension: ['name', 'directives', 'types'],
   EnumTypeExtension: ['name', 'directives', 'values'],
   InputObjectTypeExtension: ['name', 'directives', 'fields'],
+
+  ServiceExtension: ['directives', 'entries'],
 
   TypeCoordinate: ['name'],
   MemberCoordinate: ['name', 'memberName'],
@@ -780,7 +788,8 @@ export interface NonNullTypeNode {
 export type TypeSystemDefinitionNode =
   | SchemaDefinitionNode
   | TypeDefinitionNode
-  | DirectiveDefinitionNode;
+  | DirectiveDefinitionNode
+  | ServiceDefinitionNode;
 
 /** A schema definition in a type-system document. */
 export interface SchemaDefinitionNode {
@@ -995,7 +1004,30 @@ export interface DirectiveDefinitionNode {
 export type TypeSystemExtensionNode =
   | SchemaExtensionNode
   | TypeExtensionNode
-  | DirectiveExtensionNode;
+  | DirectiveExtensionNode
+  | ServiceExtensionNode;
+
+/** Service Definitions */
+
+export interface ServiceDefinitionNode {
+  readonly kind: Kind.SERVICE_DEFINITION;
+  readonly loc?: Location;
+  readonly description?: StringValueNode;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
+  readonly entries?: ReadonlyArray<ServiceEntryNode>;
+}
+
+export type ServiceEntryNode = ServiceCapabilityNode;
+
+export interface ServiceCapabilityNode {
+  readonly kind: Kind.SERVICE_CAPABILITY;
+  readonly loc?: Location;
+  readonly description?: StringValueNode;
+  /** The capability identifier (a qualified name like "graphql.operationDescriptions") */
+  readonly identifier: StringValueNode;
+  /** Optional string value for the capability */
+  readonly value?: StringValueNode;
+}
 
 /** A schema extension in a type-system document. */
 export interface SchemaExtensionNode {
@@ -1116,6 +1148,15 @@ export interface DirectiveExtensionNode {
   readonly name: NameNode;
   /** Directives available in this schema or applied to this AST node. */
   readonly directives?: ReadonlyArray<ConstDirectiveNode>;
+}
+
+/** Service Extension */
+
+export interface ServiceExtensionNode {
+  readonly kind: Kind.SERVICE_EXTENSION;
+  readonly loc?: Location;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode>;
+  readonly entries?: ReadonlyArray<ServiceEntryNode>;
 }
 
 // Schema Coordinates

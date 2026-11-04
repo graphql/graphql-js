@@ -83,6 +83,10 @@ enum Kind {
   /** AST kind for directive definition nodes. */
   DIRECTIVE_DEFINITION = 'DirectiveDefinition',
 
+  /** Service Definitions */
+  SERVICE_DEFINITION = 'ServiceDefinition',
+  SERVICE_CAPABILITY = 'ServiceCapability',
+
   /** AST kind for schema extension nodes. */
   SCHEMA_EXTENSION = 'SchemaExtension',
   /** AST kind for directive extension nodes. */
@@ -100,6 +104,9 @@ enum Kind {
   ENUM_TYPE_EXTENSION = 'EnumTypeExtension',
   /** AST kind for input object type extension nodes. */
   INPUT_OBJECT_TYPE_EXTENSION = 'InputObjectTypeExtension',
+
+  /** Service Extension */
+  SERVICE_EXTENSION = 'ServiceExtension',
 
   /** AST kind for type coordinate nodes. */
   TYPE_COORDINATE = 'TypeCoordinate',
