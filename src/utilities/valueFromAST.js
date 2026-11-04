@@ -163,7 +163,7 @@ function isMissingVariable(
   return (
     valueNode.kind === Kind.VARIABLE &&
     (variables == null ||
-      variables[valueNode.name.value] === undefined ||
-      !Object.prototype.hasOwnProperty.call(variables, valueNode.name.value))
+      !Object.prototype.hasOwnProperty.call(variables, valueNode.name.value) ||
+      variables[valueNode.name.value] === undefined)
   );
 }
