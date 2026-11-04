@@ -26,6 +26,23 @@ import {
 import { valueFromAST } from '../valueFromAST';
 
 describe('valueFromAST', () => {
+  it('ignores inherited variables and does not read their getters', () => {
+    const prototype = Object.create(null);
+    Object.defineProperty(prototype, 'value', {
+      get() {
+        throw new Error('Inherited getter read');
+      },
+    });
+    const variables = Object.create(prototype);
+    expect(
+      valueFromAST(parseValue('$value'), GraphQLString, variables),
+    ).to.equal(undefined);
+    const own = Object.assign(Object.create(null), { value: 'own' });
+    expect(valueFromAST(parseValue('$value'), GraphQLString, own)).to.equal(
+      'own',
+    );
+  });
+
   function expectValueFrom(
     valueText: string,
     type: GraphQLInputType,
