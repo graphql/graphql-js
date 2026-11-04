@@ -37,6 +37,20 @@ describe('valueFromAST', () => {
     expect(
       valueFromAST(parseValue('$value'), GraphQLString, variables),
     ).to.equal(undefined);
+    expect(
+      valueFromAST(
+        parseValue('[$value]'),
+        new GraphQLList(GraphQLString),
+        variables,
+      ),
+    ).to.deep.equal([null]);
+    const input = new GraphQLInputObjectType({
+      name: 'Input',
+      fields: { a: { type: GraphQLString, defaultValue: 'default' } },
+    });
+    expect(
+      valueFromAST(parseValue('{ a: $value }'), input, variables),
+    ).to.deep.equal({ a: 'default' });
     const own = Object.assign(Object.create(null), { value: 'own' });
     expect(valueFromAST(parseValue('$value'), GraphQLString, own)).to.equal(
       'own',
