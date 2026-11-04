@@ -33,6 +33,7 @@ export type {
   ValidatedExecutionArgs,
   ValidatedSubscriptionArgs,
 } from './ExecutionArgs.ts';
+export type { GraphQLErrorBehavior } from './ErrorBehavior.ts';
 export type { RootSelectionSetExecutor } from './execute.ts';
 
 export type { ExecutionResult, FormattedExecutionResult } from './Executor.ts';
