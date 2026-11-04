@@ -118,7 +118,8 @@ function valueFromAST(valueNode, type, variables) {
 }
 function isMissingVariable(valueNode, variables) {
     return (valueNode.kind === kinds_ts_1.Kind.VARIABLE &&
-        (variables?.[valueNode.name.value] === undefined ||
-            !Object.hasOwn(variables, valueNode.name.value)));
+        (variables == null ||
+            !Object.hasOwn(variables, valueNode.name.value) ||
+            variables[valueNode.name.value] === undefined));
 }
 //# sourceMappingURL=valueFromAST.js.map
