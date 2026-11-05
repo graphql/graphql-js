@@ -5,7 +5,7 @@ import type { Maybe } from '../jsutils/Maybe.ts';
 
 import { GraphQLError } from '../error/GraphQLError.ts';
 
-import type { DocumentNode } from '../language/ast.ts';
+import type { DocumentNode, OperationDefinitionNode } from '../language/ast.ts';
 import { QueryDocumentKeys } from '../language/ast.ts';
 import { visit, visitInParallel } from '../language/visitor.ts';
 
@@ -33,6 +33,24 @@ export interface ValidationOptions {
   maxErrors?: number;
   /** Whether suggestion text should be omitted from validation errors. */
   hideSuggestions?: Maybe<boolean>;
+  /**
+   * Allow nullable variables in non-null positions when the variable or input
+   * position has a default value, preserving legacy variable usage validation.
+   * Defaults to false: variable usages must satisfy strict type compatibility.
+   *
+   * See https://github.com/graphql/graphql-spec/pull/1059
+   */
+  allowLegacyVariableUsage?: boolean | undefined;
+  /**
+   * Called synchronously for each variable usage accepted only by legacy
+   * validation, with the strict validation error and containing operation.
+   * Requires `allowLegacyVariableUsage`. Omit to disable migration warnings.
+   * Warnings are not included in the returned validation errors. Exceptions
+   * thrown by this callback propagate to the caller.
+   */
+  onLegacyVariableUsage?:
+    | ((warning: GraphQLError, operation: OperationDefinitionNode) => void)
+    | undefined;
   /**
    * If enabled (the default), a selection set on an object, interface or
    * union type is only required to be present, rather than to be non-empty.
@@ -125,6 +143,27 @@ const tooManyValidationErrorsError = new GraphQLError(
  *
  * hiddenSuggestionErrors[0].message; // => 'Cannot query field "name" on type "Query".'
  * ```
+ * @example
+ * ```ts
+ * // Keep accepting legacy operations while collecting migration warnings.
+ * import { buildSchema, parse, validate } from 'graphql';
+ *
+ * const schema = buildSchema('type Query { value(n: Int!): Int }');
+ * const document = parse('query Example($n: Int = 3) { value(n: $n) }');
+ * validate(schema, document).length; // => 1
+ *
+ * const affectedOperations: Array<string | undefined> = [];
+ * const errors = validate(schema, document, undefined, {
+ *   allowLegacyVariableUsage: true,
+ *   onLegacyVariableUsage(warning, operation) {
+ *     warning.message; // => 'Variable "$n" of type "Int" used in position expecting type "Int!".'
+ *     affectedOperations.push(operation.name?.value);
+ *   },
+ * });
+ *
+ * errors; // => []
+ * affectedOperations; // => ['Example']
+ * ```
  */
 export function validate(
   schema: GraphQLSchema,
@@ -165,7 +204,12 @@ function validateImpl(
       }
       errors.push(error);
     },
-    { hideSuggestions, allowEmptySelectionSets },
+    {
+      hideSuggestions,
+      allowEmptySelectionSets,
+      allowLegacyVariableUsage: options?.allowLegacyVariableUsage,
+      onLegacyVariableUsage: options?.onLegacyVariableUsage,
+    },
   );
 
   // This uses a specialized visitor which runs multiple visitors in parallel,
