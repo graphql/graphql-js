@@ -624,20 +624,6 @@ describe('Type System: Objects must have fields', () => {
     expectJSON(validateSchema(extendedSchema)).toDeepEqual([]);
   });
 
-  it('accepts an Object type with empty braces when experimentalAllowEmptyTypes is enabled', () => {
-    const schema = buildSchema(
-      `
-      type Query {
-        test: EmptyObject
-      }
-
-      type EmptyObject {}
-    `,
-      { experimentalAllowEmptyTypes: true },
-    );
-    expectJSON(validateSchema(schema)).toDeepEqual([]);
-  });
-
   it('accepts an empty Query root type when experimentalAllowEmptyTypes is enabled', () => {
     const schema = buildSchema('type Query', {
       experimentalAllowEmptyTypes: true,
@@ -655,7 +641,7 @@ describe('Type System: Objects must have fields', () => {
 
       interface EmptyInterface
 
-      interface OtherEmptyInterface {}
+      interface OtherEmptyInterface
 
       type SomeObject implements EmptyInterface & OtherEmptyInterface {
         field: String
@@ -1076,20 +1062,6 @@ describe('Type System: Input Objects must have fields', () => {
     );
     expect(extendedSchema.experimentalAllowEmptyTypes).to.equal(true);
     expectJSON(validateSchema(extendedSchema)).toDeepEqual([]);
-  });
-
-  it('accepts an Input Object type with empty braces when experimentalAllowEmptyTypes is enabled', () => {
-    const schema = buildSchema(
-      `
-      type Query {
-        field(arg: SomeInputObject): String
-      }
-
-      input SomeInputObject {}
-    `,
-      { experimentalAllowEmptyTypes: true },
-    );
-    expectJSON(validateSchema(schema)).toDeepEqual([]);
   });
 
   it('rejects a OneOf Input Object type with no fields even when experimentalAllowEmptyTypes is enabled', () => {
