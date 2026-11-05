@@ -1,8 +1,13 @@
 import { describe, it } from 'node:test';
 
-import { VariablesInAllowedPositionRule } from '../rules/VariablesInAllowedPositionRule.ts';
+import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 
-import { expectValidationErrors } from './harness.ts';
+import { parse } from '../../language/parser.ts';
+
+import { VariablesInAllowedPositionRule } from '../rules/VariablesInAllowedPositionRule.ts';
+import { validate } from '../validate.ts';
+
+import { expectValidationErrors, testSchema } from './harness.ts';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(VariablesInAllowedPositionRule, queryStr);
@@ -10,6 +15,19 @@ function expectErrors(queryStr: string) {
 
 function expectValid(queryStr: string) {
   expectErrors(queryStr).toDeepEqual([]);
+}
+
+function expectLegacyValid(queryStr: string) {
+  const document = parse(queryStr, { experimentalFragmentArguments: true });
+  const errors = validate(
+    testSchema,
+    document,
+    [VariablesInAllowedPositionRule],
+    {
+      allowLegacyVariableUsage: true,
+    },
+  );
+  expectJSON(errors).toDeepEqual([]);
 }
 
 describe('Validate: Variables are in allowed positions', () => {
@@ -132,7 +150,7 @@ describe('Validate: Variables are in allowed positions', () => {
   });
 
   it('ComplexInput => ComplexInput in field position', () => {
-    expectValid(`
+    expectLegacyValid(`
       query Query($boolVar: Boolean = false)
       {
         complicatedArgs {
@@ -312,7 +330,7 @@ describe('Validate: Variables are in allowed positions', () => {
     ]);
   });
 
-  describe('Allows optional (nullable) variables with default values', () => {
+  describe('Legacy validation allows nullable variables with default values', () => {
     it('Int => Int! fails when variable provides null default value', () => {
       expectErrors(`
         query Query($intVar: Int = null) {
@@ -333,7 +351,7 @@ describe('Validate: Variables are in allowed positions', () => {
     });
 
     it('Int => Int! when variable provides non-null default value', () => {
-      expectValid(`
+      expectLegacyValid(`
         query Query($intVar: Int = 1) {
           complicatedArgs {
             nonNullIntArgField(nonNullIntArg: $intVar)
@@ -342,7 +360,7 @@ describe('Validate: Variables are in allowed positions', () => {
     });
 
     it('Int => Int! when optional argument provides default value', () => {
-      expectValid(`
+      expectLegacyValid(`
         query Query($intVar: Int) {
           complicatedArgs {
             nonNullFieldWithDefault(arg: $intVar)
@@ -351,7 +369,7 @@ describe('Validate: Variables are in allowed positions', () => {
     });
 
     it('Int => Int! when an argument default is inside a fragment', () => {
-      expectValid(`
+      expectLegacyValid(`
         fragment defaultArgFrag on ComplicatedArgs {
           nonNullFieldWithDefault(arg: $intVar)
         }
@@ -365,7 +383,7 @@ describe('Validate: Variables are in allowed positions', () => {
     });
 
     it('Boolean => Boolean! in directive with default value with option', () => {
-      expectValid(`
+      expectLegacyValid(`
         query Query($boolVar: Boolean = false) {
           dog @include(if: $boolVar)
         }`);
@@ -412,7 +430,7 @@ describe('Validate: Variables are in allowed positions', () => {
 
   describe('Fragment arguments are validated', () => {
     it('Int => Int! when the field argument provides a default value', () => {
-      expectValid(`
+      expectLegacyValid(`
         query Query {
           complicatedArgs {
             ...A

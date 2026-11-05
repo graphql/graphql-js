@@ -25,6 +25,9 @@ import type { ValidationContext } from '../ValidationContext.ts';
  * Variables in allowed position
  *
  * Variable usages must be compatible with the arguments they are passed to.
+ * Nullable variables are rejected in non-null positions unless legacy variable
+ * usage validation is enabled. Legacy-only usages can be reported separately
+ * through the context's migration warning callback.
  *
  * See https://spec.graphql.org/draft/#sec-All-Variable-Usages-are-Allowed
  * @param context - The validation context used while checking the document.
@@ -94,22 +97,32 @@ export function VariablesInAllowedPositionRule(
             // than the expected item type (contravariant).
             const schema = context.getSchema();
             const varType = typeFromAST(schema, varDef.type);
-            if (
-              varType &&
-              !allowedVariableUsage(
-                schema,
-                varType,
-                varDef.defaultValue,
-                type,
-                defaultValue,
-              )
-            ) {
-              context.reportError(
-                new GraphQLError(
-                  `Variable "$${varName}" of type "${varType}" used in position expecting type "${type}".`,
-                  { nodes: [varDef, node] },
-                ),
-              );
+            if (varType && !isTypeSubTypeOf(schema, varType, type)) {
+              if (
+                context.allowLegacyVariableUsage &&
+                allowedLegacyVariableUsage(
+                  schema,
+                  varType,
+                  varDef.defaultValue,
+                  type,
+                  defaultValue,
+                )
+              ) {
+                context.onLegacyVariableUsage?.(
+                  new GraphQLError(
+                    `Variable "$${varName}" of type "${varType}" used in position expecting type "${type}".`,
+                    { nodes: [varDef, node] },
+                  ),
+                  operation,
+                );
+              } else {
+                context.reportError(
+                  new GraphQLError(
+                    `Variable "$${varName}" of type "${varType}" used in position expecting type "${type}".`,
+                    { nodes: [varDef, node] },
+                  ),
+                );
+              }
             }
 
             if (
@@ -141,7 +154,7 @@ export function VariablesInAllowedPositionRule(
  *
  * @internal
  */
-function allowedVariableUsage(
+function allowedLegacyVariableUsage(
   schema: GraphQLSchema,
   varType: GraphQLType,
   varDefaultValue: Maybe<ValueNode>,
