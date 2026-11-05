@@ -412,6 +412,8 @@ export interface OperationDefinitionNode {
   readonly description?: StringValueNode | undefined;
   /** The operation selected for execution. */
   readonly operation: OperationTypeNode;
+  /** True when the query shorthand (`{ ... }`) is used. */
+  readonly shorthand?: boolean | undefined;
   /** Name node identifying this AST node. */
   readonly name?: NameNode | undefined;
   /** Variable definitions declared by this operation or fragment. */
