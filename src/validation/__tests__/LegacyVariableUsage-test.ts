@@ -277,31 +277,28 @@ describe('Validate: strict and legacy variable usages', () => {
   });
 });
 
-describe('Validate: limit migration warnings independently of errors', () => {
+describe('Validate: migration warnings are independent of errors', () => {
   const fields = Array.from(
     { length: 102 },
     (_, i) => `field${i}: required(n: $v)`,
   ).join('\n');
   const document = parse(`query Q($v: Int = 3) { ${fields} }`);
 
-  for (const maxWarnings of [undefined, 0, 1, Infinity]) {
-    it(`limits warnings to ${maxWarnings ?? '100 by default'} without failing validation`, () => {
-      const warnings: Array<GraphQLError> = [];
-      expect(
-        validate(schema, document, undefined, {
-          allowLegacyVariableUsage: true,
-          maxErrors: 0,
-          maxWarnings,
-          onLegacyVariableUsage: (warning) => {
-            warnings.push(warning);
-          },
-        }),
-      ).to.deep.equal([]);
-      expect(warnings).to.have.lengthOf(Math.min(maxWarnings ?? 100, 102));
-    });
-  }
+  it('reports every warning without consuming the error limit', () => {
+    const warnings: Array<GraphQLError> = [];
+    expect(
+      validate(schema, document, undefined, {
+        allowLegacyVariableUsage: true,
+        maxErrors: 0,
+        onLegacyVariableUsage: (warning) => {
+          warnings.push(warning);
+        },
+      }),
+    ).to.deep.equal([]);
+    expect(warnings).to.have.lengthOf(102);
+  });
 
-  it('continues reporting errors after the warning limit is reached', () => {
+  it('reports validation errors alongside migration warnings', () => {
     const warnings: Array<GraphQLError> = [];
     const errors = validate(
       schema,
@@ -312,13 +309,12 @@ describe('Validate: limit migration warnings independently of errors', () => {
       undefined,
       {
         allowLegacyVariableUsage: true,
-        maxWarnings: 1,
         onLegacyVariableUsage: (warning) => {
           warnings.push(warning);
         },
       },
     );
-    expect(warnings).to.have.lengthOf(1);
+    expect(warnings).to.have.lengthOf(102);
     expect(errors.map((error) => error.message)).to.deep.equal([
       'Cannot query field "missing" on type "Query".',
     ]);

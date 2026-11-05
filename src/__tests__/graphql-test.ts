@@ -87,7 +87,6 @@ for (const run of [graphql, graphqlSync]) {
       const result = await run({
         ...args,
         maxErrors: 0,
-        maxWarnings: 1,
         onLegacyVariableUsage(warning, operation) {
           expect(operation.name?.value).to.equal('Q');
           warnings.push(warning);

@@ -52,12 +52,6 @@ export interface ValidationOptions {
     | ((warning: GraphQLError, operation: OperationDefinitionNode) => void)
     | undefined;
   /**
-   * Maximum number of migration warnings delivered per validation, defaulting
-   * to 100. Further warnings are suppressed without stopping validation or
-   * consuming `maxErrors`. Set to Infinity to report every warning.
-   */
-  maxWarnings?: number | undefined;
-  /**
    * If enabled (the default), a selection set on an object, interface or
    * union type is only required to be present, rather than to be non-empty.
    *
@@ -215,7 +209,6 @@ function validateImpl(
       allowEmptySelectionSets,
       allowLegacyVariableUsage: options?.allowLegacyVariableUsage,
       onLegacyVariableUsage: options?.onLegacyVariableUsage,
-      maxWarnings: options?.maxWarnings,
     },
   );
 

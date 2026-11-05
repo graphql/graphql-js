@@ -56,10 +56,8 @@ does not add a validation error or prevent execution. A warning identifies an
 incompatible variable usage; other validation rules can still reject the
 document. Callback exceptions propagate to the caller.
 
-`maxWarnings` defaults to 100 per validation call. Reaching this limit suppresses
-further callbacks without stopping validation or consuming `maxErrors`. Set it to
-`Infinity` for a complete migration audit. OneOf input object fields continue to
-require non-null variables in both modes, regardless of defaults.
+Warnings do not consume `maxErrors`. OneOf input object fields continue to require
+non-null variables in both modes, regardless of defaults.
 
 When migrating an operation that relies on an argument or input-field default,
 making its variable non-null requires callers to provide a value unless the

@@ -208,8 +208,6 @@ interface ValidationContextOptions {
   allowLegacyVariableUsage?: boolean | undefined;
   /** Callback for variable usages accepted only by legacy validation. */
   onLegacyVariableUsage?: ValidationOptions['onLegacyVariableUsage'];
-  /** Maximum number of migration warnings delivered by this context. */
-  maxWarnings?: number | undefined;
   /**
    * Whether selection sets on composite types may be empty.
    * @deprecated empty selection sets are now always allowed;
@@ -220,7 +218,7 @@ interface ValidationContextOptions {
 /** Validation context passed to query validation rules. */
 export class ValidationContext extends ASTValidationContext {
   /**
-   * Optional callback for legacy-only variable usages, limited by `maxWarnings`.
+   * Optional callback for legacy-only variable usages.
    * Invoking it does not report a validation error.
    */
   readonly onLegacyVariableUsage: ValidationOptions['onLegacyVariableUsage'];
@@ -335,17 +333,7 @@ export class ValidationContext extends ASTValidationContext {
     this._hideSuggestions = hideSuggestions ?? false;
     this._allowEmptySelectionSets = allowEmptySelectionSets ?? true;
     this._allowLegacyVariableUsage = options.allowLegacyVariableUsage ?? false;
-    const onLegacyVariableUsage = options.onLegacyVariableUsage;
-    let remainingWarnings = options.maxWarnings ?? 100;
-    this.onLegacyVariableUsage =
-      onLegacyVariableUsage === undefined
-        ? undefined
-        : (warning, operation) => {
-            if (remainingWarnings > 0) {
-              --remainingWarnings;
-              onLegacyVariableUsage(warning, operation);
-            }
-          };
+    this.onLegacyVariableUsage = options.onLegacyVariableUsage;
   }
 
   /**
