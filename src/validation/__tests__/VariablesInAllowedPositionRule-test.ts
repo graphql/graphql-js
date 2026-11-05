@@ -4,7 +4,12 @@ import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 
 import { parse } from '../../language/parser.ts';
 
+import type { GraphQLSchema } from '../../type/schema.ts';
+
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
+
 import { VariablesInAllowedPositionRule } from '../rules/VariablesInAllowedPositionRule.ts';
+import type { ValidationOptions } from '../validate.ts';
 import { validate } from '../validate.ts';
 
 import { expectValidationErrors, testSchema } from './harness.ts';
@@ -17,17 +22,21 @@ function expectValid(queryStr: string) {
   expectErrors(queryStr).toDeepEqual([]);
 }
 
-function expectLegacyValid(queryStr: string) {
+function expectErrorsWithSchema(
+  schema: GraphQLSchema,
+  queryStr: string,
+  options?: ValidationOptions,
+) {
   const document = parse(queryStr, { experimentalFragmentArguments: true });
-  const errors = validate(
-    testSchema,
-    document,
-    [VariablesInAllowedPositionRule],
-    {
-      allowLegacyVariableUsage: true,
-    },
+  return expectJSON(
+    validate(schema, document, [VariablesInAllowedPositionRule], options),
   );
-  expectJSON(errors).toDeepEqual([]);
+}
+
+function expectLegacyValid(queryStr: string) {
+  expectErrorsWithSchema(testSchema, queryStr, {
+    allowLegacyVariableUsage: true,
+  }).toDeepEqual([]);
 }
 
 describe('Validate: Variables are in allowed positions', () => {
@@ -154,7 +163,7 @@ describe('Validate: Variables are in allowed positions', () => {
       query Query($boolVar: Boolean = false)
       {
         complicatedArgs {
-          complexArgField(complexArg: {requiredArg: $boolVar})
+          complexArgField(complexArg: {requiredField: $boolVar})
         }
       }
     `);
@@ -619,5 +628,480 @@ describe('Non-specified behavior of variables within custom scalars', () => {
           distanceFrom(loc: [$x, 10.0])
         }
       }`);
+  });
+});
+
+describe('Validate: Strict and legacy variable usages', () => {
+  const schema = buildSchema(`
+    directive @withDefault(flag: Boolean! = true) on FIELD
+
+    input Options {
+      n: Int! = 5
+    }
+
+    input Choice @oneOf {
+      n: Int
+    }
+
+    type Query {
+      required(n: Int!): Int
+      defaulted(n: Int! = 5): Int
+      nullable(n: Int): Int
+      numbers(values: [Int!]!): Int
+      options(input: Options): Int
+      choice(input: Choice): Int
+    }
+  `);
+
+  function expectUsageErrors(queryStr: string, options?: ValidationOptions) {
+    return expectErrorsWithSchema(schema, queryStr, options);
+  }
+
+  it('Int => Int! with a variable default', () => {
+    const query = `
+      query Q($v: Int = 0) {
+        required(n: $v)
+      }
+    `;
+    expectUsageErrors(query).toDeepEqual([
+      {
+        message:
+          'Variable "$v" of type "Int" used in position expecting type "Int!".',
+        locations: [
+          { line: 2, column: 15 },
+          { line: 3, column: 21 },
+        ],
+      },
+    ]);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      [],
+    );
+  });
+
+  it('Int => Int! with an argument default', () => {
+    const query = `
+      query Q($v: Int) {
+        defaulted(n: $v)
+      }
+    `;
+    expectUsageErrors(query).toDeepEqual([
+      {
+        message:
+          'Variable "$v" of type "Int" used in position expecting type "Int!".',
+        locations: [
+          { line: 2, column: 15 },
+          { line: 3, column: 22 },
+        ],
+      },
+    ]);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      [],
+    );
+  });
+
+  it('Int => Int! with both defaults', () => {
+    const query = `
+      query Q($v: Int = 3) {
+        defaulted(n: $v)
+      }
+    `;
+    expectUsageErrors(query).toDeepEqual([
+      {
+        message:
+          'Variable "$v" of type "Int" used in position expecting type "Int!".',
+        locations: [
+          { line: 2, column: 15 },
+          { line: 3, column: 22 },
+        ],
+      },
+    ]);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      [],
+    );
+  });
+
+  it('Int => Int! with a null variable default and an argument default', () => {
+    const query = `
+      query Q($v: Int = null) {
+        defaulted(n: $v)
+      }
+    `;
+    expectUsageErrors(query).toDeepEqual([
+      {
+        message:
+          'Variable "$v" of type "Int" used in position expecting type "Int!".',
+        locations: [
+          { line: 2, column: 15 },
+          { line: 3, column: 22 },
+        ],
+      },
+    ]);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      [],
+    );
+  });
+
+  it('Int => Int! with an input field default', () => {
+    const query = `
+      query Q($v: Int) {
+        options(input: { n: $v })
+      }
+    `;
+    expectUsageErrors(query).toDeepEqual([
+      {
+        message:
+          'Variable "$v" of type "Int" used in position expecting type "Int!".',
+        locations: [
+          { line: 2, column: 15 },
+          { line: 3, column: 29 },
+        ],
+      },
+    ]);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      [],
+    );
+  });
+
+  it('Int => Int! in a list item with a variable default', () => {
+    const query = `
+      query Q($v: Int = 3) {
+        numbers(values: [1, $v, 3])
+      }
+    `;
+    expectUsageErrors(query).toDeepEqual([
+      {
+        message:
+          'Variable "$v" of type "Int" used in position expecting type "Int!".',
+        locations: [
+          { line: 2, column: 15 },
+          { line: 3, column: 29 },
+        ],
+      },
+    ]);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      [],
+    );
+  });
+
+  it('[Int!] => [Int!]! with a variable default', () => {
+    const query = `
+      query Q($v: [Int!] = [1]) {
+        numbers(values: $v)
+      }
+    `;
+    expectUsageErrors(query).toDeepEqual([
+      {
+        message:
+          'Variable "$v" of type "[Int!]" used in position expecting type "[Int!]!".',
+        locations: [
+          { line: 2, column: 15 },
+          { line: 3, column: 25 },
+        ],
+      },
+    ]);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      [],
+    );
+  });
+
+  it('[Int] => [Int!]! remains invalid with a variable default', () => {
+    const query = `
+      query Q($v: [Int] = [1]) {
+        numbers(values: $v)
+      }
+    `;
+    const expectedErrors = [
+      {
+        message:
+          'Variable "$v" of type "[Int]" used in position expecting type "[Int!]!".',
+        locations: [
+          { line: 2, column: 15 },
+          { line: 3, column: 25 },
+        ],
+      },
+    ];
+    expectUsageErrors(query).toDeepEqual(expectedErrors);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      expectedErrors,
+    );
+  });
+
+  it('Boolean => Boolean! in a directive with a variable default', () => {
+    const query = `
+      query Q($v: Boolean = false) {
+        required(n: 1) @include(if: $v)
+      }
+    `;
+    expectUsageErrors(query).toDeepEqual([
+      {
+        message:
+          'Variable "$v" of type "Boolean" used in position expecting type "Boolean!".',
+        locations: [
+          { line: 2, column: 15 },
+          { line: 3, column: 37 },
+        ],
+      },
+    ]);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      [],
+    );
+  });
+
+  it('Boolean => Boolean! in a directive with an argument default', () => {
+    const query = `
+      query Q($v: Boolean) {
+        required(n: 1) @withDefault(flag: $v)
+      }
+    `;
+    expectUsageErrors(query).toDeepEqual([
+      {
+        message:
+          'Variable "$v" of type "Boolean" used in position expecting type "Boolean!".',
+        locations: [
+          { line: 2, column: 15 },
+          { line: 3, column: 43 },
+        ],
+      },
+    ]);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      [],
+    );
+  });
+
+  it('Int! => Int! with a variable default is valid in both modes', () => {
+    const query = `
+      query Q($v: Int! = 3) {
+        required(n: $v)
+      }
+    `;
+    expectUsageErrors(query).toDeepEqual([]);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      [],
+    );
+  });
+
+  it('Int! => Int is valid in both modes', () => {
+    const query = `
+      query Q($v: Int!) {
+        nullable(n: $v)
+      }
+    `;
+    expectUsageErrors(query).toDeepEqual([]);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      [],
+    );
+  });
+
+  it('Int => Int is valid in both modes', () => {
+    const query = `
+      query Q($v: Int) {
+        nullable(n: $v)
+      }
+    `;
+    expectUsageErrors(query).toDeepEqual([]);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      [],
+    );
+  });
+
+  it('Int => Int! without defaults is invalid in both modes', () => {
+    const query = `
+      query Q($v: Int) {
+        required(n: $v)
+      }
+    `;
+    const expectedErrors = [
+      {
+        message:
+          'Variable "$v" of type "Int" used in position expecting type "Int!".',
+        locations: [
+          { line: 2, column: 15 },
+          { line: 3, column: 21 },
+        ],
+      },
+    ];
+    expectUsageErrors(query).toDeepEqual(expectedErrors);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      expectedErrors,
+    );
+  });
+
+  it('Int => Int! with only a null variable default is invalid in both modes', () => {
+    const query = `
+      query Q($v: Int = null) {
+        required(n: $v)
+      }
+    `;
+    const expectedErrors = [
+      {
+        message:
+          'Variable "$v" of type "Int" used in position expecting type "Int!".',
+        locations: [
+          { line: 2, column: 15 },
+          { line: 3, column: 21 },
+        ],
+      },
+    ];
+    expectUsageErrors(query).toDeepEqual(expectedErrors);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      expectedErrors,
+    );
+  });
+
+  it('Boolean => Int! remains invalid with defaults', () => {
+    const query = `
+      query Q($v: Boolean = true) {
+        defaulted(n: $v)
+      }
+    `;
+    const expectedErrors = [
+      {
+        message:
+          'Variable "$v" of type "Boolean" used in position expecting type "Int!".',
+        locations: [
+          { line: 2, column: 15 },
+          { line: 3, column: 22 },
+        ],
+      },
+    ];
+    expectUsageErrors(query).toDeepEqual(expectedErrors);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      expectedErrors,
+    );
+  });
+
+  it('Boolean! => Int! is invalid in both modes', () => {
+    const query = `
+      query Q($v: Boolean!) {
+        required(n: $v)
+      }
+    `;
+    const expectedErrors = [
+      {
+        message:
+          'Variable "$v" of type "Boolean!" used in position expecting type "Int!".',
+        locations: [
+          { line: 2, column: 15 },
+          { line: 3, column: 21 },
+        ],
+      },
+    ];
+    expectUsageErrors(query).toDeepEqual(expectedErrors);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      expectedErrors,
+    );
+  });
+
+  it('nullable variables with defaults remain invalid in OneOf input objects', () => {
+    const query = `
+      query Q($v: Int = 3) {
+        choice(input: { n: $v })
+      }
+    `;
+    const expectedErrors = [
+      {
+        message:
+          'Variable "$v" is of type "Int" but must be non-nullable to be used for OneOf Input Object "Choice".',
+        locations: [
+          { line: 2, column: 15 },
+          { line: 3, column: 28 },
+        ],
+      },
+    ];
+    expectUsageErrors(query).toDeepEqual(expectedErrors);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      expectedErrors,
+    );
+  });
+
+  it('non-null variables are allowed in OneOf input objects in both modes', () => {
+    const query = `
+      query Q($v: Int!) {
+        choice(input: { n: $v })
+      }
+    `;
+    expectUsageErrors(query).toDeepEqual([]);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      [],
+    );
+  });
+
+  it('Int => Int! with an argument default inside nested fragments', () => {
+    const query = `
+      query Q($v: Int) {
+        ...Outer
+      }
+
+      fragment Outer on Query {
+        ...Inner
+      }
+
+      fragment Inner on Query {
+        defaulted(n: $v)
+      }
+    `;
+    expectUsageErrors(query).toDeepEqual([
+      {
+        message:
+          'Variable "$v" of type "Int" used in position expecting type "Int!".',
+        locations: [
+          { line: 2, column: 15 },
+          { line: 11, column: 22 },
+        ],
+      },
+    ]);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      [],
+    );
+  });
+
+  it('Int => Int! with a local fragment variable default', () => {
+    const query = `
+      query Q {
+        ...F
+      }
+
+      fragment F($v: Int = 3) on Query {
+        required(n: $v)
+      }
+    `;
+    expectUsageErrors(query).toDeepEqual([
+      {
+        message:
+          'Variable "$v" of type "Int" used in position expecting type "Int!".',
+        locations: [
+          { line: 6, column: 18 },
+          { line: 7, column: 21 },
+        ],
+      },
+    ]);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      [],
+    );
+  });
+
+  it('Int => Int! in a fragment argument with a variable default', () => {
+    const query = `
+      query Q($v: Int = 3) {
+        ...F(n: $v)
+      }
+
+      fragment F($n: Int!) on Query {
+        required(n: $n)
+      }
+    `;
+    expectUsageErrors(query).toDeepEqual([
+      {
+        message:
+          'Variable "$v" of type "Int" used in position expecting type "Int!".',
+        locations: [
+          { line: 2, column: 15 },
+          { line: 3, column: 17 },
+        ],
+      },
+    ]);
+    expectUsageErrors(query, { allowLegacyVariableUsage: true }).toDeepEqual(
+      [],
+    );
   });
 });
