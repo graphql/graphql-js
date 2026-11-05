@@ -256,6 +256,40 @@ internal details in errors, and return errors in a format clients can interpret 
 
 For more information on how GraphQL.js formats and processes errors, see [Understanding GraphQL.js Errors](./graphql-errors/).
 
+### Disable error suggestions
+
+Error suggestions can be helpful during development, but may be unnecessary
+in production. Disabling them may reduce your API's attack surface.
+
+You can disable suggestions in production, or only for unauthenticated users:
+
+```js
+import { graphql } from 'graphql';
+
+const result = await graphql({
+  schema,
+  source,
+  hideSuggestions: isPublicRequest,
+});
+```
+
+The `hideSuggestions` option is available in v17, v16 (since v16.15.0), and
+v15 (since v15.11.0). Suggestions remain enabled by default.
+
+When calling `validate()` and `execute()` separately, pass the option to
+both. The options argument to `validate()` differs by release line:
+
+```js
+// v16 and v17: options are the fourth argument.
+validate(schema, document, undefined, { hideSuggestions: true });
+
+// v15: options are the fifth argument, after the optional TypeInfo instance.
+validate(schema, document, undefined, undefined, { hideSuggestions: true });
+```
+
+Custom scalar and resolver error messages are unaffected. Configure schema
+introspection separately; see [Control schema introspection](#control-schema-introspection).
+
 ### Control what errors are exposed
 
 By default, GraphQL.js includes full error messages and stack traces. In production, you may want

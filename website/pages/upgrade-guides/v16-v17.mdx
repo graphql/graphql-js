@@ -276,7 +276,7 @@ and bundler setup.
 
 **New stable API.** The high-level `graphql()` and `graphqlSync()` APIs still
 use the object-argument form from v16. In v17, that object can also carry
-parser options, validation options, execution options, `hideSuggestions`,
+parser options, validation options, execution options,
 `abortSignal`, hooks, and a custom harness.
 
 ```js
@@ -285,7 +285,6 @@ const result = await graphql({
   source,
   variableValues,
   operationName: 'Viewer',
-  hideSuggestions: true,
   abortSignal,
 });
 ```
@@ -824,10 +823,6 @@ custom type tracking, compose your visitor with `visitWithTypeInfo()`.
 + const errors = validate(schema, document, rules, options);
 ```
 
-**New stable API.** `hideSuggestions` removes "Did you mean ..." suggestion
-text from diagnostics. This is useful for public APIs that do not want to leak
-schema shape through error messages.
-
 **New stable API.** `KnownOperationTypesRule` validates that an operation's
 root type exists in the schema. For example, a `mutation` operation is invalid
 when the schema has no mutation root type.
@@ -1022,7 +1017,6 @@ These v16 APIs still work in v17, but are deprecated for removal in v18:
 
 ### Optional v17 runtime and experimental features
 
-- Use `hideSuggestions` when public diagnostics should omit schema suggestions.
 - Use `abortSignal` and `info.getAbortSignal()` when a host can propagate
   cancellation to downstream work.
 - Handle `AbortedGraphQLExecutionError` if your host needs access to partial

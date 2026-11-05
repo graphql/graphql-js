@@ -377,7 +377,8 @@ lowercase `Url` for compatibility, but the introspection field it requests is
 
 **Behavioral tightening.** `validate()` stops after 100 validation errors by
 default and appends an error that says validation was aborted. This prevents a
-single invalid operation from producing unbounded diagnostic work.
+single invalid operation from producing unbounded numbers of diagnostics. v15
+has no validation error-count limit by default (i.e. a default of `Infinity`).
 
 If a tool intentionally needs more errors, pass `maxErrors` in the validation
 options.
