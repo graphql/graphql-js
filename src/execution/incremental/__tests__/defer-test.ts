@@ -2046,7 +2046,7 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it('Reports one cached shared failure when a nested fragment is announced', async () => {
+  it('Reports all cached shared failures when a nested fragment is announced', async () => {
     const document = parse(`
       {
         hero {
@@ -2131,6 +2131,15 @@ describe('Execute: defer directive', () => {
                 ],
                 path: ['hero', 'first'],
               },
+              {
+                message:
+                  'Cannot return null for non-nullable field Hero.nonNullName.',
+                locations: [
+                  { line: 8, column: 13 },
+                  { line: 14, column: 15 },
+                ],
+                path: ['hero', 'second'],
+              },
             ],
           },
         ],
@@ -2139,7 +2148,7 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it('Replays cached failures in field order after independent child work succeeds', async () => {
+  it('Reports cached shared failures before starting private child work', async () => {
     const document = parse(`
       {
         hero {
@@ -2257,6 +2266,15 @@ describe('Execute: defer directive', () => {
                 ],
                 path: ['hero', 'first'],
               },
+              {
+                message:
+                  'Cannot return null for non-nullable field Hero.nonNullName.',
+                locations: [
+                  { line: 9, column: 15 },
+                  { line: 16, column: 13 },
+                ],
+                path: ['hero', 'second'],
+              },
             ],
           },
         ],
@@ -2268,8 +2286,309 @@ describe('Execute: defer directive', () => {
       value: undefined,
       done: true,
     });
-    expect(id.callCount).to.equal(1);
+    expect(id.callCount).to.equal(0);
     expect(nonNullName.callCount).to.equal(2);
+  });
+
+  it('Completes with known shared failures without waiting for another shared field', async () => {
+    const document = parse(`
+      {
+        hero {
+          ... @defer(label: "R1") {
+            first: nonNullName
+          }
+          ... @defer(label: "R2") {
+            second: nonNullName
+          }
+          ... @defer(label: "P") {
+            name
+            ... @defer(label: "C") {
+              first: nonNullName
+              second: nonNullName
+            }
+          }
+        }
+      }
+    `);
+    const { promise: namePromise, resolve: resolveName } =
+      promiseWithResolvers<string>();
+    const { promise: secondPromise, resolve: resolveSecond } =
+      promiseWithResolvers<null>();
+    const nonNullName = spyOn(
+      (_args: unknown, _context: unknown, info: GraphQLResolveInfo) =>
+        info.path.key === 'second' ? secondPromise : null,
+    );
+    const result = experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: { hero: { name: namePromise, nonNullName } },
+    });
+
+    assert('initialResult' in result);
+
+    expectJSON(result.initialResult).toDeepEqual({
+      data: { hero: {} },
+      pending: [
+        { id: '0', path: ['hero'], label: 'R1' },
+        { id: '1', path: ['hero'], label: 'R2' },
+        { id: '2', path: ['hero'], label: 'P' },
+      ],
+      hasNext: true,
+    });
+
+    const iterator = result.subsequentResults[Symbol.asyncIterator]();
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        completed: [
+          {
+            id: '0',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field Hero.nonNullName.',
+                locations: [
+                  { line: 5, column: 13 },
+                  { line: 13, column: 15 },
+                ],
+                path: ['hero', 'first'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    resolveName('Luke');
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        pending: [{ id: '3', path: ['hero'], label: 'C' }],
+        incremental: [{ id: '2', data: { name: 'Luke' } }],
+        completed: [
+          { id: '2' },
+          {
+            id: '3',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field Hero.nonNullName.',
+                locations: [
+                  { line: 5, column: 13 },
+                  { line: 13, column: 15 },
+                ],
+                path: ['hero', 'first'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    resolveSecond(null);
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        completed: [
+          {
+            id: '1',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field Hero.nonNullName.',
+                locations: [
+                  { line: 8, column: 13 },
+                  { line: 14, column: 15 },
+                ],
+                path: ['hero', 'second'],
+              },
+            ],
+          },
+        ],
+        hasNext: false,
+      },
+      done: false,
+    });
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
+    expect(nonNullName.callCount).to.equal(2);
+  });
+
+  it('Keeps nullable errors with partial data when completing a fragment with multiple shared failures', async () => {
+    const testSchema = buildSchema(`
+      type Query {
+        first: String!
+        second: String!
+        soft: String
+        slow: String
+        parent: String
+      }
+    `);
+    const document = parse(`
+      {
+        ... @defer(label: "R1") {
+          first
+        }
+        ... @defer(label: "R2") {
+          second
+        }
+        ... @defer(label: "N") {
+          soft
+          slow
+        }
+        ... @defer(label: "P") {
+          parent
+          ... @defer(label: "C") {
+            first
+            second
+            soft
+          }
+        }
+      }
+    `);
+    const { promise: parentPromise, resolve: resolveParent } =
+      promiseWithResolvers<string>();
+    const { promise: slowPromise, resolve: resolveSlow } =
+      promiseWithResolvers<string>();
+    const result = experimentalExecuteIncrementally({
+      schema: testSchema,
+      document,
+      rootValue: {
+        first: null,
+        second: null,
+        parent: parentPromise,
+        slow: slowPromise,
+        soft() {
+          throw new Error('nullable failure');
+        },
+      },
+    });
+
+    assert('initialResult' in result);
+
+    expectJSON(result.initialResult).toDeepEqual({
+      data: {},
+      pending: [
+        { id: '0', path: [], label: 'R1' },
+        { id: '1', path: [], label: 'R2' },
+        { id: '2', path: [], label: 'N' },
+        { id: '3', path: [], label: 'P' },
+      ],
+      hasNext: true,
+    });
+
+    const iterator = result.subsequentResults[Symbol.asyncIterator]();
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        completed: [
+          {
+            id: '0',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field Query.first.',
+                locations: [
+                  { line: 4, column: 11 },
+                  { line: 16, column: 13 },
+                ],
+                path: ['first'],
+              },
+            ],
+          },
+          {
+            id: '1',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field Query.second.',
+                locations: [
+                  { line: 7, column: 11 },
+                  { line: 17, column: 13 },
+                ],
+                path: ['second'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    resolveParent('parent');
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        pending: [{ id: '4', path: [], label: 'C' }],
+        incremental: [{ id: '3', data: { parent: 'parent' } }],
+        completed: [
+          { id: '3' },
+          {
+            id: '4',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field Query.first.',
+                locations: [
+                  { line: 4, column: 11 },
+                  { line: 16, column: 13 },
+                ],
+                path: ['first'],
+              },
+              {
+                message:
+                  'Cannot return null for non-nullable field Query.second.',
+                locations: [
+                  { line: 7, column: 11 },
+                  { line: 17, column: 13 },
+                ],
+                path: ['second'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    resolveSlow('slow');
+
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: {
+        incremental: [
+          {
+            id: '2',
+            data: { soft: null },
+            errors: [
+              {
+                message: 'nullable failure',
+                locations: [
+                  { line: 10, column: 11 },
+                  { line: 18, column: 13 },
+                ],
+                path: ['soft'],
+              },
+            ],
+          },
+          { id: '2', data: { slow: 'slow' } },
+        ],
+        completed: [{ id: '2' }],
+        hasNext: false,
+      },
+      done: false,
+    });
+    expectJSON(await iterator.next()).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
   });
 
   it('Discards deferred descendants discovered after their parent fails while retaining a live owner', async () => {

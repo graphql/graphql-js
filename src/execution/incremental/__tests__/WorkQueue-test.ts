@@ -252,7 +252,7 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group: child,
-          error: boom,
+          errors: [boom],
         },
         { kind: 'WORK_QUEUE_TERMINATION' },
       ],
@@ -262,7 +262,7 @@ describe('WorkQueue', () => {
     expect(childRanSpy.callCount).to.equal(1);
   });
 
-  it('replays the first cached shared failure when its group is announced', async () => {
+  it('reports all cached shared failures when its group is announced', async () => {
     const failingRoot: TestGroup = { parent: undefined };
     const secondRoot: TestGroup = { parent: undefined };
     const otherRoot: TestGroup = { parent: undefined };
@@ -294,12 +294,12 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group: failingRoot,
-          error,
+          errors: [error],
         },
         {
           kind: 'GROUP_FAILURE',
           group: secondRoot,
-          error: secondError,
+          errors: [secondError],
         },
         {
           kind: 'GROUP_VALUES',
@@ -315,14 +315,14 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group: child,
-          error,
+          errors: [error, secondError],
         },
         { kind: 'WORK_QUEUE_TERMINATION' },
       ],
     });
   });
 
-  it('replays cached failures in task order when earlier child work succeeds', async () => {
+  it('reports cached shared failures in task order', async () => {
     const firstRoot: TestGroup = {};
     const secondRoot: TestGroup = {};
     const parent: TestGroup = {};
@@ -358,12 +358,12 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group: secondRoot,
-          error: secondError,
+          errors: [secondError],
         },
         {
           kind: 'GROUP_FAILURE',
           group: firstRoot,
-          error: firstError,
+          errors: [firstError],
         },
         {
           kind: 'GROUP_VALUES',
@@ -379,13 +379,62 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group: child,
-          error: firstError,
+          errors: [firstError, secondError],
         },
         { kind: 'WORK_QUEUE_TERMINATION' },
       ],
     });
 
     expect(firstTaskSpy.callCount).to.equal(1);
+  });
+
+  it('reports cached failures once when their task failure events are still queued', async () => {
+    const parent: TestGroup = {};
+    const firstRoot: TestGroup = {};
+    const secondRoot: TestGroup = {};
+    const child: TestGroup = { parent };
+    const firstError = new Error('first shared failure');
+    const secondError = new Error('second shared failure');
+    const privateTask = spyOn(() => {
+      throw new Error('private work should not start');
+    });
+
+    const workQueue = await collectWorkRun({
+      groups: [parent, firstRoot, secondRoot, child],
+      tasks: [
+        makeTask([parent], 'parent'),
+        makeTask([firstRoot, child], () => {
+          throw firstError;
+        }),
+        makeTask([secondRoot, child], () => {
+          throw secondError;
+        }),
+        makeTask([child], privateTask),
+      ],
+    });
+
+    expect(workQueue).to.deep.equal({
+      initialGroups: [parent, firstRoot, secondRoot],
+      initialStreams: [],
+      events: [
+        { kind: 'GROUP_VALUES', group: parent, values: ['parent'] },
+        {
+          kind: 'GROUP_SUCCESS',
+          group: parent,
+          newGroups: [child],
+          newStreams: [],
+        },
+        { kind: 'GROUP_FAILURE', group: firstRoot, errors: [firstError] },
+        { kind: 'GROUP_FAILURE', group: secondRoot, errors: [secondError] },
+        {
+          kind: 'GROUP_FAILURE',
+          group: child,
+          errors: [firstError, secondError],
+        },
+        { kind: 'WORK_QUEUE_TERMINATION' },
+      ],
+    });
+    expect(privateTask.callCount).to.equal(0);
   });
 
   it('discards children discovered after their parent fails', async () => {
@@ -399,6 +448,7 @@ describe('WorkQueue', () => {
 
     const error = new Error('shared failure');
     const otherError = new Error('other failure');
+    const childError = new Error('additional shared failure');
 
     const workQueue = await collectWorkRun({
       groups: [root, otherRoot, parent, child],
@@ -413,7 +463,7 @@ describe('WorkQueue', () => {
               throw otherError;
             }),
             makeTask([otherRoot, lateChild, lateGrandchild, child], () => {
-              throw new Error('cancelled failure');
+              throw childError;
             }),
           ],
         }),
@@ -432,12 +482,12 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group: root,
-          error,
+          errors: [error],
         },
         {
           kind: 'GROUP_FAILURE',
           group: otherRoot,
-          error: otherError,
+          errors: [otherError],
         },
         {
           kind: 'GROUP_VALUES',
@@ -453,7 +503,7 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group: child,
-          error,
+          errors: [error, childError],
         },
         { kind: 'WORK_QUEUE_TERMINATION' },
       ],
@@ -494,7 +544,7 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group: root,
-          error,
+          errors: [error],
         },
         {
           kind: 'GROUP_VALUES',
@@ -510,7 +560,7 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group: child,
-          error,
+          errors: [error],
         },
         { kind: 'WORK_QUEUE_TERMINATION' },
       ],
@@ -546,7 +596,7 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group: root,
-          error,
+          errors: [error],
         },
         {
           kind: 'GROUP_VALUES',
@@ -922,7 +972,7 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group: root,
-          error,
+          errors: [error],
         },
         {
           kind: 'GROUP_VALUES',
@@ -1067,7 +1117,7 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group,
-          error: new Error('fail early'),
+          errors: [new Error('fail early')],
         },
         { kind: 'WORK_QUEUE_TERMINATION' },
       ],
@@ -1250,7 +1300,7 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group,
-          error: boom,
+          errors: [boom],
         },
         { kind: 'WORK_QUEUE_TERMINATION' },
       ],
@@ -1286,7 +1336,7 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group: groupA,
-          error: boom,
+          errors: [boom],
         },
         {
           kind: 'GROUP_VALUES',
@@ -1592,7 +1642,7 @@ describe('WorkQueue', () => {
         {
           kind: 'GROUP_FAILURE',
           group,
-          error: primedFailure,
+          errors: [primedFailure],
         },
         { kind: 'WORK_QUEUE_TERMINATION' },
       ],
