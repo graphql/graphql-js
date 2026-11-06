@@ -161,6 +161,25 @@ export interface ParseOptions {
    * @internal
    */
   lexer?: LexerInterface | undefined;
+
+  /**
+   * EXPERIMENTAL:
+   *
+   * If enabled, the parser accepts an empty set of braces as a fields
+   * definition, an input fields definition, or a union's member types, as
+   * proposed in
+   * https://github.com/graphql/graphql-spec/pull/1228,
+   * https://github.com/graphql/graphql-spec/pull/1229 and
+   * https://github.com/graphql/graphql-spec/pull/1249
+   *
+   * ```graphql
+   * type Empty {}
+   * interface Empty {}
+   * input Empty {}
+   * union Empty = {}
+   * ```
+   */
+  experimentalAllowEmptyTypes?: boolean | undefined;
 }
 
 /**
@@ -1204,9 +1223,25 @@ export class Parser {
    * FieldsDefinition : { FieldDefinition+ }
    * ```
    *
+   * With `experimentalAllowEmptyTypes`:
+   *
+   * ```
+   * FieldsDefinition : { FieldDefinition* }
+   * ```
+   *
    * @internal
    */
   parseFieldsDefinition(): Array<FieldDefinitionNode> | undefined {
+    if (
+      this._options.experimentalAllowEmptyTypes === true &&
+      this.peek(TokenKind.BRACE_L)
+    ) {
+      return this.any(
+        TokenKind.BRACE_L,
+        this.parseFieldDefinition,
+        TokenKind.BRACE_R,
+      );
+    }
     return this.optionalMany(
       TokenKind.BRACE_L,
       this.parseFieldDefinition,
@@ -1329,12 +1364,26 @@ export class Parser {
    *   - = `|`? NamedType
    *   - UnionMemberTypes | NamedType
    *
+   * With `experimentalAllowEmptyTypes`:
+   *
+   * ```
+   * UnionMemberTypes : = { }
+   * ```
+   *
    * @internal
    */
   parseUnionMemberTypes(): Array<NamedTypeNode> | undefined {
-    return this.expectOptionalToken(TokenKind.EQUALS)
-      ? this.delimitedMany(TokenKind.PIPE, this.parseNamedType)
-      : undefined;
+    if (!this.expectOptionalToken(TokenKind.EQUALS)) {
+      return undefined;
+    }
+    if (
+      this._options.experimentalAllowEmptyTypes === true &&
+      this.expectOptionalToken(TokenKind.BRACE_L)
+    ) {
+      this.expectToken(TokenKind.BRACE_R);
+      return [];
+    }
+    return this.delimitedMany(TokenKind.PIPE, this.parseNamedType);
   }
 
   /**
@@ -1441,9 +1490,25 @@ export class Parser {
    * InputFieldsDefinition : { InputValueDefinition+ }
    * ```
    *
+   * With `experimentalAllowEmptyTypes`:
+   *
+   * ```
+   * InputFieldsDefinition : { InputValueDefinition* }
+   * ```
+   *
    * @internal
    */
   parseInputFieldsDefinition(): Array<InputValueDefinitionNode> | undefined {
+    if (
+      this._options.experimentalAllowEmptyTypes === true &&
+      this.peek(TokenKind.BRACE_L)
+    ) {
+      return this.any(
+        TokenKind.BRACE_L,
+        this.parseInputValueDef,
+        TokenKind.BRACE_R,
+      );
+    }
     return this.optionalMany(
       TokenKind.BRACE_L,
       this.parseInputValueDef,

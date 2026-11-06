@@ -72,7 +72,7 @@ describe('Type System: build schema from introspection', () => {
         empty: Empty
       }
 
-      type Empty
+      type Empty {}
     `;
     const serverSchema = buildSchema(sdl, {
       experimentalAllowEmptyTypes: true,
@@ -99,7 +99,7 @@ describe('Type System: build schema from introspection', () => {
         empty: Empty
       }
 
-      interface Empty
+      interface Empty {}
 
       type Impl implements Empty {
         field: String
@@ -132,7 +132,7 @@ describe('Type System: build schema from introspection', () => {
         field(arg: Empty): String
       }
 
-      input Empty
+      input Empty {}
     `;
     const serverSchema = buildSchema(sdl, {
       experimentalAllowEmptyTypes: true,
