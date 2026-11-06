@@ -143,6 +143,8 @@ export function buildClientSchema(
     types: [...typeMap.values()],
     directives,
     assumeValid: options?.assumeValid,
+    experimentalAllowEmptyInputObjectTypes:
+      options?.experimentalAllowEmptyInputObjectTypes,
   });
 
   // Given a type reference in introspection, return the GraphQLType instance.
