@@ -188,6 +188,19 @@ function validateRootTypes(context: SchemaValidationContext): void {
             (rootType as any).astNode,
         );
       } else {
+        // An empty Query root type is allowed, so that a schema may support
+        // only mutations, but empty Mutation and Subscription root types are
+        // not. Without the flag, the Object type rule already covers this.
+        if (
+          operationType !== OperationTypeNode.QUERY &&
+          schema.experimentalAllowEmptyTypes &&
+          Object.keys(rootType.getFields()).length === 0
+        ) {
+          context.reportError(
+            `${capitalize(operationType)} root type must define one or more fields.`,
+            getOperationTypeNode(schema, operationType) ?? rootType.astNode,
+          );
+        }
         rootTypesMap.add(rootType, operationType);
       }
     }
@@ -204,6 +217,31 @@ function validateRootTypes(context: SchemaValidationContext): void {
       );
     }
   }
+}
+
+// A type defined in SDL is incomplete when neither its definition nor any of
+// its extensions provides a set of fields (or member types), for example
+// `type Foo` without `{}`. Types built without SDL are never incomplete.
+function isIncomplete(
+  type:
+    | GraphQLObjectType
+    | GraphQLInterfaceType
+    | GraphQLUnionType
+    | GraphQLInputObjectType,
+): boolean {
+  const nodes = [type.astNode, ...type.extensionASTNodes].filter(
+    (node) => node != null,
+  );
+  return (
+    nodes.length > 0 &&
+    nodes.every(
+      (node) =>
+        (node.kind === Kind.UNION_TYPE_DEFINITION ||
+        node.kind === Kind.UNION_TYPE_EXTENSION
+          ? node.types
+          : node.fields) === undefined,
+    )
+  );
 }
 
 function getOperationTypeNode(
@@ -476,12 +514,21 @@ function validateFields(
 ): void {
   const fields = Object.values(type.getFields());
 
-  // Objects and Interfaces both must define one or more fields.
+  // Objects and Interfaces both must define one or more fields, unless empty
+  // types are explicitly allowed. An empty type must still be written with
+  // braces, since a bare definition with no extension is incomplete.
   if (fields.length === 0) {
-    context.reportError(`Type ${type} must define one or more fields.`, [
-      type.astNode,
-      ...type.extensionASTNodes,
-    ]);
+    if (!context.schema.experimentalAllowEmptyTypes) {
+      context.reportError(`Type ${type} must define one or more fields.`, [
+        type.astNode,
+        ...type.extensionASTNodes,
+      ]);
+    } else if (isIncomplete(type)) {
+      context.reportError(
+        `Type ${type} must define a set of fields, use "{}" for an empty set.`,
+        [type.astNode, ...type.extensionASTNodes],
+      );
+    }
   }
 
   for (const field of fields) {
@@ -676,10 +723,17 @@ function validateUnionMembers(
   const memberTypes = union.getTypes();
 
   if (memberTypes.length === 0) {
-    context.reportError(
-      `Union type ${union} must define one or more member types.`,
-      [union.astNode, ...union.extensionASTNodes],
-    );
+    if (!context.schema.experimentalAllowEmptyTypes) {
+      context.reportError(
+        `Union type ${union} must define one or more member types.`,
+        [union.astNode, ...union.extensionASTNodes],
+      );
+    } else if (isIncomplete(union)) {
+      context.reportError(
+        `Union type ${union} must define a set of member types, use "= {}" for an empty set.`,
+        [union.astNode, ...union.extensionASTNodes],
+      );
+    }
   }
 
   const includedTypeNames = new Set<string>();
@@ -727,11 +781,21 @@ function validateInputFields(
 ): void {
   const fields = Object.values(inputObj.getFields());
 
+  // Input Objects must define one or more fields, unless empty input object
+  // types are explicitly allowed. OneOf Input Objects must always define one or
+  // more fields, because an empty OneOf Input Object has no valid value.
   if (fields.length === 0) {
-    context.reportError(
-      `Input Object type ${inputObj} must define one or more fields.`,
-      [inputObj.astNode, ...inputObj.extensionASTNodes],
-    );
+    if (!context.schema.experimentalAllowEmptyTypes || inputObj.isOneOf) {
+      context.reportError(
+        `Input Object type ${inputObj} must define one or more fields.`,
+        [inputObj.astNode, ...inputObj.extensionASTNodes],
+      );
+    } else if (isIncomplete(inputObj)) {
+      context.reportError(
+        `Input Object type ${inputObj} must define a set of fields, use "{}" for an empty set.`,
+        [inputObj.astNode, ...inputObj.extensionASTNodes],
+      );
+    }
   }
 
   // Ensure the input fields are valid
