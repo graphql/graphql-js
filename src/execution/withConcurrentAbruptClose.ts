@@ -1,4 +1,4 @@
-import { isPromise } from '../jsutils/isPromise.ts';
+import { isPromiseLike } from '../jsutils/isPromise.ts';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
 
 /* node:coverage ignore next 2 */
@@ -71,8 +71,8 @@ function ignoreErrors(
 ): PromiseOrValue<unknown> {
   try {
     const result = fn();
-    if (isPromise(result)) {
-      return result.catch(() => {
+    if (isPromiseLike(result)) {
+      return result.then(undefined, () => {
         // ignore error
       });
     }

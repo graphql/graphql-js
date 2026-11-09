@@ -4,7 +4,7 @@ import { inspect } from '../jsutils/inspect.ts';
 import { invariant } from '../jsutils/invariant.ts';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.ts';
 import { isIterableObject } from '../jsutils/isIterableObject.ts';
-import { isPromise, isPromiseLike } from '../jsutils/isPromise.ts';
+import { isPromiseLike } from '../jsutils/isPromise.ts';
 import { memoize2 } from '../jsutils/memoize2.ts';
 import { memoize3 } from '../jsutils/memoize3.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
@@ -341,7 +341,7 @@ export class Executor<
         newDeferUsages,
       );
 
-      if (isPromise(result)) {
+      if (isPromiseLike(result)) {
         const promise = result.then(
           (data) => {
             maybeRemoveExternalAbortListener();
@@ -508,7 +508,7 @@ export class Executor<
         if (result === undefined) {
           return results;
         }
-        if (isPromise(result)) {
+        if (isPromiseLike(result)) {
           return result.then((resolved) => {
             results[responseName] = resolved;
             tracingChannel = shouldTrace(resolveChannel)
@@ -557,7 +557,7 @@ export class Executor<
 
         if (result !== undefined) {
           results[responseName] = result;
-          if (isPromise(result)) {
+          if (isPromiseLike(result)) {
             containsPromise = true;
           }
         }
@@ -670,7 +670,7 @@ export class Executor<
         positionContext,
       );
 
-      if (isPromise(completed)) {
+      if (isPromiseLike(completed)) {
         // Note: we don't rely on a `catch` method, but we do expect "thenable"
         // to take a second callback for the error case.
         return completed.then(undefined, (rawError: unknown) => {
@@ -871,7 +871,7 @@ export class Executor<
         positionContext,
       );
 
-      if (isPromise(completed)) {
+      if (isPromiseLike(completed)) {
         completed = await completed;
       }
       return completed;
@@ -1174,7 +1174,7 @@ export class Executor<
         positionContext,
       );
 
-      if (isPromise(completedItem)) {
+      if (isPromiseLike(completedItem)) {
         // Note: we don't rely on a `catch` method, but we do expect "thenable"
         // to take a second callback for the error case.
         completedResults.push(
@@ -1220,7 +1220,7 @@ export class Executor<
         resolved,
         positionContext,
       );
-      if (isPromise(completed)) {
+      if (isPromiseLike(completed)) {
         completed = await completed;
       }
       return completed;
