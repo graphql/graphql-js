@@ -2,7 +2,7 @@ import { inspect } from "../jsutils/inspect.mjs";
 import { invariant } from "../jsutils/invariant.mjs";
 import { isAsyncIterable } from "../jsutils/isAsyncIterable.mjs";
 import { isIterableObject } from "../jsutils/isIterableObject.mjs";
-import { isPromise, isPromiseLike } from "../jsutils/isPromise.mjs";
+import { isPromiseLike } from "../jsutils/isPromise.mjs";
 import { memoize2 } from "../jsutils/memoize2.mjs";
 import { memoize3 } from "../jsutils/memoize3.mjs";
 import { addPath, pathToArray } from "../jsutils/Path.mjs";
@@ -114,7 +114,7 @@ export class Executor {
             }
             const { groupedFieldSet, newDeferUsages } = collectFields(schema, fragments, variableValues, rootType, selectionSet, hideSuggestions);
             result = this.executeCollectedRootFields(rootType, rootValue, groupedFieldSet, serially ?? operationType === OperationTypeNode.MUTATION, newDeferUsages);
-            if (isPromise(result)) {
+            if (isPromiseLike(result)) {
                 const promise = result.then((data) => {
                     maybeRemoveExternalAbortListener();
                     return this.buildResponse(data);
@@ -202,7 +202,7 @@ export class Executor {
             if (result === undefined) {
                 return results;
             }
-            if (isPromise(result)) {
+            if (isPromiseLike(result)) {
                 return result.then((resolved) => {
                     results[responseName] = resolved;
                     tracingChannel = shouldTrace(resolveChannel)
@@ -227,7 +227,7 @@ export class Executor {
                 const result = this.executeField(parentType, sourceValue, fieldDetailsList, fieldPath, positionContext, tracingChannel);
                 if (result !== undefined) {
                     results[responseName] = result;
-                    if (isPromise(result)) {
+                    if (isPromiseLike(result)) {
                         containsPromise = true;
                     }
                 }
@@ -268,7 +268,7 @@ export class Executor {
                 return this.completePromisedValue(returnType, fieldDetailsList, info, path, result, positionContext);
             }
             const completed = this.completeValue(returnType, fieldDetailsList, info, path, result, positionContext);
-            if (isPromise(completed)) {
+            if (isPromiseLike(completed)) {
                 return completed.then(undefined, (rawError) => {
                     this.handleFieldError(rawError, returnType, fieldDetailsList, path);
                     return null;
@@ -339,7 +339,7 @@ export class Executor {
                 throw new Error('Aborted!');
             }
             let completed = this.completeValue(returnType, fieldDetailsList, info, path, resolved, positionContext);
-            if (isPromise(completed)) {
+            if (isPromiseLike(completed)) {
                 completed = await completed;
             }
             return completed;
@@ -462,7 +462,7 @@ export class Executor {
     completeListItemValue(item, completedResults, itemType, fieldDetailsList, info, itemPath, positionContext) {
         try {
             const completedItem = this.completeValue(itemType, fieldDetailsList, info, itemPath, item, positionContext);
-            if (isPromise(completedItem)) {
+            if (isPromiseLike(completedItem)) {
                 completedResults.push(completedItem.then(undefined, (rawError) => {
                     this.handleFieldError(rawError, itemType, fieldDetailsList, itemPath);
                     return null;
@@ -484,7 +484,7 @@ export class Executor {
                 throw new Error('Aborted!');
             }
             let completed = this.completeValue(itemType, fieldDetailsList, info, itemPath, resolved, positionContext);
-            if (isPromise(completed)) {
+            if (isPromiseLike(completed)) {
                 completed = await completed;
             }
             return completed;

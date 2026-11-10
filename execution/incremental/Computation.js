@@ -13,7 +13,7 @@ class Computation {
         }
         try {
             const result = this._fn();
-            if ((0, isPromise_ts_1.isPromise)(result)) {
+            if ((0, isPromise_ts_1.isPromiseLike)(result)) {
                 this._maybePromise = { status: 'pending', promise: result };
                 result.then((value) => {
                     this._maybePromise = { status: 'fulfilled', value };

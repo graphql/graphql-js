@@ -25,7 +25,7 @@ async function callIgnoringErrors(fn) {
 async function* mapAsyncIterableImpl(iterable, mapFn) {
     for await (const value of iterable) {
         const result = mapFn(value);
-        if ((0, isPromise_ts_1.isPromise)(result)) {
+        if ((0, isPromise_ts_1.isPromiseLike)(result)) {
             yield await result;
             continue;
         }

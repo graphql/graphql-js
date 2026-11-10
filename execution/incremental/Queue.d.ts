@@ -1,6 +1,6 @@
 import type { PromiseOrValue } from "../../jsutils/PromiseOrValue.js";
 interface QueueExecutorOptions<T> {
-    push: (item: PromiseOrValue<T>) => PromiseOrValue<void>;
+    push: (item: PromiseLike<T> | T) => PromiseOrValue<void>;
     stop: (reason?: unknown) => PromiseOrValue<void>;
     onStop: (cleanup: (reason?: unknown) => PromiseOrValue<void>) => void;
     started: Promise<void>;

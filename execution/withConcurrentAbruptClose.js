@@ -47,8 +47,8 @@ function withConcurrentAbruptClose(generator, beforeReturn, beforeThrow = before
 function ignoreErrors(fn) {
     try {
         const result = fn();
-        if ((0, isPromise_ts_1.isPromise)(result)) {
-            return result.catch(() => {
+        if ((0, isPromise_ts_1.isPromiseLike)(result)) {
+            return result.then(undefined, () => {
             });
         }
     }

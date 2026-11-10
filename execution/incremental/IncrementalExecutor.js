@@ -35,12 +35,12 @@ class IncrementalExecutor extends Executor_ts_1.Executor {
         super.abort(reason);
         for (const task of this.tasks) {
             const aborted = task.computation.abort(reason);
-            if (!(!(0, isPromise_ts_1.isPromise)(aborted)))
+            if (!(!(0, isPromise_ts_1.isPromiseLike)(aborted)))
                 (0, invariant_ts_1.invariant)(false);
         }
         for (const stream of this.streams) {
             const aborted = stream.queue.abort(reason);
-            if (!(!(0, isPromise_ts_1.isPromise)(aborted)))
+            if (!(!(0, isPromise_ts_1.isPromiseLike)(aborted)))
                 (0, invariant_ts_1.invariant)(false);
         }
     }
@@ -157,7 +157,7 @@ class IncrementalExecutor extends Executor_ts_1.Executor {
         for (const task of tasks) {
             if (collectedErrors.hasNulledPosition(task.path)) {
                 const aborted = task.computation.abort(cancellationReason);
-                if (!(!(0, isPromise_ts_1.isPromise)(aborted)))
+                if (!(!(0, isPromise_ts_1.isPromiseLike)(aborted)))
                     (0, invariant_ts_1.invariant)(false);
             }
             else {
@@ -168,7 +168,7 @@ class IncrementalExecutor extends Executor_ts_1.Executor {
         for (const stream of streams) {
             if (collectedErrors.hasNulledPosition(stream.path)) {
                 const aborted = stream.queue.abort(cancellationReason);
-                if (!(!(0, isPromise_ts_1.isPromise)(aborted)))
+                if (!(!(0, isPromise_ts_1.isPromiseLike)(aborted)))
                     (0, invariant_ts_1.invariant)(false);
             }
             else {
@@ -272,12 +272,16 @@ class IncrementalExecutor extends Executor_ts_1.Executor {
                 const itemPath = (0, Path_ts_1.addPath)(streamPath, index, undefined);
                 const executor = createSubExecutor();
                 let streamItemResult = executor.completeStreamItem(itemPath, iteration.value, fieldDetailsList, info, itemType);
-                if ((0, isPromise_ts_1.isPromise)(streamItemResult)) {
+                if ((0, isPromise_ts_1.isPromiseLike)(streamItemResult)) {
                     if (enableEarlyExecution) {
                         const abortStreamItem = (reason) => executor.abort(reason);
                         abortStreamItems.add(abortStreamItem);
-                        streamItemResult = streamItemResult.finally(() => {
+                        streamItemResult = streamItemResult.then((resolved) => {
                             abortStreamItems.delete(abortStreamItem);
+                            return resolved;
+                        }, (error) => {
+                            abortStreamItems.delete(abortStreamItem);
+                            throw error;
                         });
                     }
                     else {
@@ -325,7 +329,7 @@ class IncrementalExecutor extends Executor_ts_1.Executor {
             this.abort();
             throw error;
         }
-        if ((0, isPromise_ts_1.isPromise)(result)) {
+        if ((0, isPromise_ts_1.isPromiseLike)(result)) {
             return result
                 .then((resolved) => this.buildStreamItemResult(resolved), (rawError) => {
                 this.handleFieldError(rawError, itemType, fieldDetailsList, itemPath);

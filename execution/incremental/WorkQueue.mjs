@@ -1,5 +1,5 @@
 import { invariant } from "../../jsutils/invariant.mjs";
-import { isPromise } from "../../jsutils/isPromise.mjs";
+import { isPromise, isPromiseLike } from "../../jsutils/isPromise.mjs";
 import { Queue } from "./Queue.mjs";
 export function createWorkQueue(initialWork) {
     const rootGroups = new Set();
@@ -59,7 +59,7 @@ export function createWorkQueue(initialWork) {
     }
     function cancelTask(task, reason, cancelPromises) {
         const abortResult = task.computation.abort(reason);
-        if (isPromise(abortResult)) {
+        if (isPromiseLike(abortResult)) {
             cancelPromises.push(abortResult);
         }
         const taskNode = taskNodes.get(task);
@@ -201,7 +201,7 @@ export function createWorkQueue(initialWork) {
             if (alreadyStarted) {
                 return;
             }
-            if (isPromise(result)) {
+            if (isPromiseLike(result)) {
                 result.then((resolved) => {
                     pushGraphEvent({ kind: 'TASK_SUCCESS', task, result: resolved });
                 }, (error) => {

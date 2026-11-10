@@ -1,5 +1,5 @@
 import { invariant } from "../../jsutils/invariant.mjs";
-import { isPromise } from "../../jsutils/isPromise.mjs";
+import { isPromise, isPromiseLike } from "../../jsutils/isPromise.mjs";
 import { promiseWithResolvers } from "../../jsutils/promiseWithResolvers.mjs";
 import { withConcurrentAbruptClose } from "../withConcurrentAbruptClose.mjs";
 export class Queue {
@@ -21,8 +21,8 @@ export class Queue {
                 onStop: this._onStop.bind(this),
                 started,
             });
-            if (isPromise(result)) {
-                result.catch(this._stop.bind(this));
+            if (isPromiseLike(result)) {
+                result.then(undefined, this._stop.bind(this));
             }
         }
         catch (error) {
@@ -119,7 +119,7 @@ export class Queue {
         const cleanupPromises = this._stopCleanupCallbacks.flatMap((cleanupCallback) => {
             try {
                 const result = cleanupCallback(reason);
-                return isPromise(result) ? [result] : [];
+                return isPromiseLike(result) ? [result] : [];
             }
             catch {
                 return [];
@@ -141,7 +141,7 @@ export class Queue {
         let nextBatch;
         while ((nextBatch = await this._waitForNextBatch())) {
             let reduced = reducer(nextBatch);
-            if (isPromise(reduced)) {
+            if (isPromiseLike(reduced)) {
                 reduced = await reduced;
             }
             if (reduced === undefined) {
@@ -161,7 +161,7 @@ export class Queue {
             return;
         }
         const maybePushPromise = this._reserve();
-        if (isPromise(item)) {
+        if (isPromiseLike(item)) {
             const entry = { kind: 'item' };
             this._entries.push(entry);
             item.then((resolved) => {

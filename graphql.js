@@ -11,7 +11,7 @@ function graphql(args) {
 }
 function graphqlSync(args) {
     const result = graphqlImpl(args);
-    if ((0, isPromise_ts_1.isPromise)(result)) {
+    if ((0, isPromise_ts_1.isPromiseLike)(result)) {
         throw new Error('GraphQL execution failed to complete synchronously.');
     }
     return result;
@@ -30,14 +30,14 @@ function graphqlImpl(args) {
     catch (syntaxError) {
         return { errors: [(0, ensureGraphQLError_ts_1.ensureGraphQLError)(syntaxError)] };
     }
-    if ((0, isPromise_ts_1.isPromise)(document)) {
+    if ((0, isPromise_ts_1.isPromiseLike)(document)) {
         return document.then((resolvedDocument) => validateAndExecute(harness, args, schema, resolvedDocument), (syntaxError) => ({ errors: [(0, ensureGraphQLError_ts_1.ensureGraphQLError)(syntaxError)] }));
     }
     return validateAndExecute(harness, args, schema, document);
 }
 function validateAndExecute(harness, args, schema, document) {
     const validationResult = harness.validate(schema, document, args.rules, args);
-    if ((0, isPromise_ts_1.isPromise)(validationResult)) {
+    if ((0, isPromise_ts_1.isPromiseLike)(validationResult)) {
         return validationResult.then((resolvedValidationResult) => checkValidationAndExecute(harness, args, resolvedValidationResult, document));
     }
     return checkValidationAndExecute(harness, args, validationResult, document);

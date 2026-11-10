@@ -1,8 +1,8 @@
-import { isPromise } from "./isPromise.mjs";
+import { isPromiseLike } from "./isPromise.mjs";
 export function promiseReduce(values, callbackFn, initialValue) {
     let accumulator = initialValue;
     for (const value of values) {
-        accumulator = isPromise(accumulator)
+        accumulator = isPromiseLike(accumulator)
             ? accumulator.then((resolved) => callbackFn(resolved, value))
             : callbackFn(accumulator, value);
     }

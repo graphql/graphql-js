@@ -1,4 +1,4 @@
-import { isPromise } from "../jsutils/isPromise.mjs";
+import { isPromiseLike } from "../jsutils/isPromise.mjs";
 import { withConcurrentAbruptClose } from "./withConcurrentAbruptClose.mjs";
 export function mapAsyncIterable(iterable, callback) {
     const iterator = iterable[Symbol.asyncIterator]();
@@ -22,7 +22,7 @@ async function callIgnoringErrors(fn) {
 async function* mapAsyncIterableImpl(iterable, mapFn) {
     for await (const value of iterable) {
         const result = mapFn(value);
-        if (isPromise(result)) {
+        if (isPromiseLike(result)) {
             yield await result;
             continue;
         }

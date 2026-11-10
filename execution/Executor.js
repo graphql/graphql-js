@@ -117,7 +117,7 @@ class Executor {
             }
             const { groupedFieldSet, newDeferUsages } = (0, collectFields_ts_1.collectFields)(schema, fragments, variableValues, rootType, selectionSet, hideSuggestions);
             result = this.executeCollectedRootFields(rootType, rootValue, groupedFieldSet, serially ?? operationType === ast_ts_1.OperationTypeNode.MUTATION, newDeferUsages);
-            if ((0, isPromise_ts_1.isPromise)(result)) {
+            if ((0, isPromise_ts_1.isPromiseLike)(result)) {
                 const promise = result.then((data) => {
                     maybeRemoveExternalAbortListener();
                     return this.buildResponse(data);
@@ -205,7 +205,7 @@ class Executor {
             if (result === undefined) {
                 return results;
             }
-            if ((0, isPromise_ts_1.isPromise)(result)) {
+            if ((0, isPromise_ts_1.isPromiseLike)(result)) {
                 return result.then((resolved) => {
                     results[responseName] = resolved;
                     tracingChannel = (0, diagnostics_ts_1.shouldTrace)(diagnostics_ts_1.resolveChannel)
@@ -230,7 +230,7 @@ class Executor {
                 const result = this.executeField(parentType, sourceValue, fieldDetailsList, fieldPath, positionContext, tracingChannel);
                 if (result !== undefined) {
                     results[responseName] = result;
-                    if ((0, isPromise_ts_1.isPromise)(result)) {
+                    if ((0, isPromise_ts_1.isPromiseLike)(result)) {
                         containsPromise = true;
                     }
                 }
@@ -271,7 +271,7 @@ class Executor {
                 return this.completePromisedValue(returnType, fieldDetailsList, info, path, result, positionContext);
             }
             const completed = this.completeValue(returnType, fieldDetailsList, info, path, result, positionContext);
-            if ((0, isPromise_ts_1.isPromise)(completed)) {
+            if ((0, isPromise_ts_1.isPromiseLike)(completed)) {
                 return completed.then(undefined, (rawError) => {
                     this.handleFieldError(rawError, returnType, fieldDetailsList, path);
                     return null;
@@ -342,7 +342,7 @@ class Executor {
                 throw new Error('Aborted!');
             }
             let completed = this.completeValue(returnType, fieldDetailsList, info, path, resolved, positionContext);
-            if ((0, isPromise_ts_1.isPromise)(completed)) {
+            if ((0, isPromise_ts_1.isPromiseLike)(completed)) {
                 completed = await completed;
             }
             return completed;
@@ -465,7 +465,7 @@ class Executor {
     completeListItemValue(item, completedResults, itemType, fieldDetailsList, info, itemPath, positionContext) {
         try {
             const completedItem = this.completeValue(itemType, fieldDetailsList, info, itemPath, item, positionContext);
-            if ((0, isPromise_ts_1.isPromise)(completedItem)) {
+            if ((0, isPromise_ts_1.isPromiseLike)(completedItem)) {
                 completedResults.push(completedItem.then(undefined, (rawError) => {
                     this.handleFieldError(rawError, itemType, fieldDetailsList, itemPath);
                     return null;
@@ -487,7 +487,7 @@ class Executor {
                 throw new Error('Aborted!');
             }
             let completed = this.completeValue(itemType, fieldDetailsList, info, itemPath, resolved, positionContext);
-            if ((0, isPromise_ts_1.isPromise)(completed)) {
+            if ((0, isPromise_ts_1.isPromiseLike)(completed)) {
                 completed = await completed;
             }
             return completed;

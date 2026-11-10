@@ -1,4 +1,4 @@
-import { isPromise } from "./jsutils/isPromise.mjs";
+import { isPromiseLike } from "./jsutils/isPromise.mjs";
 import { ensureGraphQLError } from "./error/ensureGraphQLError.mjs";
 import { validateSchema } from "./type/validate.mjs";
 import { defaultHarness } from "./harness.mjs";
@@ -7,7 +7,7 @@ export function graphql(args) {
 }
 export function graphqlSync(args) {
     const result = graphqlImpl(args);
-    if (isPromise(result)) {
+    if (isPromiseLike(result)) {
         throw new Error('GraphQL execution failed to complete synchronously.');
     }
     return result;
@@ -26,14 +26,14 @@ function graphqlImpl(args) {
     catch (syntaxError) {
         return { errors: [ensureGraphQLError(syntaxError)] };
     }
-    if (isPromise(document)) {
+    if (isPromiseLike(document)) {
         return document.then((resolvedDocument) => validateAndExecute(harness, args, schema, resolvedDocument), (syntaxError) => ({ errors: [ensureGraphQLError(syntaxError)] }));
     }
     return validateAndExecute(harness, args, schema, document);
 }
 function validateAndExecute(harness, args, schema, document) {
     const validationResult = harness.validate(schema, document, args.rules, args);
-    if (isPromise(validationResult)) {
+    if (isPromiseLike(validationResult)) {
         return validationResult.then((resolvedValidationResult) => checkValidationAndExecute(harness, args, resolvedValidationResult, document));
     }
     return checkValidationAndExecute(harness, args, validationResult, document);

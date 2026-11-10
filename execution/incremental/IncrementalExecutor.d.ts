@@ -292,7 +292,7 @@ export declare class IncrementalExecutor<TExperimental = ExperimentalIncremental
         isAsync: true;
     }, streamUsage: StreamUsage, info: GraphQLResolveInfo, itemType: GraphQLOutputType): boolean;
     buildStreamItemQueue(initialIndex: number, streamPath: Path, iterator: Iterator<unknown> | AsyncIterator<unknown>, fieldDetailsList: FieldDetailsList, info: GraphQLResolveInfo, itemType: GraphQLOutputType, isAsync: boolean | undefined): Queue<StreamItemResult>;
-    completeStreamItem(itemPath: Path, item: unknown, fieldDetailsList: FieldDetailsList, info: GraphQLResolveInfo, itemType: GraphQLOutputType): PromiseOrValue<StreamItemResult>;
+    completeStreamItem(itemPath: Path, item: unknown, fieldDetailsList: FieldDetailsList, info: GraphQLResolveInfo, itemType: GraphQLOutputType): PromiseLike<StreamItemResult> | StreamItemResult;
     buildStreamItemResult(result: unknown): StreamItemResult;
 }
 export {};

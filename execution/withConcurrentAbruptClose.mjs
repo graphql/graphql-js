@@ -1,4 +1,4 @@
-import { isPromise } from "../jsutils/isPromise.mjs";
+import { isPromiseLike } from "../jsutils/isPromise.mjs";
 const asyncDispose = Symbol.asyncDispose ?? Symbol.for('Symbol.asyncDispose');
 export function withConcurrentAbruptClose(generator, beforeReturn, beforeThrow = beforeReturn) {
     let completed = false;
@@ -44,8 +44,8 @@ export function withConcurrentAbruptClose(generator, beforeReturn, beforeThrow =
 function ignoreErrors(fn) {
     try {
         const result = fn();
-        if (isPromise(result)) {
-            return result.catch(() => {
+        if (isPromiseLike(result)) {
+            return result.then(undefined, () => {
             });
         }
     }

@@ -24,8 +24,8 @@ class Queue {
                 onStop: this._onStop.bind(this),
                 started,
             });
-            if ((0, isPromise_ts_1.isPromise)(result)) {
-                result.catch(this._stop.bind(this));
+            if ((0, isPromise_ts_1.isPromiseLike)(result)) {
+                result.then(undefined, this._stop.bind(this));
             }
         }
         catch (error) {
@@ -122,7 +122,7 @@ class Queue {
         const cleanupPromises = this._stopCleanupCallbacks.flatMap((cleanupCallback) => {
             try {
                 const result = cleanupCallback(reason);
-                return (0, isPromise_ts_1.isPromise)(result) ? [result] : [];
+                return (0, isPromise_ts_1.isPromiseLike)(result) ? [result] : [];
             }
             catch {
                 return [];
@@ -144,7 +144,7 @@ class Queue {
         let nextBatch;
         while ((nextBatch = await this._waitForNextBatch())) {
             let reduced = reducer(nextBatch);
-            if ((0, isPromise_ts_1.isPromise)(reduced)) {
+            if ((0, isPromise_ts_1.isPromiseLike)(reduced)) {
                 reduced = await reduced;
             }
             if (reduced === undefined) {
@@ -164,7 +164,7 @@ class Queue {
             return;
         }
         const maybePushPromise = this._reserve();
-        if ((0, isPromise_ts_1.isPromise)(item)) {
+        if ((0, isPromise_ts_1.isPromiseLike)(item)) {
             const entry = { kind: 'item' };
             this._entries.push(entry);
             item.then((resolved) => {

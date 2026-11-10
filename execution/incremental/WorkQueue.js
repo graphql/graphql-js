@@ -62,7 +62,7 @@ function createWorkQueue(initialWork) {
     }
     function cancelTask(task, reason, cancelPromises) {
         const abortResult = task.computation.abort(reason);
-        if ((0, isPromise_ts_1.isPromise)(abortResult)) {
+        if ((0, isPromise_ts_1.isPromiseLike)(abortResult)) {
             cancelPromises.push(abortResult);
         }
         const taskNode = taskNodes.get(task);
@@ -204,7 +204,7 @@ function createWorkQueue(initialWork) {
             if (alreadyStarted) {
                 return;
             }
-            if ((0, isPromise_ts_1.isPromise)(result)) {
+            if ((0, isPromise_ts_1.isPromiseLike)(result)) {
                 result.then((resolved) => {
                     pushGraphEvent({ kind: 'TASK_SUCCESS', task, result: resolved });
                 }, (error) => {

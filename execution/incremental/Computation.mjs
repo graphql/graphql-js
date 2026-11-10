@@ -1,4 +1,4 @@
-import { isPromise } from "../../jsutils/isPromise.mjs";
+import { isPromiseLike } from "../../jsutils/isPromise.mjs";
 export class Computation {
     constructor(fn, onAbort) {
         this._fn = fn;
@@ -10,7 +10,7 @@ export class Computation {
         }
         try {
             const result = this._fn();
-            if (isPromise(result)) {
+            if (isPromiseLike(result)) {
                 this._maybePromise = { status: 'pending', promise: result };
                 result.then((value) => {
                     this._maybePromise = { status: 'fulfilled', value };
