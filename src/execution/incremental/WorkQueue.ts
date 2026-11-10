@@ -1,5 +1,5 @@
 import { invariant } from '../../jsutils/invariant.ts';
-import { isPromise } from '../../jsutils/isPromise.ts';
+import { isPromise, isPromiseLike } from '../../jsutils/isPromise.ts';
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 
 import type { Computation } from './Computation.ts';
@@ -292,7 +292,7 @@ export function createWorkQueue<
     cancelPromises: Array<Promise<unknown>>,
   ): void {
     const abortResult = task.computation.abort(reason);
-    if (isPromise(abortResult)) {
+    if (isPromiseLike(abortResult)) {
       cancelPromises.push(abortResult);
     }
     const taskNode = taskNodes.get(task);
@@ -486,7 +486,7 @@ export function createWorkQueue<
         // handled once for all owning groups, including those not yet started.
         return;
       }
-      if (isPromise(result)) {
+      if (isPromiseLike(result)) {
         result.then(
           (resolved) => {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises

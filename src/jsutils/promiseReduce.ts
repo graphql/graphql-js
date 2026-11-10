@@ -1,4 +1,4 @@
-import { isPromise } from './isPromise.ts';
+import { isPromiseLike } from './isPromise.ts';
 import type { PromiseOrValue } from './PromiseOrValue.ts';
 
 /**
@@ -17,7 +17,7 @@ export function promiseReduce<T, U>(
 ): PromiseOrValue<U> {
   let accumulator = initialValue;
   for (const value of values) {
-    accumulator = isPromise(accumulator)
+    accumulator = isPromiseLike(accumulator)
       ? accumulator.then((resolved) => callbackFn(resolved, value))
       : callbackFn(accumulator, value);
   }

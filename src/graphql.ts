@@ -1,6 +1,6 @@
 /** @category Request Pipeline */
 
-import { isPromise } from './jsutils/isPromise.ts';
+import { isPromiseLike } from './jsutils/isPromise.ts';
 import type { PromiseOrValue } from './jsutils/PromiseOrValue.ts';
 
 import { ensureGraphQLError } from './error/ensureGraphQLError.ts';
@@ -222,7 +222,7 @@ export function graphqlSync(args: GraphQLArgs): ExecutionResult {
   const result = graphqlImpl(args);
 
   // Assert that the execution was synchronous.
-  if (isPromise(result)) {
+  if (isPromiseLike(result)) {
     throw new Error('GraphQL execution failed to complete synchronously.');
   }
 
@@ -247,7 +247,7 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     return { errors: [ensureGraphQLError(syntaxError)] };
   }
 
-  if (isPromise(document)) {
+  if (isPromiseLike(document)) {
     return document.then(
       (resolvedDocument) =>
         validateAndExecute(harness, args, schema, resolvedDocument),
@@ -267,7 +267,7 @@ function validateAndExecute(
   // Validate
   const validationResult = harness.validate(schema, document, args.rules, args);
 
-  if (isPromise(validationResult)) {
+  if (isPromiseLike(validationResult)) {
     return validationResult.then((resolvedValidationResult) =>
       checkValidationAndExecute(
         harness,

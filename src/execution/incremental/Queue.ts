@@ -1,5 +1,5 @@
 import { invariant } from '../../jsutils/invariant.ts';
-import { isPromise } from '../../jsutils/isPromise.ts';
+import { isPromise, isPromiseLike } from '../../jsutils/isPromise.ts';
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.ts';
 
@@ -26,7 +26,7 @@ interface BatchRequest<T> {
 }
 
 interface QueueExecutorOptions<T> {
-  push: (item: PromiseOrValue<T>) => PromiseOrValue<void>;
+  push: (item: PromiseLike<T> | T) => PromiseOrValue<void>;
   stop: (reason?: unknown) => PromiseOrValue<void>;
   onStop: (cleanup: (reason?: unknown) => PromiseOrValue<void>) => void;
   started: Promise<void>;
@@ -116,8 +116,8 @@ export class Queue<T> {
         onStop: this._onStop.bind(this),
         started,
       });
-      if (isPromise(result)) {
-        result.catch(this._stop.bind(this));
+      if (isPromiseLike(result)) {
+        result.then(undefined, this._stop.bind(this));
       }
     } catch (error) {
       const stopped = this._stop(error);
@@ -254,7 +254,7 @@ export class Queue<T> {
       (cleanupCallback): Array<Promise<unknown>> => {
         try {
           const result = cleanupCallback(reason);
-          return isPromise(result) ? [result] : [];
+          return isPromiseLike(result) ? [result] : [];
         } catch {
           // ignore errors
           return [];
@@ -284,7 +284,7 @@ export class Queue<T> {
     // eslint-disable-next-line no-await-in-loop
     while ((nextBatch = await this._waitForNextBatch())) {
       let reduced = reducer(nextBatch);
-      if (isPromise(reduced)) {
+      if (isPromiseLike(reduced)) {
         // eslint-disable-next-line no-await-in-loop
         reduced = await reduced;
       }
@@ -304,12 +304,12 @@ export class Queue<T> {
     return promise;
   }
 
-  private _push(item: PromiseOrValue<T>): PromiseOrValue<void> {
+  private _push(item: PromiseLike<T> | T): PromiseOrValue<void> {
     if (this._stopRequested) {
       return;
     }
     const maybePushPromise = this._reserve();
-    if (isPromise(item)) {
+    if (isPromiseLike(item)) {
       const entry: ItemEntry<T> = { kind: 'item' };
       this._entries.push(entry);
       item.then(
