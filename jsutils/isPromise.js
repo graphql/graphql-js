@@ -6,6 +6,8 @@ function isPromise(value) {
     return value instanceof Promise;
 }
 function isPromiseLike(value) {
-    return typeof value?.then === 'function';
+    return (value !== null &&
+        (typeof value === 'object' || typeof value === 'function') &&
+        typeof value.then === 'function');
 }
 //# sourceMappingURL=isPromise.js.map
