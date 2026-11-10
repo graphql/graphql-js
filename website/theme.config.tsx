@@ -144,7 +144,7 @@ function Footer() {
               { url: 'https://discord.graphql.org', icon: DiscordIcon },
               { url: 'https://x.com/graphql', icon: TwitterIcon },
               {
-                url: 'http://stackoverflow.com/questions/tagged/graphql',
+                url: 'https://stackoverflow.com/questions/tagged/graphql',
                 icon: StackOverflowIcon,
               },
             ].map(({ url, icon: Icon }) => (
