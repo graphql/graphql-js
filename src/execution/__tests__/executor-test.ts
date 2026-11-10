@@ -1155,6 +1155,61 @@ describe('Execute: Handles basic execution tasks', () => {
     );
   });
 
+  it('awaits promise-like values returned by coerceOutputValue', async () => {
+    // A non-native thenable whose `then` also returns a non-native thenable,
+    // so that only `isPromiseLike` (not `isPromise`) recognizes the result.
+    const thenable = <T>(promise: Promise<T>): PromiseLike<T> => ({
+      then: (onFulfilled, onRejected) =>
+        thenable(promise.then(onFulfilled, onRejected)),
+    });
+    const thenableScalar = new GraphQLScalarType({
+      name: 'ThenableScalar',
+      coerceOutputValue: () => thenable(Promise.resolve('C')),
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          before: { type: GraphQLString },
+          thenable: { type: thenableScalar },
+          after: { type: GraphQLString },
+          async: { type: GraphQLString },
+        },
+      }),
+    });
+    const rootValue = {
+      before: 'A',
+      thenable: 'B',
+      after: 'D',
+      async: () => Promise.resolve('E'),
+    };
+
+    const alone = await execute({
+      schema,
+      document: parse('{ thenable }'),
+      rootValue,
+    });
+    expect(JSON.stringify(alone)).to.equal('{"data":{"thenable":"C"}}');
+
+    const withSync = await execute({
+      schema,
+      document: parse('{ before thenable after }'),
+      rootValue,
+    });
+    expect(JSON.stringify(withSync)).to.equal(
+      '{"data":{"before":"A","thenable":"C","after":"D"}}',
+    );
+
+    const withAsync = await execute({
+      schema,
+      document: parse('{ before thenable async after }'),
+      rootValue,
+    });
+    expect(JSON.stringify(withAsync)).to.equal(
+      '{"data":{"before":"A","thenable":"C","async":"E","after":"D"}}',
+    );
+  });
+
   it('Avoids recursion', () => {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({

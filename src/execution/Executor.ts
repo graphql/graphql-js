@@ -537,7 +537,8 @@ export class Executor<
     positionContext: TPositionContext | undefined,
   ): PromiseOrValue<ObjMap<unknown>> {
     const results = Object.create(null);
-    let containsPromise = false;
+    let promiseKeys: Array<string> | undefined;
+    let promises!: Array<PromiseLike<unknown>>;
     const tracingChannel = shouldTrace(resolveChannel)
       ? resolveChannel
       : undefined;
@@ -557,33 +558,34 @@ export class Executor<
         if (result !== undefined) {
           results[responseName] = result;
           if (isPromiseLike(result)) {
-            containsPromise = true;
+            if (promiseKeys === undefined) {
+              promiseKeys = [responseName];
+              promises = [result];
+            } else {
+              promiseKeys.push(responseName);
+              promises.push(result);
+            }
           }
         }
       }
     } catch (error) {
-      if (containsPromise) {
-        this.sharedExecutionContext.asyncWorkTracker.addValues(
-          Object.values(results),
-        );
+      if (promiseKeys !== undefined) {
+        this.sharedExecutionContext.asyncWorkTracker.addValues(promises);
       }
       throw error;
     }
 
     // If there are no promises, we can just return the object and any incrementalDataRecords
-    if (!containsPromise) {
+    if (promiseKeys === undefined) {
       return results;
     }
 
     // Otherwise, results is a map from field name to the result of resolving that
     // field, which is possibly a promise. Return a promise that will return this
     // same map, but with any promises replaced with the values they resolved to.
-    const keys = Object.keys(results);
-    const values = Object.values(results);
-
-    return this.promiseAll(values).then((resolvedValues) => {
-      for (let i = 0; i < keys.length; ++i) {
-        results[keys[i]] = resolvedValues[i];
+    return this.promiseAll(promises).then((resolvedValues) => {
+      for (let i = 0; i < promiseKeys.length; ++i) {
+        results[promiseKeys[i]] = resolvedValues[i];
       }
       return results;
     });
