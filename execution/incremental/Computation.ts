@@ -1,4 +1,4 @@
-import { isPromise } from '../../jsutils/isPromise.ts';
+import { isPromiseLike } from '../../jsutils/isPromise.ts';
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.ts';
 type MaybePromise<T> =
   | {
@@ -31,7 +31,7 @@ export class Computation<T> {
     }
     try {
       const result = this._fn();
-      if (isPromise(result)) {
+      if (isPromiseLike(result)) {
         this._maybePromise = { status: 'pending', promise: result };
         result.then(
           (value) => {

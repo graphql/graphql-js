@@ -399,11 +399,11 @@ export class IncrementalExecutor<
     super.abort(reason);
     for (const task of this.tasks) {
       const aborted = task.computation.abort(reason);
-      if (!!isPromise(aborted)) invariant(false);
+      if (!!isPromiseLike(aborted)) invariant(false);
     }
     for (const stream of this.streams) {
       const aborted = stream.queue.abort(reason);
-      if (!!isPromise(aborted)) invariant(false);
+      if (!!isPromiseLike(aborted)) invariant(false);
     }
   }
   /**
@@ -646,7 +646,7 @@ export class IncrementalExecutor<
     for (const task of tasks) {
       if (collectedErrors.hasNulledPosition(task.path)) {
         const aborted = task.computation.abort(cancellationReason);
-        if (!!isPromise(aborted)) invariant(false);
+        if (!!isPromiseLike(aborted)) invariant(false);
       } else {
         filteredTasks.push(task);
       }
@@ -655,7 +655,7 @@ export class IncrementalExecutor<
     for (const stream of streams) {
       if (collectedErrors.hasNulledPosition(stream.path)) {
         const aborted = stream.queue.abort(cancellationReason);
-        if (!!isPromise(aborted)) invariant(false);
+        if (!!isPromiseLike(aborted)) invariant(false);
       } else {
         filteredStreams.push(stream);
       }
@@ -837,14 +837,21 @@ export class IncrementalExecutor<
             info,
             itemType,
           );
-          if (isPromise(streamItemResult)) {
+          if (isPromiseLike(streamItemResult)) {
             if (enableEarlyExecution) {
               const abortStreamItem = (reason?: unknown) =>
                 executor.abort(reason);
               abortStreamItems.add(abortStreamItem);
-              streamItemResult = streamItemResult.finally(() => {
-                abortStreamItems.delete(abortStreamItem);
-              });
+              streamItemResult = streamItemResult.then(
+                (resolved) => {
+                  abortStreamItems.delete(abortStreamItem);
+                  return resolved;
+                },
+                (error: unknown) => {
+                  abortStreamItems.delete(abortStreamItem);
+                  throw error;
+                },
+              );
             } else {
               // eslint-disable-next-line no-await-in-loop
               streamItemResult = await streamItemResult;
@@ -875,7 +882,7 @@ export class IncrementalExecutor<
     fieldDetailsList: FieldDetailsList,
     info: GraphQLResolveInfo,
     itemType: GraphQLOutputType,
-  ): PromiseOrValue<StreamItemResult> {
+  ): PromiseLike<StreamItemResult> | StreamItemResult {
     if (isPromiseLike(item)) {
       return this.completePromisedValue(
         itemType,
@@ -921,7 +928,7 @@ export class IncrementalExecutor<
       this.abort();
       throw error;
     }
-    if (isPromise(result)) {
+    if (isPromiseLike(result)) {
       return result
         .then(
           (resolved) => this.buildStreamItemResult(resolved),

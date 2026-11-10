@@ -1,4 +1,4 @@
-import { isPromise } from '../jsutils/isPromise.ts';
+import { isPromiseLike } from '../jsutils/isPromise.ts';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
 import { withConcurrentAbruptClose } from './withConcurrentAbruptClose.ts';
 /**
@@ -39,7 +39,7 @@ async function* mapAsyncIterableImpl<T, U, R = undefined>(
 ): AsyncGenerator<U, void, void> {
   for await (const value of iterable) {
     const result = mapFn(value);
-    if (isPromise(result)) {
+    if (isPromiseLike(result)) {
       yield await result;
       continue;
     }
