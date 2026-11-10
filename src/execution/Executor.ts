@@ -10,7 +10,6 @@ import { memoize3 } from '../jsutils/memoize3.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
 import type { Path } from '../jsutils/Path.ts';
 import { addPath, pathToArray } from '../jsutils/Path.ts';
-import { promiseForObject } from '../jsutils/promiseForObject.ts';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
 import { promiseReduce } from '../jsutils/promiseReduce.ts';
 
@@ -579,7 +578,15 @@ export class Executor<
     // Otherwise, results is a map from field name to the result of resolving that
     // field, which is possibly a promise. Return a promise that will return this
     // same map, but with any promises replaced with the values they resolved to.
-    return promiseForObject(results, this.promiseAll);
+    const keys = Object.keys(results);
+    const values = Object.values(results);
+
+    return this.promiseAll(values).then((resolvedValues) => {
+      for (let i = 0; i < keys.length; ++i) {
+        results[keys[i]] = resolvedValues[i];
+      }
+      return results;
+    });
   }
 
   /**

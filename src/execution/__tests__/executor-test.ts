@@ -1136,7 +1136,10 @@ describe('Execute: Handles basic execution tasks', () => {
     const document = parse('{ a, b, c, d, e }');
     const rootValue = {
       a: () => 'a',
-      b: () => new Promise((resolve) => resolve('b')),
+      b: () =>
+        new Promise((resolve) => {
+          setTimeout(() => resolve('b'), 5);
+        }),
       c: () => 'c',
       d: () => new Promise((resolve) => resolve('d')),
       e: () => 'e',
@@ -1146,6 +1149,10 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(result).to.deep.equal({
       data: { a: 'a', b: 'b', c: 'c', d: 'd', e: 'e' },
     });
+    // deep.equal ignores key order, so check it explicitly.
+    expect(JSON.stringify(result)).to.equal(
+      '{"data":{"a":"a","b":"b","c":"c","d":"d","e":"e"}}',
+    );
   });
 
   it('Avoids recursion', () => {
