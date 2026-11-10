@@ -10,5 +10,9 @@ export function isPromise(value: unknown): value is Promise<unknown> {
  * @internal
  */
 export function isPromiseLike(value: any): value is PromiseLike<unknown> {
-  return typeof value?.then === 'function';
+  return (
+    value !== null &&
+    (typeof value === 'object' || typeof value === 'function') &&
+    typeof value.then === 'function'
+  );
 }
