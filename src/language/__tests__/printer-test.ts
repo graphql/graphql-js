@@ -75,6 +75,32 @@ describe('Printer: Query document', () => {
     expect(print(emptyOperationAST)).to.equal('{}');
   });
 
+  it('prints empty types', () => {
+    const sdl = dedent`
+      type EmptyObject {}
+
+      interface EmptyInterface {}
+
+      union EmptyUnion = {}
+
+      input EmptyInput {}
+
+      extend type EmptyObject {}
+
+      extend interface EmptyInterface {}
+
+      extend union EmptyUnion = {}
+
+      extend input EmptyInput {}
+
+      type IncompleteObject
+
+      union IncompleteUnion
+    `;
+    const ast = parse(sdl, { experimentalAllowEmptyTypes: true });
+    expect(print(ast)).to.equal(sdl);
+  });
+
   it('produces helpful error messages', () => {
     const badAST = { random: 'Data' };
 
