@@ -1,5 +1,6 @@
 /** @category Execution */
 
+import { CompactExecutionResultMap } from '../jsutils/CompactExecutionResultMap';
 import { devAssert } from '../jsutils/devAssert';
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
@@ -691,7 +692,7 @@ function executeFields(
   path: Path | undefined,
   fields: Map<string, ReadonlyArray<FieldNode>>,
 ): PromiseOrValue<ObjMap<unknown>> {
-  const results = Object.create(null);
+  const results = Object.setPrototypeOf(new CompactExecutionResultMap(), null);
   let containsPromise = false;
 
   try {
