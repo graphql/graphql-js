@@ -44,12 +44,11 @@ duplicate queries unless you implement deduplication or batching manually.
 
 ## Why this happens in GraphQL.js
 
-In GraphQL.js, each field resolver runs independently. There's no built-in
-coordination between resolvers, and no automatic batching. This makes field
-resolvers composable and predictable, but it also creates the N+1 problem.
-Nested resolutions, such as fetching an author for each post in the previous
-example, will each call their own data-fetching logic, even if those calls
-could be grouped.
+By default, GraphQL.js runs each field resolver independently, without
+automatic batching. This makes field resolvers composable and predictable,
+but it also creates the N+1 problem. Nested resolutions, such as fetching an
+author for each post in the previous example, will each call their own
+data-fetching logic, even if those calls could be grouped.
 
 ## Solving the problem with DataLoader
 
@@ -144,6 +143,16 @@ additional fetches.
 - Use `.loadMany()` sparingly. While it's useful when you already have a list of IDs, it's
   typically not needed in field resolvers, since `.load()` already batches individual calls
   made within the same execution cycle.
+
+## Execution-level batching
+
+The [experimental batch resolution proposal](/docs/batch-resolution) lets the
+executor pass several parent objects to one field resolver. It connects to the
+[GraphQL Golden Path guidance on batched execution](https://goldenpath.graphql.org/practices/batched-execution/).
+The proposal requires both an execution flag and a batch resolver on each
+participating field, preserving existing behavior for other applications.
+DataLoader remains useful for request-scoped caching and lookups shared across
+separate field selections.
 
 ## Additional resources
 

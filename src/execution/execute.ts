@@ -709,6 +709,7 @@ export function createSourceEventStream(
  *   hideSuggestions: true,
  *   abortSignal: abortController.signal,
  *   enableEarlyExecution: true,
+ *   enableBatchResolvers: true,
  *   hooks: {
  *     asyncWorkFinished: () => {},
  *   },
@@ -737,6 +738,7 @@ export function validateExecutionArgs(
     subscribeFieldResolver,
     abortSignal: externalAbortSignal,
     enableEarlyExecution,
+    enableBatchResolvers,
     hooks,
     options,
   } = args;
@@ -860,6 +862,7 @@ export function validateExecutionArgs(
     errorPropagation,
     externalAbortSignal: externalAbortSignal ?? undefined,
     enableEarlyExecution: enableEarlyExecution === true,
+    enableBatchResolvers: enableBatchResolvers === true,
     hooks: hooks ?? undefined,
     rawVariableValues,
   };

@@ -12,6 +12,7 @@ import {
   executeRootSelectionSetChannel,
   executeVariableCoercionChannel,
   parseChannel,
+  resolveBatchChannel,
   resolveChannel,
   shouldTrace,
   subscribeChannel,
@@ -27,6 +28,7 @@ describe('diagnostics', () => {
     invariant(executeRootSelectionSetChannel !== undefined);
     invariant(subscribeChannel !== undefined);
     invariant(resolveChannel !== undefined);
+    invariant(resolveBatchChannel !== undefined);
 
     // Node.js `tracingChannel(name)` returns a fresh wrapper per call but
     // the underlying sub-channels are cached by name, so compare those.
@@ -50,6 +52,9 @@ describe('diagnostics', () => {
     );
     expect(resolveChannel.start).to.equal(
       dc.channel('tracing:graphql:resolve:start'),
+    );
+    expect(resolveBatchChannel.start).to.equal(
+      dc.channel('tracing:graphql:resolve:batch:start'),
     );
   });
 
