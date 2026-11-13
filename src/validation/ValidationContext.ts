@@ -173,18 +173,21 @@ export type ASTValidationRule = (context: ASTValidationContext) => ASTVisitor;
 /** @internal */
 export class SDLValidationContext extends ASTValidationContext {
   private _schema: Maybe<GraphQLSchema>;
+  private _hideSuggestions: boolean;
 
   constructor(
     ast: DocumentNode,
     schema: Maybe<GraphQLSchema>,
     onError: (error: GraphQLError) => void,
+    hideSuggestions = false,
   ) {
     super(ast, onError);
     this._schema = schema;
+    this._hideSuggestions = hideSuggestions;
   }
 
   get hideSuggestions(): boolean {
-    return false;
+    return this._hideSuggestions;
   }
 
   override get [Symbol.toStringTag](): string {

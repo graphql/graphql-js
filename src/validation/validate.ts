@@ -194,6 +194,7 @@ export function validateSDL(
   documentAST: DocumentNode,
   schemaToExtend?: Maybe<GraphQLSchema>,
   rules: ReadonlyArray<SDLValidationRule> = specifiedSDLRules,
+  options?: Pick<ValidationOptions, 'hideSuggestions'>,
 ): ReadonlyArray<GraphQLError> {
   const errors: Array<GraphQLError> = [];
   const context = new SDLValidationContext(
@@ -202,6 +203,7 @@ export function validateSDL(
     (error) => {
       errors.push(error);
     },
+    options?.hideSuggestions ?? false,
   );
 
   const visitors = rules.map((rule) => rule(context));
@@ -215,8 +217,11 @@ export function validateSDL(
  *
  * @internal
  */
-export function assertValidSDL(documentAST: DocumentNode): void {
-  const errors = validateSDL(documentAST);
+export function assertValidSDL(
+  documentAST: DocumentNode,
+  options?: Pick<ValidationOptions, 'hideSuggestions'>,
+): void {
+  const errors = validateSDL(documentAST, undefined, undefined, options);
   if (errors.length !== 0) {
     throw new Error(errors.map((error) => error.message).join('\n\n'));
   }
@@ -231,8 +236,9 @@ export function assertValidSDL(documentAST: DocumentNode): void {
 export function assertValidSDLExtension(
   documentAST: DocumentNode,
   schema: GraphQLSchema,
+  options?: Pick<ValidationOptions, 'hideSuggestions'>,
 ): void {
-  const errors = validateSDL(documentAST, schema);
+  const errors = validateSDL(documentAST, schema, undefined, options);
   if (errors.length !== 0) {
     throw new Error(errors.map((error) => error.message).join('\n\n'));
   }

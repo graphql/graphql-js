@@ -1187,6 +1187,37 @@ describe('extendSchema', () => {
     );
   });
 
+  for (const hideSuggestions of [undefined, false, true]) {
+    it(`supports hideSuggestions=${hideSuggestions}`, () => {
+      const schema = buildSchema('type Query { name: String }');
+      const document = parse('extend type Query { other: QueryXYZ }');
+      expect(() => extendSchema(schema, document, { hideSuggestions }))
+        .to.throw()
+        .with.property(
+          'message',
+          hideSuggestions
+            ? 'Unknown type "QueryXYZ".'
+            : 'Unknown type "QueryXYZ". Did you mean "Query"?',
+        );
+    });
+  }
+
+  it('hides directive argument suggestions in extensions', () => {
+    const schema = buildSchema(
+      'directive @test(name: String) on OBJECT type Query { name: String }',
+    );
+    const document = parse('extend type Query @test(nam: "x")');
+    expect(() => extendSchema(schema, document, { hideSuggestions: true }))
+      .to.throw()
+      .with.property('message', 'Unknown argument "nam" on directive "@test".');
+    expect(() => extendSchema(schema, document, { hideSuggestions: false }))
+      .to.throw()
+      .with.property(
+        'message',
+        'Unknown argument "nam" on directive "@test". Did you mean "name"?',
+      );
+  });
+
   it('Allows to disable SDL validation', () => {
     const schema = new GraphQLSchema({});
     const extendAST = parse('extend schema @unknown');
