@@ -10,6 +10,7 @@ import type { ASTVisitor } from '../../language/visitor.ts';
 
 import type { GraphQLType } from '../../type/definition.ts';
 import {
+  getNullableType,
   isInputObjectType,
   isNonNullType,
   isNullableType,
@@ -112,14 +113,19 @@ export function VariablesInAllowedPositionRule(
               );
             }
 
+            // getParentInputType() keeps a Non-Null wrapper, so PetInput!
+            // and an item of [PetInput!] are not input object types until
+            // unwrapped. OneOf fields reject a nullable variable type even
+            // when that variable has a default value.
+            const parentInputType = getNullableType(parentType);
             if (
-              isInputObjectType(parentType) &&
-              parentType.isOneOf &&
+              isInputObjectType(parentInputType) &&
+              parentInputType.isOneOf &&
               isNullableType(varType)
             ) {
               context.reportError(
                 new GraphQLError(
-                  `Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "${parentType}".`,
+                  `Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "${parentInputType}".`,
                   { nodes: [varDef, node] },
                 ),
               );
