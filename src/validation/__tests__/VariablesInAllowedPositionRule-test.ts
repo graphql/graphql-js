@@ -497,6 +497,20 @@ describe('Validate: Variables are in allowed positions', () => {
       ]);
     });
 
+    it('Boolean => Boolean! when the fragment argument has a default value', () => {
+      expectValid(`
+        query Query($ab: Boolean)
+        {
+          complicatedArgs {
+            ...A(b: $ab)
+          }
+        }
+        fragment A($b: Boolean! = true) on ComplicatedArgs {
+          booleanArgField(booleanArg: $b)
+        }
+      `);
+    });
+
     it('Int => Int! fails when variable provides null default value', () => {
       expectErrors(`
         query Query($intVar: Int = null) {

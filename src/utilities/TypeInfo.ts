@@ -756,6 +756,7 @@ export class TypeInfo {
         if (argDef) {
           argType = typeFromAST(this._schema, argDef.type);
         }
+        this._defaultValueStack.push(argDef?.defaultValue ?? undefined);
         this._inputTypeStack.push(isInputType(argType) ? argType : undefined);
         break;
       }
