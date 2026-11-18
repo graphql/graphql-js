@@ -36,6 +36,7 @@ import { legacyExecuteIncrementally } from '../legacyIncremental/legacyExecuteIn
 const schema = buildSchema(`
   type Todo {
     id: ID
+    title: String!
     items: [String]
     author: User
   }
@@ -1146,6 +1147,116 @@ describe('Execute: Cancellation', () => {
     await expectPromise(resultPromise).toRejectWith(
       'This operation was aborted',
     );
+    expect(returnSpy.callCount).to.equal(1);
+  });
+
+  it('calls async iterator return when aborted while next is pending', async () => {
+    const abortController = new AbortController();
+    const document = parse(`
+      query {
+        todo {
+          items
+        }
+      }
+    `);
+    const { promise: nextStarted, resolve: resolveNextStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const { promise: returnCalled, resolve: resolveReturnCalled } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const asyncIterator = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        resolveNextStarted();
+        // never settles
+        return new Promise<IteratorResult<string>>(() => undefined);
+      },
+      return() {
+        resolveReturnCalled();
+        return Promise.resolve({ value: undefined, done: true as const });
+      },
+    };
+    const returnSpy = spyOnMethod(asyncIterator, 'return');
+
+    const resultPromise = execute({
+      schema,
+      document,
+      rootValue: {
+        todo: {
+          items: asyncIterator,
+        },
+      },
+      abortSignal: abortController.signal,
+    });
+    await nextStarted;
+    abortController.abort();
+
+    await expectPromise(resultPromise).toRejectWith(
+      'This operation was aborted',
+    );
+    await returnCalled;
+    expect(returnSpy.callCount).to.equal(1);
+  });
+
+  it('calls async iterator return when a sibling error nulls the parent while next is pending', async () => {
+    const document = parse(`
+      query {
+        todo {
+          title
+          items
+        }
+      }
+    `);
+    const { promise: nextStarted, resolve: resolveNextStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const { promise: returnCalled, resolve: resolveReturnCalled } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const asyncIterator = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        resolveNextStarted();
+        // never settles
+        return new Promise<IteratorResult<string>>(() => undefined);
+      },
+      return() {
+        resolveReturnCalled();
+        return Promise.resolve({ value: undefined, done: true as const });
+      },
+    };
+    const returnSpy = spyOnMethod(asyncIterator, 'return');
+
+    const result = await execute({
+      schema,
+      document,
+      rootValue: {
+        todo: {
+          title: async () => {
+            await nextStarted;
+            throw new Error('Oops');
+          },
+          items: asyncIterator,
+        },
+      },
+    });
+
+    expectJSON(result).toDeepEqual({
+      data: { todo: null },
+      errors: [
+        {
+          message: 'Oops',
+          path: ['todo', 'title'],
+          locations: [{ line: 4, column: 11 }],
+        },
+      ],
+    });
+    await returnCalled;
     expect(returnSpy.callCount).to.equal(1);
   });
 });
