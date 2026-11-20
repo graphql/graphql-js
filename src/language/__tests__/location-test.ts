@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 
 import { getLocation, getLocations } from '../location.ts';
 import { Source } from '../source.ts';
@@ -195,5 +195,32 @@ describe('getLocations', () => {
       { line: 1, column: 3 },
       { line: 1, column: 2 },
     ]);
+  });
+
+  it('gets locations when Array.prototype.toSorted is unavailable', () => {
+    const source = new Source('a\nb\nc');
+    const locations = Object.freeze([
+      Object.freeze({ source, start: 4 }),
+      Object.freeze({ source, start: 0 }),
+      Object.freeze({ source, start: 2 }),
+    ]);
+    const descriptor = Object.getOwnPropertyDescriptor(
+      Array.prototype,
+      'toSorted',
+    );
+    assert(descriptor != null);
+
+    assert(Reflect.deleteProperty(Array.prototype, 'toSorted'));
+    try {
+      expect(getLocations(locations)).to.deep.equal([
+        { line: 3, column: 1 },
+        { line: 1, column: 1 },
+        { line: 2, column: 1 },
+      ]);
+      expect(locations.map(({ start }) => start)).to.deep.equal([4, 0, 2]);
+    } finally {
+      // eslint-disable-next-line no-extend-native -- restore the removed engine method
+      Object.defineProperty(Array.prototype, 'toSorted', descriptor);
+    }
   });
 });
