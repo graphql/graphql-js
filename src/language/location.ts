@@ -64,7 +64,7 @@ export function getLocations(
     let match = matches.next().value;
     let line = 1;
     let lastLineStart = 0;
-    for (const { position, index } of positions.toSorted(
+    for (const { position, index } of positions.sort(
       (a, b) => a.position - b.position,
     )) {
       while (match !== undefined && match.index < position) {

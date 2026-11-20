@@ -160,6 +160,32 @@ describe('getLocations', () => {
     expect(locations.map(({ start }) => start)).to.deep.equal([4, 0, 2, 4]);
   });
 
+  it('does not depend on Array.prototype.toSorted', () => {
+    // Hermes (React Native's engine) does not implement it.
+    const toSorted = Object.getOwnPropertyDescriptor(
+      Array.prototype,
+      'toSorted',
+    );
+    Reflect.deleteProperty(Array.prototype, 'toSorted');
+    try {
+      const source = new Source('a\nb\nc');
+
+      expect(
+        getLocations([
+          { source, start: 4 },
+          { source, start: 0 },
+        ]),
+      ).to.deep.equal([
+        { line: 3, column: 1 },
+        { line: 1, column: 1 },
+      ]);
+    } finally {
+      if (toSorted !== undefined) {
+        Reflect.defineProperty(Array.prototype, 'toSorted', toSorted);
+      }
+    }
+  });
+
   it('groups interleaved sources by identity', () => {
     const first = new Source('a\nb');
     const second = new Source('a b');
