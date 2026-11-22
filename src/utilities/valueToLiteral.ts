@@ -101,14 +101,16 @@ export function valueToLiteral(
     if (hasUndefinedField) {
       return; // Invalid: intentionally return no value.
     }
-    for (const field of Object.values(type.getFields())) {
-      const fieldValue = value[field.name];
+    for (const field of Object.values(fieldDefs)) {
+      const fieldValue = Object.hasOwn(value, field.name)
+        ? value[field.name]
+        : undefined;
       if (fieldValue === undefined) {
         if (isRequiredInputField(field)) {
           return; // Invalid: intentionally return no value.
         }
       } else {
-        const fieldNode = valueToLiteral(value[field.name], field.type);
+        const fieldNode = valueToLiteral(fieldValue, field.type);
         if (!fieldNode) {
           return; // Invalid: intentionally return no value.
         }

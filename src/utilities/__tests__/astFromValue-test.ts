@@ -421,4 +421,72 @@ describe('astFromValue', () => {
   it('does not converts non-object values as input objects', () => {
     expect(astFromValue(5, inputObj)).to.equal(null);
   });
+
+  it('ignores inherited prototype properties and getters on input objects', () => {
+    const inputWithProtoNames = new GraphQLInputObjectType({
+      name: 'InputWithProtoNames',
+      fields: {
+        toString: { type: GraphQLString },
+      },
+    });
+
+    expect(astFromValue({}, inputWithProtoNames)).to.deep.equal({
+      kind: 'ObjectValue',
+      fields: [],
+    });
+    expect(
+      astFromValue({ toString: undefined }, inputWithProtoNames),
+    ).to.deep.equal({
+      kind: 'ObjectValue',
+      fields: [],
+    });
+    expect(
+      astFromValue(
+        Object.create({ toString: 'inherited' }),
+        inputWithProtoNames,
+      ),
+    ).to.deep.equal({
+      kind: 'ObjectValue',
+      fields: [],
+    });
+    expect(
+      astFromValue({ toString: 'own' }, inputWithProtoNames),
+    ).to.deep.equal({
+      kind: 'ObjectValue',
+      fields: [
+        {
+          kind: 'ObjectField',
+          name: { kind: 'Name', value: 'toString' },
+          value: { kind: 'StringValue', value: 'own' },
+        },
+      ],
+    });
+    expect(
+      astFromValue(
+        Object.assign(Object.create(null), { toString: 'own' }),
+        inputWithProtoNames,
+      ),
+    ).to.deep.equal({
+      kind: 'ObjectValue',
+      fields: [
+        {
+          kind: 'ObjectField',
+          name: { kind: 'Name', value: 'toString' },
+          value: { kind: 'StringValue', value: 'own' },
+        },
+      ],
+    });
+
+    const prototype = Object.create(null);
+    Object.defineProperty(prototype, 'toString', {
+      get() {
+        throw new Error('Inherited getter read');
+      },
+    });
+    const inherited = Object.create(prototype);
+    expect(astFromValue(inherited, inputWithProtoNames)).to.deep.equal({
+      kind: 'ObjectValue',
+      fields: [],
+    });
+  });
 });

@@ -1942,6 +1942,76 @@ describe('Execute: Handles inputs', () => {
       assert('variableValues' in result);
       expect(result.variableValues.coerced.toString).to.equal('value');
     });
+
+    it('ignores inherited prototype properties on input object variables', () => {
+      const OptionalProtoInput = new GraphQLInputObjectType({
+        name: 'OptionalProtoInput',
+        fields: {
+          toString: { type: GraphQLString },
+        },
+      });
+      const RequiredProtoInput = new GraphQLInputObjectType({
+        name: 'RequiredProtoInput',
+        fields: {
+          toString: { type: new GraphQLNonNull(GraphQLString) },
+        },
+      });
+      const inputSchema = new GraphQLSchema({
+        query: new GraphQLObjectType({
+          name: 'Query',
+          fields: {
+            f: {
+              type: GraphQLString,
+              args: {
+                optional: { type: OptionalProtoInput },
+                required: { type: RequiredProtoInput },
+              },
+            },
+          },
+        }),
+      });
+      const optionalDoc = parse(`
+        query ($input: OptionalProtoInput) {
+          f(optional: $input)
+        }
+      `);
+      const optionalOp = optionalDoc.definitions[0];
+      assert(optionalOp.kind === Kind.OPERATION_DEFINITION);
+      const optionalVarDefs = optionalOp.variableDefinitions;
+      assert(optionalVarDefs != null);
+
+      const omittedResult = getVariableValues(inputSchema, optionalVarDefs, {
+        input: {},
+      });
+      assert('variableValues' in omittedResult);
+      expect(omittedResult.variableValues.coerced.input).to.deep.equal({});
+
+      const providedResult = getVariableValues(inputSchema, optionalVarDefs, {
+        input: { toString: 'value' },
+      });
+      assert('variableValues' in providedResult);
+      expect(providedResult.variableValues.coerced.input).to.deep.equal({
+        toString: 'value',
+      });
+
+      const requiredDoc = parse(`
+        query ($input: RequiredProtoInput) {
+          f(required: $input)
+        }
+      `);
+      const requiredOp = requiredDoc.definitions[0];
+      assert(requiredOp.kind === Kind.OPERATION_DEFINITION);
+      const requiredVarDefs = requiredOp.variableDefinitions;
+      assert(requiredVarDefs != null);
+
+      const missingRequired = getVariableValues(inputSchema, requiredVarDefs, {
+        input: Object.create({ toString: 'inherited' }),
+      });
+      assert('errors' in missingRequired);
+      expect(missingRequired.errors.map((e) => e.message)).to.deep.equal([
+        'Variable "$input" has invalid value: Expected value of type "RequiredProtoInput" to include required field "toString", found: {}.',
+      ]);
+    });
   });
 
   describe('getVariableValues: explicit undefined values', () => {
