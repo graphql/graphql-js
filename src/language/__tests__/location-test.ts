@@ -34,7 +34,7 @@ describe('getLocation', () => {
       { line: 2, column: 2 },
       { line: 3, column: 1 },
       { line: 3, column: 2 },
-      { line: 4, column: 0 },
+      { line: 3, column: 3 },
       { line: 4, column: 1 },
       { line: 4, column: 2 },
     ]);
@@ -51,7 +51,7 @@ describe('getLocation', () => {
       { line: 1, column: 1 },
       { line: 2, column: 1 },
       { line: 3, column: 1 },
-      { line: 4, column: 0 },
+      { line: 3, column: 2 },
       { line: 4, column: 1 },
     ]);
   });
@@ -136,7 +136,7 @@ describe('getLocations', () => {
       { line: 2, column: 2 },
       { line: 3, column: 1 },
       { line: 3, column: 2 },
-      { line: 4, column: 0 },
+      { line: 3, column: 3 },
       { line: 4, column: 1 },
       { line: 4, column: 2 },
     ]);
