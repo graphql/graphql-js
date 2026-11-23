@@ -7,7 +7,7 @@ import {
 import type { BenchmarkResult, PairedComparison } from './types.ts';
 
 // T-Distribution two-tailed critical values for 95% confidence.
-// See http://www.itl.nist.gov/div898/handbook/eda/section3/eda3672.htm.
+// See https://www.itl.nist.gov/div898/handbook/eda/section3/eda3672.htm.
 // prettier-ignore
 const tTable: { [v: number]: number } = {
   1:  12.706, 2:  4.303, 3:  3.182, 4:  2.776, 5:  2.571, 6:  2.447,
