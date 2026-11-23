@@ -6,7 +6,6 @@ import { isPromiseLike } from "../jsutils/isPromise.mjs";
 import { memoize2 } from "../jsutils/memoize2.mjs";
 import { memoize3 } from "../jsutils/memoize3.mjs";
 import { addPath, pathToArray } from "../jsutils/Path.mjs";
-import { promiseForObject } from "../jsutils/promiseForObject.mjs";
 import { promiseReduce } from "../jsutils/promiseReduce.mjs";
 import { ensureGraphQLError } from "../error/ensureGraphQLError.mjs";
 import { GraphQLError } from "../error/GraphQLError.mjs";
@@ -242,7 +241,14 @@ export class Executor {
         if (!containsPromise) {
             return results;
         }
-        return promiseForObject(results, this.promiseAll);
+        const keys = Object.keys(results);
+        const values = Object.values(results);
+        return this.promiseAll(values).then((resolvedValues) => {
+            for (let i = 0; i < keys.length; ++i) {
+                results[keys[i]] = resolvedValues[i];
+            }
+            return results;
+        });
     }
     executeField(parentType, source, fieldDetailsList, path, positionContext, tracingChannel) {
         const validatedExecutionArgs = this.validatedExecutionArgs;

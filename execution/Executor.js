@@ -9,7 +9,6 @@ const isPromise_ts_1 = require("../jsutils/isPromise.js");
 const memoize2_ts_1 = require("../jsutils/memoize2.js");
 const memoize3_ts_1 = require("../jsutils/memoize3.js");
 const Path_ts_1 = require("../jsutils/Path.js");
-const promiseForObject_ts_1 = require("../jsutils/promiseForObject.js");
 const promiseReduce_ts_1 = require("../jsutils/promiseReduce.js");
 const ensureGraphQLError_ts_1 = require("../error/ensureGraphQLError.js");
 const GraphQLError_ts_1 = require("../error/GraphQLError.js");
@@ -245,7 +244,14 @@ class Executor {
         if (!containsPromise) {
             return results;
         }
-        return (0, promiseForObject_ts_1.promiseForObject)(results, this.promiseAll);
+        const keys = Object.keys(results);
+        const values = Object.values(results);
+        return this.promiseAll(values).then((resolvedValues) => {
+            for (let i = 0; i < keys.length; ++i) {
+                results[keys[i]] = resolvedValues[i];
+            }
+            return results;
+        });
     }
     executeField(parentType, source, fieldDetailsList, path, positionContext, tracingChannel) {
         const validatedExecutionArgs = this.validatedExecutionArgs;
