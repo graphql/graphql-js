@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getLocation = getLocation;
 exports.getLocations = getLocations;
 const AccumulatorMap_ts_1 = require("../jsutils/AccumulatorMap.js");
-const LineRegExp = /\r\n|[\n\r]/g;
+const LineRegExp = /\n|\r(?!\n)/g;
 function getLocation(source, position) {
     const matches = source.body.matchAll(LineRegExp);
     let match = matches.next().value;

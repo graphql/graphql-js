@@ -1,5 +1,5 @@
 import { AccumulatorMap } from "../jsutils/AccumulatorMap.mjs";
-const LineRegExp = /\r\n|[\n\r]/g;
+const LineRegExp = /\n|\r(?!\n)/g;
 export function getLocation(source, position) {
     const matches = source.body.matchAll(LineRegExp);
     let match = matches.next().value;
