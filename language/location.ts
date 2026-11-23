@@ -1,7 +1,8 @@
 /** @category Source */
 import { AccumulatorMap } from '../jsutils/AccumulatorMap.ts';
 import type { Source } from './source.ts';
-const LineRegExp = /\r\n|[\n\r]/g;
+// Match the last character of each line terminator, including CRLF.
+const LineRegExp = /\n|\r(?!\n)/g;
 /** Represents a location in a Source. */
 export interface SourceLocation {
   /** One-indexed line number in the source document. */
