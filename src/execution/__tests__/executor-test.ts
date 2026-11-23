@@ -32,6 +32,8 @@ import {
 } from '../../type/scalars.ts';
 import { GraphQLSchema } from '../../type/schema.ts';
 
+import { buildSchema } from '../../utilities/buildASTSchema.ts';
+
 import type { FieldDetailsList } from '../collectFields.ts';
 import {
   execute as executeThrowingOnIncremental,
@@ -1136,18 +1138,36 @@ describe('Execute: Handles basic execution tasks', () => {
     const document = parse('{ a, b, c, d, e }');
     const rootValue = {
       a: () => 'a',
-      b: () =>
-        new Promise((resolve) => {
-          setTimeout(() => resolve('b'), 5);
-        }),
+      b: () => new Promise((resolve) => resolve('b')),
       c: () => 'c',
       d: () => new Promise((resolve) => resolve('d')),
       e: () => 'e',
     };
 
     const result = await execute({ schema, document, rootValue });
-    expectJSON(result).toDeepEqual({
+    expect(result).to.deep.equal({
       data: { a: 'a', b: 'b', c: 'c', d: 'd', e: 'e' },
+    });
+  });
+
+  it('returns the correct field values when promises resolve in reverse order', async () => {
+    const schema = buildSchema(
+      'type Query { slow: String, sync: String, fast: String }',
+    );
+    const slow = promiseWithResolvers<string>();
+    const result = execute({
+      schema,
+      document: parse('{ slow sync fast }'),
+      rootValue: {
+        slow: slow.promise,
+        sync: 'sync',
+        fast: Promise.resolve('fast'),
+      },
+    });
+
+    slow.resolve('slow');
+    expectJSON(await result).toDeepEqual({
+      data: { slow: 'slow', sync: 'sync', fast: 'fast' },
     });
   });
 
