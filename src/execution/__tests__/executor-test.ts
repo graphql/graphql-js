@@ -1146,13 +1146,9 @@ describe('Execute: Handles basic execution tasks', () => {
     };
 
     const result = await execute({ schema, document, rootValue });
-    expect(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       data: { a: 'a', b: 'b', c: 'c', d: 'd', e: 'e' },
     });
-    // deep.equal ignores key order, so check it explicitly.
-    expect(JSON.stringify(result)).to.equal(
-      '{"data":{"a":"a","b":"b","c":"c","d":"d","e":"e"}}',
-    );
   });
 
   it('Avoids recursion', () => {
