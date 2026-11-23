@@ -527,7 +527,7 @@ export class Executor<
       }
       throw error;
     }
-    // If there are no promises, we can just return the object and any incrementalDataRecords
+    // If there are no promises, we can just return the object
     if (!containsPromise) {
       return results;
     }
