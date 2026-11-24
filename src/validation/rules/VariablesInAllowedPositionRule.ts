@@ -10,7 +10,7 @@ import type { ASTVisitor } from '../../language/visitor.ts';
 
 import type { GraphQLType } from '../../type/definition.ts';
 import {
-  getNullableType,
+  getNamedType,
   isInputObjectType,
   isNonNullType,
   isNullableType,
@@ -20,7 +20,7 @@ import type { GraphQLSchema } from '../../type/schema.ts';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators.ts';
 import { typeFromAST } from '../../utilities/typeFromAST.ts';
 
-import type { ValidationContext } from '../ValidationContext.ts';
+import type { ValidationContext, VariableUsage } from '../ValidationContext.ts';
 
 /**
  * Variables in allowed position
@@ -76,13 +76,8 @@ export function VariablesInAllowedPositionRule(
       leave(operation) {
         const usages = context.getRecursiveVariableUsages(operation);
 
-        for (const {
-          node,
-          type,
-          parentType,
-          defaultValue,
-          fragmentVariableDefinition,
-        } of usages) {
+        for (const usage of usages) {
+          const { node, type, fragmentVariableDefinition } = usage;
           const varName = node.name.value;
 
           let varDef = fragmentVariableDefinition;
@@ -102,7 +97,7 @@ export function VariablesInAllowedPositionRule(
                 varType,
                 varDef.defaultValue,
                 type,
-                defaultValue,
+                usage.defaultValue,
               )
             ) {
               context.reportError(
@@ -113,15 +108,10 @@ export function VariablesInAllowedPositionRule(
               );
             }
 
-            const nullableParentType = getNullableType(parentType);
-            if (
-              isInputObjectType(nullableParentType) &&
-              nullableParentType.isOneOf &&
-              isNullableType(varType)
-            ) {
+            if (isOneOfFieldPosition(usage) && isNullableType(varType)) {
               context.reportError(
                 new GraphQLError(
-                  `Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "${nullableParentType}".`,
+                  `Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "${getNamedType(usage.parentType)}".`,
                   { nodes: [varDef, node] },
                 ),
               );
@@ -161,4 +151,13 @@ function allowedVariableUsage(
     return isTypeSubTypeOf(schema, varType, nullableLocationType);
   }
   return isTypeSubTypeOf(schema, varType, locationType);
+}
+
+function isOneOfFieldPosition(usage: VariableUsage): boolean {
+  const parentNamedType = getNamedType(usage.parentType);
+  return (
+    usage.isObjectField &&
+    isInputObjectType(parentNamedType) &&
+    parentNamedType.isOneOf
+  );
 }

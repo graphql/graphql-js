@@ -554,6 +554,27 @@ describe('Validates OneOf Input Objects', () => {
     `);
   });
 
+  it('Allows a nullable OneOf variable as a list item', () => {
+    expectValid(`
+      query ($oneOf: OneOfInput) {
+        complicatedArgs {
+          oneOfListArgField(oneOfListArg: [$oneOf])
+        }
+      }
+    `);
+  });
+
+  it('Allows a nullable OneOf list item after a OneOf field variable', () => {
+    expectValid(`
+      query ($string: String!, $oneOf: OneOfInput) {
+        complicatedArgs {
+          oneOfArgField(oneOfArg: { stringField: $string })
+          oneOfListArgField(oneOfListArg: [$oneOf])
+        }
+      }
+    `);
+  });
+
   it('Undefined variable in oneOf input object', () => {
     expectErrors(`
       {
@@ -616,6 +637,25 @@ describe('Validates OneOf Input Objects', () => {
         locations: [
           { line: 2, column: 14 },
           { line: 4, column: 73 },
+        ],
+      },
+    ]);
+  });
+
+  it('Forbids a nullable variable in an implicitly coerced OneOf list item', () => {
+    expectErrors(`
+      query ($string: String) {
+        complicatedArgs {
+          oneOfListNonNullArgField(oneOfListNonNullArg: { stringField: $string })
+        }
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Variable "$string" is of type "String" but must be non-nullable to be used for OneOf Input Object "OneOfInput".',
+        locations: [
+          { line: 2, column: 14 },
+          { line: 4, column: 72 },
         ],
       },
     ]);

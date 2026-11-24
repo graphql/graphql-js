@@ -106,6 +106,7 @@ export const testSchema: GraphQLSchema = buildSchema(`
     complexArgField(complexArg: ComplexInput): String
     oneOfArgField(oneOfArg: OneOfInput): String
     nonNullOneOfArgField(nonNullOneOfArg: OneOfInput!): String
+    oneOfListArgField(oneOfListArg: [OneOfInput]): String
     oneOfListNonNullArgField(oneOfListNonNullArg: [OneOfInput!]): String
     multipleReqs(req1: Int!, req2: Int!): String
     nonNullFieldWithDefault(arg: Int! = 0): String
