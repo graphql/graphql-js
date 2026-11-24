@@ -105,7 +105,9 @@ function printFilteredSchema(
   return [
     printSchemaDefinition(schema),
     ...directives.map((directive) => printDirective(directive)),
-    ...types.map((type) => printType(type)),
+    ...types.map((type) =>
+      printTypeImpl(type, schema.experimentalAllowEmptyTypes),
+    ),
   ]
     .filter(Boolean)
     .join('\n\n');
@@ -193,23 +195,29 @@ function hasDefaultRootOperationTypes(schema: GraphQLSchema): boolean {
  * ```
  */
 export function printType(type: GraphQLNamedType): string {
+  return printTypeImpl(type, false);
+}
+
+// With `allowEmpty`, empty types print as `{}` or `= {}`, since a bare type
+// definition is incomplete under `experimentalAllowEmptyTypes`.
+function printTypeImpl(type: GraphQLNamedType, allowEmpty: boolean): string {
   if (isScalarType(type)) {
     return printScalar(type);
   }
   if (isObjectType(type)) {
-    return printObject(type);
+    return printObject(type, allowEmpty);
   }
   if (isInterfaceType(type)) {
-    return printInterface(type);
+    return printInterface(type, allowEmpty);
   }
   if (isUnionType(type)) {
-    return printUnion(type);
+    return printUnion(type, allowEmpty);
   }
   if (isEnumType(type)) {
     return printEnum(type);
   }
   if (isInputObjectType(type)) {
-    return printInputObject(type);
+    return printInputObject(type, allowEmpty);
     /* node:coverage ignore next 4 */
   }
   // Not reachable, all possible types have been considered.
@@ -229,27 +237,34 @@ function printImplementedInterfaces(
     : '';
 }
 
-function printObject(type: GraphQLObjectType): string {
+function printObject(type: GraphQLObjectType, allowEmpty: boolean): string {
   return (
     printDescription(type) +
     `type ${type}` +
     printImplementedInterfaces(type) +
-    printFields(type)
+    printFields(type, allowEmpty)
   );
 }
 
-function printInterface(type: GraphQLInterfaceType): string {
+function printInterface(
+  type: GraphQLInterfaceType,
+  allowEmpty: boolean,
+): string {
   return (
     printDescription(type) +
     `interface ${type}` +
     printImplementedInterfaces(type) +
-    printFields(type)
+    printFields(type, allowEmpty)
   );
 }
 
-function printUnion(type: GraphQLUnionType): string {
+function printUnion(type: GraphQLUnionType, allowEmpty: boolean): string {
   const types = type.getTypes();
-  const possibleTypes = types.length ? ' = ' + types.join(' | ') : '';
+  const possibleTypes = types.length
+    ? ' = ' + types.join(' | ')
+    : allowEmpty
+      ? ' = {}'
+      : '';
   return printDescription(type) + `union ${type.name}` + possibleTypes;
 }
 
@@ -267,7 +282,10 @@ function printEnum(type: GraphQLEnumType): string {
   return printDescription(type) + `enum ${type}` + printBlock(values);
 }
 
-function printInputObject(type: GraphQLInputObjectType): string {
+function printInputObject(
+  type: GraphQLInputObjectType,
+  allowEmpty: boolean,
+): string {
   const fields = Object.values(type.getFields()).map(
     (f, i) => printDescription(f, '  ', !i) + '  ' + printInputValue(f),
   );
@@ -275,11 +293,14 @@ function printInputObject(type: GraphQLInputObjectType): string {
     printDescription(type) +
     `input ${type}` +
     (type.isOneOf ? ' @oneOf' : '') +
-    printBlock(fields)
+    printBlock(fields, allowEmpty)
   );
 }
 
-function printFields(type: GraphQLObjectType | GraphQLInterfaceType): string {
+function printFields(
+  type: GraphQLObjectType | GraphQLInterfaceType,
+  allowEmpty: boolean,
+): string {
   const fields = Object.values(type.getFields()).map(
     (f, i) =>
       printDescription(f, '  ', !i) +
@@ -290,11 +311,17 @@ function printFields(type: GraphQLObjectType | GraphQLInterfaceType): string {
       String(f.type) +
       printDeprecated(f.deprecationReason),
   );
-  return printBlock(fields);
+  return printBlock(fields, allowEmpty);
 }
 
-function printBlock(items: ReadonlyArray<string>): string {
-  return items.length !== 0 ? ' {\n' + items.join('\n') + '\n}' : '';
+function printBlock(
+  items: ReadonlyArray<string>,
+  allowEmpty: boolean = false,
+): string {
+  if (items.length === 0) {
+    return allowEmpty ? ' {}' : '';
+  }
+  return ' {\n' + items.join('\n') + '\n}';
 }
 
 function printArgs(

@@ -594,6 +594,37 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('Prints empty types with braces when experimentalAllowEmptyTypes is enabled', () => {
+    const schema = new GraphQLSchema({
+      types: [
+        new GraphQLEnumType({ name: 'SomeEnum', values: {} }),
+        new GraphQLInputObjectType({ name: 'SomeInputObject', fields: {} }),
+        new GraphQLInterfaceType({ name: 'SomeInterface', fields: {} }),
+        new GraphQLObjectType({ name: 'SomeObject', fields: {} }),
+        new GraphQLUnionType({ name: 'SomeUnion', types: [] }),
+      ],
+      experimentalAllowEmptyTypes: true,
+    });
+
+    const schemaText = printSchema(schema);
+    expect(schemaText).to.equal(dedent`
+      enum SomeEnum
+
+      input SomeInputObject {}
+
+      interface SomeInterface {}
+
+      type SomeObject {}
+
+      union SomeUnion = {}
+    `);
+    expect(
+      printSchema(
+        buildSchema(schemaText, { experimentalAllowEmptyTypes: true }),
+      ),
+    ).to.equal(schemaText);
+  });
+
   it('Prints custom directives', () => {
     const SimpleDirective = new GraphQLDirective({
       name: 'simpleDirective',

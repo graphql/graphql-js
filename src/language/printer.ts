@@ -306,7 +306,7 @@ const printDocASTReducer: Required<ASTReducer<PrintBuffer>> = {
           name,
           wrap('implements ', join(interfaces, ' & ')),
           join(directives, ' '),
-          block(fields),
+          fieldsBlock(fields),
         ],
         ' ',
       ),
@@ -355,7 +355,7 @@ const printDocASTReducer: Required<ASTReducer<PrintBuffer>> = {
           name,
           wrap('implements ', join(interfaces, ' & ')),
           join(directives, ' '),
-          block(fields),
+          fieldsBlock(fields),
         ],
         ' ',
       ),
@@ -364,10 +364,7 @@ const printDocASTReducer: Required<ASTReducer<PrintBuffer>> = {
   UnionTypeDefinition: ({ description, name, directives, types }) =>
     join([
       wrap('', description, '\n'),
-      join(
-        ['union', name, join(directives, ' '), wrap('= ', join(types, ' | '))],
-        ' ',
-      ),
+      join(['union', name, join(directives, ' '), unionMembers(types)], ' '),
     ]),
 
   EnumTypeDefinition: ({ description, name, directives, values }) =>
@@ -385,7 +382,7 @@ const printDocASTReducer: Required<ASTReducer<PrintBuffer>> = {
   InputObjectTypeDefinition: ({ description, name, directives, fields }) =>
     join([
       wrap('', description, '\n'),
-      join(['input', name, join(directives, ' '), block(fields)], ' '),
+      join(['input', name, join(directives, ' '), fieldsBlock(fields)], ' '),
     ]),
 
   DirectiveDefinition: ({
@@ -422,7 +419,7 @@ const printDocASTReducer: Required<ASTReducer<PrintBuffer>> = {
         name,
         wrap('implements ', join(interfaces, ' & ')),
         join(directives, ' '),
-        block(fields),
+        fieldsBlock(fields),
       ],
       ' ',
     ),
@@ -434,19 +431,14 @@ const printDocASTReducer: Required<ASTReducer<PrintBuffer>> = {
         name,
         wrap('implements ', join(interfaces, ' & ')),
         join(directives, ' '),
-        block(fields),
+        fieldsBlock(fields),
       ],
       ' ',
     ),
 
   UnionTypeExtension: ({ name, directives, types }) =>
     join(
-      [
-        'extend union',
-        name,
-        join(directives, ' '),
-        wrap('= ', join(types, ' | ')),
-      ],
+      ['extend union', name, join(directives, ' '), unionMembers(types)],
       ' ',
     ),
 
@@ -454,7 +446,10 @@ const printDocASTReducer: Required<ASTReducer<PrintBuffer>> = {
     join(['extend enum', name, join(directives, ' '), block(values)], ' '),
 
   InputObjectTypeExtension: ({ name, directives, fields }) =>
-    join(['extend input', name, join(directives, ' '), block(fields)], ' '),
+    join(
+      ['extend input', name, join(directives, ' '), fieldsBlock(fields)],
+      ' ',
+    ),
 
   DirectiveExtension: ({ name, directives }) =>
     join([join(['extend directive @', name]), join(directives, ' ')], ' '),
@@ -527,6 +522,31 @@ function block(
   array: Maybe<ReadonlyArray<PrintBuffer | undefined>>,
 ): PrintBuffer {
   return wrap('{\n', join(array, '\n').indent(), '\n}');
+}
+
+/**
+ * Like block, but prints an empty array as `{}`, since an empty set of fields
+ * differs from no set of fields.
+ *
+ * @internal
+ */
+function fieldsBlock(
+  array: Maybe<ReadonlyArray<PrintBuffer | undefined>>,
+): PrintBuffer {
+  return array?.length === 0 ? new PrintBuffer('{}') : block(array);
+}
+
+/**
+ * Prints union member types, and an empty array as `= {}`.
+ *
+ * @internal
+ */
+function unionMembers(
+  array: Maybe<ReadonlyArray<PrintBuffer | undefined>>,
+): PrintBuffer {
+  return array?.length === 0
+    ? new PrintBuffer('= {}')
+    : wrap('= ', join(array, ' | '));
 }
 
 /**
