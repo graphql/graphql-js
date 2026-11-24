@@ -16,7 +16,7 @@ import {
   GraphQLNonNull,
   GraphQLScalarType,
 } from '../../type/definition.ts';
-import { GraphQLInt } from '../../type/scalars.ts';
+import { GraphQLInt, GraphQLString } from '../../type/scalars.ts';
 import { GraphQLSchema } from '../../type/schema.ts';
 
 import type { VariableValues } from '../../execution/values.ts';
@@ -345,6 +345,88 @@ describe('validateInputValue', () => {
         ],
         true,
       );
+    });
+
+    it('ignores inherited prototype properties and getters', () => {
+      const InputWithProtoNames = new GraphQLInputObjectType({
+        name: 'InputWithProtoNames',
+        fields: {
+          toString: { type: GraphQLString },
+        },
+      });
+      const RequiredProtoField = new GraphQLInputObjectType({
+        name: 'RequiredProtoField',
+        fields: {
+          toString: { type: new GraphQLNonNull(GraphQLString) },
+        },
+      });
+      const OneOfWithProtoName = new GraphQLInputObjectType({
+        name: 'OneOfWithProtoName',
+        fields: {
+          toString: { type: GraphQLString },
+          foo: { type: GraphQLInt },
+        },
+        isOneOf: true,
+      });
+
+      test({}, InputWithProtoNames, []);
+      test({ toString: undefined }, InputWithProtoNames, []);
+      test(Object.create({ toString: 123 }), InputWithProtoNames, []);
+      test({ toString: 'own' }, InputWithProtoNames, []);
+      test(
+        Object.assign(Object.create(null), { toString: 'own' }),
+        InputWithProtoNames,
+        [],
+      );
+      test({ toString: 123 }, InputWithProtoNames, [
+        {
+          error: 'String cannot represent a non string value: 123',
+          path: ['toString'],
+        },
+      ]);
+      test({}, RequiredProtoField, [
+        {
+          error:
+            'Expected value of type "RequiredProtoField" to include required field "toString", found: {}.',
+          path: [],
+        },
+      ]);
+      test(Object.create({ toString: 'inherited' }), RequiredProtoField, [
+        {
+          error:
+            'Expected value of type "RequiredProtoField" to include required field "toString", found: {}.',
+          path: [],
+        },
+      ]);
+      test({ foo: 123 }, OneOfWithProtoName, []);
+
+      const prototype = Object.create(null);
+      Object.defineProperty(prototype, 'toString', {
+        get() {
+          throw new Error('Inherited getter read');
+        },
+      });
+      Object.defineProperty(prototype, 'undefined', {
+        get() {
+          throw new Error('Inherited undefined getter read');
+        },
+      });
+      const inherited = Object.create(prototype);
+      test(inherited, InputWithProtoNames, []);
+      test(inherited, OneOfWithProtoName, [
+        {
+          error:
+            'Within OneOf Input Object type "OneOfWithProtoName", exactly one field must be specified, and the value for that field must be non-null.',
+          path: [],
+        },
+      ]);
+      test(Object.create({ undefined: null }), OneOfWithProtoName, [
+        {
+          error:
+            'Within OneOf Input Object type "OneOfWithProtoName", exactly one field must be specified, and the value for that field must be non-null.',
+          path: [],
+        },
+      ]);
     });
   });
 

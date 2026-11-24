@@ -123,13 +123,15 @@ export function astFromValue(
     }
     const fieldNodes: Array<ConstObjectFieldNode> = [];
     for (const field of Object.values(type.getFields())) {
-      const fieldValue = astFromValue(value[field.name], field.type);
-      if (fieldValue) {
-        fieldNodes.push({
-          kind: Kind.OBJECT_FIELD,
-          name: { kind: Kind.NAME, value: field.name },
-          value: fieldValue,
-        });
+      if (Object.hasOwn(value, field.name)) {
+        const fieldValue = astFromValue(value[field.name], field.type);
+        if (fieldValue) {
+          fieldNodes.push({
+            kind: Kind.OBJECT_FIELD,
+            name: { kind: Kind.NAME, value: field.name },
+            value: fieldValue,
+          });
+        }
       }
     }
     return { kind: Kind.OBJECT, fields: fieldNodes };

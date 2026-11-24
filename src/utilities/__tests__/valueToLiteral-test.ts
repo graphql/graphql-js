@@ -146,6 +146,57 @@ describe('valueToLiteral', () => {
     test({ foo: 3, unknown: 3 }, inputObj, undefined);
   });
 
+  it('ignores inherited prototype properties and getters on input objects', () => {
+    const customScalar = new GraphQLScalarType({
+      name: 'CustomScalar',
+    });
+    const inputWithProtoNames = new GraphQLInputObjectType({
+      name: 'InputWithProtoNames',
+      fields: {
+        toString: { type: GraphQLString },
+        constructor: { type: customScalar },
+      },
+    });
+    const inputWithCustomScalar = new GraphQLInputObjectType({
+      name: 'InputWithCustomScalar',
+      fields: {
+        constructor: { type: customScalar },
+      },
+    });
+    const requiredProtoField = new GraphQLInputObjectType({
+      name: 'RequiredProtoField',
+      fields: {
+        toString: { type: new GraphQLNonNull(GraphQLString) },
+      },
+    });
+
+    test({}, inputWithProtoNames, '{}');
+    test({}, inputWithCustomScalar, '{}');
+    test({ toString: undefined }, inputWithProtoNames, '{}');
+    test(Object.create({ toString: 'inherited' }), inputWithProtoNames, '{}');
+    test({ toString: 'own' }, inputWithProtoNames, '{ toString: "own" }');
+    test(
+      Object.assign(Object.create(null), { toString: 'own' }),
+      inputWithProtoNames,
+      '{ toString: "own" }',
+    );
+    test({}, requiredProtoField, undefined);
+    test(
+      Object.create({ toString: 'inherited' }),
+      requiredProtoField,
+      undefined,
+    );
+
+    const prototype = Object.create(null);
+    Object.defineProperty(prototype, 'toString', {
+      get() {
+        throw new Error('Inherited getter read');
+      },
+    });
+    const inherited = Object.create(prototype);
+    test(inherited, inputWithProtoNames, '{}');
+  });
+
   it('custom scalar types may define valueToLiteral', () => {
     const customScalar = new GraphQLScalarType({
       name: 'CustomScalar',

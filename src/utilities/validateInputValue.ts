@@ -179,7 +179,9 @@ function validateInputValueImpl(
     const fieldDefs = type.getFields();
 
     for (const field of Object.values(fieldDefs)) {
-      const fieldValue = inputValue[field.name];
+      const fieldValue = Object.hasOwn(inputValue, field.name)
+        ? inputValue[field.name]
+        : undefined;
       if (fieldValue === undefined) {
         if (isRequiredInputField(field)) {
           reportInvalidValue(
@@ -230,6 +232,7 @@ function validateInputValueImpl(
           getOneOfInputObjectErrorMessage(type),
           path,
         );
+        return;
       }
 
       const field = fields[0];

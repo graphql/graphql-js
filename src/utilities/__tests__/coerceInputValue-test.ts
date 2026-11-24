@@ -180,6 +180,63 @@ describe('coerceInputValue', () => {
         undefined,
       );
     });
+
+    it('ignores inherited prototype properties and getters', () => {
+      const InputWithProtoNames = new GraphQLInputObjectType({
+        name: 'InputWithProtoNames',
+        fields: {
+          toString: { type: GraphQLString },
+          valueOf: { type: GraphQLString, default: { value: 'default' } },
+        },
+      });
+      const RequiredProtoField = new GraphQLInputObjectType({
+        name: 'RequiredProtoField',
+        fields: {
+          toString: { type: new GraphQLNonNull(GraphQLString) },
+        },
+      });
+      const OneOfWithProtoName = new GraphQLInputObjectType({
+        name: 'OneOfWithProtoName',
+        fields: {
+          toString: { type: GraphQLString },
+          foo: { type: GraphQLInt },
+        },
+        isOneOf: true,
+      });
+
+      test({}, InputWithProtoNames, { valueOf: 'default' });
+      test({ toString: undefined }, InputWithProtoNames, {
+        valueOf: 'default',
+      });
+      test(Object.create({ toString: 'inherited' }), InputWithProtoNames, {
+        valueOf: 'default',
+      });
+      test({ toString: 'own' }, InputWithProtoNames, {
+        toString: 'own',
+        valueOf: 'default',
+      });
+      test(
+        Object.assign(Object.create(null), { toString: 'own' }),
+        InputWithProtoNames,
+        { toString: 'own', valueOf: 'default' },
+      );
+      test({}, RequiredProtoField, undefined);
+      test(
+        Object.create({ toString: 'inherited' }),
+        RequiredProtoField,
+        undefined,
+      );
+      test({ foo: 123 }, OneOfWithProtoName, { foo: 123 });
+
+      const prototype = Object.create(null);
+      Object.defineProperty(prototype, 'toString', {
+        get() {
+          throw new Error('Inherited getter read');
+        },
+      });
+      const inherited = Object.create(prototype);
+      test(inherited, InputWithProtoNames, { valueOf: 'default' });
+    });
   });
 
   describe('for GraphQLInputObject that isOneOf', () => {

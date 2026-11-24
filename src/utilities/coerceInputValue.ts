@@ -113,7 +113,9 @@ export function coerceInputValue(
       }
     }
     for (const field of Object.values(fieldDefs)) {
-      const fieldValue = inputValue[field.name];
+      const fieldValue = Object.hasOwn(inputValue, field.name)
+        ? inputValue[field.name]
+        : undefined;
       if (fieldValue === undefined) {
         if (isRequiredInputField(field)) {
           return; // Invalid: intentionally return no value.
