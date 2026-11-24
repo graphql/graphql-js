@@ -216,7 +216,8 @@ export class Executor {
     }
     executeFields(parentType, sourceValue, path, groupedFieldSet, positionContext) {
         const results = Object.create(null);
-        let containsPromise = false;
+        let promiseKeys;
+        let promises;
         const tracingChannel = shouldTrace(resolveChannel)
             ? resolveChannel
             : undefined;
@@ -227,25 +228,30 @@ export class Executor {
                 if (result !== undefined) {
                     results[responseName] = result;
                     if (isPromiseLike(result)) {
-                        containsPromise = true;
+                        if (promiseKeys === undefined || promises === undefined) {
+                            promiseKeys = [responseName];
+                            promises = [result];
+                        }
+                        else {
+                            promiseKeys.push(responseName);
+                            promises.push(result);
+                        }
                     }
                 }
             }
         }
         catch (error) {
-            if (containsPromise) {
-                this.sharedExecutionContext.asyncWorkTracker.addValues(Object.values(results));
+            if (promises !== undefined) {
+                this.sharedExecutionContext.asyncWorkTracker.addValues(promises);
             }
             throw error;
         }
-        if (!containsPromise) {
+        if (promiseKeys === undefined || promises === undefined) {
             return results;
         }
-        const keys = Object.keys(results);
-        const values = Object.values(results);
-        return this.promiseAll(values).then((resolvedValues) => {
-            for (let i = 0; i < keys.length; ++i) {
-                results[keys[i]] = resolvedValues[i];
+        return this.promiseAll(promises).then((resolvedValues) => {
+            for (let i = 0; i < promiseKeys.length; ++i) {
+                results[promiseKeys[i]] = resolvedValues[i];
             }
             return results;
         });
