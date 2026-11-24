@@ -209,6 +209,8 @@ export interface FormattedExecutionResult<
 
 const defaultAbortReason = new Error('This operation was aborted');
 
+const abortedWhileNextPending = Symbol('abortedWhileNextPending');
+
 /** @internal */
 export class Executor<
   TPositionContext = undefined, // No position context by default
@@ -915,6 +917,20 @@ export class Executor<
     let containsPromise = false;
     const completedResults: Array<unknown> = [];
     const asyncIterator = items[Symbol.asyncIterator]();
+    // so a hanging next() cannot keep us from releasing the iterator on abort
+    const abortSignal = this.getAbortSignal();
+    let abortPromise: Promise<typeof abortedWhileNextPending> | undefined;
+    if (abortSignal !== undefined) {
+      abortPromise = abortSignal.aborted
+        ? Promise.resolve(abortedWhileNextPending)
+        : new Promise((resolve) => {
+            abortSignal.addEventListener(
+              'abort',
+              () => resolve(abortedWhileNextPending),
+              { once: true },
+            );
+          });
+    }
     let index = 0;
     let iteration;
     try {
@@ -934,8 +950,18 @@ export class Executor<
         }
         const itemPath = addPath(path, index, undefined);
         try {
-          // eslint-disable-next-line no-await-in-loop
-          iteration = await asyncIterator.next();
+          if (abortPromise === undefined) {
+            // eslint-disable-next-line no-await-in-loop
+            iteration = await asyncIterator.next();
+          } else {
+            const nextPromise = asyncIterator.next();
+            // eslint-disable-next-line no-await-in-loop
+            iteration = await Promise.race([nextPromise, abortPromise]);
+            if (iteration === abortedWhileNextPending) {
+              this.sharedExecutionContext.asyncWorkTracker.add(nextPromise);
+              break;
+            }
+          }
         } catch (rawError) {
           throw locatedError(
             rawError,
@@ -975,8 +1001,8 @@ export class Executor<
     }
 
     // Throwing on completion outside of the loop may allow engines to better optimize
-    if (this.aborted) {
-      if (!iteration?.done) {
+    if (this.aborted || iteration === abortedWhileNextPending) {
+      if (iteration === abortedWhileNextPending || !iteration?.done) {
         this.sharedExecutionContext.asyncWorkTracker.add(
           returnIteratorCatchingErrors(asyncIterator),
         );
