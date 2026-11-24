@@ -582,6 +582,44 @@ describe('Validates OneOf Input Objects', () => {
       },
     ]);
   });
+
+  it('Forbids a nullable variable in a non-null OneOf argument', () => {
+    expectErrors(`
+      query ($string: String) {
+        complicatedArgs {
+          nonNullOneOfArgField(nonNullOneOfArg: { stringField: $string })
+        }
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Variable "$string" is of type "String" but must be non-nullable to be used for OneOf Input Object "OneOfInput".',
+        locations: [
+          { line: 2, column: 14 },
+          { line: 4, column: 64 },
+        ],
+      },
+    ]);
+  });
+
+  it('Forbids a nullable variable in a non-null OneOf list item', () => {
+    expectErrors(`
+      query ($string: String) {
+        complicatedArgs {
+          oneOfListNonNullArgField(oneOfListNonNullArg: [{ stringField: $string }])
+        }
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Variable "$string" is of type "String" but must be non-nullable to be used for OneOf Input Object "OneOfInput".',
+        locations: [
+          { line: 2, column: 14 },
+          { line: 4, column: 73 },
+        ],
+      },
+    ]);
+  });
 });
 
 describe('Non-specified behavior of variables within custom scalars', () => {

@@ -10,6 +10,7 @@ import type { ASTVisitor } from '../../language/visitor.ts';
 
 import type { GraphQLType } from '../../type/definition.ts';
 import {
+  getNullableType,
   isInputObjectType,
   isNonNullType,
   isNullableType,
@@ -112,14 +113,15 @@ export function VariablesInAllowedPositionRule(
               );
             }
 
+            const nullableParentType = getNullableType(parentType);
             if (
-              isInputObjectType(parentType) &&
-              parentType.isOneOf &&
+              isInputObjectType(nullableParentType) &&
+              nullableParentType.isOneOf &&
               isNullableType(varType)
             ) {
               context.reportError(
                 new GraphQLError(
-                  `Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "${parentType}".`,
+                  `Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "${nullableParentType}".`,
                   { nodes: [varDef, node] },
                 ),
               );
