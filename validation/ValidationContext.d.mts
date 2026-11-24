@@ -9,10 +9,12 @@ import type { GraphQLSchema } from "../type/schema.mjs";
 import type { FragmentSignature } from "../utilities/TypeInfo.mjs";
 import { TypeInfo } from "../utilities/TypeInfo.mjs";
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
-interface VariableUsage {
+/** @internal */
+export interface VariableUsage {
     readonly node: VariableNode;
     readonly type: Maybe<GraphQLInputType>;
     readonly parentType: Maybe<GraphQLInputType>;
+    readonly isObjectField: boolean;
     readonly defaultValue: unknown;
     readonly fragmentVariableDefinition: Maybe<VariableDefinitionNode>;
 }

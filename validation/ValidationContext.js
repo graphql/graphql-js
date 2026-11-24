@@ -141,8 +141,12 @@ class ValidationContext extends ASTValidationContext {
             const newUsages = [];
             const typeInfo = new TypeInfo_ts_1.TypeInfo(this._schema, undefined, this._typeInfo.getFragmentSignatureByName());
             const fragmentDefinition = node.kind === kinds_ts_1.Kind.FRAGMENT_DEFINITION ? node : undefined;
+            let isObjectField = false;
             (0, visitor_ts_1.visit)(node, (0, TypeInfo_ts_1.visitWithTypeInfo)(typeInfo, {
                 VariableDefinition: () => false,
+                ObjectField(field) {
+                    isObjectField = field.value.kind === kinds_ts_1.Kind.VARIABLE;
+                },
                 Variable(variable) {
                     let fragmentVariableDefinition;
                     if (fragmentDefinition) {
@@ -154,9 +158,11 @@ class ValidationContext extends ASTValidationContext {
                         node: variable,
                         type: typeInfo.getInputType(),
                         parentType: typeInfo.getParentInputType(),
+                        isObjectField,
                         defaultValue: typeInfo.getDefaultValue(),
                         fragmentVariableDefinition,
                     });
+                    isObjectField = false;
                 },
             }));
             usages = newUsages;

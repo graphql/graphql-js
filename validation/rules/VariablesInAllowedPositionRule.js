@@ -20,7 +20,8 @@ function VariablesInAllowedPositionRule(context) {
             },
             leave(operation) {
                 const usages = context.getRecursiveVariableUsages(operation);
-                for (const { node, type, parentType, defaultValue, fragmentVariableDefinition, } of usages) {
+                for (const usage of usages) {
+                    const { node, type, fragmentVariableDefinition } = usage;
                     const varName = node.name.value;
                     let varDef = fragmentVariableDefinition;
                     varDef ??= varDefMap.get(varName);
@@ -28,14 +29,11 @@ function VariablesInAllowedPositionRule(context) {
                         const schema = context.getSchema();
                         const varType = (0, typeFromAST_ts_1.typeFromAST)(schema, varDef.type);
                         if (varType &&
-                            !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
+                            !allowedVariableUsage(schema, varType, varDef.defaultValue, type, usage.defaultValue)) {
                             context.reportError(new GraphQLError_ts_1.GraphQLError(`Variable "$${varName}" of type "${varType}" used in position expecting type "${type}".`, { nodes: [varDef, node] }));
                         }
-                        const nullableParentType = (0, definition_ts_1.getNullableType)(parentType);
-                        if ((0, definition_ts_1.isInputObjectType)(nullableParentType) &&
-                            nullableParentType.isOneOf &&
-                            (0, definition_ts_1.isNullableType)(varType)) {
-                            context.reportError(new GraphQLError_ts_1.GraphQLError(`Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "${nullableParentType}".`, { nodes: [varDef, node] }));
+                        if (isOneOfFieldPosition(usage) && (0, definition_ts_1.isNullableType)(varType)) {
+                            context.reportError(new GraphQLError_ts_1.GraphQLError(`Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "${(0, definition_ts_1.getNamedType)(usage.parentType)}".`, { nodes: [varDef, node] }));
                         }
                     }
                 }
@@ -54,5 +52,11 @@ function allowedVariableUsage(schema, varType, varDefaultValue, locationType, lo
         return (0, typeComparators_ts_1.isTypeSubTypeOf)(schema, varType, nullableLocationType);
     }
     return (0, typeComparators_ts_1.isTypeSubTypeOf)(schema, varType, locationType);
+}
+function isOneOfFieldPosition(usage) {
+    const parentNamedType = (0, definition_ts_1.getNamedType)(usage.parentType);
+    return (usage.isObjectField &&
+        (0, definition_ts_1.isInputObjectType)(parentNamedType) &&
+        parentNamedType.isOneOf);
 }
 //# sourceMappingURL=VariablesInAllowedPositionRule.js.map

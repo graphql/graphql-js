@@ -1,6 +1,6 @@
 import { GraphQLError } from "../../error/GraphQLError.mjs";
 import { Kind } from "../../language/kinds.mjs";
-import { getNullableType, isInputObjectType, isNonNullType, isNullableType, } from "../../type/definition.mjs";
+import { getNamedType, isInputObjectType, isNonNullType, isNullableType, } from "../../type/definition.mjs";
 import { isTypeSubTypeOf } from "../../utilities/typeComparators.mjs";
 import { typeFromAST } from "../../utilities/typeFromAST.mjs";
 export function VariablesInAllowedPositionRule(context) {
@@ -17,7 +17,8 @@ export function VariablesInAllowedPositionRule(context) {
             },
             leave(operation) {
                 const usages = context.getRecursiveVariableUsages(operation);
-                for (const { node, type, parentType, defaultValue, fragmentVariableDefinition, } of usages) {
+                for (const usage of usages) {
+                    const { node, type, fragmentVariableDefinition } = usage;
                     const varName = node.name.value;
                     let varDef = fragmentVariableDefinition;
                     varDef ??= varDefMap.get(varName);
@@ -25,14 +26,11 @@ export function VariablesInAllowedPositionRule(context) {
                         const schema = context.getSchema();
                         const varType = typeFromAST(schema, varDef.type);
                         if (varType &&
-                            !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
+                            !allowedVariableUsage(schema, varType, varDef.defaultValue, type, usage.defaultValue)) {
                             context.reportError(new GraphQLError(`Variable "$${varName}" of type "${varType}" used in position expecting type "${type}".`, { nodes: [varDef, node] }));
                         }
-                        const nullableParentType = getNullableType(parentType);
-                        if (isInputObjectType(nullableParentType) &&
-                            nullableParentType.isOneOf &&
-                            isNullableType(varType)) {
-                            context.reportError(new GraphQLError(`Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "${nullableParentType}".`, { nodes: [varDef, node] }));
+                        if (isOneOfFieldPosition(usage) && isNullableType(varType)) {
+                            context.reportError(new GraphQLError(`Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "${getNamedType(usage.parentType)}".`, { nodes: [varDef, node] }));
                         }
                     }
                 }
@@ -51,5 +49,11 @@ function allowedVariableUsage(schema, varType, varDefaultValue, locationType, lo
         return isTypeSubTypeOf(schema, varType, nullableLocationType);
     }
     return isTypeSubTypeOf(schema, varType, locationType);
+}
+function isOneOfFieldPosition(usage) {
+    const parentNamedType = getNamedType(usage.parentType);
+    return (usage.isObjectField &&
+        isInputObjectType(parentNamedType) &&
+        parentNamedType.isOneOf);
 }
 //# sourceMappingURL=VariablesInAllowedPositionRule.mjs.map
