@@ -538,7 +538,7 @@ export class Executor<
   ): PromiseOrValue<ObjMap<unknown>> {
     const results = Object.create(null);
     let promiseKeys: Array<string> | undefined;
-    let promises!: Array<PromiseLike<unknown>>;
+    let promises: Array<PromiseLike<unknown>> | undefined;
     const tracingChannel = shouldTrace(resolveChannel)
       ? resolveChannel
       : undefined;
@@ -558,7 +558,9 @@ export class Executor<
         if (result !== undefined) {
           results[responseName] = result;
           if (isPromiseLike(result)) {
-            if (promiseKeys === undefined) {
+            // Both arrays are initialized together. Checking both lets
+            // TypeScript narrow their types without a `!` assertion.
+            if (promiseKeys === undefined || promises === undefined) {
               promiseKeys = [responseName];
               promises = [result];
             } else {
@@ -569,14 +571,14 @@ export class Executor<
         }
       }
     } catch (error) {
-      if (promiseKeys !== undefined) {
+      if (promises !== undefined) {
         this.sharedExecutionContext.asyncWorkTracker.addValues(promises);
       }
       throw error;
     }
 
     // If there are no promises, we can just return the object
-    if (promiseKeys === undefined) {
+    if (promiseKeys === undefined || promises === undefined) {
       return results;
     }
 
