@@ -33,6 +33,7 @@ import type { GraphQLSchema } from '../type/schema.ts';
 import type { FragmentSignature } from '../utilities/TypeInfo.ts';
 import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo.ts';
 
+import type { ValidationOptions } from './validate.ts';
 import { validationAbortedError } from './validationAbortedError.ts';
 
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
@@ -203,6 +204,10 @@ export type SDLValidationRule = (context: SDLValidationContext) => ASTVisitor;
 interface ValidationContextOptions {
   /** Whether suggestion text should be omitted from errors. */
   hideSuggestions?: Maybe<boolean>;
+  /** Whether legacy variable usage validation is enabled. */
+  allowLegacyVariableUsage?: boolean | undefined;
+  /** Callback for variable usages accepted only by legacy validation. */
+  onLegacyVariableUsage?: ValidationOptions['onLegacyVariableUsage'];
   /**
    * Whether selection sets on composite types may be empty.
    * @deprecated empty selection sets are now always allowed;
@@ -212,6 +217,12 @@ interface ValidationContextOptions {
 
 /** Validation context passed to query validation rules. */
 export class ValidationContext extends ASTValidationContext {
+  /**
+   * Optional callback for legacy-only variable usages.
+   * Invoking it does not report a validation error.
+   */
+  readonly onLegacyVariableUsage: ValidationOptions['onLegacyVariableUsage'];
+
   private _schema: GraphQLSchema;
   private _typeInfo: TypeInfo;
   private _variableUsages: Map<
@@ -225,6 +236,7 @@ export class ValidationContext extends ASTValidationContext {
   >;
   private _hideSuggestions: boolean;
   private _allowEmptySelectionSets: boolean;
+  private _allowLegacyVariableUsage: boolean;
 
   /**
    * Creates a ValidationContext instance.
@@ -320,6 +332,8 @@ export class ValidationContext extends ASTValidationContext {
     this._recursiveVariableUsages = new Map();
     this._hideSuggestions = hideSuggestions ?? false;
     this._allowEmptySelectionSets = allowEmptySelectionSets ?? true;
+    this._allowLegacyVariableUsage = options.allowLegacyVariableUsage ?? false;
+    this.onLegacyVariableUsage = options.onLegacyVariableUsage;
   }
 
   /**
@@ -345,6 +359,14 @@ export class ValidationContext extends ASTValidationContext {
    */
   get allowEmptySelectionSets(): boolean {
     return this._allowEmptySelectionSets;
+  }
+
+  /**
+   * Returns whether legacy variable usage validation is enabled.
+   * @returns True when default values may permit nullable variables in non-null positions.
+   */
+  get allowLegacyVariableUsage(): boolean {
+    return this._allowLegacyVariableUsage;
   }
 
   /**

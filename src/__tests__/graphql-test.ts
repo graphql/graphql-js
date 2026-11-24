@@ -14,6 +14,8 @@ import type { ValidationRule } from '../validation/ValidationContext.ts';
 
 import { execute } from '../execution/execute.ts';
 
+import { buildSchema } from '../utilities/buildASTSchema.ts';
+
 import { graphql, graphqlSync } from '../graphql.ts';
 import { defaultHarness } from '../harness.ts';
 
@@ -44,6 +46,83 @@ const schema = new GraphQLSchema({
     },
   }),
 });
+
+for (const run of [graphql, graphqlSync]) {
+  describe(`${run.name}: variable usage validation`, () => {
+    const variableSchema = buildSchema('type Query { value(n: Int!): Int }');
+    const source = 'query Q($v: Int = 3) { value(n: $v) }';
+
+    it('rejects legacy variable usages by default before execution', async () => {
+      let executed = false;
+      const warnings: Array<GraphQLError> = [];
+      const result = await run({
+        schema: variableSchema,
+        source,
+        variableValues: { v: 5 },
+        rootValue: {
+          value: () => {
+            executed = true;
+          },
+        },
+        onLegacyVariableUsage: (warning) => {
+          warnings.push(warning);
+        },
+      });
+      expect(result.errors?.[0].message).to.equal(
+        'Variable "$v" of type "Int" used in position expecting type "Int!".',
+      );
+      expect(executed).to.equal(false);
+      expect(warnings).to.deep.equal([]);
+    });
+
+    it('executes legacy operations with optional migration logging', async () => {
+      const warnings: Array<GraphQLError> = [];
+      const args = {
+        schema: variableSchema,
+        source,
+        allowLegacyVariableUsage: true,
+        rootValue: { value: ({ n }: { n: number }) => n },
+      };
+      const silentResult = await run(args);
+      const result = await run({
+        ...args,
+        maxErrors: 0,
+        onLegacyVariableUsage(warning, operation) {
+          expect(operation.name?.value).to.equal('Q');
+          warnings.push(warning);
+        },
+      });
+      expect(result).to.deep.equal({ data: { value: 3 } });
+      expect(result).to.deep.equal(silentResult);
+      expect(warnings).to.have.lengthOf(1);
+    });
+
+    it('preserves runtime null errors in legacy mode', async () => {
+      const result = await run({
+        schema: variableSchema,
+        source,
+        allowLegacyVariableUsage: true,
+        variableValues: { v: null },
+      });
+      expect(result.data).to.deep.equal({ value: null });
+      expect(result.errors).to.have.lengthOf(1);
+      expect(result.errors?.[0].path).to.deep.equal(['value']);
+    });
+
+    it('allows omission but rejects null after migrating the variable type', async () => {
+      const args = {
+        schema: variableSchema,
+        source: 'query Q($v: Int! = 3) { value(n: $v) }',
+        rootValue: { value: ({ n }: { n: number }) => n },
+      };
+      expect(await run(args)).to.deep.equal({ data: { value: 3 } });
+      const result = await run({ ...args, variableValues: { v: null } });
+      expect(result.data).to.equal(undefined);
+      expect(result.errors).to.have.lengthOf(1);
+      expect(result.errors?.[0].path).to.equal(undefined);
+    });
+  });
+}
 
 describe('graphql', () => {
   it('passes source through to parse', async () => {
