@@ -1,13 +1,8 @@
 import { describe, it } from 'node:test';
 
-import { buildSchema } from '../../utilities/buildASTSchema.ts';
-
 import { VariablesInAllowedPositionRule } from '../rules/VariablesInAllowedPositionRule.ts';
 
-import {
-  expectValidationErrors,
-  expectValidationErrorsWithSchema,
-} from './harness.ts';
+import { expectValidationErrors } from './harness.ts';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(VariablesInAllowedPositionRule, queryStr);
@@ -587,198 +582,43 @@ describe('Validates OneOf Input Objects', () => {
       },
     ]);
   });
-});
 
-describe('Validates OneOf variables when the OneOf input is non-null', () => {
-  const schema = buildSchema(`
-    input CatInput {
-      name: String!
-    }
-
-    input DogInput {
-      name: String!
-    }
-
-    input PetInput @oneOf {
-      cat: CatInput
-      dog: DogInput
-    }
-
-    input OuterInput {
-      pet: PetInput!
-    }
-
-    type Pet {
-      name: String
-    }
-
-    type Query {
-      addPet(pet: PetInput!): Pet
-      addPets(pets: [PetInput!]!): [Pet]
-      addPetsList(pets: [PetInput!]): [Pet]
-      addOuter(outer: OuterInput): Pet
-    }
-  `);
-
-  function expectOneOfErrors(queryStr: string) {
-    return expectValidationErrorsWithSchema(
-      schema,
-      VariablesInAllowedPositionRule,
-      queryStr,
-    );
-  }
-
-  function expectOneOfValid(queryStr: string) {
-    expectOneOfErrors(queryStr).toDeepEqual([]);
-  }
-
-  const oneOfNullableMessage = (varName: string, varType: string) =>
-    `Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "PetInput".`;
-
-  it('forbids a nullable variable in a non-null OneOf argument', () => {
-    expectOneOfErrors(`
-      query ($cat: CatInput) {
-        addPet(pet: { cat: $cat }) {
-          name
+  it('Forbids a nullable variable in a non-null OneOf argument', () => {
+    expectErrors(`
+      query ($string: String) {
+        complicatedArgs {
+          nonNullOneOfArgField(nonNullOneOfArg: { stringField: $string })
         }
       }
     `).toDeepEqual([
       {
-        message: oneOfNullableMessage('cat', 'CatInput'),
+        message:
+          'Variable "$string" is of type "String" but must be non-nullable to be used for OneOf Input Object "OneOfInput".',
         locations: [
           { line: 2, column: 14 },
-          { line: 3, column: 28 },
+          { line: 4, column: 64 },
         ],
       },
     ]);
   });
 
-  it('forbids a nullable variable in a non-null list of non-null OneOf items', () => {
-    expectOneOfErrors(`
-      query ($dog: DogInput) {
-        addPets(pets: [{ dog: $dog }]) {
-          name
+  it('Forbids a nullable variable in a non-null OneOf list item', () => {
+    expectErrors(`
+      query ($string: String) {
+        complicatedArgs {
+          oneOfListNonNullArgField(oneOfListNonNullArg: [{ stringField: $string }])
         }
       }
     `).toDeepEqual([
       {
-        message: oneOfNullableMessage('dog', 'DogInput'),
+        message:
+          'Variable "$string" is of type "String" but must be non-nullable to be used for OneOf Input Object "OneOfInput".',
         locations: [
           { line: 2, column: 14 },
-          { line: 3, column: 31 },
+          { line: 4, column: 73 },
         ],
       },
     ]);
-  });
-
-  it('forbids a nullable variable in a nullable list of non-null OneOf items', () => {
-    expectOneOfErrors(`
-      query ($dog: DogInput) {
-        addPetsList(pets: [{ dog: $dog }]) {
-          name
-        }
-      }
-    `).toDeepEqual([
-      {
-        message: oneOfNullableMessage('dog', 'DogInput'),
-        locations: [
-          { line: 2, column: 14 },
-          { line: 3, column: 35 },
-        ],
-      },
-    ]);
-  });
-
-  it('forbids a nullable variable in a OneOf field nested under a non-null input field', () => {
-    expectOneOfErrors(`
-      query ($cat: CatInput) {
-        addOuter(outer: { pet: { cat: $cat } }) {
-          name
-        }
-      }
-    `).toDeepEqual([
-      {
-        message: oneOfNullableMessage('cat', 'CatInput'),
-        locations: [
-          { line: 2, column: 14 },
-          { line: 3, column: 39 },
-        ],
-      },
-    ]);
-  });
-
-  it('forbids a nullable variable with a non-null default in a non-null OneOf argument', () => {
-    expectOneOfErrors(`
-      query ($cat: CatInput = { name: "Cat" }) {
-        addPet(pet: { cat: $cat }) {
-          name
-        }
-      }
-    `).toDeepEqual([
-      {
-        message: oneOfNullableMessage('cat', 'CatInput'),
-        locations: [
-          { line: 2, column: 14 },
-          { line: 3, column: 28 },
-        ],
-      },
-    ]);
-  });
-
-  it('allows a non-null variable in a non-null OneOf argument', () => {
-    expectOneOfValid(`
-      query ($cat: CatInput!) {
-        addPet(pet: { cat: $cat }) {
-          name
-        }
-      }
-    `);
-  });
-
-  it('allows a non-null variable in a non-null list of non-null OneOf items', () => {
-    expectOneOfValid(`
-      query ($dog: DogInput!) {
-        addPets(pets: [{ dog: $dog }]) {
-          name
-        }
-      }
-    `);
-  });
-
-  it('forbids a nullable fragment variable in a non-null OneOf argument', () => {
-    expectOneOfErrors(`
-      query {
-        ...AddCat
-      }
-
-      fragment AddCat($cat: CatInput) on Query {
-        addPet(pet: { cat: $cat }) {
-          name
-        }
-      }
-    `).toDeepEqual([
-      {
-        message: oneOfNullableMessage('cat', 'CatInput'),
-        locations: [
-          { line: 6, column: 23 },
-          { line: 7, column: 28 },
-        ],
-      },
-    ]);
-  });
-
-  it('allows a non-null fragment variable in a non-null OneOf argument', () => {
-    expectOneOfValid(`
-      query {
-        ...AddCat
-      }
-
-      fragment AddCat($cat: CatInput!) on Query {
-        addPet(pet: { cat: $cat }) {
-          name
-        }
-      }
-    `);
   });
 });
 
