@@ -6,7 +6,13 @@ import { parse, parseValue } from '../../language/parser.ts';
 import { print } from '../../language/printer.ts';
 import { visit } from '../../language/visitor.ts';
 
-import { getNamedType, isCompositeType } from '../../type/definition.ts';
+import {
+  getNamedType,
+  GraphQLInputObjectType,
+  GraphQLObjectType,
+  isCompositeType,
+} from '../../type/definition.ts';
+import { GraphQLString } from '../../type/scalars.ts';
 import { GraphQLSchema } from '../../type/schema.ts';
 
 import { buildSchema } from '../buildASTSchema.ts';
@@ -78,6 +84,41 @@ describe('TypeInfo', () => {
 });
 
 describe('visitWithTypeInfo', () => {
+  it('distinguishes legacy null defaults from absent defaults', () => {
+    const input = new GraphQLInputObjectType({
+      name: 'Input',
+      fields: {
+        withDefault: { type: GraphQLString, defaultValue: null },
+        withoutDefault: { type: GraphQLString },
+      },
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          field: {
+            type: GraphQLString,
+            args: { input: { type: input, defaultValue: null } },
+          },
+        },
+      }),
+    });
+    const typeInfo = new TypeInfo(schema);
+    const defaults: Array<unknown> = [];
+    visit(
+      parse('{ field(input: { withDefault: null, withoutDefault: null }) }'),
+      visitWithTypeInfo(typeInfo, {
+        Argument() {
+          defaults.push(typeInfo.getDefaultValue());
+        },
+        ObjectField() {
+          defaults.push(typeInfo.getDefaultValue());
+        },
+      }),
+    );
+    expect(defaults).to.deep.equal([null, null, undefined]);
+  });
+
   it('returns null fragment signatures after document traversal completes', () => {
     const typeInfo = new TypeInfo(testSchema);
     const ast = parse('{ pet { name } }');
