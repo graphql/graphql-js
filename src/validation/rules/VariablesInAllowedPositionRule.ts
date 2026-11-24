@@ -113,15 +113,15 @@ export function VariablesInAllowedPositionRule(
               );
             }
 
-            const parentInputType = getNullableType(parentType);
+            const nullableParentType = getNullableType(parentType);
             if (
-              isInputObjectType(parentInputType) &&
-              parentInputType.isOneOf &&
+              isInputObjectType(nullableParentType) &&
+              nullableParentType.isOneOf &&
               isNullableType(varType)
             ) {
               context.reportError(
                 new GraphQLError(
-                  `Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "${parentInputType}".`,
+                  `Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "${nullableParentType}".`,
                   { nodes: [varDef, node] },
                 ),
               );
