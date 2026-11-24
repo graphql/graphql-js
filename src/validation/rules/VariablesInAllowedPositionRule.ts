@@ -113,10 +113,6 @@ export function VariablesInAllowedPositionRule(
               );
             }
 
-            // getParentInputType() keeps a Non-Null wrapper, so PetInput!
-            // and an item of [PetInput!] are not input object types until
-            // unwrapped. OneOf fields reject a nullable variable type even
-            // when that variable has a default value.
             const parentInputType = getNullableType(parentType);
             if (
               isInputObjectType(parentInputType) &&
