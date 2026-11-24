@@ -1,6 +1,6 @@
 import { GraphQLError } from "../../error/GraphQLError.mjs";
 import { Kind } from "../../language/kinds.mjs";
-import { isInputObjectType, isNonNullType, isNullableType, } from "../../type/definition.mjs";
+import { getNullableType, isInputObjectType, isNonNullType, isNullableType, } from "../../type/definition.mjs";
 import { isTypeSubTypeOf } from "../../utilities/typeComparators.mjs";
 import { typeFromAST } from "../../utilities/typeFromAST.mjs";
 export function VariablesInAllowedPositionRule(context) {
@@ -28,10 +28,11 @@ export function VariablesInAllowedPositionRule(context) {
                             !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
                             context.reportError(new GraphQLError(`Variable "$${varName}" of type "${varType}" used in position expecting type "${type}".`, { nodes: [varDef, node] }));
                         }
-                        if (isInputObjectType(parentType) &&
-                            parentType.isOneOf &&
+                        const nullableParentType = getNullableType(parentType);
+                        if (isInputObjectType(nullableParentType) &&
+                            nullableParentType.isOneOf &&
                             isNullableType(varType)) {
-                            context.reportError(new GraphQLError(`Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "${parentType}".`, { nodes: [varDef, node] }));
+                            context.reportError(new GraphQLError(`Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "${nullableParentType}".`, { nodes: [varDef, node] }));
                         }
                     }
                 }

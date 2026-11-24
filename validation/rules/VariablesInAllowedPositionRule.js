@@ -31,10 +31,11 @@ function VariablesInAllowedPositionRule(context) {
                             !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
                             context.reportError(new GraphQLError_ts_1.GraphQLError(`Variable "$${varName}" of type "${varType}" used in position expecting type "${type}".`, { nodes: [varDef, node] }));
                         }
-                        if ((0, definition_ts_1.isInputObjectType)(parentType) &&
-                            parentType.isOneOf &&
+                        const nullableParentType = (0, definition_ts_1.getNullableType)(parentType);
+                        if ((0, definition_ts_1.isInputObjectType)(nullableParentType) &&
+                            nullableParentType.isOneOf &&
                             (0, definition_ts_1.isNullableType)(varType)) {
-                            context.reportError(new GraphQLError_ts_1.GraphQLError(`Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "${parentType}".`, { nodes: [varDef, node] }));
+                            context.reportError(new GraphQLError_ts_1.GraphQLError(`Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "${nullableParentType}".`, { nodes: [varDef, node] }));
                         }
                     }
                 }
