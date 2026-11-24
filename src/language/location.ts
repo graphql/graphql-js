@@ -65,7 +65,9 @@ export function getLocations(
     let match = matches.next().value;
     let line = 1;
     let lastLineStart = 0;
-    for (const { position, index } of positions.toSorted(
+    // `positions` is allocated above and is not returned to the caller, so
+    // sorting it in place matches `toSorted` on engines without ES2023.
+    for (const { position, index } of positions.sort(
       (a, b) => a.position - b.position,
     )) {
       while (match !== undefined && match.index < position) {
