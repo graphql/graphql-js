@@ -6,7 +6,6 @@ import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualProm
 import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 import { expectPromise } from '../../__testUtils__/expectPromise.ts';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';
-import { spyOnMethod } from '../../__testUtils__/spyOn.ts';
 
 import { isAsyncIterable } from '../../jsutils/isAsyncIterable.ts';
 import { isPromise } from '../../jsutils/isPromise.ts';
@@ -270,7 +269,7 @@ describe('Subscription Initialization Phase', () => {
 
     const subscription = subscribe({
       schema,
-      document: parse('subscription { foo }'),
+      document: parse('subscription { foo ... on Subscription { foo } }'),
       rootValue: { foo: fooGenerator },
     });
     assert(isAsyncIterable(subscription));
@@ -446,50 +445,31 @@ describe('Subscription Initialization Phase', () => {
     expect(count).to.equal(1);
   });
 
-  it('should only resolve the first field of invalid multi-field', async () => {
-    const rootValue = {
-      async *foo() {
-        yield { foo: 'FooValue' };
-      },
-      async *bar() {
-        /* node:coverage ignore next 0 */
-      },
-    };
-
-    const fooSpy = spyOnMethod(rootValue, 'foo');
-    const barSpy = spyOnMethod(rootValue, 'bar');
-
+  it('requires exactly one collected root field before subscribing', (t) => {
     const schema = new GraphQLSchema({
       query: DummyQueryType,
       subscription: new GraphQLObjectType({
         name: 'Subscription',
-        fields: {
-          foo: {
-            type: GraphQLString,
-          },
-          bar: {
-            type: GraphQLString,
-          },
-        },
+        fields: { foo: { type: GraphQLString }, bar: { type: GraphQLString } },
       }),
     });
-
-    const subscription = subscribe({
-      schema,
-      document: parse('subscription { foo bar }'),
-      rootValue,
-    });
-    assert(isAsyncIterable(subscription));
-
-    expect(fooSpy.callCount).to.equal(1);
-    expect(barSpy.callCount).to.equal(0);
-
-    expect(await subscription.next()).to.have.property('done', false);
-
-    expect(await subscription.next()).to.deep.equal({
-      done: true,
-      value: undefined,
-    });
+    const subscribeFieldResolver = t.mock.fn();
+    for (const selection of ['{}', '{ foo bar }', '{ foo other: foo }']) {
+      const result = subscribeWithBadArgs({
+        schema,
+        document: parse(`subscription ${selection}`),
+        subscribeFieldResolver,
+      });
+      expectJSON(result).toDeepEqual({
+        errors: [
+          {
+            message: 'Subscription must select exactly one top level field.',
+            locations: [{ line: 1, column: 14 }],
+          },
+        ],
+      });
+    }
+    expect(subscribeFieldResolver.mock.callCount()).to.equal(0);
   });
 
   it('resolves to an error if schema does not support subscriptions', async () => {
