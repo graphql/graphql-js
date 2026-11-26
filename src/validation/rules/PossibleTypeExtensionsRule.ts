@@ -24,6 +24,7 @@ import {
   isScalarType,
   isUnionType,
 } from '../../type/definition.ts';
+import { GraphQLOneOfDirective } from '../../type/directives.ts';
 
 import type { SDLValidationContext } from '../ValidationContext.ts';
 
@@ -31,6 +32,7 @@ import type { SDLValidationContext } from '../ValidationContext.ts';
  * Possible type extension
  *
  * A type extension is only valid if the type is defined and has the same kind.
+ * Input object extensions cannot apply the @oneOf directive.
  * @param context - The validation context used while checking the document.
  * @returns A visitor that reports validation errors for this rule.
  * @example
@@ -70,7 +72,20 @@ export function PossibleTypeExtensionsRule(
     InterfaceTypeExtension: checkExtension,
     UnionTypeExtension: checkExtension,
     EnumTypeExtension: checkExtension,
-    InputObjectTypeExtension: checkExtension,
+    InputObjectTypeExtension(node) {
+      checkExtension(node);
+      const oneOf = node.directives?.find(
+        (directive) => directive.name.value === GraphQLOneOfDirective.name,
+      );
+      if (oneOf) {
+        context.reportError(
+          new GraphQLError(
+            'Directive "@oneOf" cannot be used on an input object type extension.',
+            { nodes: oneOf },
+          ),
+        );
+      }
+    },
   };
 
   function checkExtension(node: TypeExtensionNode): void {
