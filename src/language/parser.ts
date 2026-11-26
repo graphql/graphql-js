@@ -537,6 +537,7 @@ export class Parser {
       return this.node<OperationDefinitionNode>(start, {
         kind: Kind.OPERATION_DEFINITION,
         operation: OperationTypeNode.QUERY,
+        shorthand: true,
         description: undefined,
         name: undefined,
         variableDefinitions: undefined,
@@ -553,6 +554,7 @@ export class Parser {
     return this.node<OperationDefinitionNode>(start, {
       kind: Kind.OPERATION_DEFINITION,
       operation,
+      shorthand: false,
       description,
       name,
       variableDefinitions: this.parseVariableDefinitions(),
