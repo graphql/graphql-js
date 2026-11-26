@@ -21,6 +21,12 @@ export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
    * Default: false
    */
   assumeValidSDL?: boolean | undefined;
+  /**
+   * Set to true to omit suggestion text from SDL validation errors.
+   *
+   * Default: false
+   */
+  hideSuggestions?: boolean | undefined;
 }
 
 /**
@@ -65,7 +71,7 @@ export function buildASTSchema(
   options?: BuildSchemaOptions,
 ): GraphQLSchema {
   if (options?.assumeValid !== true && options?.assumeValidSDL !== true) {
-    assertValidSDL(documentAST);
+    assertValidSDL(documentAST, options);
   }
 
   const emptySchemaConfig = {
@@ -154,6 +160,7 @@ export function buildSchema(
   const document = parse(source, options);
 
   return buildASTSchema(document, {
+    hideSuggestions: options?.hideSuggestions,
     assumeValidSDL: options?.assumeValidSDL,
     assumeValid: options?.assumeValid,
   });

@@ -79,6 +79,12 @@ interface Options extends GraphQLSchemaValidationOptions {
    * @internal
    */
   assumeValidSDL?: boolean | undefined;
+  /**
+   * Set to true to omit suggestion text from SDL validation errors.
+   *
+   * Default: false
+   */
+  hideSuggestions?: boolean | undefined;
 }
 
 /**
@@ -158,7 +164,7 @@ export function extendSchema(
   assertSchema(schema);
 
   if (options?.assumeValid !== true && options?.assumeValidSDL !== true) {
-    assertValidSDLExtension(documentAST, schema);
+    assertValidSDLExtension(documentAST, schema, options);
   }
 
   const schemaConfig = schema.toConfig();

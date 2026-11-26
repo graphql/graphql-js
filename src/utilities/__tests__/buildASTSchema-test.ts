@@ -1120,6 +1120,50 @@ describe('Schema Builder', () => {
     expect(() => buildSchema(sdl)).to.throw('Unknown directive "@unknown".');
   });
 
+  for (const [name, build] of [
+    [
+      'buildSchema',
+      (sdl: string, options: { hideSuggestions?: boolean | undefined }) =>
+        buildSchema(sdl, options),
+    ],
+    [
+      'buildASTSchema',
+      (sdl: string, options: { hideSuggestions?: boolean | undefined }) =>
+        buildASTSchema(parse(sdl), options),
+    ],
+  ] as const) {
+    for (const hideSuggestions of [undefined, false, true]) {
+      it(`${name} supports hideSuggestions=${hideSuggestions}`, () => {
+        const sdl = 'type Query { name: String } schema { query: QueryXYZ }';
+        expect(() => build(sdl, { hideSuggestions }))
+          .to.throw()
+          .with.property(
+            'message',
+            hideSuggestions
+              ? 'Unknown type "QueryXYZ".'
+              : 'Unknown type "QueryXYZ". Did you mean "Query"?',
+          );
+      });
+    }
+
+    it(`${name} hides directive argument suggestions without skipping validation`, () => {
+      const sdl =
+        'directive @test(name: String) on OBJECT type Query @test(nam: "x") { name: String }';
+      expect(() => build(sdl, { hideSuggestions: true }))
+        .to.throw()
+        .with.property(
+          'message',
+          'Unknown argument "nam" on directive "@test".',
+        );
+      expect(() => build(sdl, { hideSuggestions: false }))
+        .to.throw()
+        .with.property(
+          'message',
+          'Unknown argument "nam" on directive "@test". Did you mean "name"?',
+        );
+    });
+  }
+
   it('Allows to disable SDL validation', () => {
     const sdl = `
       type Query {
