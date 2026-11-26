@@ -684,8 +684,7 @@ function readEscapedUnicodeVariableWidth(
   const body = lexer.source.body;
   let point = 0;
   let size = 3;
-  // Cannot be larger than 12 chars (\u{00000000}).
-  while (size < 12) {
+  while (position + size < body.length) {
     const code = body.charCodeAt(position + size++);
     // Closing Brace (})
     if (code === 0x007d) {
@@ -695,11 +694,12 @@ function readEscapedUnicodeVariableWidth(
       }
       return { value: String.fromCodePoint(point), size };
     }
-    // Append this hex digit to the code point.
-    point = (point << 4) | readHexDigit(code);
-    if (point < 0) {
+    const digit = readHexDigit(code);
+    if (digit < 0) {
       break;
     }
+    // Arithmetic keeps out-of-range values from wrapping back into range.
+    point = point * 16 + digit;
   }
 
   throw syntaxError(
@@ -707,7 +707,7 @@ function readEscapedUnicodeVariableWidth(
     position,
     `Invalid Unicode escape sequence: "${body.slice(
       position,
-      position + size,
+      position + Math.min(size, 12),
     )}".`,
   );
 }

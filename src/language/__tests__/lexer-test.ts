@@ -320,14 +320,9 @@ describe('Lexer', () => {
       value: 'string with maximal unicode escape \u{10FFFF}',
     });
 
-    expect(
-      lexOne('"string with maximal minimal unicode escape \\u{00000000}"'),
-    ).to.contain({
-      kind: TokenKind.STRING,
-      start: 0,
-      end: 57,
-      value: 'string with maximal minimal unicode escape \u{0}',
-    });
+    expect(lexOne('"\\u{000000000}"')).to.contain({ value: '\0' });
+    expect(lexOne('"\\u{000000041}!"')).to.contain({ value: 'A!' });
+    expect(lexOne('"\\u{0000010FFFF}"')).to.contain({ value: '\u{10ffff}' });
 
     expect(
       lexOne('"string with unicode surrogate pair escape \\uD83D\\uDE00"'),
@@ -475,10 +470,21 @@ describe('Lexer', () => {
       locations: [{ line: 1, column: 15 }],
     });
 
-    expectSyntaxError('"too long \\u{000000000} esc"').to.deep.equal({
+    expectSyntaxError('"bad \\u{100000041}"').to.deep.equal({
       message:
-        'Syntax Error: Invalid Unicode escape sequence: "\\u{000000000".',
-      locations: [{ line: 1, column: 11 }],
+        'Syntax Error: Invalid Unicode escape sequence: "\\u{100000041".',
+      locations: [{ line: 1, column: 6 }],
+    });
+
+    expectSyntaxError('"bad \\u{00000D800}"').to.deep.equal({
+      message:
+        'Syntax Error: Invalid Unicode escape sequence: "\\u{00000D800".',
+      locations: [{ line: 1, column: 6 }],
+    });
+
+    expectSyntaxError('"bad \\u{0000').to.deep.equal({
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\u{0000".',
+      locations: [{ line: 1, column: 6 }],
     });
 
     expectSyntaxError('"bad surrogate \\uDEAD esc"').to.deep.equal({
