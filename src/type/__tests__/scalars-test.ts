@@ -273,6 +273,15 @@ describe('Type System: Specified scalar types', () => {
       expect(coerceInputLiteral('-1')).to.equal(-1);
       expect(coerceInputLiteral('0.1')).to.equal(0.1);
       expect(coerceInputLiteral(Math.PI.toString())).to.equal(Math.PI);
+      expect(coerceInputLiteral('1.7976931348623157e308')).to.equal(
+        Number.MAX_VALUE,
+      );
+      expect(() => coerceInputLiteral('1e400')).to.throw(
+        'Float cannot represent non-finite value: 1e400',
+      );
+      expect(() => coerceInputLiteral('-1e400')).to.throw(
+        'Float cannot represent non-finite value: -1e400',
+      );
 
       expect(() => coerceInputLiteral('null')).to.throw(
         'Float cannot represent non numeric value: null',
