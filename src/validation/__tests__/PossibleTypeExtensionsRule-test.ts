@@ -46,6 +46,28 @@ describe('Validate: Possible type extensions', () => {
     `);
   });
 
+  it('rejects @oneOf on an input object extension', () => {
+    const extension = 'extend input Choice @oneOf';
+    const error = {
+      message:
+        'Directive "@oneOf" cannot be used on an input object type extension.',
+      locations: [{ line: 1, column: 21 }],
+    };
+    expectSDLErrors(`${extension}\ninput Choice { a: Int }`).toDeepEqual([
+      error,
+    ]);
+    expectSDLErrors(
+      extension,
+      buildSchema('input Choice { a: Int }'),
+    ).toDeepEqual([error]);
+  });
+
+  it('allows adding fields to an input object defined with @oneOf', () => {
+    expectValidSDL(
+      'input Choice @oneOf { a: Int } extend input Choice { b: Int }',
+    );
+  });
+
   it('many extensions per type', () => {
     expectValidSDL(`
       scalar FooScalar
