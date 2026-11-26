@@ -138,7 +138,14 @@ export const GraphQLFloat: GraphQLScalarType<number> =
           { nodes: valueNode },
         );
       }
-      return parseFloat(valueNode.value);
+      const num = parseFloat(valueNode.value);
+      if (!Number.isFinite(num)) {
+        throw new GraphQLError(
+          `Float cannot represent non-finite value: ${valueNode.value}`,
+          { nodes: valueNode },
+        );
+      }
+      return num;
     },
     valueToLiteral(value) {
       const literal = defaultScalarValueToLiteral(value);
