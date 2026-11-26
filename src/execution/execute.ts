@@ -1098,6 +1098,13 @@ function executeSubscription(
     hideSuggestions,
   );
 
+  if (groupedFieldSet.size !== 1) {
+    throw new GraphQLError(
+      'Subscription must select exactly one top level field.',
+      { nodes: operation.selectionSet },
+    );
+  }
+
   const firstRootField = groupedFieldSet.entries().next().value as [
     string,
     FieldDetailsList,
