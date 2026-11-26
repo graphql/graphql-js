@@ -40,6 +40,27 @@ function expectValidWithSchema(schema: GraphQLSchema, queryStr: string) {
 }
 
 describe('Validate: Overlapping fields can be merged', () => {
+  it('compares the type of __typename across mutually exclusive fragments', () => {
+    const schema = buildSchema(`
+      type Query { result: Result }
+      union Result = A | B
+      type A { id: ID! }
+      type B { id: ID! }
+    `);
+    const document = parse(`{
+      result {
+        ... on A { value: __typename }
+        ... on B { value: id }
+      }
+    }`);
+    const errors = validate(schema, document, [
+      OverlappingFieldsCanBeMergedRule,
+    ]);
+    expect(errors.map((error) => error.message)).to.deep.equal([
+      'Fields "value" conflict because they return conflicting types "String!" and "ID!". Use different aliases on the fields to fetch both if this was intentional.',
+    ]);
+  });
+
   it('compares wrapped return types across object types', () => {
     const schema = buildSchema(`
       type Query { result: Result }

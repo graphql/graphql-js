@@ -27,7 +27,7 @@ import type {
 } from '../../type/definition.ts';
 import {
   getNamedType,
-  isInterfaceType,
+  isCompositeType,
   isLeafType,
   isListType,
   isNonNullType,
@@ -1237,10 +1237,9 @@ function collectFieldsImpl(
     switch (selection.kind) {
       case Kind.FIELD: {
         const fieldName = selection.name.value;
-        let fieldDef;
-        if (isObjectType(parentType) || isInterfaceType(parentType)) {
-          fieldDef = parentType.getFields()[fieldName];
-        }
+        const fieldDef = isCompositeType(parentType)
+          ? validationContext.getSchema().getField(parentType, fieldName)
+          : undefined;
         const responseName = selection.alias
           ? selection.alias.value
           : fieldName;
