@@ -55,6 +55,7 @@ export const BreakingChangeType = {
   REQUIRED_DIRECTIVE_ARG_ADDED: 'REQUIRED_DIRECTIVE_ARG_ADDED' as const,
   DIRECTIVE_REPEATABLE_REMOVED: 'DIRECTIVE_REPEATABLE_REMOVED' as const,
   DIRECTIVE_LOCATION_REMOVED: 'DIRECTIVE_LOCATION_REMOVED' as const,
+  INPUT_OBJECT_ONE_OF_ADDED: 'INPUT_OBJECT_ONE_OF_ADDED' as const,
 } as const;
 
 /** Categories of schema changes that may break existing operations. */
@@ -93,6 +94,7 @@ export const SafeChangeType = {
   ARG_CHANGED_KIND_SAFE: 'ARG_CHANGED_KIND_SAFE' as const,
   ARG_DEFAULT_VALUE_ADDED: 'ARG_DEFAULT_VALUE_ADDED' as const,
   INPUT_FIELD_DEFAULT_VALUE_ADDED: 'INPUT_FIELD_DEFAULT_VALUE_ADDED' as const,
+  INPUT_OBJECT_ONE_OF_REMOVED: 'INPUT_OBJECT_ONE_OF_REMOVED' as const,
 } as const;
 
 /** Categories of schema changes that are considered safe for existing operations. */
@@ -535,6 +537,20 @@ function findInputObjectTypeChanges(
         description: `Description of input-field ${newType}.${newField.name} has changed to "${newField.description}".`,
       });
     }
+  }
+
+  // Requiring exactly one field rejects input values that were previously
+  // valid, while lifting the constraint accepts everything it used to.
+  if (!oldType.isOneOf && newType.isOneOf) {
+    schemaChanges.push({
+      type: BreakingChangeType.INPUT_OBJECT_ONE_OF_ADDED,
+      description: `@oneOf was added to ${oldType}.`,
+    });
+  } else if (oldType.isOneOf && !newType.isOneOf) {
+    schemaChanges.push({
+      type: SafeChangeType.INPUT_OBJECT_ONE_OF_REMOVED,
+      description: `@oneOf was removed from ${oldType}.`,
+    });
   }
 
   return schemaChanges;

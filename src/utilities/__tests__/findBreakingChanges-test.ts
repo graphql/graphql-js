@@ -326,6 +326,37 @@ describe('findBreakingChanges', () => {
     ]);
   });
 
+  it('should detect if an input type became a oneOf input type', () => {
+    const oldSchema = buildSchema(`
+      input InputType1 {
+        field1: String
+        field2: Int
+      }
+
+      type Query {
+        field(arg: InputType1): String
+      }
+    `);
+
+    const newSchema = buildSchema(`
+      input InputType1 @oneOf {
+        field1: String
+        field2: Int
+      }
+
+      type Query {
+        field(arg: InputType1): String
+      }
+    `);
+
+    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        type: BreakingChangeType.INPUT_OBJECT_ONE_OF_ADDED,
+        description: '@oneOf was added to InputType1.',
+      },
+    ]);
+  });
+
   it('should detect if a type was removed from a union type', () => {
     const oldSchema = buildSchema(`
       type Type1
