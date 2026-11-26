@@ -20,9 +20,12 @@ import type {
 } from '../collectFields.ts';
 import type { ExecutionResult, FormattedExecutionResult } from '../Executor.ts';
 import type {
+  DeferredUsages,
   DeferUsageSet,
   ExecutionPlan,
 } from '../incremental/buildExecutionPlan.ts';
+import { resolveDeferUsage } from '../incremental/buildExecutionPlan.ts';
+import type { DeliveryGroupContext } from '../incremental/IncrementalExecutor.ts';
 import { IncrementalExecutor } from '../incremental/IncrementalExecutor.ts';
 
 import { BranchingIncrementalPublisher } from './BranchingIncrementalPublisher.ts';
@@ -322,13 +325,28 @@ export class BranchingIncrementalExecutor extends IncrementalExecutor<LegacyExpe
 
   override buildRootExecutionPlan(
     originalGroupedFieldSet: GroupedFieldSet,
+    context: DeliveryGroupContext,
   ): ExecutionPlan {
-    return buildBranchingExecutionPlanFromInitial(originalGroupedFieldSet);
+    return context.hasInlinedDeferUsages
+      ? buildBranchingExecutionPlan(
+          originalGroupedFieldSet,
+          undefined,
+          context.deliveryGroupMap,
+        )
+      : buildBranchingExecutionPlanFromInitial(originalGroupedFieldSet);
   }
 
   override buildSubExecutionPlan(
     originalGroupedFieldSet: GroupedFieldSet,
+    context: DeliveryGroupContext,
   ): ExecutionPlan {
+    if (context.hasInlinedDeferUsages) {
+      return buildBranchingExecutionPlan(
+        originalGroupedFieldSet,
+        this.deferUsageSet,
+        context.deliveryGroupMap,
+      );
+    }
     return this.deferUsageSet === undefined
       ? buildBranchingExecutionPlanFromInitial(originalGroupedFieldSet)
       : buildBranchingExecutionPlanFromDeferred(
@@ -341,6 +359,7 @@ export class BranchingIncrementalExecutor extends IncrementalExecutor<LegacyExpe
 function buildBranchingExecutionPlan(
   originalGroupedFieldSet: GroupedFieldSet,
   parentDeferUsages: DeferUsageSet = new Set<DeferUsage>(),
+  deferredUsages?: DeferredUsages,
 ): ExecutionPlan {
   const groupedFieldSet = new AccumulatorMap<string, FieldDetails>();
 
@@ -351,7 +370,10 @@ function buildBranchingExecutionPlan(
 
   for (const [responseKey, fieldGroup] of originalGroupedFieldSet) {
     for (const fieldDetails of fieldGroup) {
-      const deferUsage = fieldDetails.deferUsage;
+      const deferUsage = resolveDeferUsage(
+        fieldDetails.deferUsage,
+        deferredUsages,
+      );
       const deferUsageSet =
         deferUsage === undefined
           ? new Set<DeferUsage>()

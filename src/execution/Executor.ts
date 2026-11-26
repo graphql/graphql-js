@@ -240,6 +240,7 @@ export class Executor<
       this.resolverAbortController = new AbortController();
       this.sharedExecutionContext = createSharedExecutionContext(
         this.resolverAbortController.signal,
+        validatedExecutionArgs.maxDeferredFragments,
       );
     } else {
       this.sharedExecutionContext = sharedExecutionContext;
