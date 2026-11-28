@@ -1988,6 +1988,86 @@ second line"""
       ]);
     });
 
+    describe('mutually exclusive parent types', () => {
+      const schema = buildSchema(`
+        interface Pet { owner: Human }
+        type Dog implements Pet { owner: Human }
+        type Cat implements Pet { owner: Human }
+        type Human { name(surname: Boolean): String }
+        type Query { pet: Pet }
+      `);
+      const fragment = `
+        fragment Name($surname: Boolean) on Human {
+          name(surname: $surname)
+        }
+      `;
+
+      it('allows differing fragment arguments below mutually exclusive parent fields', () => {
+        expectValidWithSchema(
+          schema,
+          `
+            {
+              pet {
+                ... on Dog { owner { ...Name(surname: true) } }
+                ... on Cat { owner { ...Name(surname: false) } }
+              }
+            }
+            ${fragment}
+          `,
+        );
+      });
+
+      it('rejects differing fragment arguments below overlapping parent fields', () => {
+        expectErrorsWithSchema(
+          schema,
+          `
+            {
+              pet {
+                owner { ...Name(surname: true) }
+                ... on Cat { owner { ...Name(surname: false) } }
+              }
+            }
+            ${fragment}
+          `,
+        ).toDeepEqual([
+          {
+            message:
+              'Spreads "Name" conflict because Name(surname: true) and Name(surname: false) have different fragment arguments.',
+            locations: [
+              { line: 4, column: 25 },
+              { line: 5, column: 38 },
+            ],
+          },
+        ]);
+      });
+
+      it('rejects differing fragment arguments within one selection set', () => {
+        expectErrorsWithSchema(
+          schema,
+          `
+            {
+              pet {
+                ... on Dog { ...OwnerName(surname: true) }
+                ... on Cat { ...OwnerName(surname: false) }
+              }
+            }
+            fragment OwnerName($surname: Boolean) on Pet {
+              owner { name(surname: $surname) }
+            }
+          `,
+        ).toDeepEqual([
+          {
+            message:
+              'Spreads "OwnerName" conflict because OwnerName(surname: true) and OwnerName(surname: false) have different fragment arguments.',
+            locations: [
+              { line: 4, column: 30 },
+              { line: 5, column: 30 },
+            ],
+          },
+        ]);
+      });
+    });
+
     it('reports a fragment argument conflict once when spreads are reversed', () => {
       expectErrors(`
         query First {

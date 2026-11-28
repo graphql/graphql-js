@@ -521,6 +521,11 @@ function collectConflictsBetweenFragments(
   }
 
   if (fragment1 === fragment2) {
+    // Spreads below mutually exclusive parent fields are never collected for
+    // the same object, so their fragment arguments may differ.
+    if (areMutuallyExclusive) {
+      return;
+    }
     if (comparedFragmentPairs.has(fragment1, fragment2, false)) {
       return;
     }
