@@ -151,4 +151,37 @@ describe('Validate: Unique argument names', () => {
       },
     ]);
   });
+
+  it('multiple arguments on fragment spread', () => {
+    expectValid(`
+      {
+        ...Fragment(arg1: "value", arg2: "value")
+      }
+    `);
+  });
+
+  it('same argument on two fragment spreads', () => {
+    expectValid(`
+      {
+        one: field { ...Fragment(arg: "value") }
+        two: field { ...Fragment(arg: "value") }
+      }
+    `);
+  });
+
+  it('duplicate fragment spread arguments', () => {
+    expectErrors(`
+      {
+        ...Fragment(arg1: "value", arg1: "value")
+      }
+    `).toDeepEqual([
+      {
+        message: 'There can be only one argument named "arg1".',
+        locations: [
+          { line: 3, column: 21 },
+          { line: 3, column: 36 },
+        ],
+      },
+    ]);
+  });
 });
