@@ -4,7 +4,7 @@ import { groupBy } from '../../jsutils/groupBy.ts';
 
 import { GraphQLError } from '../../error/GraphQLError.ts';
 
-import type { ArgumentNode } from '../../language/ast.ts';
+import type { ArgumentNode, FragmentArgumentNode } from '../../language/ast.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
 
 import type { ASTValidationContext } from '../ValidationContext.ts';
@@ -12,8 +12,8 @@ import type { ASTValidationContext } from '../ValidationContext.ts';
 /**
  * Unique argument names
  *
- * A GraphQL field or directive is only valid if all supplied arguments are
- * uniquely named.
+ * A GraphQL field, directive or fragment spread is only valid if all supplied
+ * arguments are uniquely named.
  *
  * See https://spec.graphql.org/draft/#sec-Argument-Names
  * @param context - The validation context used while checking the document.
@@ -50,10 +50,11 @@ export function UniqueArgumentNamesRule(
   return {
     Field: checkArgUniqueness,
     Directive: checkArgUniqueness,
+    FragmentSpread: checkArgUniqueness,
   };
 
   function checkArgUniqueness(parentNode: {
-    arguments?: ReadonlyArray<ArgumentNode> | undefined;
+    arguments?: ReadonlyArray<ArgumentNode | FragmentArgumentNode> | undefined;
   }) {
     const argumentNodes = parentNode.arguments ?? [];
 

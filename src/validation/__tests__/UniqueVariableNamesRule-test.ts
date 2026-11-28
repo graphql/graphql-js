@@ -50,4 +50,35 @@ describe('Validate: Unique variable names', () => {
       },
     ]);
   });
+
+  it('unique fragment variable names', () => {
+    expectValid(`
+      query A($x: Int) { __typename }
+      fragment B($x: Int, $y: String) on Query { __typename }
+      fragment C($x: String, $y: Int) on Query { __typename }
+    `);
+  });
+
+  it('duplicate fragment variable names', () => {
+    expectErrors(`
+      fragment A($x: Int, $x: Int, $x: String) on Query { __typename }
+      fragment B($x: String, $x: Int) on Query { __typename }
+    `).toDeepEqual([
+      {
+        message: 'There can be only one variable named "$x".',
+        locations: [
+          { line: 2, column: 19 },
+          { line: 2, column: 28 },
+          { line: 2, column: 37 },
+        ],
+      },
+      {
+        message: 'There can be only one variable named "$x".',
+        locations: [
+          { line: 3, column: 19 },
+          { line: 3, column: 31 },
+        ],
+      },
+    ]);
+  });
 });
